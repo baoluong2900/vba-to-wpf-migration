@@ -1,0 +1,195 @@
+syntax = "proto3";
+
+package api.v1;
+
+// --- COMMON MESSAGES ---
+message Empty {}
+
+message ListResponse {
+    bool success = 1;
+    string error = 2;
+    repeated string result = 3;
+}
+
+// --- LAYER 1: DATA SERVICE ---
+service Layer1Service {
+    rpc ListForms (Empty) returns (ListResponse);
+    rpc ListQueries (Empty) returns (ListResponse);
+    rpc ListAllItems (Empty) returns (ListResponse);
+    rpc GetDbQuery (DbQueryRequest) returns (DbQueryResponse);
+}
+
+message DbQueryRequest {
+    string screen_name = 1;
+    string item_type = 2;
+    bool deep = 3;
+}
+
+message DbQueryResponse {
+    bool success = 1;
+    string error = 2;
+    string result_json = 3; // Serialized JSON string of the Logical AST
+}
+
+// --- LAYER 2: BD/DD AGENT SERVICE ---
+service Layer2Service {
+    rpc GetConfig (Empty) returns (ConfigResponse);
+    rpc GetModelsHealth (Empty) returns (ModelsHealthResponse);
+    rpc GetBdStatus (BdStatusRequest) returns (BdStatusResponse);
+    rpc RunBdFlowFull (BdAgentRequest) returns (BdAgentResponse);
+    rpc RunBdFlowExtract (BdAgentRequest) returns (BdAgentResponse);
+    rpc RunBdFlowAnalysis (BdAgentRequest) returns (BdAgentResponse);
+    rpc RunDdFlowFull (DdFlowRequest) returns (DdFlowResponse);
+    rpc GetTokenReport (Empty) returns (TokenReportResponse);
+}
+
+message ConfigResponse {
+    bool success = 1;
+    string error = 2;
+    string models_json = 3; // Serialized list of models
+}
+
+message ModelsHealthResponse {
+    bool success = 1;
+    string error = 2;
+    string results_json = 3; // Serialized health check results
+}
+
+message BdStatusRequest {
+    string screen_name = 1;
+}
+
+message BdStatusResponse {
+    bool success = 1;
+    string error = 2;
+    string screen_name = 3;
+    bool bd_done = 4;
+    bool dd_done = 5;
+    string s4_path = 6;
+    string d4_path = 7;
+}
+
+message BdAgentRequest {
+    string screen_name = 1;
+    string model = 2;
+    bool force = 3;
+    string db_data_json = 4; // Serialized JSON of dbData
+}
+
+message BdAgentResponse {
+    bool success = 1;
+    string error = 2;
+    string result_json = 3;
+    string paths_json = 4;
+    string token_stats_json = 5;
+    string log_files_json = 6;
+}
+
+message DdFlowRequest {
+    string screen_name = 1;
+    string model = 2;
+    bool force = 3;
+}
+
+message DdFlowResponse {
+    bool success = 1;
+    string error = 2;
+    string result_json = 3;
+    string paths_json = 4;
+    string token_stats_json = 5;
+    string log_files_json = 6;
+}
+
+message TokenReportResponse {
+    bool success = 1;
+    string error = 2;
+    string token_stats_json = 3;
+}
+
+// --- LAYER 3: EXCEL GENERATION SERVICE ---
+service Layer3Service {
+    rpc ListItems (Empty) returns (ListResponse);
+    rpc ListOutputs (Empty) returns (ListResponse);
+    rpc GenBd (GenRequest) returns (GenResponse);
+    rpc GenDd (GenRequest) returns (GenResponse);
+    rpc GenAll (GenRequest) returns (GenResponse);
+    rpc DownloadExcel (DownloadRequest) returns (DownloadResponse);
+}
+
+message GenRequest {
+    string screen_name = 1;
+    string type = 2;
+}
+
+message GenResponse {
+    bool success = 1;
+    string error = 2;
+    string result_json = 3;
+}
+
+message DownloadRequest {
+    string doc_kind = 1;
+    string doc_type = 2;
+    string filename = 3;
+}
+
+message DownloadResponse {
+    bool success = 1;
+    string error = 2;
+    bytes file_content = 3;
+    string content_type = 4;
+}
+
+// --- LAYER 4: SQL MIGRATION SERVICE ---
+service Layer4Service {
+    rpc ListMigrationQueries (Empty) returns (MigrationQueriesResponse);
+    rpc GetMigrationQuery (QueryNameRequest) returns (MigrationQueryDetailResponse);
+    rpc UpdateMigrationQuery (UpdateQueryRequest) returns (MigrationQueryDetailResponse);
+    rpc ConvertQuery (ConvertQueryRequest) returns (MigrationQueryDetailResponse);
+    rpc SeedQueries (Empty) returns (SeedQueriesResponse);
+    rpc GetStats (Empty) returns (StatsResponse);
+}
+
+message MigrationQueriesResponse {
+    bool success = 1;
+    string error = 2;
+    string queries_json = 3; // List of queries in JSON
+}
+
+message QueryNameRequest {
+    string name = 1;
+}
+
+message MigrationQueryDetailResponse {
+    bool success = 1;
+    string error = 2;
+    string query_json = 3; // Single query detail in JSON
+}
+
+message UpdateQueryRequest {
+    string name = 1;
+    string target_sql = 2;
+    string target_query_json = 3;
+    string notes = 4;
+    string status = 5;
+    string reviewer = 6;
+    string description = 7;
+    string model = 8;
+}
+
+message ConvertQueryRequest {
+    string name = 1;
+    string model = 2;
+}
+
+message SeedQueriesResponse {
+    bool success = 1;
+    string error = 2;
+    int32 count = 3;
+}
+
+message StatsResponse {
+    bool success = 1;
+    string error = 2;
+    string stats_json = 3; // Stats detail in JSON
+}
