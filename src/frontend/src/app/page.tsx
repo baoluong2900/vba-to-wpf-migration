@@ -655,8 +655,8 @@ export default function LandingPage() {
           </section>
 
           {/* 4. Interactive 5-Layer Workspace Tabs */}
-          <section id="timeline-tabs" className="w-full py-28 sm:py-36 md:py-48 px-6 sm:px-12 md:px-16 flex justify-center relative border-b border-neutral-900/80">
-            <div className="max-w-6xl w-full flex flex-col items-center">
+          <section id="timeline-tabs" className="w-full py-36 sm:py-48 md:py-60 px-8 sm:px-16 md:px-24 flex justify-center relative border-b border-neutral-900/80">
+            <div className="max-w-7xl w-full flex flex-col items-center">
               
               {/* Header */}
               <motion.div 
@@ -664,7 +664,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6 }}
-                className="text-center mb-24 max-w-2xl"
+                className="text-center mb-32 max-w-3xl"
               >
                 <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-5">
                   <Layers className="w-4 h-4" />
@@ -676,8 +676,8 @@ export default function LandingPage() {
                 </p>
               </motion.div>
 
-              {/* Tab Switcher Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6 w-full max-w-5xl mb-20 relative">
+              {/* Tab Switcher (Flex wrap with min/max bounds to prevent text wrapping layout shift) */}
+              <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 w-full max-w-6xl mb-24 relative">
                 {layersInfo.map((l, idx) => {
                   const Icon = l.icon;
                   const isActive = activeLayerTab === idx;
@@ -685,17 +685,17 @@ export default function LandingPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveLayerTab(idx)}
-                      className={`flex flex-col items-center gap-4 p-6 rounded-[20px] border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
+                      className={`flex-1 min-w-[150px] sm:min-w-[180px] max-w-[220px] flex flex-col items-center gap-4 p-5 sm:p-6 rounded-[20px] border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                         isActive 
-                          ? "border-indigo-500/50 text-white" 
-                          : "border-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-950/40"
+                          ? "border-transparent text-white" 
+                          : "border-neutral-900/60 text-neutral-450 hover:text-neutral-200 hover:bg-neutral-950/40"
                       }`}
                     >
                       {/* Framer Motion Active Tab Slider background */}
                       {isActive && (
                         <motion.div 
                           layoutId="activeLayerTabPill"
-                          className="absolute inset-0 bg-neutral-900/60 shadow-[0_0_25px_rgba(99,102,241,0.25)] border border-indigo-500/30 rounded-[20px] z-0"
+                          className="absolute inset-0 bg-neutral-900/60 shadow-[0_0_25px_rgba(99,102,241,0.25)] border border-indigo-500/40 rounded-[20px] z-0"
                           transition={{ type: "spring", stiffness: 350, damping: 28 }}
                         />
                       )}
@@ -705,9 +705,11 @@ export default function LandingPage() {
                       }`}>
                         <Icon className="w-5 h-5" />
                       </div>
-                      <div className="flex flex-col items-center gap-0.5 relative z-10 text-center">
+                      <div className="flex flex-col items-center gap-1.5 relative z-10 text-center w-full min-w-0 overflow-hidden">
                         <span className="text-[10px] font-bold tracking-widest uppercase opacity-75">{l.layer}</span>
-                        <span className="text-xs font-bold whitespace-nowrap mt-1">{l.title}</span>
+                        <span className="text-xs font-bold leading-tight mt-1 min-h-[2.5rem] flex items-center justify-center px-1 break-words w-full">
+                          {l.title}
+                        </span>
                       </div>
                     </button>
                   );
@@ -720,7 +722,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full bg-[#050506] border border-neutral-850 rounded-[32px] p-12 md:p-16 shadow-2xl relative overflow-hidden flex flex-col gap-12"
+                className="w-full bg-[#050506] border border-neutral-850 rounded-[32px] p-12 sm:p-16 md:p-20 shadow-2xl relative overflow-hidden flex flex-col gap-12"
               >
                 {/* Glow Backdrop */}
                 <div 
@@ -744,18 +746,18 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Bottom Section */}
-                <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-10 font-mono text-sm bg-black/40 p-10 rounded-2xl border border-neutral-900">
+                {/* Bottom Section (Fixed overflow and layout with min-w-0) */}
+                <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-10 font-mono text-sm bg-black/40 p-6 sm:p-10 rounded-2xl border border-neutral-900">
                   {/* Input Console */}
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 min-w-0 overflow-hidden">
                     <div className="text-neutral-555 font-bold select-none font-sans uppercase tracking-widest text-[10px]">{layersInfo[activeLayerTab].inputLabel}</div>
-                    <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 hover:border-neutral-850 transition-colors duration-300">{layersInfo[activeLayerTab].inputContent}</pre>
+                    <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 hover:border-neutral-850 transition-colors duration-300 w-full">{layersInfo[activeLayerTab].inputContent}</pre>
                   </div>
 
                   {/* Output Console */}
-                  <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-8 md:pt-0 md:pl-10 flex flex-col gap-4">
+                  <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-8 md:pt-0 md:pl-10 flex flex-col gap-4 min-w-0 overflow-hidden">
                     <div className="text-neutral-555 font-bold select-none font-sans uppercase tracking-widest text-[10px]">{layersInfo[activeLayerTab].outputLabel}</div>
-                    <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 hover:border-neutral-850 transition-colors duration-300">{layersInfo[activeLayerTab].outputContent}</pre>
+                    <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 hover:border-neutral-850 transition-colors duration-300 w-full">{layersInfo[activeLayerTab].outputContent}</pre>
                   </div>
                 </div>
 
