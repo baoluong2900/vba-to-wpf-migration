@@ -99,7 +99,7 @@ export default function LandingPage() {
       inputLabel: "Legacy Access Input:",
       inputContent: "📄 MS Access File\n  ├─ Tables: tblOrders\n  ├─ UI Form: F_OrderEntry\n  └─ VBA: Form_F_OrderEntry.cls",
       outputLabel: "Structured AST Output:",
-      outputContent: '{\n  "type": "Form",\n  "name": "F_OrderEntry",\n  "controls": [\n    { "type": "TextBox", "name": "txtOrderId" }\n  ]\n}'
+      outputContent: '{\n  "type": "Form",\n  "name": "F_OrderEntry",\n  "controls": [\n    { \n      "type": "TextBox", \n      "name": "txtOrderId" \n    }\n  ]\n}'
     },
     {
       id: 1,
@@ -145,9 +145,9 @@ export default function LandingPage() {
       glowColor: "rgba(251, 191, 36, 0.15)",
       details: "Translates proprietary MS Access SQL functions (e.g. IIf, Nz, InStr) into optimized database dialects like Oracle SQL, PostgreSQL, or SQL Server. The conversion agent supports direct schema validation and syntax checks.",
       inputLabel: "Access SQL Dialect:",
-      inputContent: "SELECT OrderID, \n  IIf(Status='A', 'Active', 'Inactive') AS State\nFROM Orders;",
+      inputContent: "SELECT OrderID, \n  IIf(Status='A', \n      'Active', 'Inactive') AS State\nFROM Orders;",
       outputLabel: "Target Dialect (Oracle SQL):",
-      outputContent: "SELECT OrderID,\n  CASE WHEN Status = 'A' THEN 'Active'\n       ELSE 'Inactive' END AS State\nFROM Orders;"
+      outputContent: "SELECT OrderID,\n  CASE WHEN Status = 'A' \n       THEN 'Active'\n       ELSE 'Inactive' \n  END AS State\nFROM Orders;"
     },
     {
       id: 4,
@@ -171,8 +171,8 @@ export default function LandingPage() {
     <div className="flex-1 w-full min-h-screen bg-[#030303] text-gray-200 font-sans selection:bg-indigo-500/30 selection:text-white relative overflow-x-hidden scroll-smooth">
       <style>{`
         @keyframes glowPulse {
-          0%, 100% { opacity: 0.15; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(1.08); }
+          0%, 100% { opacity: 0.12; transform: scale(1); }
+          50% { opacity: 0.25; transform: scale(1.08); }
         }
         @keyframes floatEffect {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -235,42 +235,42 @@ export default function LandingPage() {
 
         <main className="flex-1 w-full flex flex-col">
           
-          {/* 1. Hero & Value Proposition Section */}
-          <section className="w-full pt-32 pb-24 px-6 md:px-12 flex justify-center border-b border-neutral-900/80">
+          {/* 1. Hero & Value Proposition Section (Deluxe py-36) */}
+          <section className="w-full pt-36 pb-28 px-6 md:px-12 flex justify-center border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center text-center">
               
               {/* Sparkles Tech Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-8 animate-pulse">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-10 animate-pulse">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Next-Gen VBA to C# Scaffold Migration</span>
               </div>
               
-              {/* Premium Heading */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.1]">
+              {/* Premium Heading (Deluxe margin mb-10) */}
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.15]">
                 Rebuild Legacy Access <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 shimmer-rainbow-text">
                   in 5 Intelligent Layers
                 </span>
               </h1>
               
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+              {/* Subtitle (Deluxe margin mb-16) */}
+              <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-3xl mx-auto mb-16 font-light leading-relaxed">
                 An advanced multi-agent AI pipeline that extracts legacy Access database structures and business logic rules, generating modern WPF client architectures with absolute compile-safe accuracy.
               </p>
               
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 w-full max-w-md mx-auto">
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4 px-8 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-[1.03] transition-all duration-300">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24 w-full max-w-md mx-auto">
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-[1.03] transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-4 px-8 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
+                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-4.5 px-9 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
                   Explore Architecture
                 </Link>
               </div>
 
-              {/* Core Metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full mt-8">
+              {/* Core Metrics (Spacious gap-8) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full mt-10">
                 {[
                   { icon: Zap, value: "10x Faster", label: "Workflow Delivery", desc: "Reduces legacy manual rewrites from months to days." },
                   { icon: ShieldCheck, value: "99.8% Accuracy", label: "AST Structure Parsing", desc: "Verifies relational schemas, macros, and modules." },
@@ -278,11 +278,11 @@ export default function LandingPage() {
                 ].map((item, idx) => {
                   const Icon = item.icon;
                   return (
-                    <div key={idx} className="bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-6 text-left premium-border-beam relative hover:scale-[1.01] transition-all duration-300">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5">
+                    <div key={idx} className="bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 text-left premium-border-beam relative hover:scale-[1.01] transition-all duration-300">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
                         <Icon className="w-5 h-5 text-indigo-400" />
                       </div>
-                      <div className="text-xl font-bold text-white mb-1">{item.value}</div>
+                      <div className="text-xl font-bold text-white mb-1.5">{item.value}</div>
                       <div className="text-xs font-semibold text-neutral-400 tracking-wide mb-3">{item.label}</div>
                       <p className="text-xs text-neutral-500 leading-relaxed font-light">{item.desc}</p>
                     </div>
@@ -293,12 +293,12 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 2. Interactive Translation Playground */}
-          <section className="w-full py-24 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/80 relative">
-            <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* 2. Interactive Translation Playground (py-32, gap-16) */}
+          <section className="w-full py-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/80 relative">
+            <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
               
               {/* Left Column: Text & Features */}
-              <div className="lg:col-span-5 flex flex-col gap-6">
+              <div className="lg:col-span-5 flex flex-col gap-8">
                 <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase">
                   <ArrowRightLeft className="w-4 h-4" />
                   <span>Interactive Playground</span>
@@ -309,7 +309,7 @@ export default function LandingPage() {
                 <p className="text-neutral-400 font-light leading-relaxed text-sm">
                   Legacy Access databases embed logic directly inside forms and queries. vba_brain parses the entire AST representation, compiles logic trees, and outputs modern async/await C# architecture automatically.
                 </p>
-                <div className="flex flex-col gap-3 font-sans text-sm text-neutral-300 mt-4">
+                <div className="flex flex-col gap-4 font-sans text-sm text-neutral-300 mt-2">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>Converts Access VBA syntax directly to async C#</span>
@@ -329,8 +329,8 @@ export default function LandingPage() {
               <div className="lg:col-span-7 w-full flex justify-center">
                 <div className="w-full max-w-2xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
                   
-                  {/* Editor Top Bar */}
-                  <div className="flex items-center justify-between px-5 py-4 bg-[#0d0e15] border-b border-neutral-900 select-none">
+                  {/* Editor Top Bar (Spacious padding py-5 px-6) */}
+                  <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                       <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
@@ -338,23 +338,23 @@ export default function LandingPage() {
                       <span className="text-[11px] font-mono text-neutral-500 ml-3">vba_brain_compiler_agent.py</span>
                     </div>
                     {isConverted && (
-                      <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full transition-all">
+                      <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all">
                         Reset Demo
                       </button>
                     )}
                   </div>
 
-                  {/* Code Panel Split */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 min-h-[300px] relative font-mono text-[11px] leading-relaxed">
+                  {/* Code Panel Split (Responsive layout, spacious padding p-8) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-[11px] leading-relaxed">
                     
                     {/* Left: Source VBA */}
-                    <div className="p-6 border-r border-neutral-900 bg-[#0d0e15]/40 flex flex-col">
+                    <div className="p-8 bg-[#0d0e15]/40 flex flex-col border-b md:border-b-0 md:border-r border-neutral-900">
                       <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">VBA Source</div>
                       <pre className="text-cyan-400/90 whitespace-pre overflow-x-auto">{vbaCode}</pre>
                     </div>
 
                     {/* Right: Output C# */}
-                    <div className="p-6 bg-[#06070a] flex flex-col relative min-h-[220px]">
+                    <div className="p-8 bg-[#06070a] flex flex-col relative min-h-[240px]">
                       <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">C# Target (EF Core)</div>
                       
                       {isConverting && (
@@ -380,7 +380,7 @@ export default function LandingPage() {
 
                   {/* Compilation Play Trigger */}
                   {!isConverting && !isConverted && (
-                    <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-20">
+                    <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-25">
                       <button
                         onClick={handleStartConversion}
                         className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
@@ -397,12 +397,12 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 3. Interactive 5-Layer Workspace Tabs */}
-          <section id="timeline-tabs" className="w-full py-24 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
+          {/* 3. Interactive 5-Layer Workspace Tabs (py-32) */}
+          <section id="timeline-tabs" className="w-full py-32 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
               {/* Header */}
-              <div className="text-center mb-16 max-w-2xl">
+              <div className="text-center mb-20 max-w-2xl">
                 <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
                   <Layers className="w-4 h-4" />
                   <span>Pipeline Architecture</span>
@@ -413,8 +413,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* Tab Switcher Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full max-w-4xl mb-12">
+              {/* Tab Switcher Grid (Spacious gap-4, bigger padding) */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-5xl mb-16">
                 {layersInfo.map((l, idx) => {
                   const Icon = l.icon;
                   const isActive = activeLayerTab === idx;
@@ -422,13 +422,13 @@ export default function LandingPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveLayerTab(idx)}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-2xl border transition-all duration-300 ${
+                      className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                         isActive 
                           ? "bg-neutral-900/60 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)] text-white" 
                           : "bg-neutral-950/20 border-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-950/40"
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                         isActive ? "bg-indigo-500/10 text-indigo-400" : "bg-neutral-900 text-neutral-500"
                       }`}>
                         <Icon className="w-4 h-4" />
@@ -442,48 +442,48 @@ export default function LandingPage() {
                 })}
               </div>
 
-              {/* Tab Content Box */}
-              <div className="w-full bg-[#050506] border border-neutral-800 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden transition-all duration-500">
+              {/* Tab Content Box (Deluxe padding p-8 md:p-12, spacious gap-12) */}
+              <div className="w-full bg-[#050506] border border-neutral-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-all duration-500">
                 {/* Glow Ring Effect */}
                 <div 
                   className="absolute -top-1/2 -left-1/2 w-full h-full rounded-full blur-[140px] pointer-events-none transition-all duration-700"
                   style={{ background: layersInfo[activeLayerTab].glowColor }}
                 />
 
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                   
                   {/* Text Details (Left 5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col gap-5">
+                  <div className="lg:col-span-5 flex flex-col gap-6">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border w-fit ${layersInfo[activeLayerTab].badgeColor}`}>
                       <Sparkles className="w-3 h-3" />
                       {layersInfo[activeLayerTab].layer} Active
                     </span>
-                    <h3 className="text-2xl font-bold text-white">{layersInfo[activeLayerTab].title}</h3>
-                    <p className="text-neutral-400 text-xs leading-relaxed font-light">
+                    <h3 className="text-2xl font-bold text-white leading-snug">{layersInfo[activeLayerTab].title}</h3>
+                    <p className="text-neutral-400 text-sm leading-relaxed font-light">
                       {layersInfo[activeLayerTab].details}
                     </p>
                     <Link 
                       href={layersInfo[activeLayerTab].link} 
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 mt-4 group"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 mt-4 group"
                     >
                       <span>Open {layersInfo[activeLayerTab].layer} Workspace</span>
                       <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
 
-                  {/* Terminal Demos (Right 7 cols) */}
-                  <div className="lg:col-span-7 w-full grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-[10px] bg-black/50 p-5 rounded-2xl border border-neutral-900">
+                  {/* Terminal Demos (Right 7 cols, spacious p-6 with gaps) */}
+                  <div className="lg:col-span-7 w-full grid grid-cols-1 md:grid-cols-2 gap-8 font-mono text-[10px] bg-black/40 p-8 rounded-2xl border border-neutral-900">
                     
                     {/* Input */}
-                    <div className="flex flex-col">
-                      <div className="text-neutral-500 font-bold mb-3 select-none">{layersInfo[activeLayerTab].inputLabel}</div>
-                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed">{layersInfo[activeLayerTab].inputContent}</pre>
+                    <div className="flex flex-col gap-2">
+                      <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].inputLabel}</div>
+                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60">{layersInfo[activeLayerTab].inputContent}</pre>
                     </div>
 
-                    {/* Output */}
-                    <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-4 md:pt-0 md:pl-5 flex flex-col">
-                      <div className="text-neutral-500 font-bold mb-3 select-none">{layersInfo[activeLayerTab].outputLabel}</div>
-                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed">{layersInfo[activeLayerTab].outputContent}</pre>
+                    {/* Output (Spacious border separation) */}
+                    <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-6 md:pt-0 md:pl-8 flex flex-col gap-2">
+                      <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].outputLabel}</div>
+                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60">{layersInfo[activeLayerTab].outputContent}</pre>
                     </div>
 
                   </div>
@@ -494,11 +494,11 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 4. Technology Stack & Rules Section */}
-          <section className="w-full py-24 px-6 md:px-12 flex justify-center bg-[#050506]/85 border-b border-neutral-900/80">
+          {/* 4. Technology Stack & Rules Section (py-32, gap-8) */}
+          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/85 border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
-              <div className="text-center mb-16 max-w-2xl">
+              <div className="text-center mb-20 max-w-2xl">
                 <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
                   <Code2 className="w-4 h-4" />
                   <span>Scaffold Architecture</span>
@@ -509,15 +509,16 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+              {/* Rules Grid (gap-8, p-8 inside cards, text-sm descriptions) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
                 {[
                   { title: "Domain Driven Design (DDD)", desc: "WPF C# code is split cleanly into Domain, Application, Infrastructure, and UI projects to ensure modern enterprise architecture standards." },
                   { title: "Clean MVVM Separation", desc: "No hardcoded event handlers in WPF window files. Standardized ViewModel commands bind directly to reactive properties cleanly." },
                   { title: "Secure Config Files", desc: "All sensitive API keys, local ports, database credentials, and environments are ignored recursively, avoiding raw commits." }
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-3xl p-6 flex flex-col hover:border-neutral-800 transition-all duration-300">
-                    <div className="text-sm font-bold text-white mb-3">{item.title}</div>
-                    <p className="text-xs text-neutral-400 font-light leading-relaxed">{item.desc}</p>
+                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-3xl p-8 flex flex-col hover:border-neutral-800 transition-all duration-300">
+                    <div className="text-sm font-bold text-white mb-4">{item.title}</div>
+                    <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
