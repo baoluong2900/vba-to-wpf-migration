@@ -1,0 +1,109 @@
+{
+  "system_name": "システム名 - tên hệ thống",
+  "subsystem_name": "サブシステム名 - tên phân hệ",
+  "screen_id": "画面ID - mã màn hình",
+  "screen_name": "画面名 - tên màn hình",
+  "author": "作成者 - người tạo",
+  "created_date": "作成日 - ngày tạo",
+  "updated_by": "更新者 - người cập nhật",
+  "updated_date": "更新日 - ngày cập nhật",
+  "sheet_1_change_history": {
+    "sheet_name": "変更履歴",
+    "data": [
+      {
+        "revision_no": "改訂 - số phiên bản",
+        "updated_date": "更新日 - ngày cập nhật (YYYY-MM-DD)",
+        "change_content": "更新内容 - nội dung thay đổi",
+        "reason_ticket": "更新理由/案件番号 - lý do / mã ticket",
+        "updated_by": "更新者 - người cập nhật",
+        "approved_by": "承認者 - người phê duyệt"
+      }
+    ]
+  },
+  "sheet_2_detail": {
+    "sheet_name_pattern": "詳細仕様書",
+    "details": [
+      {
+        "module_id": "画面ID - id module",
+        "module_name": "画面名 - tên module",
+        "key_id": "モジュールID - mã định danh",
+        "key_name": "モジュール名 - tên định danh",
+        "steps": [
+          {
+            "step": "1. 初期処理",
+            "detail": "詳細 - logic kỹ thuật theo step-by-step có \n xuống dòng nữa"
+          },
+          {
+            "step": "2. 主処理",
+            "detail": "詳細 - logic kỹ thuật theo step-by-step có \n xuống dòng nữa"
+          },
+          {
+            "step": "3. 終了処理",
+            "detail": "詳細 - logic kỹ thuật theo step-by-step có \n xuống dòng nữa"
+          }
+        ]
+      }
+    ]
+  },
+  "sheet_3_sel_query_templates": {
+    "sheet_name_pattern": "SelQuery (có thể có nhiều sheet query) ",
+    "sel_query": {
+      "query_purpose": "概要 - mục đích query",
+      "query_name": "Query名 - tên query",
+      "parameters": "パラメータ - danh sách tham số (string hoặc mô tả)",
+      "sql": {
+        "select": [
+          {
+            "expression": "SELECT expression - ví dụ: [T].COL AS Alias",
+            "confirm_item": "確認項目 - cột test check"
+          }
+        ],
+        "from": "FROM句 - nguồn dữ liệu (string)",
+        "join": [
+          {
+            "type": "JOIN type - LEFT/INNER/etc",
+            "table": "JOIN table",
+            "on": "ON condition"
+          }
+        ],
+        "where": "WHERE句 - điều kiện",
+        "group_by": "GROUP BY句 - group fields hoặc 'なし'",
+        "order_by": "ORDER BY句 - sort fields hoặc 'なし'"
+      },
+      "columns": [
+        {
+          "no": "No - số thứ tự dòng SELECT",
+          "table_name": "テーブル名",
+          "column_name": "カラム名",
+          "alias": "表示名/alias",
+          "confirm_item": "確認項目 - nội dung test"
+        }
+      ],
+      "raw_sql": "raw SQL - nếu cần thể hiện trực tiếp"
+    }
+  },
+  "sheet_4_upd_query_templates": {
+    "sheet_name_pattern": "SelQuery (có thể có nhiều sheet query)",
+    "upd_query": {
+      "query_purpose": "概要 - mục đích UPDATE/INSERT/DELETE",
+      "query_name": "Query名 - tên query",
+      "parameters": "パラメータ - danh sách tham số",
+      "sql": {
+        "update_table": "UPDATE/INSERT/DELETE target table",
+        "set_columns": [
+          {
+            "column": "cột đích",
+            "value_expression": "giá trị/biểu thức (ví dụ: ＜パラメータ＞.Symbol)",
+            "confirm_item": "確認項目"
+          }
+        ],
+        "where_condition": {
+          "key_column": "キー/điều kiện",
+          "parameter_symbol": "＜パラメータ＞.symbol",
+          "confirm_item": "確認項目"
+        }
+      },
+      "raw_sql": "raw SQL - nếu cần"
+    }
+  }
+}

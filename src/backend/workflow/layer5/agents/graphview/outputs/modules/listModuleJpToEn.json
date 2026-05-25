@@ -1,0 +1,72 @@
+{
+  "source": "derived_from_modules_layer1",
+  "note": "wpf_common_name là GỢI Ý (module / service) — phải review.",
+  "exported_at": "2026-05-20T10:20:00.000000+00:00",
+  "count": 16,
+  "items": [
+    {
+      "access_module_name": "AppWinCenter",
+      "wpf_common_name": "AppWinCenterService"
+    },
+    {
+      "access_module_name": "Common",
+      "wpf_common_name": "CommonService"
+    },
+    {
+      "access_module_name": "Delete_Window",
+      "wpf_common_name": "DeleteWindowService"
+    },
+    {
+      "access_module_name": "EnableShift",
+      "wpf_common_name": "EnableShiftService"
+    },
+    {
+      "access_module_name": "EnableShiftKey",
+      "wpf_common_name": "EnableShiftKeyService"
+    },
+    {
+      "access_module_name": "MenuBar",
+      "wpf_common_name": "MenuBarService"
+    },
+    {
+      "access_module_name": "Module1",
+      "wpf_common_name": "Module1Service"
+    },
+    {
+      "access_module_name": "Module2",
+      "wpf_common_name": "Module2Service"
+    },
+    {
+      "access_module_name": "Module3",
+      "wpf_common_name": "Module3Service"
+    },
+    {
+      "access_module_name": "Module4",
+      "wpf_common_name": "Module4Service"
+    },
+    {
+      "access_module_name": "SetGUID",
+      "wpf_common_name": "SetGUIDService"
+    },
+    {
+      "access_module_name": "SetWindowPos",
+      "wpf_common_name": "SetWindowPosService"
+    },
+    {
+      "access_module_name": "TopMessageBox",
+      "wpf_common_name": "TopMessageBoxService"
+    },
+    {
+      "access_module_name": "mdlSetAppStyle",
+      "wpf_common_name": "MdlSetAppStyleService"
+    },
+    {
+      "access_module_name": "mdlSplitTelNum",
+      "wpf_common_name": "MdlSplitTelNumService"
+    },
+    {
+      "access_module_name": "setEmtpyClipBoard",
+      "wpf_common_name": "SetEmtpyClipBoardService"
+    }
+  ]
+}

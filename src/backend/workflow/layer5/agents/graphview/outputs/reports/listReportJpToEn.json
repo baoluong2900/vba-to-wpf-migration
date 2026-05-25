@@ -1,0 +1,103 @@
+{
+  "source": "derived_from_forms_layer1_type_Reports",
+  "note": "Reports only (type=Reports in L1 forms collection — L1 stores reports inside forms collection). wpf_* là GỢI Ý.",
+  "exported_at": "2026-05-20T10:13:11.570954+00:00",
+  "count": 19,
+  "items": [
+    {
+      "access_form_name": "R000_作業依頼書報告書合体_白紙",
+      "wpf_view_name": "R000WorkRequestReportMergeBlankView",
+      "wpf_viewmodel_name": "R000WorkRequestReportMergeBlankViewModel"
+    },
+    {
+      "access_form_name": "R004_アフター_請求書_連続_サブ",
+      "wpf_view_name": "R004AfterInvoiceBatchSubView",
+      "wpf_viewmodel_name": "R004AfterInvoiceBatchSubViewModel"
+    },
+    {
+      "access_form_name": "R005_アフターメンテナンスの保証について",
+      "wpf_view_name": "R005AfterMaintenanceWarrantyInfoView",
+      "wpf_viewmodel_name": "R005AfterMaintenanceWarrantyInfoViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書",
+      "wpf_view_name": "R005WorkRequestView",
+      "wpf_viewmodel_name": "R005WorkRequestViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書_宮下部長案(未使用)",
+      "wpf_view_name": "R005WorkRequestMiyashitaChiefDraftUnusedView",
+      "wpf_viewmodel_name": "R005WorkRequestMiyashitaChiefDraftUnusedViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書サブ",
+      "wpf_view_name": "R005WorkRequestSubView",
+      "wpf_viewmodel_name": "R005WorkRequestSubViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書サブ_白紙",
+      "wpf_view_name": "R005WorkRequestSubBlankView",
+      "wpf_viewmodel_name": "R005WorkRequestSubBlankViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書報告書合体_依頼情報のみ",
+      "wpf_view_name": "R005WorkRequestReportMergeRequestInfoOnlyView",
+      "wpf_viewmodel_name": "R005WorkRequestReportMergeRequestInfoOnlyViewModel"
+    },
+    {
+      "access_form_name": "R005_作業依頼書報告書合体_依頼情報のみ_メモ用紙なし",
+      "wpf_view_name": "R005WorkRequestReportMergeRequestInfoOnlyNoMemoSheetView",
+      "wpf_viewmodel_name": "R005WorkRequestReportMergeRequestInfoOnlyNoMemoSheetViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_お客様控え_保証書",
+      "wpf_view_name": "R005WorkReportCustomerCopyWarrantyView",
+      "wpf_viewmodel_name": "R005WorkReportCustomerCopyWarrantyViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_お客様控え_保証書_依頼情報のみ",
+      "wpf_view_name": "R005WorkReportCustomerCopyWarrantyRequestInfoOnlyView",
+      "wpf_viewmodel_name": "R005WorkReportCustomerCopyWarrantyRequestInfoOnlyViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_お客様控え_保証書_白紙",
+      "wpf_view_name": "R005WorkReportCustomerCopyWarrantyBlankView",
+      "wpf_viewmodel_name": "R005WorkReportCustomerCopyWarrantyBlankViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_弊社控え",
+      "wpf_view_name": "R005WorkReportCompanyCopyView",
+      "wpf_viewmodel_name": "R005WorkReportCompanyCopyViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_弊社控え_依頼の情報のみ",
+      "wpf_view_name": "R005WorkReportCompanyCopyRequestInfoOnlyView",
+      "wpf_viewmodel_name": "R005WorkReportCompanyCopyRequestInfoOnlyViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_弊社控え_白紙",
+      "wpf_view_name": "R005WorkReportCompanyCopyBlankView",
+      "wpf_viewmodel_name": "R005WorkReportCompanyCopyBlankViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_支店施工管理",
+      "wpf_view_name": "R005WorkReportConstructionView",
+      "wpf_viewmodel_name": "R005WorkReportConstructionViewModel"
+    },
+    {
+      "access_form_name": "R005_作業報告書_支店施工管理_依頼情報のみ",
+      "wpf_view_name": "R005WorkReportConstructionRequestInfoOnlyView",
+      "wpf_viewmodel_name": "R005WorkReportConstructionRequestInfoOnlyViewModel"
+    },
+    {
+      "access_form_name": "アフター請求書_NONOS",
+      "wpf_view_name": "AfterInvoiceNONOSView",
+      "wpf_viewmodel_name": "AfterInvoiceNONOSViewModel"
+    },
+    {
+      "access_form_name": "メモ用方眼紙",
+      "wpf_view_name": "MemoGridPaperView",
+      "wpf_viewmodel_name": "MemoGridPaperViewModel"
+    }
+  ]
+}

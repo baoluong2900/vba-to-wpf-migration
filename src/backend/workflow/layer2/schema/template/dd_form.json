@@ -1,0 +1,160 @@
+{
+  "system_name": "システム名 - tên hệ thống",
+  "subsystem_name": "サブシステム名 - tên phân hệ",
+  "screen_id": "画面ID - mã màn hình",
+  "screen_name": "画面名 - tên màn hình",
+  "author": "作成者 - người tạo",
+  "created_date": "作成日 - ngày tạo",
+  "updated_by": "更新者 - người cập nhật",
+  "updated_date": "更新日 - ngày cập nhật",
+  "sheet_1_change_history": {
+    "sheet_name": "変更履歴",
+    "data": [
+      {
+        "revision_no": "改訂 - số phiên bản",
+        "updated_date": "更新日 - ngày cập nhật (YYYY-MM-DD)",
+        "change_content": "更新内容 - nội dung thay đổi",
+        "reason_ticket": "更新理由/案件番号 - lý do / mã ticket",
+        "updated_by": "更新者 - người cập nhật",
+        "approved_by": "承認者 - người phê duyệt"
+      }
+    ]
+  },
+  "sheet_2_overview": {
+    "sheet_name": "概要仕様書",
+    "description": "概要 - tóm tắt mô tả kỹ thuật",
+    "parameter_info": [
+      {
+        "no": "No - số thứ tự",
+        "io": "I/O - I (input) / O (output)",
+        "item_name": "項目名称 - tên tham số",
+        "symbol_name": "シンボル名 - tên symbol trong code",
+        "data_type": "タイプ - kiểu dữ liệu",
+        "total_digits": "全体桁 - tổng độ dài",
+        "decimal_digits": "小数桁 - số chữ số thập phân",
+        "required": "必須 - bắt buộc (o/空表示)",
+        "notes": "説明 - ghi chú"
+      },
+      {
+        "no": "No - số thứ tự",
+        "io": "I/O - I (input) / O (output)",
+        "item_name": "項目名称 - tên tham số",
+        "symbol_name": "シンボル名 - tên symbol trong code",
+        "data_type": "タイプ - kiểu dữ liệu",
+        "total_digits": "全体桁 - tổng độ dài",
+        "decimal_digits": "小数桁 - số chữ số thập phân",
+        "required": "必須 - bắt buộc (o/空表示)",
+        "notes": "説明 - ghi chú"
+      }
+    ],
+    "special_notes": "特記事項 - ghi chú kỹ thuật khác (例: 外れ/例外, điều kiện hiển thị đặc biệt...)"
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "詳細仕様書_{FormID}_{nn}",
+      "module_id": "モジュールID - id procedure/VBA module",
+      "module_name": "モジュール名 - tên module",
+      "test_item_count": "試験項目数 - tổng checklist test",
+      "test_completed_count": "試験完了項目数 - số checklist đã xong",
+      "input_data_area": [
+        {
+          "no": "No - số thứ tự",
+          "name": "項目名称 - tên tham số",
+          "symbol": "シンボル名 - tên symbol",
+          "io": "I/O - I/O",
+          "type": "タイプ - kiểu dữ liệu (nếu cần)",
+          "description": "説明 - mô tả"
+        }
+      ],
+      "steps": [
+        {
+          "step": "1. 初期処理 / 2. 主処理 ...",
+          "detail": "詳細 - logic kỹ thuật theo step-by-step"
+        }
+      ],
+      "output_data_area": [
+        {
+          "output_name": "出力データ欄 - dữ liệu output/kết quả",
+          "result_check": "結果確認 - ✓/×/ghi chú"
+        }
+      ]
+    }
+  ],
+  "sheet_4_sel_query_templates": [
+    {
+      "sheet_name_pattern": "{FormID}_{nn}SelQuery{mm}",
+      "query_purpose": "概要 - mục đích query",
+      "query_name": "Query名 - tên query",
+      "parameters": "パラメータ - danh sách tham số (string hoặc mô tả)",
+      "sql": {
+        "select": "SELECT expression - ví dụ: [T].COL AS Alias",
+        "from": "FROM句 - nguồn dữ liệu (string)",
+        "join": [
+          {
+            "type": "JOIN type - LEFT/INNER/etc",
+            "table": "JOIN table",
+            "on": "ON condition"
+          }
+        ],
+        "where": [
+          {
+            "condition": "キー/điều kiện",
+            "notes": "ghi chú"
+          }
+        ],
+        "group_by": "GROUP BY句 - group fields hoặc 'なし'",
+        "order_by": "ORDER BY句 - sort fields hoặc 'なし'"
+      },
+      "columns": [
+        {
+          "no": "No - số thứ tự dòng SELECT",
+          "table_name": "テーブル名",
+          "column_name": "カラム名",
+          "alias": "表示名/alias"
+        }
+      ],
+      "raw_sql": "raw SQL - nếu cần thể hiện trực tiếp"
+    }
+  ],
+  "sheet_5_upd_query_templates": [
+    {
+      "sheet_name_pattern": "{FormID}_{nn}UpdQuery{mm}",
+      "query_purpose": "概要 - mục đích UPDATE/INSERT/DELETE",
+      "query_name": "Query名 - tên query",
+      "parameters": "パラメータ - danh sách tham số",
+      "sql": {
+        "target_table": "UPDATE/INSERT/DELETE target table",
+        "set_columns": [
+          {
+            "no": "Số thứ tự",
+            "column": "cột đích",
+            "source_table": "bảng nguồn",
+            "source_field_or_fixed_value": "cột nguồn",
+            "notes": "ghi chú"
+          }
+        ],
+        "select": [
+          {
+            "expression": "SELECT expression - ví dụ: [T].COL AS Alias"
+          }
+        ],
+        "from": "FROM句 - nguồn dữ liệu (string)",
+        "join": [
+          {
+            "type": "JOIN type - LEFT/INNER/etc",
+            "table": "JOIN table",
+            "on": "ON condition"
+          }
+        ],
+        "where": [
+          {
+            "condition": "キー/điều kiện",
+            "notes": "ghi chú"
+          }
+        ],
+        "group_by": "GROUP BY句 - group fields"
+      },
+      "raw_sql": "raw SQL - nếu cần"
+    }
+  ]
+}

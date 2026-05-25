@@ -1,0 +1,112 @@
+{
+  "system_name": "システム名 - tên hệ thống",
+  "subsystem_name": "サブシステム名 - tên phân hệ",
+  "screen_id": "画面ID - mã màn hình",
+  "screen_name": "画面名 - tên màn hình",
+  "author": "作成者 - người tạo",
+  "created_date": "作成日 - ngày tạo",
+  "updated_by": "更新者 - người cập nhật",
+  "updated_date": "更新日 - ngày cập nhật",
+  "sheet_1_change_history": {
+    "sheet_name": "変更履歴",
+    "data": [
+      {
+        "revision_no": "改訂 - số phiên bản",
+        "updated_date": "更新日 - ngày cập nhật (YYYY-MM-DD)",
+        "change_content": "更新内容 - nội dung thay đổi",
+        "reason_ticket": "更新理由/案件番号 - lý do / mã ticket",
+        "updated_by": "更新者 - người cập nhật",
+        "approved_by": "承認者 - người phê duyệt"
+      }
+    ]
+  },
+  "sheet_2_layout": {
+    "sheet_name": "画面仕様書(レイアウト)",
+    "description": "●機能概要 - mô tả chức năng màn hình",
+    "timing": "●タイミング - thời điểm sử dụng",
+    "constraints": "●制約事項 - điều kiện/ràng buộc",
+    "screen_image": "イメージ - layout màn hình",
+    "record_sources": [
+      {
+        "query_name": "＜レコードソース＞ - query/source cho màn hình"
+      }
+    ],
+    "process_overview": [
+      {
+        "summary_line": "【処理概要】 - dòng mô tả tổng quan xử lý"
+      }
+    ],
+    "events": [
+      {
+        "event_id": "イベントID - mã event (E000, E001...)",
+        "title": "標題 - tiêu đề hiển thị",
+        "type": "種類 - loại control/sự kiện",
+        "logical_name": "名前（論理） - tên logic",
+        "physical_name": "名前（物理） - tên vật lý",
+        "event_trigger": "イベント - trigger (画面開く時/クリック時/更新後処理...)",
+        "event_content": "イベント内容 - mô tả xử lý chi tiết",
+        "module_id": "モジュールID - id module xử lý",
+        "notes": "備考 - ghi chú"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "画面仕様書(画面編集)",
+    "items": [
+      {
+        "item_no": "№ - số thứ tự hoặc block (I/II/III...)",
+        "io": "I／O - I, O, I/O",
+        "logical_name": "画面項目名（論理名） - tên logic",
+        "physical_name": "画面項目名（物理名） - tên vật lý",
+        "item_attribute": "項目属性 - loại item (プルダウン/ボタン/ユーザーコントロール...)",
+        "attribute_digits": "属性桁数 - độ dài",
+        "required": "必須 - bắt buộc",
+        "format": "形式 - định dạng",
+        "other_input_checks": "その他入力値チェック - kiểm tra bổ sung",
+        "source_table": "転送元.ﾃｰﾌﾞﾙ名/領域名 - bảng/vùng nguồn",
+        "source_field_or_fixed_value": "転送元.項目名／固定値 - field nguồn hoặc giá trị cố định",
+        "output_format": "転送元.書式 - format output",
+        "notes": "備考 - ghi chú"
+      }
+    ]
+  },
+  "sheet_4_table_update": {
+    "sheet_name_pattern": "画面仕様書（E***） - sheet cập nhật bảng theo event",
+    "header": {
+      "project_name": "プロジェクト名 - tên project",
+      "table_physical_name": "テーブル名(物理名) - tên bảng vật lý",
+      "table_logical_name": "テーブル(論理名) - tên bảng logic",
+      "update_type": "更新 - loại cập nhật"
+    },
+    "items": [
+      {
+        "no": "№ - số thứ tự",
+        "target_field_physical": "項目名（物理名） - field đích vật lý",
+        "target_field_logical": "項目名（論理名） - field đích logic",
+        "source_table": "転送元.ﾃｰﾌﾞﾙ名／領域名 - bảng nguồn",
+        "source_field_or_fixed_value": "転送元.項目名／固定値 - field nguồn hoặc fixed value",
+        "condition_and_format": "条  件  及  び  編  集  方  法 - điều kiện/biên tập",
+        "chk": "CHK - check cột test",
+        "notes": "備    考 - ghi chú"
+      }
+    ]
+  },
+  "sheet_5_file_spec": {
+    "sheet_name_pattern": "ファイル仕様書（E***） - sheet file spec (nếu có)",
+    "header": {
+      "file_name": "ファイル名 - tên file output",
+      "file_type": "ファイルタイプ - loại file"
+    },
+    "items": [
+      {
+        "no": "№ - số thứ tự",
+        "output_field_name": "項目名／固定値 - tên field output hoặc giá trị cố định",
+        "source_table": "転送元.ﾃｰﾌﾞﾙ名／領域名 - bảng nguồn",
+        "source_field_or_fixed_value": "項目名／固定値 - field nguồn hoặc fixed value",
+        "condition_and_format": "条  件  及  び  編  集  方  法 - điều kiện/format",
+        "chk": "CHK - cột check",
+        "notes": "備    考 - ghi chú"
+      }
+    ]
+  }
+}

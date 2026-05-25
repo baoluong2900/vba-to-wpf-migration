@@ -1,0 +1,13 @@
+{"system_name": "システム名"}
+{"subsystem_name": "サブシステム名"}
+{"screen_id": "画面ID"}
+{"screen_name": "画面名"}
+{"author": "作成者"}
+{"created_date": "作成日"}
+{"updated_by": "更新者"}
+{"updated_date": "更新日"}
+{"sheet_1_change_history": {"sheet_name": "変更履歴", "data": [{"revision_no": "改訂", "updated_date": "更新日", "change_content": "更新内容", "reason_ticket": "更新理由/案件番号", "updated_by": "更新者", "approved_by": "承認者"}]}}
+{"sheet_2_overview": {"sheet_name": "概要仕様書", "description": "概要", "parameter_info": [{"no": "No", "io": "I/O", "item_name": "項目名称", "symbol_name": "シンボル名", "data_type": "タイプ", "total_digits": "全体桁", "decimal_digits": "小数桁", "required": "必須", "notes": "説明"}], "grouping_sorting_pagebreak": {"sort_fields": [{"field": "並べ替え：", "order": "昇順/降順"}], "group_fields": [{"field": "グループ化", "page_break": "true/false"}]}, "special_notes": "特記事項"}}
+{"sheet_3_detail_specs": [{"sheet_name_pattern": "詳細仕様書_{FormID}_{module_id}", "module_id": "モジュールID", "module_name": "モジュール名", "test_item_count": "試験項目数", "test_completed_count": "試験完了項目数", "input_data_area": [{"no": "No", "name": "項目名称", "symbol": "シンボル名", "io": "I/O", "type": "タイプ", "description": "説明"}], "steps": [{"step": "1. 初期処理 / 2. 主処理 ...", "detail": "詳細"}], "output_data_area": [{"output_name": "出力データ欄", "result_check": "結果確認"}]}]}
+{"sheet_4_sel_query_templates": [{"sheet_name_pattern": "{FormID}_{module_id}SelQuery{mm}", "query_purpose": "概要", "query_name": "Query名", "parameters": "パラメータ", "sql": {"select": [{"expression": "SELECT expression", "confirm_item": "確認項目"}], "from": "FROM句", "join": [{"type": "JOIN type", "table": "JOIN table", "on": "ON condition"}], "where": "WHERE句", "group_by": "GROUP BY句", "order_by": "ORDER BY句"}, "columns": [{"no": "No", "table_name": "テーブル名", "column_name": "カラム名", "alias": "表示名/alias", "confirm_item": "確認項目"}], "raw_sql": "raw SQL"}]}
+{"sheet_5_upd_query_templates": [{"sheet_name_pattern": "{FormID}_{module_id}UpdQuery{mm}", "query_purpose": "概要", "query_name": "Query名", "parameters": "パラメータ", "sql": {"update_table": "UPDATE/INSERT/DELETE target table", "set_columns": [{"column": "cột đích", "value_expression": "giá trị/biểu thức (ví dụ: ＜パラメータ＞.Symbol)", "confirm_item": "確認項目"}], "where_condition": {"key_column": "キー/điều kiện", "parameter_symbol": "＜パラメータ＞.symbol", "confirm_item": "確認項目"}}, "raw_sql": "raw SQL"}]}

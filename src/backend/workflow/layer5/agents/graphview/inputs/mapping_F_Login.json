@@ -1,0 +1,569 @@
+{
+  "form_name": "F_Login",
+  "phase": 1,
+  "node_mapping": [
+    {
+      "vba_id": "form:F_Login",
+      "wpf_id": "view:F_Login",
+      "wpf_file": "Views/FLoginView.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::Form_Open",
+      "wpf_id": "handler:F_Login|OnOpened",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::Form_Load",
+      "wpf_id": "handler:F_Login|OnLoaded",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::txtPass_AfterUpdate",
+      "wpf_id": "handler:F_Login|LoginCommand",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::パスワードテーブルを開く_DblClick",
+      "wpf_id": "handler:F_Login|OpenPasswordTableCommand",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::プロセス終了_DblClick",
+      "wpf_id": "handler:F_Login|ExitApplicationCommand",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::閉じる_Click",
+      "wpf_id": "handler:F_Login|CloseCommand",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_Login::Form_KeyDown",
+      "wpf_id": "handler:F_Login|HandleFormKeyDown",
+      "wpf_file": "ViewModels/FLoginViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:Common.Judge_Inst",
+      "wpf_id": "service:Common",
+      "wpf_file": "Application/Services/CommonService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:Delete_Window.SetEnabledState",
+      "wpf_id": "service:DeleteWindow",
+      "wpf_file": "Application/Services/DeleteWindowService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:SetWindowPos.SetWindowTop",
+      "wpf_id": "service:SetWindowPos",
+      "wpf_file": "Application/Services/SetWindowPosService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:EmptyClipboard",
+      "wpf_id": "service:EmptyClipboard",
+      "wpf_file": "Application/Services/EmptyClipboardService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:CloseClipboard",
+      "wpf_id": "service:CloseClipboard",
+      "wpf_file": "Application/Services/CloseClipboardService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:EnableShiftKey.SwitchShiftKey",
+      "wpf_id": "service:EnableShiftKey",
+      "wpf_file": "Application/Services/EnableShiftKeyService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:mdlSetAppStyle.SetAccWinStyle",
+      "wpf_id": "service:MdlSetAppStyle",
+      "wpf_file": "Application/Services/MdlSetAppStyleService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:Module1.タイマーを開く",
+      "wpf_id": "service:Module1",
+      "wpf_file": "Application/Services/Module1Service.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:MenuBar.MenuBarTrueFalse",
+      "wpf_id": "service:MenuBar",
+      "wpf_file": "Application/Services/MenuBarService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:MenuBar.MenuBarTrue",
+      "wpf_id": "service:MenuBar",
+      "wpf_file": "Application/Services/MenuBarService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "module:MenuBar.StatusBar_True",
+      "wpf_id": "service:MenuBar",
+      "wpf_file": "Application/Services/MenuBarService.cs",
+      "wpf_kind": "service",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "query:Access配信日",
+      "wpf_id": "repository:Access配信日",
+      "wpf_file": "Infrastructure/Persistence/Repositories/AccessDeliveryDateAccessQueryRepository.cs",
+      "wpf_kind": "repository",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "query:Q000_T_LoginUser",
+      "wpf_id": "repository:Q000_T_LoginUser",
+      "wpf_file": "Infrastructure/Persistence/Repositories/Q000TLoginUserAccessQueryRepository.cs",
+      "wpf_kind": "repository",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "query:Q000_T_ID_PASS",
+      "wpf_id": "repository:Q000_T_ID_PASS",
+      "wpf_file": "Infrastructure/Persistence/Repositories/TIDPASSRepository.cs",
+      "wpf_kind": "repository",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "macro:AutoExec_A",
+      "wpf_id": "workflow:AutoExec_A",
+      "wpf_file": "Application/Workflows/AutoExecAMacroWorkflow.cs",
+      "wpf_kind": "workflow",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "macro:M300_Splash(M)Ⅱを開く",
+      "wpf_id": "workflow:M300_Splash(M)Ⅱを開く",
+      "wpf_file": "Application/Workflows/M300SplashMIIOpenMacroWorkflow.cs",
+      "wpf_kind": "workflow",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "macro:AutoExec_Restart",
+      "wpf_id": "workflow:AutoExec_Restart",
+      "wpf_file": "Application/Workflows/AutoExecRestartMacroWorkflow.cs",
+      "wpf_kind": "workflow",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "form:F022_支店選択フォーム",
+      "wpf_id": "view:F022_支店選択フォーム",
+      "wpf_file": "Views/F022ShitenSentakuFormView.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    },
+    {
+      "vba_id": "form:F000_Splash(M)Ⅱ",
+      "wpf_id": "view:F000_Splash(M)Ⅱ",
+      "wpf_file": "Views/F000SplashM2View.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    },
+    {
+      "vba_id": "form:C000_MAINⅡ",
+      "wpf_id": "view:C000_MAINⅡ",
+      "wpf_file": "Views/C000Main2View.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    },
+    {
+      "vba_id": "form:F_ユーザー追加",
+      "wpf_id": "view:F_ユーザー追加",
+      "wpf_file": "Views/FUserAddView.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    },
+    {
+      "vba_id": "form:F_ユーザー追加_A",
+      "wpf_id": "view:F_ユーザー追加_A",
+      "wpf_file": "Views/FUserAddAView.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    }
+  ],
+  "edge_mapping": [
+    {
+      "vba_edge": "form:F_Login__event:F_Login::Form_Open",
+      "wpf_edge": "view:F_Login->viewmodel:F_Login",
+      "wpf_label": "DataContext",
+      "expected_flow": [
+        "view:F_Login",
+        "viewmodel:F_Login"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:Delete_Window.SetEnabledState",
+      "wpf_edge": "handler:F_Login|OnOpened->service:DeleteWindow",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:DeleteWindow"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:SetWindowPos.SetWindowTop",
+      "wpf_edge": "handler:F_Login|OnOpened->service:SetWindowPos",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:SetWindowPos"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard",
+      "wpf_edge": "handler:F_Login|OnOpened->service:EmptyClipboard",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:EmptyClipboard"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard",
+      "wpf_edge": "handler:F_Login|OnOpened->service:CloseClipboard",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:CloseClipboard"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:EnableShiftKey.SwitchShiftKey",
+      "wpf_edge": "handler:F_Login|OnOpened->service:EnableShiftKey",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:EnableShiftKey"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__module:mdlSetAppStyle.SetAccWinStyle",
+      "wpf_edge": "handler:F_Login|OnOpened->service:MdlSetAppStyle",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:MdlSetAppStyle"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser",
+      "wpf_edge": "handler:F_Login|OnOpened->repository:Q000_T_LoginUser",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnOpened",
+        "service:FLoginService",
+        "repository:Q000_T_LoginUser"
+      ]
+    },
+    {
+      "vba_edge": "form:F_Login__event:F_Login::Form_Load",
+      "wpf_edge": "view:F_Login->viewmodel:F_Login",
+      "wpf_label": "DataContext",
+      "expected_flow": [
+        "view:F_Login",
+        "viewmodel:F_Login"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst",
+      "wpf_edge": "handler:F_Login|OnLoaded->service:Common",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnLoaded",
+        "service:Common"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::Form_Load__query:Access配信日",
+      "wpf_edge": "handler:F_Login|OnLoaded->repository:Access配信日",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OnLoaded",
+        "service:FLoginService",
+        "repository:Access配信日"
+      ]
+    },
+    {
+      "vba_edge": "form:F_Login__event:F_Login::txtPass_AfterUpdate",
+      "wpf_edge": "view:F_Login->viewmodel:F_Login",
+      "wpf_label": "Binding",
+      "expected_flow": [
+        "view:F_Login",
+        "viewmodel:F_Login"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A",
+      "wpf_edge": "handler:F_Login|LoginCommand->workflow:AutoExec_A",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|LoginCommand",
+        "workflow:AutoExec_A"
+      ]
+    },
+    {
+      "vba_edge": "macro:AutoExec_A__form:F022_支店選択フォーム",
+      "wpf_edge": "workflow:AutoExec_A->view:F022_支店選択フォーム",
+      "wpf_label": "navigates to",
+      "expected_flow": [
+        "workflow:AutoExec_A",
+        "view:F022_支店選択フォーム"
+      ]
+    },
+    {
+      "vba_edge": "macro:AutoExec_A__macro:M300_Splash(M)Ⅱを開く",
+      "wpf_edge": "workflow:AutoExec_A->workflow:M300_Splash(M)Ⅱを開く",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "workflow:AutoExec_A",
+        "workflow:M300_Splash(M)Ⅱを開く"
+      ]
+    },
+    {
+      "vba_edge": "macro:M300_Splash(M)Ⅱを開く__form:F000_Splash(M)Ⅱ",
+      "wpf_edge": "workflow:M300_Splash(M)Ⅱを開く->view:F000_Splash(M)Ⅱ",
+      "wpf_label": "navigates to",
+      "expected_flow": [
+        "workflow:M300_Splash(M)Ⅱを開く",
+        "view:F000_Splash(M)Ⅱ"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart",
+      "wpf_edge": "handler:F_Login|LoginCommand->workflow:AutoExec_Restart",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|LoginCommand",
+        "workflow:AutoExec_Restart"
+      ]
+    },
+    {
+      "vba_edge": "macro:AutoExec_Restart__form:F022_支店選択フォーム",
+      "wpf_edge": "workflow:AutoExec_Restart->view:F022_支店選択フォーム",
+      "wpf_label": "navigates to",
+      "expected_flow": [
+        "workflow:AutoExec_Restart",
+        "view:F022_支店選択フォーム"
+      ]
+    },
+    {
+      "vba_edge": "macro:AutoExec_Restart__form:C000_MAINⅡ",
+      "wpf_edge": "workflow:AutoExec_Restart->view:C000_MAINⅡ",
+      "wpf_label": "navigates to",
+      "expected_flow": [
+        "workflow:AutoExec_Restart",
+        "view:C000_MAINⅡ"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Module1.タイマーを開く",
+      "wpf_edge": "handler:F_Login|LoginCommand->service:Module1",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|LoginCommand",
+        "service:Module1"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login",
+      "wpf_edge": "handler:F_Login|LoginCommand->view:F_Login",
+      "wpf_label": "closes",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|LoginCommand",
+        "view:F_Login"
+      ]
+    },
+    {
+      "vba_edge": "form:F_Login__event:F_Login::パスワードテーブルを開く_DblClick",
+      "wpf_edge": "view:F_Login->viewmodel:F_Login",
+      "wpf_label": "Binding",
+      "expected_flow": [
+        "view:F_Login",
+        "viewmodel:F_Login"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__module:MenuBar.MenuBarTrueFalse",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->service:MenuBar",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "service:MenuBar"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__module:MenuBar.MenuBarTrue",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->service:MenuBar",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "service:MenuBar"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__module:MenuBar.StatusBar_True",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->service:MenuBar",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "service:MenuBar"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__query:Q000_T_ID_PASS",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->repository:Q000_T_ID_PASS",
+      "wpf_label": "calls",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "service:FLoginService",
+        "repository:Q000_T_ID_PASS"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__form:F_ユーザー追加",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->view:F_ユーザー追加",
+      "wpf_label": "closes",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "view:F_ユーザー追加"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__form:F_ユーザー追加_A",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->view:F_ユーザー追加_A",
+      "wpf_label": "closes",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "view:F_ユーザー追加_A"
+      ]
+    },
+    {
+      "vba_edge": "event:F_Login::パスワードテーブルを開く_DblClick__form:F_Login",
+      "wpf_edge": "handler:F_Login|OpenPasswordTableCommand->view:F_Login",
+      "wpf_label": "closes",
+      "expected_flow": [
+        "viewmodel:F_Login",
+        "handler:F_Login|OpenPasswordTableCommand",
+        "view:F_Login"
+      ]
+    }
+  ],
+  "name_mapping": [
+    {
+      "jp": "txtPass_AfterUpdate",
+      "en": "LoginCommand",
+      "type": "event"
+    },
+    {
+      "jp": "パスワードテーブルを開く_DblClick",
+      "en": "OpenPasswordTableCommand",
+      "type": "event"
+    },
+    {
+      "jp": "プロセス終了_DblClick",
+      "en": "ExitApplicationCommand",
+      "type": "event"
+    },
+    {
+      "jp": "閉じる_Click",
+      "en": "CloseCommand",
+      "type": "event"
+    },
+    {
+      "jp": "Form_KeyDown",
+      "en": "HandleFormKeyDown",
+      "type": "event"
+    },
+    {
+      "jp": "Form_Load",
+      "en": "OnLoaded",
+      "type": "event"
+    },
+    {
+      "jp": "Form_Open",
+      "en": "OnOpened",
+      "type": "event"
+    },
+    {
+      "jp": "Access配信日",
+      "en": "AccessDeliveryDateAccessQuery",
+      "type": "query"
+    },
+    {
+      "jp": "Q000_T_LoginUser",
+      "en": "Q000TLoginUserAccessQuery",
+      "type": "query"
+    },
+    {
+      "jp": "Q000_T_ID_PASS",
+      "en": "Q000TIDPASSAccessQuery",
+      "type": "query"
+    },
+    {
+      "jp": "AutoExec_A",
+      "en": "AutoExecAMacroWorkflow",
+      "type": "macro"
+    },
+    {
+      "jp": "M300_Splash(M)Ⅱを開く",
+      "en": "M300SplashMIIOpenMacroWorkflow",
+      "type": "macro"
+    },
+    {
+      "jp": "AutoExec_Restart",
+      "en": "AutoExecRestartMacroWorkflow",
+      "type": "macro"
+    }
+  ]
+}

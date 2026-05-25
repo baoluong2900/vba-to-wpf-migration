@@ -1,0 +1,600 @@
+{
+  "form_name": "F_Login",
+  "input_type": "SERVICE",
+  "screen_description": "この画面は、ユーザーがシステムにログインするために使用します。ログインIDとパスワードの入力を行い、適切な認証を通じてシステムへのアクセスを可能にします。",
+  "description": "Events có xử lý data/query. Gen ViewModel + IService + Service method.",
+  "total_events": 4,
+  "cs_file": "FLoginView.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "フォーム",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "画面を開く時",
+        "event_content": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーをシステムにログインさせる。",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "action_type": "VALID",
+        "event_description_mapping": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーをシステムにログインさせる。",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_Open(Cancel As Integer)\n SwitchShiftKey True\n Call SetEnabledState(False)\n DoCmd.SelectObject acForm, \"\", True\n DoCmd.RunCommand acCmdWindowHide\n DoCmd.ShowToolbar \"Ribbon\", acToolbarNo\n Application.CommandBars(\"Status Bar\").Visible = False\n Dim i As Long\n For i = 1 To 3\n Next i\nOn Error GoTo Err_Shori\n SetAccWinStyle\n MoveWindow Application.hWndAccessApp, 0, 0, 800, 400, True\nCall SetWindowTop(hWndAccessApp, True)\n DoCmd.RunCommand acCmdWindowHide\nCall SetWindowTop(hWndAccessApp, False)\n Const MOUSE_LEFTDOWN = 2\n Const MOUSE_LEFTUP = 4\n Const MOUSE_RIGHTDOWN = 8\n Const MOUSE_RIGHTUP = 16\n OpenClipboard (0&)\n EmptyClipboard\n CloseClipboard\n If OpenClipboard(ByVal 0&) Then\n Call EmptyClipboard\n Call CloseClipboard\n End If\n Dim WshNetworkObject As Object\n Set WshNetworkObject = CreateObject(\"WScript.Network\")\n Dim limit As Date, cnt_d As Double\nWith WshNetworkObject\n Dim UserName As String\n UserName = .UserName\n Me.txtID = UserName\n SendKeys \"{TAB}\"\n Dim myDO As DataObject\n Dim myStr As String\n myStr = Me.txtID\n Set myDO = New DataObject\n myDO.SetText myStr\n myDO.PutInClipboard\nWith WshNetworkObject\nIf (.UserName = \"00105687\") Or _\n (.UserName = \"00110772A\") Or _\n (.UserName = \"00109978A\") Or _\n (.UserName = \"00109212A\") Or _\n (.UserName = \"00106601A\") Or _\n (.UserName = \"00124937A\") _\n Then\n SendKeys \"^(v)\"\n SendKeys \"{ENTER}\"\n SendKeys \"^(v)\"\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n Else\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n End If\nEnd With\nEnd With\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F000_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [
+            "Delete_Window.SetEnabledState",
+            "SetWindowPos.SetWindowTop",
+            "EmptyClipboard",
+            "CloseClipboard",
+            "EnableShiftKey.SwitchShiftKey",
+            "mdlSetAppStyle.SetAccWinStyle"
+          ],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. シフトキーの状態を切り替える [refer: SwitchShiftKey]\n1.2. 画面要素の有効化状態を設定する [refer: SetEnabledState]\n1.3. フォームを選択モードに変更する\n1.4. アプリケーションウィンドウを非表示にする\n1.5. リボンツールバーを非表示にする\n1.6. ステータスバーを非表示にする\n1.7. ウィンドウの位置とサイズを調整する\n1.8. ウィンドウを最前面に設定する [refer: SetWindowTop]\n1.9. クリップボードを初期化する"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. ユーザー名を取得し、フォームのtxtIDフィールドに設定する\n2.2. txtIDフィールドの内容をクリップボードにコピーする\n2.3. 特定のユーザー名を持つ場合、以下の処理を行う\n2.3.1. クリップボードの内容をペーストする\n2.3.2. エンターキーを送信する\n2.3.3. クエリを実行してログイン情報を確認する\n[F000_SelQuery01]\n2.3.4. エンターキーを送信する\n2.4. 上記以外のユーザー名の場合、以下の処理を行う\n2.4.1. クエリを実行してログイン情報を確認する\n[F000_SelQuery01]\n2.4.2. エンターキーを送信する"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "3.1. エラーが発生した場合、エラーメッセージを表示する"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Loaded(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Loaded",
+        "module_id": "F000",
+        "vba_handler": "Form_Open"
+      },
+      "service_context": {
+        "interface_method": "Task<F000Response> F000Async(F000Request request);",
+        "request": {
+          "class": "F000Request",
+          "properties": [
+            {
+              "name": "TxtID",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        },
+        "response": {
+          "class": "F000Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "Data",
+              "type": "IEnumerable<GetUserInfoDto>?",
+              "nullable": true,
+              "entity_shape": {
+                "class": "GetUserInfoDto",
+                "fields": [
+                  {
+                    "name": "LastName",
+                    "type": "string",
+                    "column": "氏"
+                  },
+                  {
+                    "name": "FirstName",
+                    "type": "string",
+                    "column": "名"
+                  },
+                  {
+                    "name": "ConstructionHandlerName",
+                    "type": "string",
+                    "column": "工事担当_担当者名"
+                  },
+                  {
+                    "name": "BranchName",
+                    "type": "string",
+                    "column": "支店名"
+                  },
+                  {
+                    "name": "RegionCd",
+                    "type": "string",
+                    "column": "地区CD"
+                  },
+                  {
+                    "name": "RegionCdId",
+                    "type": "string",
+                    "column": "地区CD_ID"
+                  },
+                  {
+                    "name": "Id",
+                    "type": "string",
+                    "column": "ID"
+                  },
+                  {
+                    "name": "Pass",
+                    "type": "string",
+                    "column": "PASS"
+                  },
+                  {
+                    "name": "AdminFlag",
+                    "type": "string",
+                    "column": "管理者FLG"
+                  },
+                  {
+                    "name": "HandlerCdA",
+                    "type": "string",
+                    "column": "担当者CD_A"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vm_method": "F000Async",
+        "service_field_hint": "_fLoginService",
+        "iface_class": "IFLoginService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "フォーム",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "フォーム読み込み後",
+        "event_content": "アプリケーションが最新版であるか確認し、必要に応じて更新を行う。",
+        "module_id": "F002",
+        "notes": "Form_Load",
+        "action_type": "FILE",
+        "event_description_mapping": "アプリケーションが最新版であるか確認し、必要に応じて更新を行う。",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_Load()\n Dim sLvlCmnt    As String\n Dim sCmnt       As String\n CloseWindow Application.hWndAccessApp\n Dim Ref As Reference\n For Each Ref In References\n If Ref.Name = \"Excel\" Then\n Application.References.Remove Ref\n End If\n Next Ref\n sLvlCmnt = Me.ラベル400.Caption\n sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, \"/\") + 1, 5)\n sCmnt = Replace(Replace(DLookup(\"コメント\", \"Access配信日\"), \"最新版は\", \"\"), \"ver\", \"\")\n If sLvlCmnt <> sCmnt Then\n MsgBox \"最新版ではありません！\" & Chr(13) & \"インストールします。\", vbOKOnly + vbExclamation\n Call Judge_Inst\n End If\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F002_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [
+            "Common.Judge_Inst"
+          ],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. アプリケーションのウィンドウを閉じる"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. フォームのラベル400のキャプションから、バージョン情報の一部（'/'以降の5文字）を抽出する\n2.2. クエリを実行して最新バージョン情報を取得する\n[F002_SelQuery01]\n2.3. 取得したバージョン情報と抽出した文字列を比較する\n2.4. 比較結果に基づいて、メッセージを表示する\n2.5. 最新版でない場合、インストールを行う [refer: Common.Judge_Inst]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": ""
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_ContentRendered(object? sender, EventArgs e)",
+        "cs_name": "F002_ContentRendered",
+        "module_id": "F002",
+        "vba_handler": "Form_Load"
+      },
+      "service_context": {
+        "interface_method": "Task<F002Response> F002Async(F002Request request);",
+        "request": {
+          "class": "F002Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F002Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "VersionComment",
+              "type": "string?",
+              "nullable": true
+            }
+          ]
+        },
+        "vm_method": "F002Async",
+        "service_field_hint": "_fLoginService",
+        "iface_class": "IFLoginService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E003",
+        "title": "パスワード：",
+        "type": "テキストボックス",
+        "logical_name": "パスワード",
+        "physical_name": "txtPass",
+        "event_trigger": "更新後処理",
+        "event_content": "ユーザーIDとパスワードを検証し、認証されたユーザーのみがシステムにアクセスできるようにする。",
+        "module_id": "F003",
+        "notes": "txtPass_AfterUpdate",
+        "action_type": "VALID",
+        "event_description_mapping": "ユーザーIDとパスワードを検証し、認証されたユーザーのみがシステムにアクセスできるようにする。",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub txtPass_AfterUpdate()\nDim res\nDim res1\nOn Error GoTo Err_Shori\n DoCmd.SelectObject acForm, , True\n DoCmd.Minimize\n If IsNull(Me.txtID) Then\n MsgBox \"IDを入力してください\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n If IsNull(Me.txtPass) Then\n MsgBox \"パスワードを入力してください\"\n Me.txtPass.SetFocus\n Exit Sub\n End If\n DoCmd.SetWarnings False\n res1 = DLookup(\"管理者FLG\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"'\") & \"'\")\n If res1 = 0 Then\n MsgBox \"　　施工管理ではありませんのでログインできません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な方は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　依頼してください！！　TEL 0766-20-2211\"\n Exit Sub\n Else\n res = DLookup(\"Pass\", \"T_ID_pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"'\") & \"'\")\n If IsNull(res) Then\n MsgBox \"　　該当するID,PWがありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n End If\n If res = Me.txtPass Then\n DoCmd.Close acForm, \"F_Login\"\nDim RCount As Long\n RCount = DCount(\"*\", \"T023_地区CD設定\")\n If RCount = 0 Then\n DoCmd.RunMacro \"AutoExec_Restart\"\n Exit Sub\n Else\n Call タイマーを開く\n DoCmd.RunMacro \"AutoExec_A\"\n Exit Sub\n End If\n Exit Sub\n Else\n MsgBox \"　　パスワードが異なります！！\" & vbCrLf & vbCrLf & _\n \"　　わからない場合は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtPass.SetFocus\n End If\n Exit Sub\n Exit Sub\n MsgBox \"　　一般ユーザーは、【ログイン】できません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Exit Sub\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_Login"
+          ],
+          "reports": [],
+          "queries": [
+            "F003_SelQuery02"
+          ],
+          "macros": [
+            "AutoExec_Restart",
+            "AutoExec_A"
+          ],
+          "modules": [
+            "Module1.タイマーを開く"
+          ],
+          "tables": [
+            "T_ID_Pass",
+            "T023_地区CD設定"
+          ]
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 3,
+          "io": "I",
+          "logical_name": "パスワード",
+          "physical_name": "txtPass",
+          "item_attribute": "テキストボックス",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "入力マスク: Password",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E003"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. クエリを実行してデータを取得する\n[F003_SelQuery02]\n"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. フォーム上のIDフィールドが空の場合、ユーザーにIDの入力を促すメッセージを表示し、IDフィールドにフォーカスを設定する\n2.2. フォーム上のパスワードフィールドが空の場合、ユーザーにパスワードの入力を促すメッセージを表示し、パスワードフィールドにフォーカスを設定する\n2.3. IDとパスワードが両方入力された場合、次の処理を行う\n2.4. T_ID_Passテーブルから管理者フラグを取得する\n2.5. 管理者フラグが0の場合、ユーザーにログインできない旨のメッセージを表示する\n2.6. 管理者フラグが1の場合、T_ID_Passテーブルから該当するパスワードを取得する\n2.7. 取得したパスワードがフォーム上のパスワードフィールドに入力されたパスワードと一致しない場合、ユーザーにパスワードが異なる旨のメッセージを表示し、パスワードフィールドにフォーカスを設定する\n2.8. 取得したパスワードがフォーム上のパスワードフィールドに入力されたパスワードと一致する場合、次の処理を行う\n2.9. F_Loginフォームを閉じる\n2.10. T023_地区CD設定テーブルのレコード数をカウントする\n2.11. レコード数が0の場合、マクロ『AutoExec_Restart』を実行する [refer: AutoExec_Restart]\n2.12. レコード数が0以外の場合、タイマーを開くモジュールを呼び出す [refer: Module1.タイマーを開く]\n2.13. マクロ『AutoExec_A』を実行する [refer: AutoExec_A]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "3.1. 通信接続エラーが発生した場合、ユーザーにエラーメッセージを表示する"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F003_AfterUpdate(object sender, RoutedEventArgs e)",
+        "cs_name": "F003_AfterUpdate",
+        "module_id": "F003",
+        "vba_handler": "txtPass_AfterUpdate"
+      },
+      "service_context": {
+        "interface_method": "Task<F003Response> F003Async(F003Request request);",
+        "request": {
+          "class": "F003Request",
+          "properties": [
+            {
+              "name": "TxtID",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "TxtPass",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        },
+        "response": {
+          "class": "F003Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "AuthEntity",
+              "type": "IEnumerable<AuthEntity>?",
+              "nullable": true,
+              "entity_shape": {
+                "class": "AuthEntity",
+                "fields": [
+                  {
+                    "name": "RegionCdId",
+                    "type": "string",
+                    "column": "地区CD_ID"
+                  },
+                  {
+                    "name": "Id",
+                    "type": "string",
+                    "column": "ID"
+                  },
+                  {
+                    "name": "Pass",
+                    "type": "string",
+                    "column": "PASS"
+                  },
+                  {
+                    "name": "ConstructionHandlerName",
+                    "type": "string",
+                    "column": "工事担当_担当者名"
+                  },
+                  {
+                    "name": "HandlerCdA",
+                    "type": "string",
+                    "column": "担当者CD_A"
+                  },
+                  {
+                    "name": "BranchName",
+                    "type": "string",
+                    "column": "支店名"
+                  },
+                  {
+                    "name": "RegionCd",
+                    "type": "string",
+                    "column": "地区CD"
+                  },
+                  {
+                    "name": "AdminFlag",
+                    "type": "string",
+                    "column": "管理者FLG"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "T022PrefectureEntity",
+              "type": "IEnumerable<T022PrefectureEntity>?",
+              "nullable": true,
+              "entity_shape": {
+                "class": "T022PrefectureEntity",
+                "fields": [
+                  {
+                    "name": "PrefectureCd",
+                    "type": "decimal",
+                    "column": "都道府県CD"
+                  },
+                  {
+                    "name": "RegionCd",
+                    "type": "string",
+                    "column": "地区CD"
+                  },
+                  {
+                    "name": "StoreName",
+                    "type": "string",
+                    "column": "店所名"
+                  },
+                  {
+                    "name": "BranchCd",
+                    "type": "string",
+                    "column": "支店CD"
+                  },
+                  {
+                    "name": "DistrictCd",
+                    "type": "decimal",
+                    "column": "地方CD"
+                  },
+                  {
+                    "name": "Selected",
+                    "type": "decimal",
+                    "column": "選択"
+                  },
+                  {
+                    "name": "CollectionBranch",
+                    "type": "string",
+                    "column": "回収店所"
+                  },
+                  {
+                    "name": "RegionCdFirstTwoChars",
+                    "type": "string",
+                    "column": "地区CD頭２文字"
+                  },
+                  {
+                    "name": "BranchName",
+                    "type": "string",
+                    "column": "支店名"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vm_method": "F003Async",
+        "service_field_hint": "_fLoginService",
+        "iface_class": "IFLoginService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E008",
+        "title": "-",
+        "type": "ラベル",
+        "logical_name": "パスワードテーブルを開く",
+        "physical_name": "lblOpenPasswordTable",
+        "event_trigger": "ダブルクリック時",
+        "event_content": "ログインフォームとユーザー追加フォームを閉じ、システムの警告を無効にし、メニューバーとステータスバーを表示してから特定のクエリを開き、ウィンドウを最大化します。",
+        "module_id": "F008",
+        "notes": "パスワードテーブルを開く_DblClick",
+        "action_type": "UI",
+        "event_description_mapping": "ログインフォームとユーザー追加フォームを閉じ、システムの警告を無効にし、メニューバーとステータスバーを表示してから特定のクエリを開き、ウィンドウを最大化します。",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub パスワードテーブルを開く_DblClick(Cancel As Integer)\nDoCmd.Close acForm, \"F_Login\"\n DoCmd.Close acForm, \"F_ユーザー追加\", acSaveNo\n DoCmd.Close acForm, \"F_ユーザー追加_A\", acSaveNo\n DoCmd.SetWarnings False\n MenuBarTrue\n DoCmd.SelectObject acForm, \"\", True\nDim i As Long\ni = SysCmd(acSysCmdAccessVer)\n If i = 11 Then\n Call MenuBarTrueFalse(True)\n Else\n DoCmd.ShowToolbar \"Ribbon\", acToolbarYes\n End If\n DoCmd.SetWarnings False\n StatusBar_True\n DoCmd.OpenQuery \"Q000_T_ID_PASS\", acViewNormal, acEdit\n DoCmd.Maximize\n DoCmd.RunCommand acCmdAppMaximize\n DoCmd.Maximize\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_Login",
+            "F_ユーザー追加",
+            "F_ユーザー追加_A"
+          ],
+          "reports": [],
+          "queries": [
+            "F008_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [
+            "MenuBar.MenuBarTrueFalse",
+            "MenuBar.MenuBarTrue",
+            "MenuBar.StatusBar_True"
+          ],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 10,
+          "io": "",
+          "logical_name": "パスワードテーブルを開く",
+          "physical_name": "lblOpenPasswordTable",
+          "item_attribute": "ラベル",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E008"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. フォーム『F_Login』を閉じる\n1.2. フォーム『F_ユーザー追加』を保存せずに閉じる\n1.3. フォーム『F_ユーザー追加_A』を保存せずに閉じる\n1.4. システムの警告メッセージを無効にする"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. メニューバーを表示する [refer: MenuBarTrue]\n2.2. アクセスバージョン情報を取得する\n2.3. 取得したバージョン情報が11の場合、メニューバーとリボンを表示する [refer: MenuBarTrueFalse(True)]\n2.4. 取得したバージョン情報が11以外の場合、リボンを表示する\n2.5. ステータスバーを表示する [refer: StatusBar_True]\n2.6. 特定のクエリを開く\n[F008_SelQuery01]\n2.7. ウィンドウを最大化する"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F008_DblClick(object sender, MouseButtonEventArgs e)",
+        "cs_name": "F008_DblClick",
+        "module_id": "F008",
+        "vba_handler": "パスワードテーブルを開く_DblClick"
+      },
+      "service_context": {
+        "interface_method": "Task<F008Response> F008Async(F008Request request);",
+        "request": {
+          "class": "F008Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F008Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "Data",
+              "type": "IEnumerable<AuthEntity>?",
+              "nullable": true,
+              "entity_shape": {
+                "class": "AuthEntity",
+                "fields": [
+                  {
+                    "name": "RegionCdId",
+                    "type": "string",
+                    "column": "地区CD_ID"
+                  },
+                  {
+                    "name": "Id",
+                    "type": "string",
+                    "column": "ID"
+                  },
+                  {
+                    "name": "Pass",
+                    "type": "string",
+                    "column": "PASS"
+                  },
+                  {
+                    "name": "ConstructionHandlerName",
+                    "type": "string",
+                    "column": "工事担当_担当者名"
+                  },
+                  {
+                    "name": "HandlerCdA",
+                    "type": "string",
+                    "column": "担当者CD_A"
+                  },
+                  {
+                    "name": "BranchName",
+                    "type": "string",
+                    "column": "支店名"
+                  },
+                  {
+                    "name": "RegionCd",
+                    "type": "string",
+                    "column": "地区CD"
+                  },
+                  {
+                    "name": "AdminFlag",
+                    "type": "string",
+                    "column": "管理者FLG"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vm_method": "F008Async",
+        "service_field_hint": "_fLoginService",
+        "iface_class": "IFLoginService"
+      }
+    }
+  ]
+}

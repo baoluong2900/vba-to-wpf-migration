@@ -1,0 +1,524 @@
+{
+  "formName": "F_Login",
+  "phase": 1,
+  "sourceRoot": "D:\\aufuta\\source\\vba_brain-poc\\vba_brain-poc\\03_agents\\workflow\\source",
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "service:AMenuBarShowMacroWorkflow",
+          "label": "AMenuBarShowMacroWorkflow",
+          "type": "service",
+          "badge": "vba_brain.UI.WPF/Services/AMenuBarShowMacroWorkflow.cs",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:FLoginService",
+          "label": "FLoginService",
+          "type": "service",
+          "badge": "vba_brain.Application/Services/FLoginService.cs",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:_buildingAfterCollectionRepository",
+          "label": "_buildingAfterCollectionRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:_t022PrefectureRepository",
+          "label": "_t022PrefectureRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:T022PrefectureRepository",
+          "label": "T022PrefectureRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:BuildingAfterCollectionRepository",
+          "label": "BuildingAfterCollectionRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:_authRepository",
+          "label": "_authRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:buildingAfterCollectionRepository",
+          "label": "buildingAfterCollectionRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:t022PrefectureRepository",
+          "label": "t022PrefectureRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:authRepository",
+          "label": "authRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:AuthRepository",
+          "label": "AuthRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:M300SplashMOpenMacroWorkflow",
+          "label": "M300SplashMOpenMacroWorkflow",
+          "type": "service",
+          "badge": "vba_brain.UI.WPF/Services/M300SplashMOpenMacroWorkflow.cs",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:TIDPASSRepository",
+          "label": "TIDPASSRepository",
+          "type": "repository",
+          "badge": "vba_brain.Infrastructure/Persistence/Repositories/TIDPASSRepository.cs",
+          "vbaLabel": null,
+          "mappingStatus": "mapped"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "actual:0",
+          "source": "service:FLoginService",
+          "target": "repository:_buildingAfterCollectionRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:1",
+          "source": "service:FLoginService",
+          "target": "repository:_t022PrefectureRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:2",
+          "source": "service:FLoginService",
+          "target": "repository:T022PrefectureRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:3",
+          "source": "service:FLoginService",
+          "target": "repository:BuildingAfterCollectionRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:4",
+          "source": "service:FLoginService",
+          "target": "repository:_authRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:5",
+          "source": "service:FLoginService",
+          "target": "repository:buildingAfterCollectionRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:6",
+          "source": "service:FLoginService",
+          "target": "repository:t022PrefectureRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:7",
+          "source": "service:FLoginService",
+          "target": "repository:authRepository",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "actual:8",
+          "source": "service:FLoginService",
+          "target": "repository:AuthRepository",
+          "label": "uses repository"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "data": {
+        "id": "service:AMenuBarShowMacroWorkflow",
+        "label": "AMenuBarShowMacroWorkflow",
+        "type": "service",
+        "badge": "vba_brain.UI.WPF/Services/AMenuBarShowMacroWorkflow.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "service:FLoginService",
+        "label": "FLoginService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/FLoginService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:_buildingAfterCollectionRepository",
+        "label": "_buildingAfterCollectionRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:_t022PrefectureRepository",
+        "label": "_t022PrefectureRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:T022PrefectureRepository",
+        "label": "T022PrefectureRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:BuildingAfterCollectionRepository",
+        "label": "BuildingAfterCollectionRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:_authRepository",
+        "label": "_authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:buildingAfterCollectionRepository",
+        "label": "buildingAfterCollectionRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:t022PrefectureRepository",
+        "label": "t022PrefectureRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:authRepository",
+        "label": "authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:AuthRepository",
+        "label": "AuthRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "service:M300SplashMOpenMacroWorkflow",
+        "label": "M300SplashMOpenMacroWorkflow",
+        "type": "service",
+        "badge": "vba_brain.UI.WPF/Services/M300SplashMOpenMacroWorkflow.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    {
+      "data": {
+        "id": "repository:TIDPASSRepository",
+        "label": "TIDPASSRepository",
+        "type": "repository",
+        "badge": "vba_brain.Infrastructure/Persistence/Repositories/TIDPASSRepository.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "data": {
+        "id": "actual:0",
+        "source": "service:FLoginService",
+        "target": "repository:_buildingAfterCollectionRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:1",
+        "source": "service:FLoginService",
+        "target": "repository:_t022PrefectureRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:2",
+        "source": "service:FLoginService",
+        "target": "repository:T022PrefectureRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:3",
+        "source": "service:FLoginService",
+        "target": "repository:BuildingAfterCollectionRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:4",
+        "source": "service:FLoginService",
+        "target": "repository:_authRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:5",
+        "source": "service:FLoginService",
+        "target": "repository:buildingAfterCollectionRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:6",
+        "source": "service:FLoginService",
+        "target": "repository:t022PrefectureRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:7",
+        "source": "service:FLoginService",
+        "target": "repository:authRepository",
+        "label": "uses repository"
+      }
+    },
+    {
+      "data": {
+        "id": "actual:8",
+        "source": "service:FLoginService",
+        "target": "repository:AuthRepository",
+        "label": "uses repository"
+      }
+    }
+  ],
+  "stats": {
+    "nodes": 13,
+    "edges": 9,
+    "views": 0,
+    "viewmodels": 0,
+    "handlers": 0,
+    "services": 3,
+    "repositories": 10,
+    "navigation": 0
+  },
+  "files": [
+    "vba_brain.UI.WPF/ViewModels/FLoginViewModel.cs",
+    "ViewModels/FLoginViewModel.cs",
+    "vba_brain.UI.WPF/Services/AMenuBarShowMacroWorkflow.cs",
+    "vba_brain.Infrastructure/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/F_Login.g.i.cs",
+    "vba_brain.UI.WPF/App.xaml.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/F004_アフター_完了届Ⅱ_連続.g.i.cs",
+    "vba_brain.Application/obj/vba_brain.Application.csproj.nuget.dgspec.json",
+    "Views/FLoginView.xaml.cs",
+    "vba_brain.Infrastructure/Persistence/Repositories/AuthRepository.cs",
+    "vba_brain.Application/vba_brain.Application.csproj",
+    "vba_brain.Application/obj/project.assets.json",
+    "vba_brain.UI.WPF/appsettings.json",
+    "vba_brain.Domain/bin/Debug/net10.0/vba_brain.Domain.deps.json",
+    "vba_brain.Tests/obj/vba_brain.Tests.csproj.nuget.dgspec.json",
+    "vba_brain.UI.WPF/Views/FLoginView.xaml",
+    "vba_brain.Infrastructure/Persistence/Repositories/BuildingAfterCollectionRepository.cs",
+    "vba_brain.Domain/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+    "Domain/Interfaces/ITIDPASSRepository.cs",
+    "vba_brain.Domain/Entities/AuthEntity.cs",
+    "vba_brain.UI.WPF/Utils/ViewModelBase.cs",
+    "vba_brain.sln",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/vba_brain.UI.WPF.GlobalUsings.g.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/F_NavigationButtons.g.i.cs",
+    "vba_brain.Infrastructure/Persistence/Repositories/TIDPASSRepository.cs",
+    "Domain/Entities/BuildingAfterCollectionEntity.cs",
+    "vba_brain.Domain/Entities/TIDPASSEntity.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/App.g.i.cs",
+    "vba_brain.UI.WPF/vba_brain.UI.WPF.csproj",
+    ".vs/vba_brain/v18/DocumentLayout.backup.json",
+    "vba_brain.Domain/Entities/T022PrefectureEntity.cs",
+    "vba_brain.Application/DTOs/Requests/FLoginServiceRequests.cs",
+    "vba_brain.Infrastructure/Persistence/DapperContext.cs",
+    ".vs/vba_brain/v18/DocumentLayout.json",
+    "Domain/Entities/TIDPASSEntity.cs",
+    "vba_brain.UI.WPF/App.xaml",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/vba_brain.UI.WPF.designer.runtimeconfig.json",
+    "vba_brain.Domain/obj/Debug/net10.0/vba_brain.Domain.GlobalUsings.g.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/FLoginView.g.i.cs",
+    "vba_brain.Tests/vba_brain.Tests.csproj",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/AM報告書(施工)_印刷_PDF.g.i.cs",
+    "vba_brain.Application/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+    "vba_brain.Domain/DTOs/Auth/GetUserInfoDto.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/report/R005_作業報告書_支店施工管理_依頼情報のみPrintWindow.g.i.cs",
+    ".vs/VSWorkspaceState.json",
+    "vba_brain.Domain/vba_brain.Domain.csproj",
+    "vba_brain.Application/obj/Debug/net10.0/vba_brain.Application.AssemblyInfo.cs",
+    "vba_brain.Domain/Interfaces/IAuthRepository.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/AM依頼_印刷_PDF.g.i.cs",
+    "vba_brain.Application/Services/FLoginService.cs",
+    "vba_brain.Domain/obj/Debug/net10.0/vba_brain.Domain.AssemblyInfo.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/MainWindow.g.i.cs",
+    "vba_brain.UI.WPF/Services/M300SplashMOpenMacroWorkflow.cs",
+    "Infrastructure/Persistence/Repositories/BuildingAfterCollectionRepository.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/vba_brain.UI.WPF.designer.deps.json",
+    "vba_brain.Infrastructure/vba_brain.Infrastructure.csproj",
+    "Views/FLoginView.xaml",
+    "vba_brain.Infrastructure/obj/Debug/net10.0/vba_brain.Infrastructure.AssemblyInfo.cs",
+    "vba_brain.Domain/obj/vba_brain.Domain.csproj.nuget.dgspec.json",
+    "vba_brain.Infrastructure/obj/vba_brain.Infrastructure.csproj.nuget.dgspec.json",
+    "vba_brain.Domain/Interfaces/IT022PrefectureRepository.cs",
+    "vba_brain.Domain/Interfaces/IBuildingAfterCollectionRepository.cs",
+    "vba_brain.UI.WPF/DependencyInjection.cs",
+    "vba_brain.Domain/Interfaces/ITIDPASSRepository.cs",
+    "vba_brain.Tests/obj/project.assets.json",
+    "vba_brain.Infrastructure/Persistence/Repositories/T022PrefectureRepository.cs",
+    "vba_brain.Infrastructure/obj/Debug/net10.0/vba_brain.Infrastructure.GlobalUsings.g.cs",
+    "vba_brain.Application/obj/Debug/net10.0/vba_brain.Application.GlobalUsings.g.cs",
+    "Domain/Interfaces/IBuildingAfterCollectionRepository.cs",
+    "vba_brain.Domain/Entities/BuildingAfterCollectionEntity.cs",
+    "vba_brain.UI.WPF/Resources/Styles.xaml",
+    "Application/DTOs/Responses/FLoginServiceResponses.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/M_提出元.g.i.cs",
+    "vba_brain.Infrastructure/obj/project.assets.json",
+    "Application/DTOs/Requests/FLoginServiceRequests.cs",
+    "vba_brain.Tests/obj/Debug/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+    "vba_brain.Application/Interfaces/IFLoginService.cs",
+    "Application/Interfaces/IFLoginService.cs",
+    "Infrastructure/Persistence/Repositories/TIDPASSRepository.cs",
+    "vba_brain.UI.WPF/obj/project.assets.json",
+    "vba_brain.Infrastructure/Persistence/DapperColumnMapper.cs",
+    "Domain/DTOs/TIDPASS/GetUserInfoDto.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/F_PleaseWait.g.i.cs",
+    "vba_brain.Domain/DTOs/TIDPASS/GetUserInfoDto.cs",
+    "vba_brain.Domain/Entities/Base/BaseEntity.cs",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/Views/C000_MAINⅡ_未入金.g.i.cs",
+    "vba_brain.UI.WPF/obj/vba_brain.UI.WPF.csproj.nuget.dgspec.json",
+    "vba_brain.UI.WPF/obj/Debug/net10.0-windows/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+    "Application/Services/FLoginService.cs",
+    "vba_brain.UI.WPF/Views/FLoginView.xaml.cs",
+    "vba_brain.Tests/obj/Debug/net10.0/vba_brain.Tests.GlobalUsings.g.cs",
+    "vba_brain.Application/DTOs/Responses/FLoginServiceResponses.cs",
+    "vba_brain.Domain/obj/project.assets.json"
+  ]
+}
