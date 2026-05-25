@@ -1,0 +1,17 @@
+{
+  "F_Login": {
+    "最新版公開日": {
+      "control_name": "最新版公開日",
+      "wpf_type": "TextBox",
+      "control_source": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")",
+      "source_type": "DLookUp",
+      "table": "Access配信日",
+      "field": "コメント",
+      "field_en": "Comment1",
+      "criteria": "",
+      "suggested_property": "Comment1",
+      "suggested_method": "LoadComment1Async",
+      "status": "pending"
+    }
+  }
+}

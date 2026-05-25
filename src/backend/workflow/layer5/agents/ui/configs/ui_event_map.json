@@ -1,0 +1,76 @@
+{
+  "_comment": "UI Agent — control event → Module ID mapping. Quản lý bởi UI agent, độc lập với service/configs/method_names.json. Schema: {form_name: {module_id: {vba_handler, vm_method_name, control, event}}}. Auto-populated bởi tool_skeleton.py khi chạy.",
+  "F_Login": {
+    "F000": {
+      "vba_handler": "Form_Open",
+      "vm_method_name": "F000Async",
+      "control": "__form__",
+      "event": "onopen"
+    },
+    "F001": {
+      "vba_handler": "Form_KeyDown",
+      "vm_method_name": "F001Async",
+      "control": "__form__",
+      "event": "onkeydown"
+    },
+    "F002": {
+      "vba_handler": "Form_Load",
+      "vm_method_name": "F002Async",
+      "control": "__form__",
+      "event": "onload"
+    },
+    "F003": {
+      "vba_handler": "txtPass_AfterUpdate",
+      "vm_method_name": "F003Async",
+      "control": "txtPass",
+      "event": "afterupdate"
+    },
+    "F004": {
+      "vba_handler": "閉じる_Click",
+      "vm_method_name": "F004Async",
+      "control": "cmdClose",
+      "event": "onclick"
+    },
+    "F005": {
+      "vba_handler": "施工店情報_DblClick",
+      "vm_method_name": "F005Async",
+      "control": "lblShopInfo",
+      "event": "ondblclick"
+    },
+    "F006": {
+      "vba_handler": "lbl142_Click",
+      "vm_method_name": "F006Async",
+      "control": "lbl142",
+      "event": "onclick",
+      "_note": "参照マクロ: A_メニューバーを表示"
+    },
+    "F007": {
+      "vba_handler": "lbl142_DblClick",
+      "vm_method_name": "F007Async",
+      "control": "lbl142",
+      "event": "ondblclick",
+      "_note": "参照マクロ: M300_Splash(M)を開く"
+    },
+    "F008": {
+      "vba_handler": "パスワードテーブルを開く_DblClick",
+      "vm_method_name": "F008Async",
+      "control": "lblOpenPasswordTable",
+      "event": "ondblclick"
+    },
+    "F009": {
+      "vba_handler": "プロセス終了_DblClick",
+      "vm_method_name": "F009Async",
+      "control": "lblEndProcess",
+      "event": "ondblclick"
+    }
+  },
+  "AM報告書(施工)_印刷_PDF": {
+    "F000": {
+      "vba_handler": "Form_Open",
+      "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    }
+  }
+}
