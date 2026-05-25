@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:vba_brain.UI.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+             x:Class="vba_brain.UI.Avalonia.Views.EditView"
+             x:DataType="vm:EditViewModel">
+    
+    <Grid ColumnDefinitions="*,1.2*" Background="#11111B" Margin="15" ColumnSpacing="15">
+        <!-- LEFT: Edit Details Form -->
+        <Border Grid.Column="0" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Grid RowDefinitions="Auto,*,Auto,Auto">
+                <TextBlock Grid.Row="0" Text="Edit VBA Migration Record" Foreground="#CDD6F4" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="15" Margin="0,0,10,0">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="After Code *" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding AfterCd}" Height="34" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Customer Name *" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding CustomerNm}" Height="34" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Service Type" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <ComboBox ItemsSource="{Binding ServiceTypes}" SelectedItem="{Binding SelectedServiceType}" HorizontalAlignment="Stretch" Height="34" Background="#1E1E2E" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Payment Amount" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <NumericUpDown Value="{Binding PaymentAmt}" Minimum="0" FormatString="C2" Height="34" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Payment Status" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <ComboBox ItemsSource="{Binding PaymentFlags}" SelectedItem="{Binding SelectedPaymentFlg}" HorizontalAlignment="Stretch" Height="34" Background="#1E1E2E" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="District Code *" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding DistrictCd}" Height="34" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Receive Date" Foreground="#A6ADC8" FontSize="12" FontWeight="SemiBold"/>
+                            <DatePicker SelectedDate="{Binding ReceiveDtOffset}" HorizontalAlignment="Stretch" Background="#1E1E2E" BorderBrush="#313244"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="#F38BA8" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,10"/>
+
+                <!-- Actions -->
+                <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Grid.Column="0" Command="{Binding CancelCommand}" Content="Cancel" Height="38" Background="#313244" Foreground="#CDD6F4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="4"/>
+                    <Button Grid.Column="1" Command="{Binding UpdateCommand}" Content="Save Changes" Height="38" Background="#A6E3A1" Foreground="#11111B" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="4" IsEnabled="{Binding !IsBusy}"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- RIGHT: Related Records (Payments & Print History) -->
+        <Grid Grid.Column="1" RowDefinitions="*,*" RowSpacing="15">
+            <!-- TOP RIGHT: Payment Management -->
+            <Border Grid.Row="0" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="15">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Row="0" Text="Payment History" Foreground="#CDD6F4" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                    
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Payments}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderBrush="#313244" Background="#1E1E2E" Foreground="#CDD6F4">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Payment ID" Binding="{Binding PaymentId}" Width="100"/>
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:C}}" Width="120"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding PaymentDt, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="140"/>
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Add Payment form -->
+                    <Grid Grid.Row="2" ColumnDefinitions="140,*,110" ColumnSpacing="10" Margin="0,10,0,0" VerticalAlignment="Center">
+                        <NumericUpDown Grid.Column="0" Value="{Binding NewPaymentAmount}" Minimum="0" PlaceholderText="Amt" FormatString="C2" Height="32" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        <TextBox Grid.Column="1" Text="{Binding NewPaymentNote}" PlaceholderText="Payment details note" Height="32" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                        <Button Grid.Column="2" Command="{Binding AddPaymentCommand}" Content="Add Payment" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold" Height="32" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="4"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- BOTTOM RIGHT: Print Logs -->
+            <Border Grid.Row="1" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="15">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" Text="Print History" Foreground="#CDD6F4" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                    
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding PrintHistory}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" BorderBrush="#313244" Background="#1E1E2E" Foreground="#CDD6F4">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Print ID" Binding="{Binding PrintId}" Width="100"/>
+                            <DataGridTextColumn Header="Doc Type" Binding="{Binding DocType}" Width="120"/>
+                            <DataGridTextColumn Header="Printed At" Binding="{Binding PrintedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Width="180"/>
+                            <DataGridTextColumn Header="Operator" Binding="{Binding OperatorName}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

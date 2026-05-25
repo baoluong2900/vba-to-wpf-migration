@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:vba_brain.UI.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="vba_brain.UI.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="vba_brain - VBA Migration Dashboard"
+        WindowStartupLocation="CenterScreen"
+        Width="1100" Height="750">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Top App Bar -->
+        <Border Grid.Row="0" Background="#1E1E2E" Height="55" BorderBrush="#313244" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <Border Background="#89B4FA" CornerRadius="4" Width="8" Height="20" Margin="0,0,10,0"/>
+                    <TextBlock Text="vba_brain" Foreground="#CDD6F4" FontWeight="Bold" FontSize="18" VerticalAlignment="Center"/>
+                    <TextBlock Text="|" Foreground="#45475A" Margin="10,0" FontSize="18" VerticalAlignment="Center"/>
+                    <TextBlock Text="VBA Migration System (Avalonia)" Foreground="#A6ADC8" FontSize="14" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <Border Background="#313244" CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="Connected to database" Foreground="#A6E3A1" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content (Swapped View) -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" />
+    </Grid>
+</Window>

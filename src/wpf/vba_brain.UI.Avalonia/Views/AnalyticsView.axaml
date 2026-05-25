@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:vba_brain.UI.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="vba_brain.UI.Avalonia.Views.AnalyticsView"
+             x:DataType="vm:AnalyticsViewModel">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Background="#11111B" Margin="15">
+        <!-- TOP: Filter settings -->
+        <Border Grid.Row="0" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="Start Period (yyyy-MM)" Foreground="#A6ADC8" FontSize="11" FontWeight="Medium"/>
+                        <TextBox Text="{Binding StartPeriod}" Width="150" Height="32" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                    </StackPanel>
+                    
+                    <StackPanel Spacing="3">
+                        <TextBlock Text="End Period (yyyy-MM)" Foreground="#A6ADC8" FontSize="11" FontWeight="Medium"/>
+                        <TextBox Text="{Binding EndPeriod}" Width="150" Height="32" VerticalContentAlignment="Center" Background="#1E1E2E" Foreground="#CDD6F4" BorderBrush="#313244"/>
+                    </StackPanel>
+
+                    <Button Command="{Binding LoadAnalyticsCommand}" Content="Run Analysis" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold" Height="32" VerticalAlignment="Bottom" Padding="15,0" CornerRadius="4"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Command="{Binding CancelCommand}" Content="Back to Main" Background="#313244" Foreground="#CDD6F4" Height="32" VerticalAlignment="Bottom" Padding="15,0" CornerRadius="4"/>
+            </Grid>
+        </Border>
+
+        <!-- CENTER: Data Grid & Loading -->
+        <Border Grid.Row="1" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="10">
+            <Grid RowDefinitions="*,Auto">
+                <DataGrid Grid.Row="0" 
+                          ItemsSource="{Binding Data}" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True"
+                          GridLinesVisibility="All"
+                          BorderBrush="#313244"
+                          Background="#181825"
+                          Foreground="#CDD6F4">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Analysis Period" Binding="{Binding Period}" Width="200"/>
+                        <DataGridTextColumn Header="Service Category (Value)" Binding="{Binding Category}" Width="*"/>
+                        <DataGridTextColumn Header="Item Count" Binding="{Binding Count}" Width="150"/>
+                        <DataGridTextColumn Header="Aggregated Amount" Binding="{Binding TotalAmount, StringFormat={}{0:C}}" Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="4" IsVisible="{Binding IsBusy}" Foreground="#89B4FA" Background="Transparent"/>
+            </Grid>
+        </Border>
+
+        <!-- BOTTOM: Aggegrated metrics summary -->
+        <Border Grid.Row="2" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,15,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="Metrics Summary Summary" Foreground="#A6ADC8" FontSize="13" VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,30,0" VerticalAlignment="Center">
+                    <TextBlock Text="Total Count: " Foreground="#CDD6F4" FontSize="14" FontWeight="Medium"/>
+                    <TextBlock Text="{Binding TotalCountSum}" Foreground="#89B4FA" FontSize="14" FontWeight="Bold"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Total Value Amount: " Foreground="#CDD6F4" FontSize="14" FontWeight="Medium"/>
+                    <TextBlock Text="{Binding TotalAmountSum, StringFormat={}{0:C}}" Foreground="#A6E3A1" FontSize="14" FontWeight="Bold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
