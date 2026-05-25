@@ -49,7 +49,7 @@ export default function LandingPage() {
 
   // Terminal logger states
   const [logLines, setLogLines] = useState<string[]>([
-    "System initialized. Core gRPC agent listener active on port 50051.",
+    "System initialized. gRPC migration listener active on port 50051.",
     "Database connection factory initialized: MongoDB local state active."
   ]);
 
@@ -229,8 +229,8 @@ export default function LandingPage() {
 
         /* Pulsing neon outline */
         @keyframes neonPulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.1), inset 0 1px 1px rgba(255,255,255,0.02); }
-          50% { box-shadow: 0 0 35px rgba(99, 102, 241, 0.25), inset 0 1px 1px rgba(255,255,255,0.04); }
+          0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.15), inset 0 1px 1px rgba(255,255,255,0.02); }
+          50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.35), inset 0 1px 1px rgba(255,255,255,0.05); }
         }
 
         /* Laser pulse animation on path */
@@ -295,7 +295,7 @@ export default function LandingPage() {
 
         .animate-laser {
           position: absolute;
-          width: 50px;
+          width: 60px;
           height: 2px;
           background: linear-gradient(90deg, transparent, #818cf8, #a78bfa, transparent);
           animation: laserTravel 4s linear infinite;
@@ -317,7 +317,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[5%] left-[10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[150px] animate-glow-1"></div>
         <div className="absolute bottom-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[180px] animate-glow-2"></div>
-        <div className="absolute inset-0 grid-mesh opacity-80"></div>
+        <div className="absolute inset-0 grid-mesh opacity-85"></div>
 
         {/* Floating tech background symbols */}
         <div className="absolute top-[18%] right-[15%] opacity-20 text-neutral-600 animate-[floatingBadges_7s_ease-in-out_infinite] hidden lg:block">
@@ -337,19 +337,19 @@ export default function LandingPage() {
 
         <main className="flex-1 w-full flex flex-col">
           
-          {/* 1. Hero Section (Deluxe spacing + Entrance Animations) */}
-          <section className="w-full pt-44 pb-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
+          {/* 1. Hero & Value Proposition Section (Deluxe spacing: pt-64, pb-48) */}
+          <section className="w-full pt-64 pb-48 px-8 md:px-16 flex justify-center border-b border-neutral-900/80 relative">
             <div className="max-w-6xl w-full flex flex-col items-center text-center">
               
               {/* Sparkles Tech Tag */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-10 animate-fade-in-up"
+              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wider mb-12 animate-fade-in-up"
                 style={{ animationDelay: "100ms" }}>
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
                 <span>Next-Gen VBA to C# Scaffold Migration</span>
               </div>
               
               {/* Premium Heading */}
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.2] animate-fade-in-up"
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-wide text-white mb-12 leading-[1.3] animate-fade-in-up"
                 style={{ animationDelay: "250ms" }}>
                 Rebuild Legacy Access <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 shimmer-rainbow-text">
@@ -358,25 +358,25 @@ export default function LandingPage() {
               </h1>
               
               {/* Subtitle */}
-              <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-3xl mx-auto mb-16 font-light leading-relaxed animate-fade-in-up"
+              <p className="text-base sm:text-xl lg:text-2xl text-neutral-400 max-w-3xl mx-auto mb-20 font-light leading-relaxed tracking-wide animate-fade-in-up"
                 style={{ animationDelay: "400ms" }}>
                 An advanced multi-agent AI pipeline that extracts legacy Access database structures and business logic rules, generating modern WPF client architectures with absolute compile-safe accuracy.
               </p>
               
-              {/* Action Buttons (Spacious py-5 px-12) */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-28 w-full max-w-md mx-auto animate-fade-in-up"
+              {/* Action Buttons (Spacious py-6 px-16, gap-10, tracking-widest) */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-10 mb-36 w-full max-w-lg mx-auto animate-fade-in-up"
                 style={{ animationDelay: "550ms" }}>
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-black font-semibold py-5 px-12 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-black font-bold py-6 px-16 text-lg tracking-widest rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.05] hover:-translate-y-1 transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-5 px-12 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
+                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-bold py-6 px-16 text-lg tracking-widest rounded-full border border-neutral-800 hover:border-neutral-700 hover:scale-[1.05] hover:-translate-y-1 transition-all duration-300">
                   Explore Architecture
                 </Link>
               </div>
 
-              {/* Live Transformation Bridge Layout (Slick Visual Connection with wide gap-16) */}
-              <div className="w-full max-w-4xl bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 md:p-12 relative overflow-hidden animate-fade-in-up mb-10"
+              {/* Live Transformation Bridge Layout (Slick Visual Connection with wide gap-24 and padding-20) */}
+              <div className="w-full max-w-5xl bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-[32px] p-12 md:p-20 relative overflow-hidden animate-fade-in-up mb-24"
                 style={{ animationDelay: "650ms" }}>
                 
                 {/* Connecting Laser Line */}
@@ -384,59 +384,59 @@ export default function LandingPage() {
                   <div className="animate-laser top-[-1px] left-0"></div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-16 relative z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-16 md:gap-24 relative z-10">
                   
                   {/* Left Side: Legacy Tech Stack */}
-                  <div className="flex flex-col items-center gap-4 bg-neutral-900/30 border border-neutral-800/80 p-6 rounded-2xl w-full md:w-60 shadow-lg hover:scale-105 transition-all duration-300">
-                    <span className="text-[10px] font-bold text-cyan-400 tracking-[0.2em] uppercase">Legacy Stack</span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#0e2c36] flex items-center justify-center border border-cyan-800/50">
-                        <DatabaseZap className="w-4.5 h-4.5 text-cyan-400" />
+                  <div className="flex flex-col items-center gap-6 bg-neutral-900/30 border border-neutral-800/80 p-10 rounded-3xl w-full md:w-80 shadow-lg hover:scale-105 transition-all duration-300">
+                    <span className="text-xs font-bold text-cyan-400 tracking-[0.25em] uppercase">Legacy Stack</span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-[#0e2c36] flex items-center justify-center border border-cyan-800/50">
+                        <DatabaseZap className="w-5 h-5 text-cyan-400" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">Access Database</div>
-                        <div className="text-[10px] text-neutral-500 font-mono">.accdb / .mdb tables</div>
+                        <div className="text-base font-extrabold text-white">Access Database</div>
+                        <div className="text-xs text-neutral-500 font-mono mt-0.5">.accdb / .mdb tables</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#1a0e36] flex items-center justify-center border border-purple-800/50">
-                        <FileSpreadsheet className="w-4.5 h-4.5 text-purple-400" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-[#1a0e36] flex items-center justify-center border border-purple-800/50">
+                        <FileSpreadsheet className="w-5 h-5 text-purple-400" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">VBA Screen Code</div>
-                        <div className="text-[10px] text-neutral-500 font-mono">Macros & Functions</div>
+                        <div className="text-base font-extrabold text-white">VBA Screen Code</div>
+                        <div className="text-xs text-neutral-500 font-mono mt-0.5">Macros & Functions</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Middle Node: AI core converter */}
                   <div className="relative flex flex-col items-center select-none">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.4)] animate-pulse hover:scale-110 transition-transform duration-500 cursor-pointer">
-                      <Bot className="w-10 h-10 text-white animate-bounce" />
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.4)] animate-pulse hover:scale-110 transition-transform duration-500 cursor-pointer">
+                      <Bot className="w-12 h-12 text-white animate-bounce" />
                     </div>
-                    <div className="text-xs font-bold text-white mt-4 tracking-wider">vba_brain AI Core</div>
-                    <div className="text-[9px] text-indigo-400 mt-1 font-mono uppercase">Pipeline Active</div>
+                    <div className="text-sm font-bold text-white mt-6 tracking-widest uppercase">vba_brain AI Core</div>
+                    <div className="text-xs text-indigo-400 mt-2 font-mono uppercase">Pipeline Active</div>
                   </div>
 
-                  {/* Right Side: Modern Stack */}
-                  <div className="flex flex-col items-center gap-4 bg-neutral-900/30 border border-neutral-800/80 p-6 rounded-2xl w-full md:w-60 shadow-lg hover:scale-105 transition-all duration-300">
-                    <span className="text-[10px] font-bold text-rose-400 tracking-[0.2em] uppercase">Modern Target</span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#2d0e14] flex items-center justify-center border border-rose-800/50">
-                        <Cpu className="w-4.5 h-4.5 text-rose-400" />
+                  {/* Right Side: Modern Target */}
+                  <div className="flex flex-col items-center gap-6 bg-neutral-900/30 border border-neutral-800/80 p-10 rounded-3xl w-full md:w-80 shadow-lg hover:scale-105 transition-all duration-300">
+                    <span className="text-xs font-bold text-rose-400 tracking-[0.25em] uppercase">Modern Target</span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-[#2d0e14] flex items-center justify-center border border-rose-800/50">
+                        <Cpu className="w-5 h-5 text-rose-400 animate-spin-slow" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">Avalonia WPF Client</div>
-                        <div className="text-[10px] text-neutral-500 font-mono">Modern C# & MVVM</div>
+                        <div className="text-base font-extrabold text-white">Avalonia WPF Client</div>
+                        <div className="text-xs text-neutral-500 font-mono mt-0.5">Modern C# & MVVM</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#2c1d0e] flex items-center justify-center border border-amber-800/50">
-                        <Database className="w-4.5 h-4.5 text-amber-400" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-[#2c1d0e] flex items-center justify-center border border-amber-800/50">
+                        <Database className="w-5 h-5 text-amber-400" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">Oracle SQL Server</div>
-                        <div className="text-[10px] text-neutral-500 font-mono">Optimized Dialect</div>
+                        <div className="text-base font-extrabold text-white">Oracle SQL Server</div>
+                        <div className="text-xs text-neutral-500 font-mono mt-0.5">Optimized Dialect</div>
                       </div>
                     </div>
                   </div>
@@ -448,73 +448,73 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 2. Interactive Translation Playground (Spacious Stacked Layout) */}
-          <section className="w-full py-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/85 relative">
-            <div className="max-w-6xl w-full flex flex-col items-center gap-16">
+          {/* 2. Interactive Translation Playground (Stacked layout with py-56 and gap-28) */}
+          <section className="w-full py-56 px-8 md:px-16 flex justify-center border-b border-neutral-900/80 bg-[#050506]/85 relative">
+            <div className="max-w-6xl w-full flex flex-col items-center gap-28">
               
               {/* Header Title at the Top */}
               <div className="text-center max-w-3xl flex flex-col items-center">
-                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
+                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-5">
                   <ArrowRightLeft className="w-4 h-4" />
                   <span>Interactive Playground</span>
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-6">
+                <h2 className="text-4xl sm:text-6xl font-extrabold text-white tracking-wide mb-8 leading-[1.25]">
                   Watch legacy VBA evolve into C# in real time
                 </h2>
-                <p className="text-neutral-400 font-light leading-relaxed text-sm max-w-2xl">
+                <p className="text-neutral-300 font-light leading-loose text-base max-w-3xl">
                   Legacy Access databases embed logic directly inside forms and queries. vba_brain parses the entire AST representation, compiles logic trees, and outputs modern C# EF Core architecture.
                 </p>
               </div>
 
-              {/* Code Editor View (Widen from max-w-2xl to max-w-4xl for comfortable code display) */}
-              <div className="w-full max-w-4xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative"
+              {/* Code Editor View (Widen to max-w-6xl for premium spacious layout) */}
+              <div className="w-full max-w-6xl bg-[#090a0f] border border-neutral-800 rounded-[32px] overflow-hidden shadow-2xl relative"
                 style={{ animation: "neonPulse 5s ease-in-out infinite" }}>
                 
                 {/* Editor Top Bar */}
-                <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
+                <div className="flex items-center justify-between px-8 py-6 bg-[#0d0e15] border-b border-neutral-900 select-none">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                     <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                     <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                    <span className="text-[11px] font-mono text-neutral-500 ml-3">vba_brain_compiler_agent.py</span>
+                    <span className="text-[11px] font-mono text-neutral-550 ml-3">vba_brain_compiler_agent.py</span>
                   </div>
                   {isConverted && (
-                    <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all cursor-pointer">
+                    <button onClick={handleResetConversion} className="text-xs text-neutral-455 hover:text-white bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-full transition-all cursor-pointer font-semibold">
                       Reset Demo
                     </button>
                   )}
                 </div>
 
-                {/* Code Panel Split (Comfortable split columns) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-xs leading-relaxed">
+                {/* Code Panel Split (Comfortable split columns with text-sm sizes) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-sm leading-relaxed">
                   
                   {/* Left: Source VBA */}
-                  <div className="p-8 bg-[#0d0e15]/45 flex flex-col border-b md:border-b-0 md:border-r border-neutral-900">
-                    <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">VBA Source</div>
-                    <pre className="text-cyan-400/90 whitespace-pre overflow-x-auto">{vbaCode}</pre>
+                  <div className="p-12 bg-[#0d0e15]/45 flex flex-col border-b md:border-b-0 md:border-r border-neutral-900">
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-6 font-sans">VBA Source</div>
+                    <pre className="text-cyan-400/90 whitespace-pre overflow-x-auto leading-relaxed">{vbaCode}</pre>
                   </div>
 
                   {/* Right: Output C# */}
-                  <div className="p-8 bg-[#06070a] flex flex-col relative min-h-[260px]">
-                    <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">C# Target (EF Core)</div>
+                  <div className="p-12 bg-[#06070a] flex flex-col relative min-h-[300px]">
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-6 font-sans">C# Target (EF Core)</div>
                     
                     {isConverting && (
                       <div className="absolute inset-0 z-10 radar-scan-line pointer-events-none" />
                     )}
 
                     {!isConverting && !isConverted ? (
-                      <div className="flex-1 flex flex-col items-center justify-center text-center text-neutral-600 py-12 select-none">
-                        <Cpu className="w-6 h-6 mb-3 opacity-30 animate-pulse text-indigo-400" />
-                        <span>Awaiting compiler execution...</span>
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-neutral-600 py-16 select-none">
+                        <Cpu className="w-8 h-8 mb-4 opacity-30 animate-pulse text-indigo-400" />
+                        <span className="text-neutral-550 font-sans text-xs">Awaiting compiler execution...</span>
                       </div>
                     ) : isConverting ? (
-                      <div className="flex-1 flex flex-col items-center justify-center text-center text-indigo-400 py-12 select-none">
-                        <RefreshCw className="w-6 h-6 animate-spin mb-3 text-indigo-400" />
-                        <span className="text-[9px] tracking-wider uppercase font-bold text-neutral-400">{statusText}</span>
-                        <span className="text-sm font-bold mt-1 text-white">{progress}%</span>
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-indigo-400 py-16 select-none gap-4">
+                        <RefreshCw className="w-8 h-8 animate-spin text-indigo-400" />
+                        <span className="text-[10px] tracking-wider uppercase font-bold text-neutral-400 font-sans">{statusText}</span>
+                        <span className="text-lg font-bold text-white">{progress}%</span>
                       </div>
                     ) : (
-                      <pre className="text-purple-300/90 whitespace-pre overflow-x-auto animate-[fadeIn_0.5s_ease-out]">{csharpCode}</pre>
+                      <pre className="text-purple-300/90 whitespace-pre overflow-x-auto animate-[fadeIn_0.5s_ease-out] leading-relaxed">{csharpCode}</pre>
                     )}
                   </div>
                 </div>
@@ -524,7 +524,7 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-25">
                     <button
                       onClick={handleStartConversion}
-                      className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                      className="group flex items-center gap-3 bg-white text-black font-bold text-sm py-5 px-12 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer tracking-wider"
                     >
                       <Play className="w-3.5 h-3.5 text-black fill-black animate-pulse" />
                       <span>Execute Compiler Agent</span>
@@ -537,16 +537,16 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 3. Infinite logo / Feature Marquee */}
-          <section className="w-full py-10 bg-neutral-950 border-b border-neutral-900 overflow-hidden relative select-none">
-            <div className="animate-marquee-left flex gap-16 items-center">
+          {/* 3. Infinite logo / Feature Marquee (Spacious height) */}
+          <section className="w-full py-14 bg-neutral-950 border-b border-neutral-900 overflow-hidden relative select-none">
+            <div className="animate-marquee-left flex gap-24 items-center">
               {[
                 "Database Schemas Mapped", "VBA Form parsing", "WPF UI Generation", "SQL dialect conversion",
                 "Domain-Driven Design (DDD)", "EF Core scaffolding", "Oracle / SQL Server scripts", "MVVM Architecture Patterns",
                 "Database Schemas Mapped", "VBA Form parsing", "WPF UI Generation", "SQL dialect conversion",
                 "Domain-Driven Design (DDD)", "EF Core scaffolding", "Oracle / SQL Server scripts", "MVVM Architecture Patterns"
               ].map((text, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-xs font-mono text-neutral-500 uppercase tracking-widest whitespace-nowrap">
+                <div key={idx} className="flex items-center gap-3.5 text-sm font-mono text-neutral-450 uppercase tracking-widest whitespace-nowrap">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-500/50" />
                   <span>{text}</span>
                 </div>
@@ -554,25 +554,25 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 4. Interactive 5-Layer Workspace Tabs (Deluxe spacing) */}
-          <section id="timeline-tabs" className="w-full py-32 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
+          {/* 4. Interactive 5-Layer Workspace Tabs (Deluxe spacing py-56) */}
+          <section id="timeline-tabs" className="w-full py-56 px-8 md:px-16 flex justify-center relative border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
               {/* Header */}
-              <div className="text-center mb-20 max-w-2xl animate-fade-in-up"
+              <div className="text-center mb-24 max-w-2xl animate-fade-in-up"
                 style={{ animationDelay: "100ms" }}>
-                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
+                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-5">
                   <Layers className="w-4 h-4" />
                   <span>Pipeline Architecture</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">Interactive 5-Layer Workflow</h2>
-                <p className="text-neutral-400 text-sm font-light leading-relaxed">
+                <h2 className="text-4xl sm:text-6xl font-extrabold text-white tracking-wide mb-8">Interactive 5-Layer Workflow</h2>
+                <p className="text-neutral-300 text-base leading-loose font-light">
                   Select a layer below to inspect how legacy components are parsed, verified, and mapped before final C# code generation.
                 </p>
               </div>
 
-              {/* Tab Switcher Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-5xl mb-16 relative">
+              {/* Tab Switcher Grid (Spacious gap-6 and p-6) */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 w-full max-w-5xl mb-20 relative">
                 {layersInfo.map((l, idx) => {
                   const Icon = l.icon;
                   const isActive = activeLayerTab === idx;
@@ -580,7 +580,7 @@ export default function LandingPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveLayerTab(idx)}
-                      className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
+                      className={`flex flex-col items-center gap-4 p-6 rounded-[20px] border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                         isActive 
                           ? "bg-neutral-900/60 border-indigo-500/50 shadow-[0_0_25px_rgba(99,102,241,0.2)] text-white scale-[1.02]" 
                           : "bg-neutral-950/20 border-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-950/40 hover:scale-[1.01]"
@@ -591,98 +591,102 @@ export default function LandingPage() {
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 animate-[gradientMove_3s_linear_infinite]" />
                       )}
                       
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                        isActive ? "bg-indigo-500/10 text-indigo-400 scale-110" : "bg-neutral-900 text-neutral-500 group-hover:text-neutral-300"
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                        isActive ? "bg-indigo-500/10 text-indigo-400 scale-110" : "bg-neutral-900 text-neutral-550 group-hover:text-neutral-300"
                       }`}>
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-5 h-5" />
                       </div>
-                      <div className="flex flex-col items-center">
-                        <span className="text-[9px] font-bold tracking-wider uppercase opacity-60">{l.layer}</span>
-                        <span className="text-xs font-bold whitespace-nowrap mt-0.5">{l.title}</span>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] font-bold tracking-widest uppercase opacity-75">{l.layer}</span>
+                        <span className="text-xs font-bold whitespace-nowrap mt-1">{l.title}</span>
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Tab Content Box (Widen layout to lg:col-span-4 & lg:col-span-8, font text-xs) */}
-              <div className="w-full bg-[#050506] border border-neutral-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-all duration-500">
+              {/* Tab Content Box (Stretched vertical layout: Description at top, full width max-w-5xl terminal below) */}
+              <div className="w-full bg-[#050506] border border-neutral-800 rounded-[32px] p-12 md:p-16 shadow-2xl relative overflow-hidden transition-all duration-500 flex flex-col gap-12">
                 {/* Glow Ring Effect */}
                 <div 
                   className="absolute -top-1/2 -left-1/2 w-full h-full rounded-full blur-[140px] pointer-events-none transition-all duration-700"
                   style={{ background: layersInfo[activeLayerTab].glowColor }}
                 />
 
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                  
-                  {/* Text Details (Left 4 cols) */}
-                  <div className="lg:col-span-4 flex flex-col gap-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border w-fit ${layersInfo[activeLayerTab].badgeColor}`}>
+                {/* Top Section: Heading Info */}
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-neutral-900 pb-10">
+                  <div className="flex flex-col gap-3">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border w-fit ${layersInfo[activeLayerTab].badgeColor}`}>
                       <Sparkles className="w-3 h-3" />
                       {layersInfo[activeLayerTab].layer} Active
                     </span>
-                    <h3 className="text-2xl font-bold text-white leading-snug">{layersInfo[activeLayerTab].title}</h3>
-                    <p className="text-neutral-400 text-sm leading-relaxed font-light">
+                    <h3 className="text-3xl font-extrabold tracking-wide text-white leading-snug">{layersInfo[activeLayerTab].title}</h3>
+                  </div>
+                  <div className="max-w-xl">
+                    <p className="text-neutral-300 text-base leading-loose font-light">
                       {layersInfo[activeLayerTab].details}
                     </p>
-                    <Link 
-                      href={layersInfo[activeLayerTab].link} 
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 mt-4 group"
-                    >
-                      <span>Open {layersInfo[activeLayerTab].layer} Workspace</span>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
-                    </Link>
+                  </div>
+                </div>
+
+                {/* Bottom Section: Giant terminal dashboard (max-w-5xl, font text-sm, gap-10) */}
+                <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-10 font-mono text-sm bg-black/40 p-10 rounded-2xl border border-neutral-900">
+                  
+                  {/* Input Console */}
+                  <div className="flex flex-col gap-4">
+                    <div className="text-neutral-550 font-bold select-none font-sans uppercase tracking-widest text-[10px]">{layersInfo[activeLayerTab].inputLabel}</div>
+                    <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-850">{layersInfo[activeLayerTab].inputContent}</pre>
                   </div>
 
-                  {/* Terminal Demos (Right 8 cols, spacious p-8 with gaps, font text-xs) */}
-                  <div className="lg:col-span-8 w-full grid grid-cols-1 md:grid-cols-2 gap-8 font-mono text-xs bg-black/40 p-8 rounded-2xl border border-neutral-900">
-                    
-                    {/* Input */}
-                    <div className="flex flex-col gap-2">
-                      <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].inputLabel}</div>
-                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-5 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].inputContent}</pre>
-                    </div>
-
-                    {/* Output */}
-                    <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-6 md:pt-0 md:pl-8 flex flex-col gap-2">
-                      <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].outputLabel}</div>
-                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-5 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].outputContent}</pre>
-                    </div>
-
+                  {/* Output Console */}
+                  <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-8 md:pt-0 md:pl-10 flex flex-col gap-4">
+                    <div className="text-neutral-550 font-bold select-none font-sans uppercase tracking-widest text-[10px]">{layersInfo[activeLayerTab].outputLabel}</div>
+                    <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-6 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-850">{layersInfo[activeLayerTab].outputContent}</pre>
                   </div>
 
+                </div>
+
+                {/* Workspace action link */}
+                <div className="relative z-10 flex justify-end">
+                  <Link 
+                    href={layersInfo[activeLayerTab].link} 
+                    className="inline-flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-indigo-300 group tracking-wide"
+                  >
+                    <span>Open {layersInfo[activeLayerTab].layer} Workspace</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </Link>
                 </div>
               </div>
 
             </div>
           </section>
 
-          {/* 5. Technology Stack & Rules Section */}
-          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#030303] border-b border-neutral-900/80">
+          {/* 5. Technology Stack & Rules Section (py-56) */}
+          <section className="w-full py-56 px-8 md:px-16 flex justify-center bg-[#030303] border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
-              <div className="text-center mb-20 max-w-2xl">
-                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
+              <div className="text-center mb-24 max-w-2xl">
+                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-5">
                   <Code2 className="w-4 h-4" />
                   <span>Scaffold Architecture</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">Designed for Clean Code Standards</h2>
-                <p className="text-neutral-400 text-sm font-light leading-relaxed">
+                <h2 className="text-4xl sm:text-6xl font-extrabold text-white tracking-wide mb-8">Designed for Clean Code Standards</h2>
+                <p className="text-neutral-300 text-base leading-loose font-light">
                   Generated code is built to last. Our parser outputs strictly clean, modular, and testable code adhering to industry standards.
                 </p>
               </div>
 
-              {/* Rules Grid (Spacious p-8, responsive hover transitions) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+              {/* Rules Grid (gap-12, p-12 inside cards, text-sm/base descriptions) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
                 {[
                   { title: "Domain Driven Design (DDD)", desc: "WPF C# code is split cleanly into Domain, Application, Infrastructure, and UI projects to ensure modern enterprise architecture standards." },
                   { title: "Clean MVVM Separation", desc: "No hardcoded event handlers in WPF window files. Standardized ViewModel commands bind directly to reactive properties cleanly." },
                   { title: "Secure Config Files", desc: "All sensitive API keys, local ports, database credentials, and environments are ignored recursively, avoiding raw commits." }
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-3xl p-8 flex flex-col hover:border-neutral-800 hover:-translate-y-1 hover:shadow-2xl hover:bg-neutral-900/10 transition-all duration-500"
+                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-[32px] p-12 flex flex-col hover:border-neutral-800 hover:-translate-y-1 hover:shadow-2xl hover:bg-neutral-900/10 transition-all duration-500"
                     style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}>
-                    <div className="text-sm font-bold text-white mb-4">{item.title}</div>
-                    <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">{item.desc}</p>
+                    <div className="text-lg sm:text-xl font-bold tracking-wide text-white mb-6">{item.title}</div>
+                    <p className="text-sm sm:text-base text-neutral-300 font-light leading-loose">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -690,32 +694,32 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 6. Live Studio Activity Console */}
-          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/90 relative">
-            <div className="max-w-4xl w-full flex flex-col gap-6">
+          {/* 6. Live Studio Activity Console (py-56) */}
+          <section className="w-full py-56 px-8 md:px-16 flex justify-center bg-[#050506]/90 relative">
+            <div className="max-w-4xl w-full flex flex-col gap-10">
               <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase">
                 <Terminal className="w-4 h-4" />
                 <span>Live Studio activity console</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Real-time pipeline monitoring status</h2>
-              <div className="bg-[#090a0f] border border-neutral-850 p-6 md:p-8 rounded-3xl font-mono text-[10px] md:text-xs text-neutral-400 leading-relaxed shadow-2xl flex flex-col gap-3 min-h-[220px]">
-                <div className="flex items-center justify-between border-b border-neutral-900 pb-4 mb-2 select-none">
-                  <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">vba_brain_orchestrator.log</span>
-                  <div className="flex items-center gap-2 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-wide">Real-time pipeline monitoring status</h2>
+              <div className="bg-[#090a0f] border border-neutral-850 p-10 rounded-[32px] font-mono text-xs md:text-sm text-neutral-300 leading-relaxed shadow-2xl flex flex-col gap-6 min-h-[340px]">
+                <div className="flex items-center justify-between border-b border-neutral-900 pb-6 mb-4 select-none">
+                  <span className="text-[11px] text-neutral-500 font-bold uppercase tracking-wider">vba_brain_orchestrator.log</span>
+                  <div className="flex items-center gap-2 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-sans font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                     <span>Live Listener Active</span>
                   </div>
                 </div>
-                <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto">
+                <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto">
                   {logLines.map((line, idx) => (
                     <div key={idx} className="transition-all duration-500 animate-[fadeIn_0.5s_ease-out]">
-                      <span className="text-indigo-400 mr-2">&gt;</span>
+                      <span className="text-indigo-400 mr-2.5">&gt;</span>
                       <span>{line}</span>
                     </div>
                   ))}
                   <div className="flex items-center gap-1 mt-1">
-                    <span className="text-indigo-400 mr-2">&gt;</span>
-                    <span className="w-2 h-4 bg-indigo-400 animate-pulse"></span>
+                    <span className="text-indigo-400 mr-2.5">&gt;</span>
+                    <span className="w-2.5 h-4 bg-indigo-400 animate-pulse"></span>
                   </div>
                 </div>
               </div>
