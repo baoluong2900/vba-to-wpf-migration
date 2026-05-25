@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
   ArrowRight, DatabaseZap, Bot, FileSpreadsheet, Database, Cpu, 
-  Sparkles, ChevronRight, CheckCircle2, RefreshCw, Terminal, Play,
-  Code2, ArrowRightLeft, ShieldCheck, Zap, Layers, Network
+  Sparkles, ChevronRight, CheckCircle2, RefreshCw, Play,
+  Code2, ArrowRightLeft, ShieldCheck, Zap, Layers, Network, 
+  Terminal, DatabaseIcon, Workflow, FileCode
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -94,7 +95,7 @@ export default function LandingPage() {
       link: "/layer1",
       color: "cyan",
       badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-      glowColor: "rgba(34, 211, 238, 0.15)",
+      glowColor: "rgba(34, 211, 238, 0.18)",
       details: "The system scans the source Access database file (.accdb or .mdb). The AI Engine performs a deep structural analysis of schemas (Tables, Relations), UI definitions (Forms, Reports), and legacy VBA macros, translating them into a unified AST JSON format.",
       inputLabel: "Legacy Access Input:",
       inputContent: "📄 MS Access File\n  ├─ Tables: tblOrders\n  ├─ UI Form: F_OrderEntry\n  └─ VBA: Form_F_OrderEntry.cls",
@@ -110,7 +111,7 @@ export default function LandingPage() {
       link: "/layer2",
       color: "purple",
       badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-      glowColor: "rgba(168, 85, 247, 0.15)",
+      glowColor: "rgba(168, 85, 247, 0.18)",
       details: "AI Agents automatically parse the AST syntax tree to map complex data flow relationships (Dependency Graph). This isolates embedded legacy business logic from VBA modules, identifying how UI Forms interact with queries and tables.",
       inputLabel: "AST Elements:",
       inputContent: "• Form_Open event trigger\n• Command click handlers\n• VBA Recordset query dependencies",
@@ -126,7 +127,7 @@ export default function LandingPage() {
       link: "/layer3",
       color: "emerald",
       badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      glowColor: "rgba(52, 211, 153, 0.15)",
+      glowColor: "rgba(52, 211, 153, 0.18)",
       details: "Converts database schemas and extracted logic rules into standardized Excel technical specification sheets. This allows engineers to manually inspect, trace, and approve logical mappings before compiling to C#/.NET.",
       inputLabel: "Logic Mapping Trees:",
       inputContent: "• Screen Form specifications\n• Database layout relations\n• Logic rule extraction arrays",
@@ -142,7 +143,7 @@ export default function LandingPage() {
       link: "/layer4",
       color: "amber",
       badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      glowColor: "rgba(251, 191, 36, 0.15)",
+      glowColor: "rgba(251, 191, 36, 0.18)",
       details: "Translates proprietary MS Access SQL functions (e.g. IIf, Nz, InStr) into optimized database dialects like Oracle SQL, PostgreSQL, or SQL Server. The conversion agent supports direct schema validation and syntax checks.",
       inputLabel: "Access SQL Dialect:",
       inputContent: "SELECT OrderID, \n  IIf(Status='A', \n      'Active', 'Inactive') AS State\nFROM Orders;",
@@ -158,7 +159,7 @@ export default function LandingPage() {
       link: "/layer5",
       color: "rose",
       badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-      glowColor: "rgba(244, 63, 94, 0.15)",
+      glowColor: "rgba(244, 63, 94, 0.18)",
       details: "AI agents combine all intermediate pipeline structures to generate complete enterprise C# backend services and clean XAML files for modern WPF desktop views, strictly adhering to clean MVVM patterns.",
       inputLabel: "WPF UI XAML Layout:",
       inputContent: '<TextBox Text="{Binding OrderNo}" />\n<Button Content="Process"\n  Command="{Binding ProcessCmd}" />',
@@ -170,26 +171,60 @@ export default function LandingPage() {
   return (
     <div className="flex-1 w-full min-h-screen bg-[#030303] text-gray-200 font-sans selection:bg-indigo-500/30 selection:text-white relative overflow-x-hidden scroll-smooth">
       <style>{`
-        @keyframes glowPulse {
-          0%, 100% { opacity: 0.12; transform: scale(1); }
-          50% { opacity: 0.25; transform: scale(1.08); }
+        /* Premium entrance slide up animation */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(35px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        @keyframes floatEffect {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(1deg); }
+        
+        /* Floating animations for background components */
+        @keyframes floatingBadges {
+          0% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-15px) rotate(3deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
         }
-        @keyframes gradientMove {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+
+        @keyframes floatingSlow {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -30px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+          100% { transform: translate(0px, 0px) scale(1); }
         }
-        .animate-glow-1 { animation: glowPulse 10s ease-in-out infinite; }
-        .animate-glow-2 { animation: glowPulse 14s ease-in-out infinite 2s; }
-        .animate-float { animation: floatEffect 6s ease-in-out infinite; }
+
+        /* Pulsing neon outline */
+        @keyframes neonPulse {
+          0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.15), inset 0 1px 1px rgba(255,255,255,0.02); }
+          50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.35), inset 0 1px 1px rgba(255,255,255,0.05); }
+        }
+
+        @keyframes scanVertical {
+          0% { background-position: 0 -200px; }
+          100% { background-position: 0 400px; }
+        }
+
+        .animate-fade-in-up {
+          opacity: 0;
+          animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-glow-1 {
+          animation: floatingSlow 15s ease-in-out infinite;
+        }
+        .animate-glow-2 {
+          animation: floatingSlow 18s ease-in-out infinite alternate;
+        }
+
         .grid-mesh {
           background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.015) 1px, transparent 0);
           background-size: 24px 24px;
         }
+        
         .premium-border-beam {
           position: relative;
         }
@@ -205,20 +240,22 @@ export default function LandingPage() {
           mask-composite: exclude;
           pointer-events: none;
         }
+
         .shimmer-rainbow-text {
+          background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6, #60a5fa);
           background-size: 200% auto;
           -webkit-background-clip: text;
           background-clip: text;
-          animation: gradientMove 6s ease infinite;
+          animation: shine 8s linear infinite;
         }
+        @keyframes shine {
+          to { background-position: 200% center; }
+        }
+
         .radar-scan-line {
-          background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.15) 50%, transparent 100%);
+          background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.2) 50%, transparent 100%);
           background-size: 100% 200px;
           animation: scanVertical 2.5s linear infinite;
-        }
-        @keyframes scanVertical {
-          0% { background-position: 0 -200px; }
-          100% { background-position: 0 400px; }
         }
       `}</style>
 
@@ -227,6 +264,17 @@ export default function LandingPage() {
         <div className="absolute top-[5%] left-[10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[150px] animate-glow-1"></div>
         <div className="absolute bottom-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[180px] animate-glow-2"></div>
         <div className="absolute inset-0 grid-mesh opacity-80"></div>
+
+        {/* Floating tech background symbols */}
+        <div className="absolute top-[18%] right-[15%] opacity-20 text-neutral-600 animate-[floatingBadges_7s_ease-in-out_infinite] hidden lg:block">
+          <DatabaseIcon size={64} className="text-cyan-500/30" />
+        </div>
+        <div className="absolute top-[55%] left-[8%] opacity-20 text-neutral-600 animate-[floatingBadges_9s_ease-in-out_infinite_2s] hidden lg:block">
+          <Workflow size={72} className="text-purple-500/30" />
+        </div>
+        <div className="absolute bottom-[25%] left-[45%] opacity-15 text-neutral-600 animate-[floatingBadges_8s_ease-in-out_infinite_1s] hidden lg:block">
+          <FileCode size={56} className="text-rose-500/30" />
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col w-full min-h-screen">
@@ -235,32 +283,36 @@ export default function LandingPage() {
 
         <main className="flex-1 w-full flex flex-col">
           
-          {/* 1. Hero & Value Proposition Section (Deluxe py-36) */}
-          <section className="w-full pt-36 pb-28 px-6 md:px-12 flex justify-center border-b border-neutral-900/80">
+          {/* 1. Hero & Value Proposition Section (Deluxe spacing + Entrance Animations) */}
+          <section className="w-full pt-40 pb-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
             <div className="max-w-6xl w-full flex flex-col items-center text-center">
               
               {/* Sparkles Tech Tag */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-10 animate-pulse">
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-10 animate-fade-in-up"
+                style={{ animationDelay: "100ms" }}>
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Next-Gen VBA to C# Scaffold Migration</span>
               </div>
               
-              {/* Premium Heading (Deluxe margin mb-10) */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.15]">
+              {/* Premium Heading */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.12] animate-fade-in-up"
+                style={{ animationDelay: "250ms" }}>
                 Rebuild Legacy Access <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 shimmer-rainbow-text">
                   in 5 Intelligent Layers
                 </span>
               </h1>
               
-              {/* Subtitle (Deluxe margin mb-16) */}
-              <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-3xl mx-auto mb-16 font-light leading-relaxed">
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-3xl mx-auto mb-16 font-light leading-relaxed animate-fade-in-up"
+                style={{ animationDelay: "400ms" }}>
                 An advanced multi-agent AI pipeline that extracts legacy Access database structures and business logic rules, generating modern WPF client architectures with absolute compile-safe accuracy.
               </p>
               
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24 w-full max-w-md mx-auto">
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:scale-[1.03] transition-all duration-300">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-28 w-full max-w-md mx-auto animate-fade-in-up"
+                style={{ animationDelay: "550ms" }}>
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -269,8 +321,9 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Core Metrics (Spacious gap-8) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full mt-10">
+              {/* Core Metrics (Spacious gap-8 + entrance animations) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full mt-10 animate-fade-in-up"
+                style={{ animationDelay: "700ms" }}>
                 {[
                   { icon: Zap, value: "10x Faster", label: "Workflow Delivery", desc: "Reduces legacy manual rewrites from months to days." },
                   { icon: ShieldCheck, value: "99.8% Accuracy", label: "AST Structure Parsing", desc: "Verifies relational schemas, macros, and modules." },
@@ -278,8 +331,9 @@ export default function LandingPage() {
                 ].map((item, idx) => {
                   const Icon = item.icon;
                   return (
-                    <div key={idx} className="bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 text-left premium-border-beam relative hover:scale-[1.01] transition-all duration-300">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6">
+                    <div key={idx} className="bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 text-left premium-border-beam relative hover:scale-[1.03] hover:-translate-y-1 transition-all duration-500 shadow-xl"
+                      style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}>
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
                         <Icon className="w-5 h-5 text-indigo-400" />
                       </div>
                       <div className="text-xl font-bold text-white mb-1.5">{item.value}</div>
@@ -293,8 +347,8 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 2. Interactive Translation Playground (py-32, gap-16) */}
-          <section className="w-full py-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/80 relative">
+          {/* 2. Interactive Translation Playground */}
+          <section className="w-full py-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/85 relative">
             <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
               
               {/* Left Column: Text & Features */}
@@ -310,15 +364,15 @@ export default function LandingPage() {
                   Legacy Access databases embed logic directly inside forms and queries. vba_brain parses the entire AST representation, compiles logic trees, and outputs modern async/await C# architecture automatically.
                 </p>
                 <div className="flex flex-col gap-4 font-sans text-sm text-neutral-300 mt-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>Converts Access VBA syntax directly to async C#</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>Scaffolds modern EF Core models from tables</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>Validates compile success via compiler agents</span>
                   </div>
@@ -327,9 +381,10 @@ export default function LandingPage() {
 
               {/* Right Column: Code Editor View */}
               <div className="lg:col-span-7 w-full flex justify-center">
-                <div className="w-full max-w-2xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
+                <div className="w-full max-w-2xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative"
+                  style={{ animation: "neonPulse 5s ease-in-out infinite" }}>
                   
-                  {/* Editor Top Bar (Spacious padding py-5 px-6) */}
+                  {/* Editor Top Bar */}
                   <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
@@ -338,13 +393,13 @@ export default function LandingPage() {
                       <span className="text-[11px] font-mono text-neutral-500 ml-3">vba_brain_compiler_agent.py</span>
                     </div>
                     {isConverted && (
-                      <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all">
+                      <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all cursor-pointer">
                         Reset Demo
                       </button>
                     )}
                   </div>
 
-                  {/* Code Panel Split (Responsive layout, spacious padding p-8) */}
+                  {/* Code Panel Split */}
                   <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-[11px] leading-relaxed">
                     
                     {/* Left: Source VBA */}
@@ -368,12 +423,12 @@ export default function LandingPage() {
                         </div>
                       ) : isConverting ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center text-indigo-400 py-12 select-none">
-                          <RefreshCw className="w-6 h-6 animate-spin mb-3" />
+                          <RefreshCw className="w-6 h-6 animate-spin mb-3 text-indigo-400" />
                           <span className="text-[9px] tracking-wider uppercase font-bold text-neutral-400">{statusText}</span>
                           <span className="text-sm font-bold mt-1 text-white">{progress}%</span>
                         </div>
                       ) : (
-                        <pre className="text-purple-300/90 whitespace-pre overflow-x-auto">{csharpCode}</pre>
+                        <pre className="text-purple-300/90 whitespace-pre overflow-x-auto animate-[fadeIn_0.5s_ease-out]">{csharpCode}</pre>
                       )}
                     </div>
                   </div>
@@ -383,7 +438,7 @@ export default function LandingPage() {
                     <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-25">
                       <button
                         onClick={handleStartConversion}
-                        className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
+                        className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
                       >
                         <Play className="w-3.5 h-3.5 text-black fill-black" />
                         <span>Execute Compiler Agent</span>
@@ -397,7 +452,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 3. Interactive 5-Layer Workspace Tabs (py-32) */}
+          {/* 3. Interactive 5-Layer Workspace Tabs */}
           <section id="timeline-tabs" className="w-full py-32 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
@@ -413,8 +468,8 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* Tab Switcher Grid (Spacious gap-4, bigger padding) */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-5xl mb-16">
+              {/* Tab Switcher Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-5xl mb-16 relative">
                 {layersInfo.map((l, idx) => {
                   const Icon = l.icon;
                   const isActive = activeLayerTab === idx;
@@ -422,14 +477,19 @@ export default function LandingPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveLayerTab(idx)}
-                      className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                      className={`flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                         isActive 
-                          ? "bg-neutral-900/60 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)] text-white" 
-                          : "bg-neutral-950/20 border-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-950/40"
+                          ? "bg-neutral-900/60 border-indigo-500/50 shadow-[0_0_25px_rgba(99,102,241,0.2)] text-white scale-[1.02]" 
+                          : "bg-neutral-950/20 border-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-950/40 hover:scale-[1.01]"
                       }`}
                     >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                        isActive ? "bg-indigo-500/10 text-indigo-400" : "bg-neutral-900 text-neutral-500"
+                      {/* Active floating neon indicator */}
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 animate-[gradientMove_3s_linear_infinite]" />
+                      )}
+                      
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                        isActive ? "bg-indigo-500/10 text-indigo-400 scale-110" : "bg-neutral-900 text-neutral-500 group-hover:text-neutral-300"
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
@@ -442,7 +502,7 @@ export default function LandingPage() {
                 })}
               </div>
 
-              {/* Tab Content Box (Deluxe padding p-8 md:p-12, spacious gap-12) */}
+              {/* Tab Content Box (Deluxe padding) */}
               <div className="w-full bg-[#050506] border border-neutral-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-all duration-500">
                 {/* Glow Ring Effect */}
                 <div 
@@ -467,23 +527,23 @@ export default function LandingPage() {
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 mt-4 group"
                     >
                       <span>Open {layersInfo[activeLayerTab].layer} Workspace</span>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
                     </Link>
                   </div>
 
-                  {/* Terminal Demos (Right 7 cols, spacious p-6 with gaps) */}
+                  {/* Terminal Demos (Right 7 cols, spacious p-8 with gaps) */}
                   <div className="lg:col-span-7 w-full grid grid-cols-1 md:grid-cols-2 gap-8 font-mono text-[10px] bg-black/40 p-8 rounded-2xl border border-neutral-900">
                     
                     {/* Input */}
                     <div className="flex flex-col gap-2">
                       <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].inputLabel}</div>
-                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60">{layersInfo[activeLayerTab].inputContent}</pre>
+                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].inputContent}</pre>
                     </div>
 
-                    {/* Output (Spacious border separation) */}
+                    {/* Output */}
                     <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-6 md:pt-0 md:pl-8 flex flex-col gap-2">
                       <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].outputLabel}</div>
-                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60">{layersInfo[activeLayerTab].outputContent}</pre>
+                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].outputContent}</pre>
                     </div>
 
                   </div>
@@ -494,7 +554,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 4. Technology Stack & Rules Section (py-32, gap-8) */}
+          {/* 4. Technology Stack & Rules Section */}
           <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/85 border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
@@ -509,14 +569,15 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* Rules Grid (gap-8, p-8 inside cards, text-sm descriptions) */}
+              {/* Rules Grid (Spacious p-8, responsive hover transitions) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
                 {[
                   { title: "Domain Driven Design (DDD)", desc: "WPF C# code is split cleanly into Domain, Application, Infrastructure, and UI projects to ensure modern enterprise architecture standards." },
                   { title: "Clean MVVM Separation", desc: "No hardcoded event handlers in WPF window files. Standardized ViewModel commands bind directly to reactive properties cleanly." },
                   { title: "Secure Config Files", desc: "All sensitive API keys, local ports, database credentials, and environments are ignored recursively, avoiding raw commits." }
                 ].map((item, idx) => (
-                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-3xl p-8 flex flex-col hover:border-neutral-800 transition-all duration-300">
+                  <div key={idx} className="bg-neutral-950/50 border border-neutral-900 rounded-3xl p-8 flex flex-col hover:border-neutral-800 hover:-translate-y-1 hover:shadow-2xl hover:bg-neutral-900/10 transition-all duration-500"
+                    style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}>
                     <div className="text-sm font-bold text-white mb-4">{item.title}</div>
                     <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">{item.desc}</p>
                   </div>
