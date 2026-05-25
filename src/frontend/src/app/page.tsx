@@ -10,7 +10,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 // Scroll reveal component using Intersection Observer
-function RevealOnScroll({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+function RevealOnScroll({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -22,7 +22,7 @@ function RevealOnScroll({ children, delay = 0 }: { children: React.ReactNode; de
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.05 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -31,10 +31,11 @@ function RevealOnScroll({ children, delay = 0 }: { children: React.ReactNode; de
   return (
     <div
       ref={ref}
+      className={className}
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(40px)",
-        transition: `opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
+        transform: isVisible ? "translateY(0)" : "translateY(30px)",
+        transition: `opacity 1.0s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 1.0s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
       }}
     >
       {children}
@@ -266,15 +267,15 @@ export default function LandingPage() {
           {/* Hero Section */}
           <section className="w-full pt-28 pb-16 px-6 relative z-10 flex justify-center">
             <div className="max-w-5xl w-full flex flex-col justify-center items-center text-center">
-              <RevealOnScroll delay={0}>
+              <RevealOnScroll delay={0} className="w-full flex flex-col items-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-10 transition-all duration-500 hover:bg-indigo-500/20 hover:border-indigo-500/30">
                   <Sparkles className="w-4 h-4 text-indigo-400" />
                   Intelligent System Migration
                 </div>
               </RevealOnScroll>
               
-              <RevealOnScroll delay={150}>
-                <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.12]">
+              <RevealOnScroll delay={150} className="w-full flex flex-col items-center">
+                <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.12] text-center">
                   Legacy to Modern in <br className="hidden sm:block" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 shimmer-text">
                     5 Intelligent Layers
@@ -282,13 +283,13 @@ export default function LandingPage() {
                 </h1>
               </RevealOnScroll>
               
-              <RevealOnScroll delay={300}>
-                <p className="text-lg sm:text-xl text-gray-400/90 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+              <RevealOnScroll delay={300} className="w-full flex flex-col items-center">
+                <p className="text-lg sm:text-xl text-gray-400/90 max-w-2xl mx-auto mb-12 leading-relaxed font-light text-center">
                   vba_brain is an AI-powered enterprise pipeline that transforms outdated VBA and Access architectures into scalable, modern .NET environments with absolute precision.
                 </p>
               </RevealOnScroll>
               
-              <RevealOnScroll delay={450}>
+              <RevealOnScroll delay={450} className="w-full flex flex-col items-center">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
                   <Link href="/layer1" className="group relative inline-flex items-center justify-center gap-3 bg-white text-black font-semibold text-lg py-4 px-8 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_35px_rgba(255,255,255,0.25)]">
                     <span>Start Migration</span>
@@ -344,9 +345,9 @@ export default function LandingPage() {
               {steps.map((step, idx) => {
                 const Icon = step.icon;
                 return (
-                  <RevealOnScroll key={idx} delay={idx * 100}>
+                  <RevealOnScroll key={idx} delay={idx * 100} className="w-full sm:w-[240px] md:w-[220px] lg:w-[200px] xl:w-[220px] flex">
                     <Link href={step.link} 
-                      className="group relative flex flex-col bg-white/[0.01] border border-white/5 rounded-3xl p-8 hover:bg-white/[0.03] hover:border-white/10 transition-all duration-500 hover:-translate-y-2.5 overflow-hidden no-underline h-full w-full sm:w-[240px] md:w-[220px] lg:w-[200px] xl:w-[220px]"
+                      className="group relative flex flex-col bg-white/[0.01] border border-white/5 rounded-3xl p-8 hover:bg-white/[0.03] hover:border-white/10 transition-all duration-500 hover:-translate-y-2.5 overflow-hidden no-underline h-full w-full"
                       style={{
                         boxShadow: "inset 0 1px 1px rgba(255,255,255,0.02)"
                       }}
@@ -363,7 +364,7 @@ export default function LandingPage() {
                       <div className="relative z-10 flex flex-col h-full">
                         <div className="text-xs font-bold tracking-[0.2em] text-gray-500 mb-5">{step.layer.toUpperCase()}</div>
                         <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500 shadow-md">
-                          <Icon className={`w-6 h-6 ${step.iconColor}`} />
+                           <Icon className={`w-6 h-6 ${step.iconColor}`} />
                         </div>
                         
                         <h3 className="text-xl font-bold text-gray-100 mb-3 leading-snug group-hover:text-white transition-colors">{step.title}</h3>
