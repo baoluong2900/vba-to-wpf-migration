@@ -1,0 +1,4 @@
+TableName,LogicalName,PhysicalName,DataType,Length,Required
+TBL_Users,ID,ユーザーID,Long,4,True
+TBL_Users,Name,ユーザー名,Text,50,True
+TBL_Users,Age,年齢,Integer,2,False
