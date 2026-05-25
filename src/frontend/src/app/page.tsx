@@ -355,11 +355,11 @@ export default function LandingPage() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-28 w-full max-w-md mx-auto animate-fade-in-up"
                 style={{ animationDelay: "550ms" }}>
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4 px-10 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-4.5 px-9 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
+                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-4 px-10 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
                   Explore Architecture
                 </Link>
               </div>
