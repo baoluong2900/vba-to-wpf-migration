@@ -1,0 +1,46 @@
+# Existing content
+.kiro/
+.vscode/
+.antigravitycli/
+src/backend/logs/
+src/backend/workflow/layer2/output/
+src/backend/workflow/layer2/logs/
+*.log
+*.pyc
+__pycache__/
+
+# CRITICAL: ABSOLUTELY DO NOT PUSH RAW DATABASE EXPORTS OR BACKUPS
+data/database_json/
+backup/
+data/
+
+# Configuration & Local Environment Secrets
+config.json
+.env
+.env.*
+**/.env
+!.env.example
+src/backend/workflow/layer2/.env
+src/backend/layer3/scripts/layer3_output.env
+
+# .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.useros
+*.sln.docstates
+.vs/
+
+# Python Virtual Environments
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# OS/Editor Files
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
