@@ -6,7 +6,8 @@ import {
   ArrowRight, DatabaseZap, Bot, FileSpreadsheet, Database, Cpu, 
   Sparkles, ChevronRight, CheckCircle2, RefreshCw, Play,
   Code2, ArrowRightLeft, ShieldCheck, Zap, Layers, Network, 
-  Terminal, DatabaseIcon, Workflow, FileCode
+  Terminal, DatabaseIcon, Workflow, FileCode, ArrowUpRight, 
+  Monitor, Settings, HardDrive, Check, PlayCircle, Eye, RefreshCcw
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -46,8 +47,37 @@ export default function LandingPage() {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("Idle");
 
+  // Terminal logger states
+  const [logLines, setLogLines] = useState<string[]>([
+    "System initialized. Core gRPC agent listener active on port 50051.",
+    "Database connection factory initialized: MongoDB local state active."
+  ]);
+
   useEffect(() => {
     setIsMounted(true);
+
+    // Live terminal logger effect
+    const logs = [
+      "[Layer 1] Extracted AST JSON for F_Menu.frm (12 controls parsed).",
+      "[Layer 2] Mapping logic graph: Form F_Menu ──► Query Q_ActiveProducts.",
+      "[Layer 4] Converting Access SQL 'IIf(Stock <= 0, 0, Stock)' to Oracle SQL.",
+      "[Layer 5] Generating Avalonia WPF View Model: F_MenuViewModel.cs",
+      "[Layer 5] Compile validation: compile successful (0 errors, 2 warnings).",
+      "[Layer 3] Seeded Excel specification workbook: DD_ScreenDefinition.xlsx",
+      "[Layer 1] Parsed VBA Module Mod_CommonUtils: 14 functions mapped."
+    ];
+
+    let logIdx = 0;
+    const interval = setInterval(() => {
+      setLogLines(prev => {
+        const next = [...prev, `[${new Date().toLocaleTimeString("vi-VN")}] ${logs[logIdx]}`];
+        if (next.length > 8) next.shift(); // Keep logs clean
+        return next;
+      });
+      logIdx = (logIdx + 1) % logs.length;
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Run AI conversion simulation
@@ -183,7 +213,7 @@ export default function LandingPage() {
           }
         }
         
-        /* Floating animations for background components */
+        /* Floating background items */
         @keyframes floatingBadges {
           0% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-15px) rotate(3deg); }
@@ -199,13 +229,22 @@ export default function LandingPage() {
 
         /* Pulsing neon outline */
         @keyframes neonPulse {
-          0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.15), inset 0 1px 1px rgba(255,255,255,0.02); }
-          50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.35), inset 0 1px 1px rgba(255,255,255,0.05); }
+          0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.1), inset 0 1px 1px rgba(255,255,255,0.02); }
+          50% { box-shadow: 0 0 35px rgba(99, 102, 241, 0.25), inset 0 1px 1px rgba(255,255,255,0.04); }
         }
 
-        @keyframes scanVertical {
-          0% { background-position: 0 -200px; }
-          100% { background-position: 0 400px; }
+        /* Laser pulse animation on path */
+        @keyframes laserTravel {
+          0% { left: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { left: 100%; opacity: 0; }
+        }
+
+        /* Infinite Marquee translation */
+        @keyframes marqueeScroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
 
         .animate-fade-in-up {
@@ -213,12 +252,8 @@ export default function LandingPage() {
           animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .animate-glow-1 {
-          animation: floatingSlow 15s ease-in-out infinite;
-        }
-        .animate-glow-2 {
-          animation: floatingSlow 18s ease-in-out infinite alternate;
-        }
+        .animate-glow-1 { animation: floatingSlow 15s ease-in-out infinite; }
+        .animate-glow-2 { animation: floatingSlow 18s ease-in-out infinite alternate; }
 
         .grid-mesh {
           background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.015) 1px, transparent 0);
@@ -257,6 +292,25 @@ export default function LandingPage() {
           background-size: 100% 200px;
           animation: scanVertical 2.5s linear infinite;
         }
+
+        .animate-laser {
+          position: absolute;
+          width: 50px;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #818cf8, #a78bfa, transparent);
+          animation: laserTravel 4s linear infinite;
+        }
+
+        .animate-marquee-left {
+          display: flex;
+          width: max-content;
+          animation: marqueeScroll 30s linear infinite;
+        }
+
+        @keyframes scanVertical {
+          0% { background-position: 0 -200px; }
+          100% { background-position: 0 400px; }
+        }
       `}</style>
 
       {/* Futuristic Glow Backdrops */}
@@ -264,17 +318,6 @@ export default function LandingPage() {
         <div className="absolute top-[5%] left-[10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[150px] animate-glow-1"></div>
         <div className="absolute bottom-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[180px] animate-glow-2"></div>
         <div className="absolute inset-0 grid-mesh opacity-80"></div>
-
-        {/* Floating tech background symbols */}
-        <div className="absolute top-[18%] right-[15%] opacity-20 text-neutral-600 animate-[floatingBadges_7s_ease-in-out_infinite] hidden lg:block">
-          <DatabaseIcon size={64} className="text-cyan-500/30" />
-        </div>
-        <div className="absolute top-[55%] left-[8%] opacity-20 text-neutral-600 animate-[floatingBadges_9s_ease-in-out_infinite_2s] hidden lg:block">
-          <Workflow size={72} className="text-purple-500/30" />
-        </div>
-        <div className="absolute bottom-[25%] left-[45%] opacity-15 text-neutral-600 animate-[floatingBadges_8s_ease-in-out_infinite_1s] hidden lg:block">
-          <FileCode size={56} className="text-rose-500/30" />
-        </div>
       </div>
 
       <div className="relative z-10 flex flex-col w-full min-h-screen">
@@ -283,14 +326,14 @@ export default function LandingPage() {
 
         <main className="flex-1 w-full flex flex-col">
           
-          {/* 1. Hero & Value Proposition Section (Deluxe spacing + Entrance Animations) */}
-          <section className="w-full pt-40 pb-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
+          {/* 1. Hero Section (Deluxe spacing + Entrance Animations) */}
+          <section className="w-full pt-40 pb-28 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
             <div className="max-w-6xl w-full flex flex-col items-center text-center">
               
               {/* Sparkles Tech Tag */}
               <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-neutral-950/80 border border-neutral-800 text-indigo-300 text-xs font-semibold tracking-wide mb-10 animate-fade-in-up"
                 style={{ animationDelay: "100ms" }}>
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
                 <span>Next-Gen VBA to C# Scaffold Migration</span>
               </div>
               
@@ -312,7 +355,7 @@ export default function LandingPage() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-28 w-full max-w-md mx-auto animate-fade-in-up"
                 style={{ animationDelay: "550ms" }}>
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4.5 px-9 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -321,27 +364,74 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Core Metrics (Spacious gap-8 + entrance animations) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full mt-10 animate-fade-in-up"
-                style={{ animationDelay: "700ms" }}>
-                {[
-                  { icon: Zap, value: "10x Faster", label: "Workflow Delivery", desc: "Reduces legacy manual rewrites from months to days." },
-                  { icon: ShieldCheck, value: "99.8% Accuracy", label: "AST Structure Parsing", desc: "Verifies relational schemas, macros, and modules." },
-                  { icon: Network, value: "Clean MVVM", label: "WPF C# Code Generation", desc: "Compiles clean, native C# templates automatically." }
-                ].map((item, idx) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={idx} className="bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 text-left premium-border-beam relative hover:scale-[1.03] hover:-translate-y-1 transition-all duration-500 shadow-xl"
-                      style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}>
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110">
-                        <Icon className="w-5 h-5 text-indigo-400" />
+              {/* Live Transformation Bridge Layout (Slick Visual Connection) */}
+              <div className="w-full max-w-4xl bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 md:p-12 relative overflow-hidden animate-fade-in-up mb-10"
+                style={{ animationDelay: "650ms" }}>
+                
+                {/* Connecting Laser Line */}
+                <div className="absolute top-1/2 left-[20%] right-[20%] h-[1px] bg-neutral-800 -translate-y-1/2 hidden md:block">
+                  <div className="animate-laser top-[-1px] left-0"></div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-4 relative z-10">
+                  
+                  {/* Left Side: Legacy Tech Stack */}
+                  <div className="flex flex-col items-center gap-4 bg-neutral-900/30 border border-neutral-800/80 p-6 rounded-2xl w-full md:w-60 shadow-lg hover:scale-105 transition-all duration-300">
+                    <span className="text-[10px] font-bold text-cyan-400 tracking-[0.2em] uppercase">Legacy Stack</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#0e2c36] flex items-center justify-center border border-cyan-800/50">
+                        <DatabaseZap className="w-4.5 h-4.5 text-cyan-400" />
                       </div>
-                      <div className="text-xl font-bold text-white mb-1.5">{item.value}</div>
-                      <div className="text-xs font-semibold text-neutral-400 tracking-wide mb-3">{item.label}</div>
-                      <p className="text-xs text-neutral-500 leading-relaxed font-light">{item.desc}</p>
+                      <div className="text-left">
+                        <div className="text-sm font-bold text-white">Access Database</div>
+                        <div className="text-[10px] text-neutral-500 font-mono">.accdb / .mdb tables</div>
+                      </div>
                     </div>
-                  );
-                })}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#1a0e36] flex items-center justify-center border border-purple-800/50">
+                        <FileSpreadsheet className="w-4.5 h-4.5 text-purple-400" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-sm font-bold text-white">VBA Screen Code</div>
+                        <div className="text-[10px] text-neutral-500 font-mono">Macros & Functions</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle Node: AI core converter */}
+                  <div className="relative flex flex-col items-center select-none">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.4)] animate-pulse hover:scale-110 transition-transform duration-500 cursor-pointer">
+                      <Bot className="w-10 h-10 text-white animate-bounce" />
+                    </div>
+                    <div className="text-xs font-bold text-white mt-4 tracking-wider">vba_brain AI Core</div>
+                    <div className="text-[9px] text-indigo-400 mt-1 font-mono uppercase">Pipeline Active</div>
+                  </div>
+
+                  {/* Right Side: Modern Stack */}
+                  <div className="flex flex-col items-center gap-4 bg-neutral-900/30 border border-neutral-800/80 p-6 rounded-2xl w-full md:w-60 shadow-lg hover:scale-105 transition-all duration-300">
+                    <span className="text-[10px] font-bold text-rose-400 tracking-[0.2em] uppercase">Modern Target</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#2d0e14] flex items-center justify-center border border-rose-800/50">
+                        <Cpu className="w-4.5 h-4.5 text-rose-400 animate-spin-slow" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-sm font-bold text-white">Avalonia WPF Client</div>
+                        <div className="text-[10px] text-neutral-500 font-mono">Modern C# & MVVM</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#2c1d0e] flex items-center justify-center border border-amber-800/50">
+                        <Database className="w-4.5 h-4.5 text-amber-400" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-sm font-bold text-white">Oracle SQL Server</div>
+                        <div className="text-[10px] text-neutral-500 font-mono">Optimized Dialect</div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
 
             </div>
@@ -384,7 +474,7 @@ export default function LandingPage() {
                 <div className="w-full max-w-2xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative"
                   style={{ animation: "neonPulse 5s ease-in-out infinite" }}>
                   
-                  {/* Editor Top Bar */}
+                  {/* Editor Top Bar (Spacious padding py-5 px-6) */}
                   <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
@@ -399,7 +489,7 @@ export default function LandingPage() {
                     )}
                   </div>
 
-                  {/* Code Panel Split */}
+                  {/* Code Panel Split (Responsive layout, spacious padding p-8) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-[11px] leading-relaxed">
                     
                     {/* Left: Source VBA */}
@@ -440,7 +530,7 @@ export default function LandingPage() {
                         onClick={handleStartConversion}
                         className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
                       >
-                        <Play className="w-3.5 h-3.5 text-black fill-black" />
+                        <Play className="w-3.5 h-3.5 text-black fill-black animate-pulse" />
                         <span>Execute Compiler Agent</span>
                       </button>
                     </div>
@@ -452,12 +542,30 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 3. Interactive 5-Layer Workspace Tabs */}
+          {/* 3. Infinite logo / Feature Marquee (Slick tech banner) */}
+          <section className="w-full py-10 bg-neutral-950 border-b border-neutral-900 overflow-hidden relative select-none">
+            <div className="animate-marquee-left flex gap-16 items-center">
+              {[
+                "Database Schemas Mapped", "VBA Form parsing", "WPF UI Generation", "SQL dialect conversion",
+                "Domain-Driven Design (DDD)", "EF Core scaffolding", "Oracle / SQL Server scripts", "MVVM Architecture Patterns",
+                "Database Schemas Mapped", "VBA Form parsing", "WPF UI Generation", "SQL dialect conversion",
+                "Domain-Driven Design (DDD)", "EF Core scaffolding", "Oracle / SQL Server scripts", "MVVM Architecture Patterns"
+              ].map((text, idx) => (
+                <div key={idx} className="flex items-center gap-3 text-xs font-mono text-neutral-500 uppercase tracking-widest whitespace-nowrap">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500/50" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 4. Interactive 5-Layer Workspace Tabs (py-32) */}
           <section id="timeline-tabs" className="w-full py-32 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
               {/* Header */}
-              <div className="text-center mb-20 max-w-2xl">
+              <div className="text-center mb-20 max-w-2xl animate-fade-in-up"
+                style={{ animationDelay: "100ms" }}>
                 <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
                   <Layers className="w-4 h-4" />
                   <span>Pipeline Architecture</span>
@@ -554,8 +662,8 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 4. Technology Stack & Rules Section */}
-          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/85 border-b border-neutral-900/80">
+          {/* 5. Technology Stack & Rules Section */}
+          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#030303] border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
               <div className="text-center mb-20 max-w-2xl">
@@ -584,6 +692,38 @@ export default function LandingPage() {
                 ))}
               </div>
 
+            </div>
+          </section>
+
+          {/* 6. Live Studio Activity Console (Terminal Output at bottom) */}
+          <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/90 relative">
+            <div className="max-w-4xl w-full flex flex-col gap-6">
+              <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase">
+                <Terminal className="w-4 h-4" />
+                <span>Live Studio activity console</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Real-time pipeline monitoring status</h2>
+              <div className="bg-[#090a0f] border border-neutral-850 p-6 md:p-8 rounded-3xl font-mono text-[10px] md:text-xs text-neutral-400 leading-relaxed shadow-2xl flex flex-col gap-3 min-h-[220px]">
+                <div className="flex items-center justify-between border-b border-neutral-900 pb-4 mb-2 select-none">
+                  <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">vba_brain_orchestrator.log</span>
+                  <div className="flex items-center gap-2 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Live Listener Active</span>
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto">
+                  {logLines.map((line, idx) => (
+                    <div key={idx} className="transition-all duration-500 animate-[fadeIn_0.5s_ease-out]">
+                      <span className="text-indigo-400 mr-2">&gt;</span>
+                      <span>{line}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-indigo-400 mr-2">&gt;</span>
+                    <span className="w-2 h-4 bg-indigo-400 animate-pulse"></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
