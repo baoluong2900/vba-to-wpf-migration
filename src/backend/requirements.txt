@@ -1,0 +1,31 @@
+# Consolidated Python dependencies for the backend
+# Install: pip install -r requirements.txt
+
+# ── Web / gRPC Servers ────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+grpcio>=1.62.0
+grpcio-tools>=1.62.0
+
+# ── Agent / Chain Orchestration ──────────────────────────────────────────────
+langgraph>=0.2.0
+langchain-core>=0.2.0
+
+# ── Database ──────────────────────────────────────────────────────────────────
+pymongo>=4.8.0
+qdrant-client>=1.17.0
+
+# ── LLM Providers ─────────────────────────────────────────────────────────────
+google-generativeai>=0.8.0
+anthropic>=0.34.0
+openai>=1.40.0
+groq>=0.9.0
+langchain-groq>=0.1.0
+langchain-openai>=0.1.0
+requests>=2.32.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+jsonschema>=4.22.0
+jinja2>=3.1.0
+openpyxl>=3.1.0                     # Excel generation support
