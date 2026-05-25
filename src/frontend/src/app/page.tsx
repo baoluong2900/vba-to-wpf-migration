@@ -318,6 +318,17 @@ export default function LandingPage() {
         <div className="absolute top-[5%] left-[10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[150px] animate-glow-1"></div>
         <div className="absolute bottom-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[180px] animate-glow-2"></div>
         <div className="absolute inset-0 grid-mesh opacity-80"></div>
+
+        {/* Floating tech background symbols */}
+        <div className="absolute top-[18%] right-[15%] opacity-20 text-neutral-600 animate-[floatingBadges_7s_ease-in-out_infinite] hidden lg:block">
+          <DatabaseIcon size={64} className="text-cyan-500/30" />
+        </div>
+        <div className="absolute top-[55%] left-[8%] opacity-20 text-neutral-600 animate-[floatingBadges_9s_ease-in-out_infinite_2s] hidden lg:block">
+          <Workflow size={72} className="text-purple-500/30" />
+        </div>
+        <div className="absolute bottom-[25%] left-[45%] opacity-15 text-neutral-600 animate-[floatingBadges_8s_ease-in-out_infinite_1s] hidden lg:block">
+          <FileCode size={56} className="text-rose-500/30" />
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col w-full min-h-screen">
@@ -327,7 +338,7 @@ export default function LandingPage() {
         <main className="flex-1 w-full flex flex-col">
           
           {/* 1. Hero Section (Deluxe spacing + Entrance Animations) */}
-          <section className="w-full pt-40 pb-28 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
+          <section className="w-full pt-44 pb-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 relative">
             <div className="max-w-6xl w-full flex flex-col items-center text-center">
               
               {/* Sparkles Tech Tag */}
@@ -338,7 +349,7 @@ export default function LandingPage() {
               </div>
               
               {/* Premium Heading */}
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.12] animate-fade-in-up"
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-10 leading-[1.2] animate-fade-in-up"
                 style={{ animationDelay: "250ms" }}>
                 Rebuild Legacy Access <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 shimmer-rainbow-text">
@@ -352,28 +363,28 @@ export default function LandingPage() {
                 An advanced multi-agent AI pipeline that extracts legacy Access database structures and business logic rules, generating modern WPF client architectures with absolute compile-safe accuracy.
               </p>
               
-              {/* Action Buttons */}
+              {/* Action Buttons (Spacious py-5 px-12) */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-28 w-full max-w-md mx-auto animate-fade-in-up"
                 style={{ animationDelay: "550ms" }}>
-                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-black font-semibold py-4 px-10 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
+                <Link href="/layer1" className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-black font-semibold py-5 px-12 rounded-full shadow-[0_0_35px_rgba(99,102,241,0.25)] hover:scale-[1.04] hover:-translate-y-0.5 transition-all duration-300">
                   <span>Start Live Migration</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-4 px-10 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
+                <Link href="#timeline-tabs" className="w-full sm:w-auto inline-flex items-center justify-center bg-neutral-950 text-neutral-300 hover:text-white font-semibold py-5 px-12 rounded-full border border-neutral-800 hover:border-neutral-700 transition-all duration-300">
                   Explore Architecture
                 </Link>
               </div>
 
-              {/* Live Transformation Bridge Layout (Slick Visual Connection) */}
+              {/* Live Transformation Bridge Layout (Slick Visual Connection with wide gap-16) */}
               <div className="w-full max-w-4xl bg-neutral-950/40 backdrop-blur-md border border-neutral-900 rounded-3xl p-8 md:p-12 relative overflow-hidden animate-fade-in-up mb-10"
                 style={{ animationDelay: "650ms" }}>
                 
                 {/* Connecting Laser Line */}
-                <div className="absolute top-1/2 left-[20%] right-[20%] h-[1px] bg-neutral-800 -translate-y-1/2 hidden md:block">
+                <div className="absolute top-1/2 left-[20%] right-[20%] h-[1px] bg-neutral-800/80 -translate-y-1/2 hidden md:block">
                   <div className="animate-laser top-[-1px] left-0"></div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-4 relative z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-16 relative z-10">
                   
                   {/* Left Side: Legacy Tech Stack */}
                   <div className="flex flex-col items-center gap-4 bg-neutral-900/30 border border-neutral-800/80 p-6 rounded-2xl w-full md:w-60 shadow-lg hover:scale-105 transition-all duration-300">
@@ -412,7 +423,7 @@ export default function LandingPage() {
                     <span className="text-[10px] font-bold text-rose-400 tracking-[0.2em] uppercase">Modern Target</span>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-lg bg-[#2d0e14] flex items-center justify-center border border-rose-800/50">
-                        <Cpu className="w-4.5 h-4.5 text-rose-400 animate-spin-slow" />
+                        <Cpu className="w-4.5 h-4.5 text-rose-400" />
                       </div>
                       <div className="text-left">
                         <div className="text-sm font-bold text-white">Avalonia WPF Client</div>
@@ -437,112 +448,96 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 2. Interactive Translation Playground */}
+          {/* 2. Interactive Translation Playground (Spacious Stacked Layout) */}
           <section className="w-full py-32 px-6 md:px-12 flex justify-center border-b border-neutral-900/80 bg-[#050506]/85 relative">
-            <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            <div className="max-w-6xl w-full flex flex-col items-center gap-16">
               
-              {/* Left Column: Text & Features */}
-              <div className="lg:col-span-5 flex flex-col gap-8">
-                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase">
+              {/* Header Title at the Top */}
+              <div className="text-center max-w-3xl flex flex-col items-center">
+                <div className="inline-flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase mb-3">
                   <ArrowRightLeft className="w-4 h-4" />
                   <span>Interactive Playground</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
+                <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-6">
                   Watch legacy VBA evolve into C# in real time
                 </h2>
-                <p className="text-neutral-400 font-light leading-relaxed text-sm">
-                  Legacy Access databases embed logic directly inside forms and queries. vba_brain parses the entire AST representation, compiles logic trees, and outputs modern async/await C# architecture automatically.
+                <p className="text-neutral-400 font-light leading-relaxed text-sm max-w-2xl">
+                  Legacy Access databases embed logic directly inside forms and queries. vba_brain parses the entire AST representation, compiles logic trees, and outputs modern C# EF Core architecture.
                 </p>
-                <div className="flex flex-col gap-4 font-sans text-sm text-neutral-300 mt-2">
-                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Converts Access VBA syntax directly to async C#</span>
-                  </div>
-                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Scaffolds modern EF Core models from tables</span>
-                  </div>
-                  <div className="flex items-center gap-3 hover:translate-x-1 transition-transform duration-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Validates compile success via compiler agents</span>
-                  </div>
-                </div>
               </div>
 
-              {/* Right Column: Code Editor View */}
-              <div className="lg:col-span-7 w-full flex justify-center">
-                <div className="w-full max-w-2xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative"
-                  style={{ animation: "neonPulse 5s ease-in-out infinite" }}>
+              {/* Code Editor View (Widen from max-w-2xl to max-w-4xl for comfortable code display) */}
+              <div className="w-full max-w-4xl bg-[#090a0f] border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative"
+                style={{ animation: "neonPulse 5s ease-in-out infinite" }}>
+                
+                {/* Editor Top Bar */}
+                <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                    <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                    <span className="text-[11px] font-mono text-neutral-500 ml-3">vba_brain_compiler_agent.py</span>
+                  </div>
+                  {isConverted && (
+                    <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all cursor-pointer">
+                      Reset Demo
+                    </button>
+                  )}
+                </div>
+
+                {/* Code Panel Split (Comfortable split columns) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-xs leading-relaxed">
                   
-                  {/* Editor Top Bar (Spacious padding py-5 px-6) */}
-                  <div className="flex items-center justify-between px-6 py-5 bg-[#0d0e15] border-b border-neutral-900 select-none">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                      <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                      <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                      <span className="text-[11px] font-mono text-neutral-500 ml-3">vba_brain_compiler_agent.py</span>
-                    </div>
-                    {isConverted && (
-                      <button onClick={handleResetConversion} className="text-[10px] text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 px-3.5 py-1.5 rounded-full transition-all cursor-pointer">
-                        Reset Demo
-                      </button>
+                  {/* Left: Source VBA */}
+                  <div className="p-8 bg-[#0d0e15]/45 flex flex-col border-b md:border-b-0 md:border-r border-neutral-900">
+                    <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">VBA Source</div>
+                    <pre className="text-cyan-400/90 whitespace-pre overflow-x-auto">{vbaCode}</pre>
+                  </div>
+
+                  {/* Right: Output C# */}
+                  <div className="p-8 bg-[#06070a] flex flex-col relative min-h-[260px]">
+                    <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">C# Target (EF Core)</div>
+                    
+                    {isConverting && (
+                      <div className="absolute inset-0 z-10 radar-scan-line pointer-events-none" />
+                    )}
+
+                    {!isConverting && !isConverted ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-neutral-600 py-12 select-none">
+                        <Cpu className="w-6 h-6 mb-3 opacity-30 animate-pulse text-indigo-400" />
+                        <span>Awaiting compiler execution...</span>
+                      </div>
+                    ) : isConverting ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center text-indigo-400 py-12 select-none">
+                        <RefreshCw className="w-6 h-6 animate-spin mb-3 text-indigo-400" />
+                        <span className="text-[9px] tracking-wider uppercase font-bold text-neutral-400">{statusText}</span>
+                        <span className="text-sm font-bold mt-1 text-white">{progress}%</span>
+                      </div>
+                    ) : (
+                      <pre className="text-purple-300/90 whitespace-pre overflow-x-auto animate-[fadeIn_0.5s_ease-out]">{csharpCode}</pre>
                     )}
                   </div>
-
-                  {/* Code Panel Split (Responsive layout, spacious padding p-8) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 relative font-mono text-[11px] leading-relaxed">
-                    
-                    {/* Left: Source VBA */}
-                    <div className="p-8 bg-[#0d0e15]/40 flex flex-col border-b md:border-b-0 md:border-r border-neutral-900">
-                      <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">VBA Source</div>
-                      <pre className="text-cyan-400/90 whitespace-pre overflow-x-auto">{vbaCode}</pre>
-                    </div>
-
-                    {/* Right: Output C# */}
-                    <div className="p-8 bg-[#06070a] flex flex-col relative min-h-[240px]">
-                      <div className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-4">C# Target (EF Core)</div>
-                      
-                      {isConverting && (
-                        <div className="absolute inset-0 z-10 radar-scan-line pointer-events-none" />
-                      )}
-
-                      {!isConverting && !isConverted ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center text-neutral-600 py-12 select-none">
-                          <Cpu className="w-6 h-6 mb-3 opacity-30 animate-pulse text-indigo-400" />
-                          <span>Awaiting compiler execution...</span>
-                        </div>
-                      ) : isConverting ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center text-indigo-400 py-12 select-none">
-                          <RefreshCw className="w-6 h-6 animate-spin mb-3 text-indigo-400" />
-                          <span className="text-[9px] tracking-wider uppercase font-bold text-neutral-400">{statusText}</span>
-                          <span className="text-sm font-bold mt-1 text-white">{progress}%</span>
-                        </div>
-                      ) : (
-                        <pre className="text-purple-300/90 whitespace-pre overflow-x-auto animate-[fadeIn_0.5s_ease-out]">{csharpCode}</pre>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Compilation Play Trigger */}
-                  {!isConverting && !isConverted && (
-                    <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-25">
-                      <button
-                        onClick={handleStartConversion}
-                        className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-                      >
-                        <Play className="w-3.5 h-3.5 text-black fill-black animate-pulse" />
-                        <span>Execute Compiler Agent</span>
-                      </button>
-                    </div>
-                  )}
-
                 </div>
+
+                {/* Compilation Play Trigger */}
+                {!isConverting && !isConverted && (
+                  <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-[1.5px] flex items-center justify-center z-25">
+                    <button
+                      onClick={handleStartConversion}
+                      className="group flex items-center gap-2.5 bg-white text-black font-semibold text-xs py-4 px-8 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 text-black fill-black animate-pulse" />
+                      <span>Execute Compiler Agent</span>
+                    </button>
+                  </div>
+                )}
+
               </div>
 
             </div>
           </section>
 
-          {/* 3. Infinite logo / Feature Marquee (Slick tech banner) */}
+          {/* 3. Infinite logo / Feature Marquee */}
           <section className="w-full py-10 bg-neutral-950 border-b border-neutral-900 overflow-hidden relative select-none">
             <div className="animate-marquee-left flex gap-16 items-center">
               {[
@@ -559,7 +554,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 4. Interactive 5-Layer Workspace Tabs (py-32) */}
+          {/* 4. Interactive 5-Layer Workspace Tabs (Deluxe spacing) */}
           <section id="timeline-tabs" className="w-full py-32 px-6 md:px-12 flex justify-center relative border-b border-neutral-900/80">
             <div className="max-w-6xl w-full flex flex-col items-center">
               
@@ -610,7 +605,7 @@ export default function LandingPage() {
                 })}
               </div>
 
-              {/* Tab Content Box (Deluxe padding) */}
+              {/* Tab Content Box (Widen layout to lg:col-span-4 & lg:col-span-8, font text-xs) */}
               <div className="w-full bg-[#050506] border border-neutral-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-all duration-500">
                 {/* Glow Ring Effect */}
                 <div 
@@ -620,8 +615,8 @@ export default function LandingPage() {
 
                 <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                   
-                  {/* Text Details (Left 5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col gap-6">
+                  {/* Text Details (Left 4 cols) */}
+                  <div className="lg:col-span-4 flex flex-col gap-6">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border w-fit ${layersInfo[activeLayerTab].badgeColor}`}>
                       <Sparkles className="w-3 h-3" />
                       {layersInfo[activeLayerTab].layer} Active
@@ -639,19 +634,19 @@ export default function LandingPage() {
                     </Link>
                   </div>
 
-                  {/* Terminal Demos (Right 7 cols, spacious p-8 with gaps) */}
-                  <div className="lg:col-span-7 w-full grid grid-cols-1 md:grid-cols-2 gap-8 font-mono text-[10px] bg-black/40 p-8 rounded-2xl border border-neutral-900">
+                  {/* Terminal Demos (Right 8 cols, spacious p-8 with gaps, font text-xs) */}
+                  <div className="lg:col-span-8 w-full grid grid-cols-1 md:grid-cols-2 gap-8 font-mono text-xs bg-black/40 p-8 rounded-2xl border border-neutral-900">
                     
                     {/* Input */}
                     <div className="flex flex-col gap-2">
                       <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].inputLabel}</div>
-                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].inputContent}</pre>
+                      <pre className="text-neutral-400/90 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-5 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].inputContent}</pre>
                     </div>
 
                     {/* Output */}
                     <div className="border-t md:border-t-0 md:border-l border-neutral-900 pt-6 md:pt-0 md:pl-8 flex flex-col gap-2">
                       <div className="text-neutral-500 font-bold select-none">{layersInfo[activeLayerTab].outputLabel}</div>
-                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-4 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].outputContent}</pre>
+                      <pre className="text-indigo-300/95 whitespace-pre overflow-x-auto leading-relaxed bg-[#0d0e15]/20 p-5 rounded-xl border border-neutral-900/60 transition-all duration-300 hover:border-neutral-800">{layersInfo[activeLayerTab].outputContent}</pre>
                     </div>
 
                   </div>
@@ -695,7 +690,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* 6. Live Studio Activity Console (Terminal Output at bottom) */}
+          {/* 6. Live Studio Activity Console */}
           <section className="w-full py-32 px-6 md:px-12 flex justify-center bg-[#050506]/90 relative">
             <div className="max-w-4xl w-full flex flex-col gap-6">
               <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold tracking-wider uppercase">
