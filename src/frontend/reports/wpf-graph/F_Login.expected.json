@@ -1,0 +1,628 @@
+{
+  "success": true,
+  "graphKind": "wpf",
+  "rootId": "view:F_Login",
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "view:F_Login",
+          "label": "FLoginView",
+          "type": "view",
+          "badge": "Views/*.xaml",
+          "vbaLabel": "F_Login",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "viewmodel:F_Login",
+          "label": "FLoginViewModel",
+          "type": "viewmodel",
+          "badge": "ViewModels/*.cs",
+          "vbaLabel": "F_Login",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|Sleep Lib \"kernel32\"",
+          "label": "Sleep Lib \"kernel32\"",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::Sleep Lib \"kernel32\"",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|Form_Load",
+          "label": "OnLoaded",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::Form_Load",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:Common.Judge_Inst",
+          "label": "CommonJudgeInstModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "Common.Judge_Inst",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:Access配信日",
+          "label": "AccessDeliveryDateRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": "Access配信日",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|Form_Open",
+          "label": "OnOpened",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::Form_Open",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:Delete_Window.SetEnabledState",
+          "label": "DeleteWindowSetEnabledStateModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "Delete_Window.SetEnabledState",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:SetWindowPos.SetWindowTop",
+          "label": "SetWindowPosSetWindowTopModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "SetWindowPos.SetWindowTop",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:EmptyClipboard",
+          "label": "EmptyClipboardModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "EmptyClipboard",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:CloseClipboard",
+          "label": "CloseClipboardModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "CloseClipboard",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:EnableShiftKey.SwitchShiftKey",
+          "label": "EnableShiftKeySwitchShiftKeyModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "EnableShiftKey.SwitchShiftKey",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:mdlSetAppStyle.SetAccWinStyle",
+          "label": "MdlSetAppStyleSetAccWinStyleModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "mdlSetAppStyle.SetAccWinStyle",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:Q000_T_LoginUser",
+          "label": "Q000TLoginUserRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": "Q000_T_LoginUser",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|txtPass_AfterUpdate",
+          "label": "LoginCommand",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::txtPass_AfterUpdate",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:macro:AutoExec_Restart",
+          "label": "AutoExecRestartMacroCommand",
+          "type": "handler",
+          "badge": "ICommand (macro)",
+          "vbaLabel": "AutoExec_Restart",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:macro:AutoExec_A",
+          "label": "AutoExecAMacroCommand",
+          "type": "handler",
+          "badge": "ICommand (macro)",
+          "vbaLabel": "AutoExec_A",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:macro:M300_Splash(M)Ⅱを開く",
+          "label": "M300SplashMIIOpenMacroCommand",
+          "type": "handler",
+          "badge": "ICommand (macro)",
+          "vbaLabel": "M300_Splash(M)Ⅱを開く",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:Module1.タイマーを開く",
+          "label": "Module1ModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "Module1.タイマーを開く",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "label": "OpenPasswordTableCommand",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::パスワードテーブルを開く_DblClick",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:MenuBar.MenuBarTrueFalse",
+          "label": "MenuBarMenuBarTrueFalseModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "MenuBar.MenuBarTrueFalse",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:MenuBar.MenuBarTrue",
+          "label": "MenuBarMenuBarTrueModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "MenuBar.MenuBarTrue",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "service:module:MenuBar.StatusBar_True",
+          "label": "MenuBarStatusBarTrueModuleService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "MenuBar.StatusBar_True",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "repository:Q000_T_ID_PASS",
+          "label": "Q000TIDPASSRepository",
+          "type": "repository",
+          "badge": "Infrastructure/Repositories",
+          "vbaLabel": "Q000_T_ID_PASS",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|プロセス終了_DblClick",
+          "label": "ExitApplicationCommand",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::プロセス終了_DblClick",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|閉じる_Click",
+          "label": "CloseCommand",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::閉じる_Click",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|Login_Log_Append",
+          "label": "Login_Log_Append",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::Login_Log_Append",
+          "mappingStatus": "fallback"
+        }
+      },
+      {
+        "data": {
+          "id": "handler:F_Login|Form_KeyDown",
+          "label": "HandleFormKeyDown",
+          "type": "handler",
+          "badge": "ICommand",
+          "vbaLabel": "F_Login::Form_KeyDown",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:F_Login|Form_Load",
+          "label": "LoadedService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "F_Login::Form_Load",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:F_Login|Form_Open",
+          "label": "OpenedService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "F_Login::Form_Open",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:navigation",
+          "label": "NavigationService",
+          "type": "navigation",
+          "badge": "Application/Navigation",
+          "vbaLabel": "DoCmd.OpenForm/OpenReport",
+          "mappingStatus": "mapped"
+        }
+      },
+      {
+        "data": {
+          "id": "service:F_Login|パスワードテーブルを開く_DblClick",
+          "label": "OpenPasswordTableService",
+          "type": "service",
+          "badge": "Application/Services",
+          "vbaLabel": "F_Login::パスワードテーブルを開く_DblClick",
+          "mappingStatus": "mapped"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e:view:F_Login__viewmodel:F_Login__0",
+          "source": "view:F_Login",
+          "target": "viewmodel:F_Login",
+          "label": "DataContext"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|Sleep Lib \"kernel32\"__1",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|Sleep Lib \"kernel32\"",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|Form_Load__2",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|Form_Load",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Load__service:module:Common.Judge_Inst__3",
+          "source": "handler:F_Login|Form_Load",
+          "target": "service:module:Common.Judge_Inst",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Load__service:F_Login|Form_Load__4",
+          "source": "handler:F_Login|Form_Load",
+          "target": "service:F_Login|Form_Load",
+          "label": "calls service"
+        }
+      },
+      {
+        "data": {
+          "id": "e:service:F_Login|Form_Load__repository:Access配信日__5",
+          "source": "service:F_Login|Form_Load",
+          "target": "repository:Access配信日",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|Form_Open__6",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|Form_Open",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:Delete_Window.SetEnabledState__7",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:Delete_Window.SetEnabledState",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:SetWindowPos.SetWindowTop__8",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:SetWindowPos.SetWindowTop",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:EmptyClipboard__9",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:EmptyClipboard",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:CloseClipboard__10",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:CloseClipboard",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:EnableShiftKey.SwitchShiftKey__11",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:EnableShiftKey.SwitchShiftKey",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:module:mdlSetAppStyle.SetAccWinStyle__12",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:module:mdlSetAppStyle.SetAccWinStyle",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|Form_Open__service:F_Login|Form_Open__13",
+          "source": "handler:F_Login|Form_Open",
+          "target": "service:F_Login|Form_Open",
+          "label": "calls service"
+        }
+      },
+      {
+        "data": {
+          "id": "e:service:F_Login|Form_Open__repository:Q000_T_LoginUser__14",
+          "source": "service:F_Login|Form_Open",
+          "target": "repository:Q000_T_LoginUser",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|txtPass_AfterUpdate__15",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|txtPass_AfterUpdate",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|txtPass_AfterUpdate__handler:macro:AutoExec_Restart__16",
+          "source": "handler:F_Login|txtPass_AfterUpdate",
+          "target": "handler:macro:AutoExec_Restart",
+          "label": "calls"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:macro:AutoExec_Restart__service:navigation__17",
+          "source": "handler:macro:AutoExec_Restart",
+          "target": "service:navigation",
+          "label": "uses navigation"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|txtPass_AfterUpdate__handler:macro:AutoExec_A__18",
+          "source": "handler:F_Login|txtPass_AfterUpdate",
+          "target": "handler:macro:AutoExec_A",
+          "label": "calls"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:macro:AutoExec_A__service:navigation__19",
+          "source": "handler:macro:AutoExec_A",
+          "target": "service:navigation",
+          "label": "uses navigation"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:macro:AutoExec_A__handler:macro:M300_Splash(M)Ⅱを開く__20",
+          "source": "handler:macro:AutoExec_A",
+          "target": "handler:macro:M300_Splash(M)Ⅱを開く",
+          "label": "calls"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:macro:M300_Splash(M)Ⅱを開く__service:navigation__21",
+          "source": "handler:macro:M300_Splash(M)Ⅱを開く",
+          "target": "service:navigation",
+          "label": "uses navigation"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|txtPass_AfterUpdate__service:module:Module1.タイマーを開く__22",
+          "source": "handler:F_Login|txtPass_AfterUpdate",
+          "target": "service:module:Module1.タイマーを開く",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|txtPass_AfterUpdate__service:navigation__23",
+          "source": "handler:F_Login|txtPass_AfterUpdate",
+          "target": "service:navigation",
+          "label": "uses navigation"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|パスワードテーブルを開く_DblClick__24",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|パスワードテーブルを開く_DblClick__service:module:MenuBar.MenuBarTrueFalse__25",
+          "source": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "service:module:MenuBar.MenuBarTrueFalse",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|パスワードテーブルを開く_DblClick__service:module:MenuBar.MenuBarTrue__26",
+          "source": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "service:module:MenuBar.MenuBarTrue",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|パスワードテーブルを開く_DblClick__service:module:MenuBar.StatusBar_True__27",
+          "source": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "service:module:MenuBar.StatusBar_True",
+          "label": "references"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|パスワードテーブルを開く_DblClick__service:F_Login|パスワードテーブルを開く_DblClick__28",
+          "source": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "service:F_Login|パスワードテーブルを開く_DblClick",
+          "label": "calls service"
+        }
+      },
+      {
+        "data": {
+          "id": "e:service:F_Login|パスワードテーブルを開く_DblClick__repository:Q000_T_ID_PASS__29",
+          "source": "service:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "repository:Q000_T_ID_PASS",
+          "label": "uses repository"
+        }
+      },
+      {
+        "data": {
+          "id": "e:handler:F_Login|パスワードテーブルを開く_DblClick__service:navigation__30",
+          "source": "handler:F_Login|パスワードテーブルを開く_DblClick",
+          "target": "service:navigation",
+          "label": "uses navigation"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|プロセス終了_DblClick__31",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|プロセス終了_DblClick",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|閉じる_Click__32",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|閉じる_Click",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|Login_Log_Append__33",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|Login_Log_Append",
+          "label": "event"
+        }
+      },
+      {
+        "data": {
+          "id": "e:viewmodel:F_Login__handler:F_Login|Form_KeyDown__34",
+          "source": "viewmodel:F_Login",
+          "target": "handler:F_Login|Form_KeyDown",
+          "label": "event"
+        }
+      }
+    ]
+  },
+  "stats": {
+    "nodes": 32,
+    "edges": 35,
+    "views": 1,
+    "viewmodels": 1,
+    "handlers": 12,
+    "repositories": 3,
+    "services": 14,
+    "navigation": 1,
+    "warnings": 0,
+    "workflows": 0,
+    "events": 12,
+    "macros": 3,
+    "modules": 14,
+    "queries": 3,
+    "forms": 1
+  }
+}
