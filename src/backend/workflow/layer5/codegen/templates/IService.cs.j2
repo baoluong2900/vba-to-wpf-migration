@@ -1,0 +1,23 @@
+namespace vba_brain.Application.Interfaces;
+
+{% if usings %}
+{% for u in usings %}
+using {{ u }};
+{% endfor %}
+
+{% endif %}
+/// <summary>
+/// {{ purpose | default('Application service contract.') }}
+{% if form_name %}
+{% endif %}
+/// </summary>
+public interface I{{ service_name }}
+{
+{% for method in methods %}
+{% if method.comment %}
+    /// <summary>{{ method.comment }}</summary>
+{% endif %}
+    {{ method.return_type }} {{ method.name }}({{ method.params }});
+
+{% endfor %}
+}
