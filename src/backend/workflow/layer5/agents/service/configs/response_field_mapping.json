@@ -1,0 +1,26 @@
+{
+  "_comment": "Mapping từ repo function name (sau khi strip prefix Get/Fetch/Load/Select/Query + Async) → C# Response property name. Dùng bởi tool_service_gen.py khi gen scalar output fields trong Response DTO. Thêm entry ở đây khi agent gen sai tên property.",
+  "_usage": "Key = function_name sau khi strip prefix (e.g. 'GetCommentAsync' → key='Comment'). Value = C# property name muốn gen.",
+  "function_name_map": {
+    "Comment": "VersionComment",
+    "Comments": "VersionComment",
+    "Version": "VersionComment",
+    "VersionInfo": "VersionComment",
+    "Count": "Count",
+    "RecordCount": "RecordCount",
+    "Total": "Total",
+    "Flag": "Flag",
+    "Status": "Status",
+    "Result": "Result"
+  },
+  "_column_name_map_comment": "Map từ DB column name (JP hoặc EN) → C# property name. Dùng khi có thể đọc được column name từ query.",
+  "column_name_map": {
+    "コメント": "VersionComment",
+    "バージョン": "VersionComment",
+    "件数": "Count",
+    "カウント": "Count",
+    "フラグ": "Flag",
+    "ステータス": "Status",
+    "結果": "Result"
+  }
+}

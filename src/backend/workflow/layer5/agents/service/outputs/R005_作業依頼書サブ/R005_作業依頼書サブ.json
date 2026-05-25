@@ -1,0 +1,84 @@
+{
+  "form_name": "R005_作業依頼書サブ",
+  "feature": "R005WorkRequestSub",
+  "service_class": "R005WorkRequestSubService",
+  "iface_class": "IR005WorkRequestSubService",
+  "service_field": "_r005WorkRequestSubService",
+  "namespace": "vba_brain.Application.Services",
+  "methods": {
+    "F000": {
+      "method_name": "GetInitialDataAsync",
+      "return_type": "Task<R005WorkRequestSubResponse>",
+      "request_class": "R005WorkRequestSubRequest",
+      "response_class": "R005WorkRequestSubResponse",
+      "request_props": [
+        {
+          "name": "RegistrationNumberBf",
+          "type": "string"
+        },
+        {
+          "name": "RegistrationNumberB",
+          "type": "string"
+        }
+      ],
+      "response_props": [
+        {
+          "name": "Success",
+          "type": "bool"
+        },
+        {
+          "name": "Message",
+          "type": "string?"
+        },
+        {
+          "name": "Data",
+          "type": "IEnumerable<AfterMaintenanceReceptionDto>?"
+        }
+      ],
+      "repo_calls": [
+        {
+          "repository": "BuildingAfterCollectionRepository",
+          "function": "AfterMaintenanceReceptionAsync",
+          "query": "Q005_アフターメンテナンス受付"
+        }
+      ],
+      "method_code": "    /// <summary>\n    /// R005_作業依頼書サブ 画面を開く時 — 画面の初期表示の処理\n    /// </summary>\n    public async Task<R005WorkRequestSubResponse> GetInitialDataAsync(R005WorkRequestSubRequest request)\n    {\n        try\n        {\n            // Args: 登録番号Bｆ → request.RegistrationNumberBf; 登録番号B → request.RegistrationNumberB\n            // R005_作業依頼書サブ → BuildingAfterCollectionRepository.AfterMaintenanceReceptionAsync (query: Q005_アフターメンテナンス受付)\n            var afterMaintenanceReception = await _buildingAfterCollectionRepository.AfterMaintenanceReceptionAsync(request.RegistrationNumberBf, request.RegistrationNumberB);\n\n            return new R005WorkRequestSubResponse {\n                Success = true,\n                Data = afterMaintenanceReception,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new R005WorkRequestSubResponse { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "画面を開く時",
+      "event_content": "画面の初期表示の処理",
+      "vm_method_name": "GetInitialDataAsync"
+    }
+  },
+  "repository": [
+    {
+      "repository_name": "BuildingAfterCollectionRepository",
+      "table_name": "TBLビルアフター回収",
+      "function": [
+        {
+          "function_name": "AfterMaintenanceReceptionAsync",
+          "query_name": "Q005_アフターメンテナンス受付",
+          "sheet_query_name": "F000_SelQuery01",
+          "description": "指定された登録番号に一致するAM受付とアフター回収データを結合して取得するクエリ",
+          "input": [
+            {
+              "name": "registrationNumberBf",
+              "type": "string",
+              "description": "登録番号Bｆ"
+            },
+            {
+              "name": "registrationNumberB",
+              "type": "string",
+              "description": "登録番号B"
+            }
+          ],
+          "output": [
+            {
+              "name": "AfterMaintenanceReceptionDto",
+              "type": "dto",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

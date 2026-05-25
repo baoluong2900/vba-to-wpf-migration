@@ -1,0 +1,69 @@
+{
+  "_comment": "Service method name registry. Chỉ chứa events có query_mappings (tương tác DB). UI-only handlers (閉じる_Click, etc.) KHÔNG nằm ở đây — để tool_skeleton.py tự quản lý theo VBA handler name. Fields: event_trigger (JP), event_content (JP), vba_handler (EN from BD), method_name (C# — dùng bởi tool_service_gen.py), vm_method_name (C# — dùng bởi tool_skeleton.py), service_name.",
+  "F_Login": {
+    "F000": {
+      "event_trigger": "画面を開く時",
+      "event_content": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーをシステムにログインさせる。",
+      "vba_handler": "Form_Open",
+      "method_name": "F000Async",
+      "vm_method_name": "F000Async",
+      "service_name": ""
+    },
+    "F001": {
+      "event_trigger": "キーが押された時",
+      "event_content": "キー入力を処理する。",
+      "vba_handler": "Form_KeyDown",
+      "method_name": "F001Async",
+      "vm_method_name": "F001Async",
+      "service_name": ""
+    },
+    "F002": {
+      "event_trigger": "フォーム読み込み後",
+      "event_content": "アプリケーションが最新版であるか確認し、必要に応じて更新を行う。",
+      "vba_handler": "Form_Load",
+      "method_name": "F002Async",
+      "vm_method_name": "F002Async",
+      "service_name": ""
+    },
+    "F003": {
+      "event_trigger": "更新後処理",
+      "event_content": "ユーザーID và パスワードを検証し、認証されたユーザーのみがシステムにアクセスできるようにする。",
+      "vba_handler": "txtPass_AfterUpdate",
+      "method_name": "F003Async",
+      "vm_method_name": "F003Async",
+      "service_name": ""
+    },
+    "F004": {
+      "event_trigger": "クリック時",
+      "event_content": "フォームを閉じる。",
+      "vba_handler": "閉じる_Click",
+      "method_name": "F004Async",
+      "vm_method_name": "F004Async",
+      "service_name": ""
+    },
+    "F005": {
+      "event_trigger": "ダブルクリック時",
+      "event_content": "施工店情報を処理する。",
+      "vba_handler": "施工店情報_DblClick",
+      "method_name": "F005Async",
+      "vm_method_name": "F005Async",
+      "service_name": ""
+    },
+    "F008": {
+      "event_trigger": "ダブルクリック時",
+      "event_content": "ログインフォームとユーザー追加フォームを閉じ、メニューバーとステータスバーを表示してから特定のクエリを開く。",
+      "vba_handler": "パスワードテーブルを開く_DblClick",
+      "method_name": "F008Async",
+      "vm_method_name": "F008Async",
+      "service_name": ""
+    },
+    "F009": {
+      "event_trigger": "ダブルクリック時",
+      "event_content": "プロセスを終了する。",
+      "vba_handler": "プロセス終了_DblClick",
+      "method_name": "F009Async",
+      "vm_method_name": "F009Async",
+      "service_name": ""
+    }
+  }
+}
