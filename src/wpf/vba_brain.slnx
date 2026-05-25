@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="vba_brain.Application/vba_brain.Application.csproj" />
+  <Project Path="vba_brain.Domain/vba_brain.Domain.csproj" />
+  <Project Path="vba_brain.Infrastructure/vba_brain.Infrastructure.csproj" />
+  <Project Path="vba_brain.UI.Avalonia/vba_brain.UI.Avalonia.csproj" />
+</Solution>
