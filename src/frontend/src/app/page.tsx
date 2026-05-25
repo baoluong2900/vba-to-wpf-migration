@@ -332,10 +332,10 @@ export default function LandingPage() {
         {/* Workflow Section */}
         <section id="workflow" className="py-28 px-6 sm:px-12 border-t border-white/5 bg-[#050506]/70 backdrop-blur-sm relative z-10">
           <div className="max-w-7xl mx-auto">
-            <RevealOnScroll>
+            <RevealOnScroll className="w-full flex flex-col items-center">
               <div className="flex flex-col items-center text-center mb-24">
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight">The 5-Layer Architecture</h2>
-                <p className="text-gray-400 text-lg max-w-2xl font-light">
+                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight text-center">The 5-Layer Architecture</h2>
+                <p className="text-gray-400 text-lg max-w-2xl font-light text-center">
                   Our meticulously engineered workflow guarantees zero data loss and flawless business logic translation through specialized AI agents.
                 </p>
               </div>
@@ -386,10 +386,10 @@ export default function LandingPage() {
         <section id="architecture-detail" className="py-32 px-6 sm:px-12 bg-black/40 border-t border-white/5 relative z-10">
           <div className="max-w-5xl mx-auto">
             
-            <RevealOnScroll>
-              <div className="text-center mb-24">
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight">Detailed 5-Step Pipeline</h2>
-                <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            <RevealOnScroll className="w-full flex flex-col items-center">
+              <div className="text-center mb-24 flex flex-col items-center">
+                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight text-center">Detailed 5-Step Pipeline</h2>
+                <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light leading-relaxed text-center">
                   See how vba_brain automates the entire migration lifecycle of legacy databases and source code to modern architectures across 5 layers.
                 </p>
               </div>
