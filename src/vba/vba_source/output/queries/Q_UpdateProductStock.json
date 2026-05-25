@@ -1,0 +1,15 @@
+{
+    "query_name": "Q_UpdateProductStock",
+    "description": "",
+    "tables": [
+        "TBL_Products"
+    ],
+    "parameters": [],
+    "query": {
+        "update": "TBL_Products",
+        "set": [
+            "TBL_Products.UnitsInStock = [NewStock]"
+        ],
+        "where": "(((TBL_Products.ProductID)=[TargetID]))"
+    }
+}

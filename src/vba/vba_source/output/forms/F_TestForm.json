@@ -1,0 +1,100 @@
+{
+    "key": "screen_frm",
+    "type": "Forms",
+    "name": "F_TestForm",
+    "properties": {
+        "format": {},
+        "data": {},
+        "event": {
+            "onopen": "Form_Open"
+        },
+        "other": {
+            "name": "F_TestForm"
+        }
+    },
+    "items": [
+        {
+            "key": "section",
+            "name": "section",
+            "type": "section",
+            "nodekey": "",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {},
+                "other": {}
+            }
+        },
+        {
+            "key": "txtUserName",
+            "name": "txtUserName",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "UserName"
+                },
+                "event": {
+                    "afterupdate": "txtUserName_AfterUpdate"
+                },
+                "other": {
+                    "name": "txtUserName"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "btnSubmit",
+            "name": "btnSubmit",
+            "type": "CommandButton",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {
+                    "onclick": "btnSubmit_Click"
+                },
+                "other": {
+                    "name": "btnSubmit"
+                }
+            },
+            "nodekey": "section"
+        }
+    ],
+    "functions": [
+        {
+            "handler": "Form_Open",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "Me.txtUserName = \"DefaultUser\"",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "btnSubmit_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "DoCmd.OpenForm \"F_Success\"",
+            "references": {
+                "forms": [
+                    "F_Success"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        }
+    ],
+    "variables": []
+}

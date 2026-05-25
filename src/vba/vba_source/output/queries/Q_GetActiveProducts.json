@@ -1,0 +1,15 @@
+{
+    "query_name": "Q_GetActiveProducts",
+    "description": "",
+    "tables": [
+        "TBL_Products"
+    ],
+    "parameters": [],
+    "query": {
+        "select": "TBL_Products.ProductID, TBL_Products.ProductName, TBL_Products.ProductStatus, TBL_Products.CategoryID",
+        "from": "TBL_Products",
+        "where": "(((TBL_Products.ProductStatus)=1) AND ((TBL_Products.Discontinued)=False))",
+        "group_by": "なし",
+        "order_by": "なし"
+    }
+}

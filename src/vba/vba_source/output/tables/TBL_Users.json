@@ -1,0 +1,27 @@
+{
+    "table_name": "TBL_Users",
+    "description": "",
+    "columns": [
+        {
+            "logical_name": "ID",
+            "physical_name": "ユーザーID",
+            "data_type": "Long",
+            "length": "4",
+            "required": "True"
+        },
+        {
+            "logical_name": "Name",
+            "physical_name": "ユーザー名",
+            "data_type": "Text",
+            "length": "50",
+            "required": "True"
+        },
+        {
+            "logical_name": "Age",
+            "physical_name": "年齢",
+            "data_type": "Integer",
+            "length": "2",
+            "required": "False"
+        }
+    ]
+}

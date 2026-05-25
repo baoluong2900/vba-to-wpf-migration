@@ -1,0 +1,47 @@
+{
+    "module_name": "Mod_CommonUtils",
+    "source_file": "Mod_CommonUtils.bas",
+    "options": {
+        "compare": "Database",
+        "explicit": true
+    },
+    "user_types": [],
+    "constants": [],
+    "functions": [
+        {
+            "handler": "SafeString",
+            "visibility": "public",
+            "type": "Function",
+            "input": "val As Variant",
+            "output": "String",
+            "code": "    If IsNull(val) Then\n        SafeString = \"\"\n    Else\n        SafeString = Trim(CStr(val))\n    End If",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [
+                    "Mod_CommonUtils.SafeString"
+                ],
+                "tables": []
+            }
+        },
+        {
+            "handler": "LogError",
+            "visibility": "public",
+            "type": "Sub",
+            "input": "errDesc As String, errNum As Long",
+            "output": "",
+            "code": "    Debug.Print \"Error [\" & errNum & \"]: \" & errDesc\n    DoCmd.RunSQL \"INSERT INTO TBL_ErrorLogs (Description, Number) VALUES ('\" & errDesc & \"', \" & errNum & \")\"",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        }
+    ],
+    "variables": []
+}

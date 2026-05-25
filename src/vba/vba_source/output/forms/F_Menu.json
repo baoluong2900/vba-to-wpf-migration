@@ -1,0 +1,140 @@
+{
+    "key": "screen_frm",
+    "type": "Forms",
+    "name": "F_Menu",
+    "properties": {
+        "format": {
+            "caption": "Hệ thống quản lý kho - Menu chính"
+        },
+        "data": {},
+        "event": {
+            "onopen": "Form_Open"
+        },
+        "other": {
+            "name": "F_Menu"
+        }
+    },
+    "items": [
+        {
+            "key": "section",
+            "name": "section",
+            "type": "section",
+            "nodekey": "",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {},
+                "other": {}
+            }
+        },
+        {
+            "key": "btnProductList",
+            "name": "btnProductList",
+            "type": "CommandButton",
+            "properties": {
+                "format": {
+                    "caption": "Danh sách sản phẩm"
+                },
+                "data": {},
+                "event": {
+                    "onclick": "btnProductList_Click"
+                },
+                "other": {
+                    "name": "btnProductList"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "btnOrderEntry",
+            "name": "btnOrderEntry",
+            "type": "CommandButton",
+            "properties": {
+                "format": {
+                    "caption": "Nhập đơn hàng"
+                },
+                "data": {},
+                "event": {
+                    "onclick": "btnOrderEntry_Click"
+                },
+                "other": {
+                    "name": "btnOrderEntry"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "btnExit",
+            "name": "btnExit",
+            "type": "CommandButton",
+            "properties": {
+                "format": {
+                    "caption": "Thoát hệ thống"
+                },
+                "data": {},
+                "event": {
+                    "onclick": "Macro.M_CloseSystem"
+                },
+                "other": {
+                    "name": "btnExit"
+                }
+            },
+            "nodekey": "section"
+        }
+    ],
+    "functions": [
+        {
+            "handler": "Form_Open",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "MsgBox \"Chào mừng đến với Hệ thống quản lý kho!\", vbInformation",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "btnProductList_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "DoCmd.OpenForm \"F_ProductList\", acNormal",
+            "references": {
+                "forms": [
+                    "F_ProductList"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "btnOrderEntry_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "DoCmd.OpenForm \"F_OrderEntry\", acNormal",
+            "references": {
+                "forms": [
+                    "F_OrderEntry"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        }
+    ],
+    "variables": []
+}

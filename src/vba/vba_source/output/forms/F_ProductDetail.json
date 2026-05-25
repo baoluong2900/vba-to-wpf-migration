@@ -1,0 +1,243 @@
+{
+    "key": "screen_frm",
+    "type": "Forms",
+    "name": "F_ProductDetail",
+    "properties": {
+        "format": {
+            "caption": "Chi tiết sản phẩm"
+        },
+        "data": {
+            "recordsource": "TBL_Products"
+        },
+        "event": {
+            "beforeupdate": "Form_BeforeUpdate"
+        },
+        "other": {
+            "name": "F_ProductDetail"
+        }
+    },
+    "items": [
+        {
+            "key": "section",
+            "name": "section",
+            "type": "section",
+            "nodekey": "",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {},
+                "other": {}
+            }
+        },
+        {
+            "key": "txtProductID",
+            "name": "txtProductID",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "ProductID",
+                    "locked": true
+                },
+                "event": {},
+                "other": {
+                    "name": "txtProductID"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "txtProductName",
+            "name": "txtProductName",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "ProductName"
+                },
+                "event": {},
+                "other": {
+                    "name": "txtProductName",
+                    "required": true
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "cboSupplier",
+            "name": "cboSupplier",
+            "type": "ComboBox",
+            "properties": {
+                "format": {
+                    "columncount": 2
+                },
+                "data": {
+                    "controlsource": "SupplierID",
+                    "rowsource": "SELECT SupplierID, SupplierName FROM TBL_Suppliers;",
+                    "boundcolumn": 1
+                },
+                "event": {},
+                "other": {
+                    "name": "cboSupplier"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "optStatus",
+            "name": "optStatus",
+            "type": "OptionGroup",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "ProductStatus"
+                },
+                "event": {},
+                "other": {
+                    "name": "optStatus"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "optActive",
+            "name": "optActive",
+            "type": "OptionButton",
+            "properties": {
+                "format": {},
+                "data": {
+                    "optionvalue": 1
+                },
+                "event": {},
+                "other": {
+                    "name": "optActive",
+                    "optiongroupname": "optStatus"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "optInactive",
+            "name": "optInactive",
+            "type": "OptionButton",
+            "properties": {
+                "format": {},
+                "data": {
+                    "optionvalue": 2
+                },
+                "event": {},
+                "other": {
+                    "name": "optInactive",
+                    "optiongroupname": "optStatus"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "chkDiscontinued",
+            "name": "chkDiscontinued",
+            "type": "CheckBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "Discontinued"
+                },
+                "event": {},
+                "other": {
+                    "name": "chkDiscontinued"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "btnSave",
+            "name": "btnSave",
+            "type": "CommandButton",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {
+                    "onclick": "btnSave_Click"
+                },
+                "other": {
+                    "name": "btnSave"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "btnDelete",
+            "name": "btnDelete",
+            "type": "CommandButton",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {
+                    "onclick": "btnDelete_Click"
+                },
+                "other": {
+                    "name": "btnDelete"
+                }
+            },
+            "nodekey": "section"
+        }
+    ],
+    "functions": [
+        {
+            "handler": "Form_BeforeUpdate",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "If IsNull(Me.txtProductName) Or Me.txtProductName = \"\" Then\n MsgBox \"Tên sản phẩm không được để trống!\", vbCritical\n Cancel = True\n End If",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "btnSave_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "DoCmd.RunCommand acCmdSaveRecord\n MsgBox \"Lưu thành công!\", vbInformation\n DoCmd.Close acForm, \"F_ProductDetail\"",
+            "references": {
+                "forms": [
+                    "F_ProductDetail"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            },
+            "commands": [
+                "acCmdSaveRecord"
+            ]
+        },
+        {
+            "handler": "btnDelete_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "If MsgBox(\"Bạn có chắc chắn muốn xóa sản phẩm này?\", vbYesNo + vbQuestion) = vbYes Then\n DoCmd.RunSQL \"DELETE FROM TBL_Products WHERE ProductID = \" & Me.txtProductID\n DoCmd.Close acForm, \"F_ProductDetail\"\n End If",
+            "references": {
+                "forms": [
+                    "F_ProductDetail"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        }
+    ],
+    "variables": []
+}

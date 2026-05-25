@@ -1,0 +1,449 @@
+{
+    "key": "screen_frm",
+    "type": "Forms",
+    "name": "F_Login",
+    "properties": {
+        "format": {
+            "caption": "ログイン"
+        },
+        "data": {},
+        "event": {
+            "onopen": "Form_Open",
+            "onload": "Form_Load",
+            "onkeydown": "Form_KeyDown"
+        },
+        "other": {
+            "name": "F_Login"
+        }
+    },
+    "items": [
+        {
+            "key": "section",
+            "name": "section",
+            "type": "section",
+            "nodekey": "",
+            "properties": {
+                "format": {},
+                "data": {},
+                "event": {},
+                "other": {}
+            }
+        },
+        {
+            "key": "txtID",
+            "name": "txtID",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "locked": true
+                },
+                "event": {},
+                "other": {
+                    "name": "txtID"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "ログインID",
+            "name": "ログインID",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": "ログインID："
+                },
+                "data": {},
+                "event": {},
+                "other": {
+                    "name": "ログインID"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "txtPass",
+            "name": "txtPass",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "inputmask": "Password"
+                },
+                "event": {
+                    "afterupdate": "txtPass_AfterUpdate"
+                },
+                "other": {
+                    "name": "txtPass"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "パスワード",
+            "name": "パスワード",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": "パスワード："
+                },
+                "data": {},
+                "event": {},
+                "other": {
+                    "name": "パスワード"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "cmdLogin",
+            "name": "cmdLogin",
+            "type": "CommandButton",
+            "properties": {
+                "format": {
+                    "caption": "ログイン",
+                    "visible": false
+                },
+                "data": {},
+                "event": {
+                    "onclick": "cmdLogin_Click"
+                },
+                "other": {
+                    "name": "cmdLogin"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "閉じる",
+            "name": "閉じる",
+            "type": "CommandButton",
+            "properties": {
+                "format": {
+                    "caption": "閉じる"
+                },
+                "data": {},
+                "event": {
+                    "onclick": "閉じる_Click"
+                },
+                "other": {
+                    "name": "閉じる"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "施工店情報",
+            "name": "施工店情報",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": "新アフター管理DB"
+                },
+                "data": {},
+                "event": {
+                    "ondblclick": "施工店情報_DblClick"
+                },
+                "other": {
+                    "name": "施工店情報"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "ラベル142",
+            "name": "ラベル142",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": " "
+                },
+                "data": {},
+                "event": {
+                    "onclick": "macro.A_メニューバーを表示",
+                    "ondblclick": "macro.M300_Splash(M)を開く"
+                },
+                "other": {
+                    "name": "ラベル142"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "ラベル7",
+            "name": "ラベル7",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": "※PCより自動取得"
+                },
+                "data": {},
+                "event": {},
+                "other": {
+                    "name": "ラベル7"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "パスワードテーブルを開く",
+            "name": "パスワードテーブルを開く",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": " "
+                },
+                "data": {},
+                "event": {
+                    "ondblclick": "パスワードテーブルを開く_DblClick"
+                },
+                "other": {
+                    "name": "パスワードテーブルを開く"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "プロセス終了",
+            "name": "プロセス終了",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": " "
+                },
+                "data": {},
+                "event": {
+                    "ondblclick": "プロセス終了_DblClick"
+                },
+                "other": {
+                    "name": "プロセス終了"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "ラベル400",
+            "name": "ラベル400",
+            "type": "Label",
+            "properties": {
+                "format": {
+                    "caption": "2025/06/30公開Ver"
+                },
+                "data": {},
+                "event": {},
+                "other": {
+                    "name": "ラベル400"
+                }
+            },
+            "nodekey": "section"
+        },
+        {
+            "key": "最新版公開日",
+            "name": "最新版公開日",
+            "type": "TextBox",
+            "properties": {
+                "format": {},
+                "data": {
+                    "controlsource": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")"
+                },
+                "event": {},
+                "other": {
+                    "name": "最新版公開日"
+                }
+            },
+            "nodekey": "section"
+        }
+    ],
+    "functions": [
+        {
+            "handler": "Sleep Lib \"kernel32\"",
+            "visibility": "private",
+            "type": "Declare Sub",
+            "input": "ByVal ms As Long",
+            "output": "",
+            "code": "",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "Form_Load",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "Dim sLvlCmnt    As String\n Dim sCmnt       As String\n CloseWindow Application.hWndAccessApp\n Dim Ref As Reference\n For Each Ref In References\n If Ref.Name = \"Excel\" Then\n Application.References.Remove Ref\n End If\n Next Ref\n sLvlCmnt = Me.ラベル400.Caption\n sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, \"/\") + 1, 5)\n sCmnt = Replace(Replace(DLookup(\"コメント\", \"Access配信日\"), \"最新版は\", \"\"), \"ver\", \"\")\n If sLvlCmnt <> sCmnt Then\n MsgBox \"最新版ではありません！\" & Chr(13) & \"インストールします。\", vbOKOnly + vbExclamation\n Call Judge_Inst\n End If",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [
+                    "Common.Judge_Inst"
+                ],
+                "tables": [
+                    "Access配信日"
+                ]
+            }
+        },
+        {
+            "handler": "Form_Open",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "SwitchShiftKey True\n Call SetEnabledState(False)\n DoCmd.SelectObject acForm, \"\", True\n DoCmd.RunCommand acCmdWindowHide\n DoCmd.ShowToolbar \"Ribbon\", acToolbarNo\n Application.CommandBars(\"Status Bar\").Visible = False\n Dim i As Long\n For i = 1 To 3\n Next i\n On Error GoTo Err_Shori\n SetAccWinStyle\n MoveWindow Application.hWndAccessApp, 0, 0, 800, 400, True\n Call SetWindowTop(hWndAccessApp, True)\n DoCmd.RunCommand acCmdWindowHide\n Call SetWindowTop(hWndAccessApp, False)\n OpenClipboard (0&)\n EmptyClipboard\n CloseClipboard\n If OpenClipboard(ByVal 0&) Then\n Call EmptyClipboard\n Call CloseClipboard\n End If\n Dim WshNetworkObject As Object\n Set WshNetworkObject = CreateObject(\"WScript.Network\")\n Dim limit As Date, cnt_d As Double\n With WshNetworkObject\n Dim UserName As String\n UserName = .UserName\n Me.txtID = UserName\n SendKeys \"{TAB}\"\n Dim myDO As DataObject\n Dim myStr As String\n myStr = Me.txtID\n Set myDO = New DataObject\n myDO.SetText myStr\n myDO.PutInClipboard\n If (.UserName = \"00105687\") Or _\n (.UserName = \"00110772A\") Or _\n (.UserName = \"00109978A\") Or _\n (.UserName = \"00109212A\") Or _\n (.UserName = \"00106601A\") Or _\n (.UserName = \"00124937A\") _\n Then\n SendKeys \"^(v)\"\n SendKeys \"{ENTER}\"\n SendKeys \"^(v)\"\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n Else\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n End If\n End With\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [
+                    "Q000_T_LoginUser"
+                ],
+                "macros": [],
+                "modules": [
+                    "Common.SetEnabledState",
+                    "Common.SetWindowTop",
+                    "EmptyClipboard",
+                    "CloseClipboard",
+                    "Common.SwitchShiftKey",
+                    "Common.SetAccWinStyle"
+                ],
+                "tables": []
+            },
+            "commands": [
+                "acCmdWindowHide"
+            ]
+        },
+        {
+            "handler": "txtPass_AfterUpdate",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "Dim res\n Dim res1\n Dim isDevMode As Boolean\n On Error GoTo Err_Shori\n DoCmd.SelectObject acForm, , True\n DoCmd.Minimize\n isDevMode = IsLoginDevModeEnabled()\n If Not isDevMode Then\n If IsNull(Me.txtID) Then\n MsgBox \"IDを入力してください\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n If IsNull(Me.txtPass) Then\n MsgBox \"パスワードを入力してください\"\n Me.txtPass.SetFocus\n Exit Sub\n End If\n End If\n DoCmd.SetWarnings False\n res1 = DLookup(\"管理者FLG\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"''\") & \"'\")\n If res1 = 0 And Not isDevMode Then\n MsgBox \"　　施工管理ではありませんのでログインできません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な方は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　依頼してください！！　TEL 0766-20-2211\"\n Exit Sub\n Else\n res = DLookup(\"Pass\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"''\") & \"'\")\n If IsNull(res) And Not isDevMode Then\n MsgBox \"　　該当するID,PWがありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n End If\n If isDevMode Or res = Me.txtPass Then\n If isDevMode Then\n Call AppendDevLoginLog(Me.txtID)\n End If\n DoCmd.Close acForm, \"F_Login\"\n Dim RCount As Long\n RCount = DCount(\"*\", \"T023_地区CD設定\")\n If RCount = 0 Then\n DoCmd.RunMacro \"AutoExec_Restart\"\n Exit Sub\n Else\n Call タイマーを開く\n DoCmd.RunMacro \"AutoExec_A\"\n Exit Sub\n End If\n Else\n MsgBox \"　　パスワードが異なります！！\" & vbCrLf & vbCrLf & _\n \"　　わからない場合は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtPass.SetFocus\n End If\n Exit Sub\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical",
+            "references": {
+                "forms": [
+                    "F_Login"
+                ],
+                "reports": [],
+                "queries": [],
+                "macros": [
+                    "AutoExec_Restart",
+                    "AutoExec_A"
+                ],
+                "modules": [
+                    "Common.AppendDevLoginLog",
+                    "Common.タイマーを開く",
+                    "Common.IsLoginDevModeEnabled"
+                ],
+                "tables": [
+                    "T_ID_Pass",
+                    "T023_地区CD設定"
+                ]
+            },
+            "commands": [
+                "DoCmd.Minimize"
+            ]
+        },
+        {
+            "handler": "パスワードテーブルを開く_DblClick",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "DoCmd.Close acForm, \"F_Login\"\n DoCmd.Close acForm, \"F_ユーザー追加\", acSaveNo\n DoCmd.Close acForm, \"F_ユーザー追加_A\", acSaveNo\n DoCmd.SetWarnings False\n MenuBarTrue\n DoCmd.SelectObject acForm, \"\", True\n Dim i As Long\n i = SysCmd(acSysCmdAccessVer)\n If i = 11 Then\n Call MenuBarTrueFalse(True)\n Else\n DoCmd.ShowToolbar \"Ribbon\", acToolbarYes\n End If\n DoCmd.SetWarnings False\n StatusBar_True\n DoCmd.OpenQuery \"Q000_T_ID_PASS\", acViewNormal, acEdit\n DoCmd.Maximize\n DoCmd.RunCommand acCmdAppMaximize\n DoCmd.Maximize",
+            "references": {
+                "forms": [
+                    "F_Login",
+                    "F_ユーザー追加",
+                    "F_ユーザー追加_A"
+                ],
+                "reports": [],
+                "queries": [
+                    "Q000_T_ID_PASS"
+                ],
+                "macros": [],
+                "modules": [
+                    "Common.MenuBarTrueFalse",
+                    "Common.MenuBarTrue",
+                    "Common.StatusBar_True"
+                ],
+                "tables": []
+            },
+            "commands": [
+                "DoCmd.Maximize",
+                "acCmdAppMaximize"
+            ]
+        },
+        {
+            "handler": "プロセス終了_DblClick",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "Cancel As Integer",
+            "output": "",
+            "code": "Dim objShell As Object\n Dim objExec As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n Set objExec = objShell.Exec(\"taskkill.exe /F /IM wmplayer.exe\")",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "閉じる_Click",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "DoCmd.Quit acQuitPrompt",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "Login_Log_Append",
+            "visibility": "public",
+            "type": "Function",
+            "input": "",
+            "output": "",
+            "code": "Dim Out_File_Fno As Integer\n Out_File_Fno = FreeFile\n Open \"D:\\Log\\Login.txt\" For Append As #Out_File_Fno\n Close Out_File_Fno",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        },
+        {
+            "handler": "Form_KeyDown",
+            "visibility": "private",
+            "type": "Sub",
+            "input": "KeyCode As Integer, Shift As Integer",
+            "output": "",
+            "code": "Select Case KeyCode\n Case vbKeyF11\n KeyCode = 0\n MsgBox \"ファンクション【F11】キーは無効に設定されてます！！\"\n Case vbKeyF12\n KeyCode = 0\n MsgBox \"ファンクション【F12】キーは無効に設定されてます！！\"\n Case Else\n End Select",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [],
+                "tables": []
+            }
+        }
+    ],
+    "variables": []
+}

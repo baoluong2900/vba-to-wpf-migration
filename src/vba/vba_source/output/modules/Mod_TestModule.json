@@ -1,0 +1,62 @@
+{
+    "module_name": "Mod_TestModule",
+    "source_file": "Mod_TestModule.bas",
+    "options": {
+        "compare": "Database",
+        "explicit": true
+    },
+    "user_types": [],
+    "constants": [
+        {
+            "name": "MY_CONST",
+            "type": "Variant",
+            "visibility": "public",
+            "value": "100"
+        }
+    ],
+    "functions": [
+        {
+            "handler": "SayHello",
+            "visibility": "public",
+            "type": "Sub",
+            "input": "",
+            "output": "",
+            "code": "    MsgBox \"Hello from VBA!\"\n    Call OtherSub",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [
+                    "OtherSub"
+                ],
+                "tables": []
+            }
+        },
+        {
+            "handler": "AddNumbers",
+            "visibility": "private",
+            "type": "Function",
+            "input": "ByVal a As Integer, ByVal b As Integer",
+            "output": "Integer",
+            "code": "    AddNumbers = a + b",
+            "references": {
+                "forms": [],
+                "reports": [],
+                "queries": [],
+                "macros": [],
+                "modules": [
+                    "Mod_TestModule.AddNumbers"
+                ],
+                "tables": []
+            }
+        }
+    ],
+    "variables": [
+        {
+            "name": "GlobalVar",
+            "type": "String",
+            "visibility": "public"
+        }
+    ]
+}
