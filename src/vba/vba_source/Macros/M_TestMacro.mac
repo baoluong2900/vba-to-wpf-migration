@@ -1,0 +1,16 @@
+Version=0x0113
+VersionRequired=0x0113
+Begin
+    Action ="OpenForm"
+    Argument ="F_TestForm"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument =""
+    Argument ="3"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="F_Login"
+End
