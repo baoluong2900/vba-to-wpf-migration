@@ -984,6 +984,116 @@ def process_json_tree(
     return updated, errors, refs_dict
 
 
+def generate_graphs_folder(collected_refs: dict[str, dict[str, Any]], out_root: Path):
+    graphs_dir = out_root / "graphs"
+    graphs_dir.mkdir(parents=True, exist_ok=True)
+    
+    cat_to_type = {
+        "forms": "form",
+        "reports": "report",
+        "macros": "macro",
+        "modules": "module",
+        "queries": "query",
+        "tables": "table"
+    }
+
+    def build_graph(root_name: str, root_cat: str) -> dict:
+        nodes = []
+        edges = []
+        added_nodes = set()
+        added_edges = set()
+
+        def add_node(node_id: str, label: str, node_type: str):
+            if node_id not in added_nodes:
+                added_nodes.add(node_id)
+                nodes.append({
+                    "data": {
+                        "id": node_id,
+                        "label": label,
+                        "type": node_type
+                    }
+                })
+
+        def add_edge(source: str, target: str, label: str = ""):
+            edge_id = f"{source}__{target}"
+            if edge_id not in added_edges:
+                added_edges.add(edge_id)
+                edges.append({
+                    "data": {
+                        "id": edge_id,
+                        "source": source,
+                        "target": target,
+                        "label": label
+                    }
+                })
+
+        queue = [(root_name, root_cat, None, "")]
+        visited = set()
+
+        while queue:
+            name, cat, parent_id, rel_label = queue.pop(0)
+            node_id = f"{cat_to_type[cat]}:{name}"
+            
+            add_node(node_id, name, cat_to_type[cat])
+            
+            if parent_id:
+                add_edge(parent_id, node_id, rel_label)
+
+            state_key = (name, cat)
+            if state_key in visited:
+                continue
+            visited.add(state_key)
+
+            item_refs = collected_refs.get(cat, {}).get(name, {})
+            if not item_refs:
+                continue
+
+            for ref_cat in ["forms", "reports", "queries", "macros", "modules", "tables"]:
+                ref_items = item_refs.get(ref_cat, [])
+                for ref_item in ref_items:
+                    label = ""
+                    if ref_cat == "queries":
+                        label = "recordsource" if cat in ("forms", "reports") else "uses query"
+                    elif ref_cat == "tables":
+                        label = "reads/writes"
+                    elif ref_cat == "modules":
+                        label = "calls module"
+                    elif ref_cat == "macros":
+                        label = "runs macro"
+                    elif ref_cat == "forms":
+                        label = "opens form"
+                    
+                    queue.append((ref_item, ref_cat, node_id, label))
+
+        stats = {}
+        for node in nodes:
+            ntype = node["data"]["type"]
+            stats[ntype] = stats.get(ntype, 0) + 1
+
+        return {
+            "name": root_name,
+            "type": cat_to_type[root_cat],
+            "success": True,
+            "elements": {
+                "nodes": nodes,
+                "edges": edges
+            },
+            "stats": stats
+        }
+
+    for cat in ["forms", "reports", "macros", "modules", "queries", "tables"]:
+        for name in collected_refs.get(cat, {}).keys():
+            graph = build_graph(name, cat)
+            out_path = graphs_dir / f"{name}.json"
+            try:
+                out_path.write_text(
+                    json.dumps(graph, ensure_ascii=False, indent=4) + "\n",
+                    encoding="utf-8"
+                )
+            except OSError as e:
+                print(f"Error writing graph for {name} to {out_path}: {e}", file=sys.stderr)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=(
@@ -1150,7 +1260,7 @@ def main() -> int:
     if tables_dir.is_dir():
         collected_refs["tables"].update(collect_all_tables(tables_dir))
 
-    # Write reference map JSON
+    # Write reference map JSON and individual graph views
     if not args.dry_run:
         ref_map_path = out_root / "reference_map.json"
         try:
@@ -1160,8 +1270,12 @@ def main() -> int:
                 encoding="utf-8"
             )
             print(f"Wrote reference map: {ref_map_path}", file=sys.stderr)
+            
+            print("Generating individual graphviews...", file=sys.stderr)
+            generate_graphs_folder(collected_refs, out_root)
+            print("Done generating graphviews.", file=sys.stderr)
         except OSError as e:
-            print(f"Error writing reference map {ref_map_path}: {e}", file=sys.stderr)
+            print(f"Error writing reference map or graphs: {e}", file=sys.stderr)
 
     print(
         f"Done: {total_updated} file(s) processed, {total_errors} error(s). "

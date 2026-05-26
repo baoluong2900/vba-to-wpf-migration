@@ -35,7 +35,7 @@ if str(_BACKEND_DIR) not in sys.path:
 
 DATABASE_JSON_DIR = ROOT / "data"
 
-ALL_FOLDERS = ["forms", "macros", "modules", "queries", "tables"]
+ALL_FOLDERS = ["forms", "macros", "modules", "queries", "tables", "graphs"]
 
 # ── Load Config ────────────────────────────────────────────────────────────────
 def load_config() -> tuple[str, str]:
