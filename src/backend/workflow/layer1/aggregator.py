@@ -1081,7 +1081,7 @@ def generate_graphs_folder(collected_refs: dict[str, dict[str, Any]], out_root: 
             "stats": stats
         }
 
-    for cat in ["forms", "reports", "macros", "modules", "queries", "tables"]:
+    for cat in ["forms", "reports", "macros", "modules", "queries"]:
         for name in collected_refs.get(cat, {}).keys():
             graph = build_graph(name, cat)
             out_path = graphs_dir / f"{name}.json"
