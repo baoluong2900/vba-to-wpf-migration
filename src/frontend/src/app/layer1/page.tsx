@@ -114,46 +114,48 @@ export default function Layer1Parser() {
           
 
           {/* Main Dashboard Control Panel */}
-          <div className="bg-white/40 dark:bg-[#151722]/60 backdrop-blur-xl border border-neutral-200 dark:border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div className="relative overflow-hidden bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border border-neutral-200/60 dark:border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-neutral-300/80 dark:hover:border-white/20 group animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            {/* Top glowing edge */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 opacity-80" />
             
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md flex-shrink-0">
-                <DatabaseZap size={20} className="text-white" />
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)] flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
+                <DatabaseZap size={26} className="text-white drop-shadow-md" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-neutral-900 dark:text-white">Source Database Configuration</h2>
-                <p className="text-xs text-neutral-500 dark:text-gray-400 mt-0.5">Specify absolute path to the legacy `.accdb` file.</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Source Database Configuration</h2>
+                <p className="text-sm text-neutral-500 dark:text-gray-400 mt-1.5 leading-relaxed">Specify absolute path to the legacy `.accdb` file on the fileserver to begin extraction.</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch">
               <div className="flex-1 relative flex items-center">
-                <FolderOpen size={16} className="absolute left-4 text-neutral-400 focus-within:text-indigo-500 transition-colors" />
+                <FolderOpen size={18} className="absolute left-5 text-neutral-400 dark:text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors duration-300" />
                 <input 
                   type="text" 
                   value={dbPath}
                   onChange={e => setDbPath(e.target.value)}
-                  placeholder="e.g. C:/Projects/legacy_db.accdb"
-                  className="w-full bg-white dark:bg-[#0b0c10] border border-neutral-300 dark:border-neutral-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 rounded-xl py-3 pl-11 pr-4 text-neutral-900 dark:text-white text-sm outline-none transition-all duration-200 placeholder-neutral-400 font-mono"
+                  placeholder="Enter MS Access Database Path..."
+                  className="w-full bg-white dark:bg-[#0b0c10] border border-neutral-300 dark:border-neutral-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 rounded-2xl py-4 pl-14 pr-4 text-neutral-900 dark:text-white text-sm outline-none transition-all duration-300 placeholder-neutral-400 font-mono shadow-inner"
                 />
               </div>
               <button
                 onClick={handleStartExtraction}
                 disabled={isExtracting}
-                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 select-none active:scale-[0.98] ${
+                className={`px-8 py-4 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-3 select-none active:scale-[0.97] ${
                   isExtracting 
-                    ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-500 border border-neutral-300 dark:border-neutral-700 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 cursor-pointer'
+                    ? 'bg-gradient-to-r from-indigo-600/50 to-purple-600/50 text-white/70 border border-indigo-500/20 cursor-not-allowed shadow-[0_4px_12px_rgba(99,102,241,0.15)] animate-pulse'
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-[0_8px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_12px_25px_rgba(99,102,241,0.4)] cursor-pointer border border-indigo-400/30'
                 }`}
               >
                 {isExtracting ? (
                   <>
-                    <Clock size={16} className="animate-spin" />
+                    <Clock size={18} className="animate-spin text-white" />
                     <span>Extracting...</span>
                   </>
                 ) : (
                   <>
-                    <Play size={16} className="fill-current" />
+                    <Play size={18} className="fill-current drop-shadow-md" />
                     <span>Start Extraction</span>
                   </>
                 )}
