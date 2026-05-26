@@ -16,8 +16,8 @@ import shutil
 from pathlib import Path
 
 # ── Directories ───────────────────────────────────────────────────────────────
-BASE_DIR = Path(__file__).parent.parent
-DATABASE_JSON_DIR = BASE_DIR.parent.parent.parent / "VBA" / "vba_source" / "output"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATABASE_JSON_DIR = BASE_DIR.parent.parent.parent.parent / "data"
 
 AGENTS = ["ui", "logic", "service", "repo"]
 

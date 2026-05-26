@@ -128,17 +128,17 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               "height": 28,
               "background-color": "#1e2333",
               "border-width": 3,
-              "border-color": "#374151",
+              "border-color": "var(--border-color)",
               "label": "data(label)",
               "text-valign": "bottom",
               "text-halign": "center",
               "text-margin-y": 5,
               "font-size": 11,
               "font-family": "sans-serif",
-              "color": "#e5e7eb",
+              "color": "var(--text-main)",
               "text-wrap": "ellipsis",
               "text-max-width": 100,
-              "text-background-color": "#0f1115",
+              "text-background-color": "var(--bg-dark)",
               "text-background-opacity": 0.8,
               "text-background-padding": "2px",
               "text-background-shape": "roundrectangle",
@@ -245,9 +245,9 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               "arrow-scale": 0.8,
               "label": "data(label)",
               "font-size": 9,
-              "color": "#6b7280",
+              "color": "var(--text-muted)",
               "text-rotation": "autorotate",
-              "text-background-color": "#0f1115",
+              "text-background-color": "var(--bg-dark)",
               "text-background-opacity": 0.9,
               "text-background-padding": "2px",
               "text-background-shape": "roundrectangle",
@@ -459,16 +459,16 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 ]
             ).map((s, i) => (
               <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-                {i > 0 && <span style={{ color: "#374151" }}>·</span>}
+                {i > 0 && <span style={{ color: "var(--border-color)" }}>·</span>}
                 <span style={{ color: s.c, fontWeight: 700 }}>{s.n}</span>
-                <span style={{ color: "#6b7280" }}>{s.label}</span>
+                <span style={{ color: "var(--text-muted)" }}>{s.label}</span>
               </span>
             ))}
-            <span style={{ color: "#374151", margin: "0 4px" }}>·</span>
-            <button onClick={buildGraph} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Reload">↺</button>
+            <span style={{ color: "var(--border-color)", margin: "0 4px" }}>·</span>
+            <button onClick={buildGraph} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Reload">↺</button>
             {graphKind === "wpf" && (
               <>
-                <span style={{ color: "#374151", margin: "0 4px" }}>·</span>
+                <span style={{ color: "var(--border-color)", margin: "0 4px" }}>·</span>
                 <button
                   onClick={runSourceReview}
                   disabled={sourceLoading}
@@ -511,7 +511,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               <span style={{ color: testReport.success ? "#22c55e" : "#ef4444", fontSize: 12, fontWeight: 800 }}>
                 WPF Graph Test: {testReport.success ? "PASS" : "FAIL"}
               </span>
-              <button onClick={() => setTestReport(null)} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 14 }}>x</button>
+              <button onClick={() => setTestReport(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 14 }}>x</button>
             </div>
             <div style={{ color: "#94a3b8", fontSize: 11, marginBottom: 8 }}>
               {testReport.summary?.errors ?? 0} errors · {testReport.summary?.warnings ?? 0} warnings · {testReport.summary?.nodes ?? 0} nodes · {testReport.summary?.edges ?? 0} edges
@@ -531,7 +531,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 {(testReport.warnings || []).slice(0, 4).map((warn: any, idx: number) => (
                   <div key={`${warn.rule}-${idx}`} style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.28)", borderRadius: 6, padding: 8 }}>
                     <div style={{ color: "#86efac", fontSize: 10, fontWeight: 800 }}>{warn.rule}</div>
-                    <div style={{ color: "#e5e7eb", fontSize: 11, lineHeight: 1.35 }}>{warn.message}</div>
+                    <div style={{ color: "var(--text-main)", fontSize: 11, lineHeight: 1.35 }}>{warn.message}</div>
                   </div>
                 ))}
               </div>
@@ -546,8 +546,8 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               <div style={{ width: 64, height: 64, borderRadius: "50%", border: `4px solid ${rootCfg.ring}33`, borderTopColor: rootCfg.ring, animation: "spin 0.9s linear infinite" }} />
               <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{rootCfg.icon}</span>
             </div>
-            <span style={{ color: "#6b7280", fontSize: 12 }}>
-              Loading {graphKind === "wpf" ? "WPF " : ""}graph for <strong style={{ color: "#9ca3af" }}>{name}</strong>…
+            <span style={{ color: "var(--text-muted)", fontSize: 12 }}>
+              Loading {graphKind === "wpf" ? "WPF " : ""}graph for <strong style={{ color: "var(--text-muted)" }}>{name}</strong>…
             </span>
           </div>
         )}
@@ -571,12 +571,12 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 <div key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ width: 12, height: 12, borderRadius: "50%", background: c.bg, border: `2px solid ${c.color}` }} />
                   <span style={{ fontSize: 10, color: c.color, fontWeight: 600 }}>{c.abbr}</span>
-                  <span style={{ fontSize: 10, color: "#6b7280", textTransform: "capitalize" }}>{t}</span>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "capitalize" }}>{t}</span>
                 </div>
               );
             })}
           </div>
-          <div style={{ marginTop: 6, fontSize: 9, color: "#374151" }}>
+          <div style={{ marginTop: 6, fontSize: 9, color: "var(--border-color)" }}>
             {graphKind === "wpf" && (
               <div style={{ marginBottom: 4, color: "#22d3ee", fontWeight: 600 }}>
                 WPF Expected: View → ViewModel → Command → Service → Repository
@@ -621,7 +621,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 9, color: nc.color, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 2 }}>{nc.abbr}</div>
-                  <div style={{ fontSize: 12, color: "#e5e7eb", fontWeight: 600, wordBreak: "break-all", lineHeight: 1.3 }}>{selectedNode.label}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-main)", fontWeight: 600, wordBreak: "break-all", lineHeight: 1.3 }}>{selectedNode.label}</div>
                 </div>
                 <button onClick={() => setSelectedNode(null)} style={{ background: "none", border: "none", color: "#4b5563", cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
               </div>
@@ -655,19 +655,19 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 )}
                 {selectedNode.mappingStatus && (
                   <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                    <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 700, marginBottom: 3 }}>MAPPING</div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>MAPPING</div>
                     <span style={{ fontSize: 11, color: selectedNode.mappingStatus === "mapped" ? "#4ade80" : "#facc15", fontWeight: 700 }}>
                       {selectedNode.mappingStatus}
                     </span>
                   </div>
                 )}
                 <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                  <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 700, marginBottom: 3 }}>NODE TYPE</div>
+                  <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>NODE TYPE</div>
                   <span style={{ fontSize: 11, background: `${nc.color}22`, border: `1px solid ${nc.color}55`, color: nc.color, padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>{nc.abbr}</span>
                 </div>
                 <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                  <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 700, marginBottom: 3 }}>ID</div>
-                  <div style={{ fontSize: 10, color: "#6b7280", wordBreak: "break-all", fontFamily: "monospace", lineHeight: 1.5 }}>{selectedNode.id}</div>
+                  <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>ID</div>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", wordBreak: "break-all", fontFamily: "monospace", lineHeight: 1.5 }}>{selectedNode.id}</div>
                 </div>
               </div>
             </div>

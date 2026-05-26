@@ -8,9 +8,9 @@ def load_template(template_name: str) -> dict:
     If TARGET_LANGUAGE is not 'ja', attempts to load the localized version from locales/ directory.
     Fallback to the original template if not found.
     """
-    proj_root = Path(__file__).resolve().parent.parent.parent.parent
-    template_dir = proj_root / "backend" / "layer2" / "schema" / "template"
-    locales_dir = proj_root / "backend" / "layer2" / "schema" / "locales"
+    layer2_dir = Path(__file__).resolve().parent.parent
+    template_dir = layer2_dir / "schema" / "template"
+    locales_dir = layer2_dir / "schema" / "locales"
     
     # 1. Base template
     base_path = template_dir / template_name

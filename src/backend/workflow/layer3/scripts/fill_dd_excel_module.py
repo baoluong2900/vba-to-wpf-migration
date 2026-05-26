@@ -407,7 +407,7 @@ def fill_common_header(ws: Worksheet, dd: dict, *,
         AO2 test_item_count    AP2 test_completed_count   (detail sheets only)
     """
     if branded_banner:
-        fill_branded_header_fields_by_label(ws)
+        fill_branded_header_fields_by_label(ws, author=dd.get("author") or dd.get("updated_by"))
     else:
         put(ws, "E1",  dd.get("system_name"))
         put(ws, "AD1", dd.get("author"))

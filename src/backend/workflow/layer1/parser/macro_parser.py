@@ -26,7 +26,7 @@ if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
 DEFAULT_INPUT_DIR = vba_dir / "Macros"
-DEFAULT_OUTPUT_DIR = vba_dir / "output" / "macros"
+DEFAULT_OUTPUT_DIR = ROOT / "data" / "macros"
 FORBIDDEN_FILENAME_CHARS = '\\/:*?"<>|'
 
 

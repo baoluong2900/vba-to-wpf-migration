@@ -22,6 +22,9 @@ config.json
 !.env.example
 src/backend/workflow/layer2/.env
 src/backend/layer3/scripts/layer3_output.env
+appsettings.json
+**/appsettings.json
+!**/appsettings.example.json
 
 # .NET / Visual Studio
 [Bb]in/

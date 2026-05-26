@@ -227,7 +227,7 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
     # ── Load S3 BD Logic result for event_content ─────────────────────────
     s3_logic_map: dict[str, dict] = {}
     from pathlib import Path
-    _OUTPUT_BASE = Path(__file__).resolve().parent.parent / "output"
+    _OUTPUT_BASE = Path(__file__).resolve().parent.parent.parent.parent / "output"
     s3_logic_path = _OUTPUT_BASE / "bd_flow" / "s3_bd_logic" / f"logic_{screen_id}_result.json"
     if s3_logic_path.exists():
         try:
@@ -788,7 +788,7 @@ def get_dd_skeleton(
     sample = json.loads(template_path.read_text(encoding="utf-8"))
     
     repo = Layer1Repo()
-    l1_dir = Path(__file__).resolve().parent.parent / "db" / "l1_repo"
+    l1_dir = Path(__file__).resolve().parent.parent.parent.parent / "db" / "l1_repo"
     resolver = TableResolver(l1_dir if l1_dir.exists() else None, repo, table_config)
     
     skeleton = _build_dd_skeleton(logic_items, bd_final, sample, all_queries=d1_all_queries)

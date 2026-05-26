@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 @source "../";
 
 @theme {
@@ -8,7 +9,23 @@
 
 @import '@xyflow/react/dist/style.css';
 
+/* ── Light Mode (Default) ── */
 :root {
+  --bg-dark: #f8fafc;
+  --bg-panel: #ffffff;
+  --border-color: #e2e8f0;
+  --brand-primary: #3b82f6;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --brand-glow: rgba(59, 130, 246, 0.4);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --node-bg: #ffffff;
+}
+
+/* ── Dark Mode ── */
+.dark {
   --bg-dark: #0f1115;
   --bg-panel: #1c1e26;
   --border-color: #2e3039;

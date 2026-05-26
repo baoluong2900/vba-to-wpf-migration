@@ -1,0 +1,361 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_Login",
+  "screen_name": "F_Login",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "変更履歴",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "画面仕様書(レイアウト)",
+    "description": "",
+    "timing": "",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [
+      {
+        "query_name": "Access配信日",
+        "query_display": "F000_SelQuery01"
+      }
+    ],
+    "process_overview": [
+      {
+        "summary_line": ""
+      },
+      {
+        "summary_line": ""
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "フォーム",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "画面を開く時",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open"
+      },
+      {
+        "event_id": "E001",
+        "title": "-",
+        "type": "フォーム",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "フォーム読み込み後",
+        "event_content": "",
+        "module_id": "F001",
+        "notes": "Form_Load"
+      },
+      {
+        "event_id": "E002",
+        "title": "-",
+        "type": "フォーム",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "キー押下時",
+        "event_content": "",
+        "module_id": "F002",
+        "notes": "Form_KeyDown"
+      },
+      {
+        "event_id": "E003",
+        "title": "-",
+        "type": "テキストボックス",
+        "logical_name": "TODO_txtPass",
+        "physical_name": "txtPass",
+        "event_trigger": "更新後処理",
+        "event_content": "",
+        "module_id": "F003",
+        "notes": "txtPass_AfterUpdate"
+      },
+      {
+        "event_id": "E004",
+        "title": "ログイン",
+        "type": "コマンドボタン",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "event_trigger": "クリック時",
+        "event_content": "",
+        "module_id": "F004",
+        "notes": "cmdLogin_Click"
+      },
+      {
+        "event_id": "E005",
+        "title": "閉じる",
+        "type": "コマンドボタン",
+        "logical_name": "閉じる",
+        "physical_name": "cmdTODO_閉じる",
+        "event_trigger": "クリック時",
+        "event_content": "",
+        "module_id": "F005",
+        "notes": "閉じる_Click"
+      },
+      {
+        "event_id": "E006",
+        "title": "新アフター管理DB",
+        "type": "ラベル",
+        "logical_name": "施工店情報",
+        "physical_name": "lblTODO_施工店情報",
+        "event_trigger": "ダブルクリック時",
+        "event_content": "",
+        "module_id": "F006",
+        "notes": "施工店情報_DblClick"
+      },
+      {
+        "event_id": "E007",
+        "title": "-",
+        "type": "ラベル",
+        "logical_name": "ラベル142",
+        "physical_name": "lblTODO_ラベル142",
+        "event_trigger": "クリック時",
+        "event_content": "",
+        "module_id": "F007",
+        "notes": "macro.A_メニューバーを表示"
+      },
+      {
+        "event_id": "E008",
+        "title": "-",
+        "type": "ラベル",
+        "logical_name": "ラベル142",
+        "physical_name": "lblTODO_ラベル142",
+        "event_trigger": "ダブルクリック時",
+        "event_content": "",
+        "module_id": "F008",
+        "notes": "macro.M300_Splash(M)を開く"
+      },
+      {
+        "event_id": "E009",
+        "title": "-",
+        "type": "ラベル",
+        "logical_name": "パスワードテーブルを開く",
+        "physical_name": "lblTODO_パスワードテーブルを開く",
+        "event_trigger": "ダブルクリック時",
+        "event_content": "",
+        "module_id": "F009",
+        "notes": "パスワードテーブルを開く_DblClick"
+      },
+      {
+        "event_id": "E010",
+        "title": "-",
+        "type": "ラベル",
+        "logical_name": "プロセス終了",
+        "physical_name": "lblTODO_プロセス終了",
+        "event_trigger": "ダブルクリック時",
+        "event_content": "",
+        "module_id": "F010",
+        "notes": "プロセス終了_DblClick"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "画面仕様書(画面編集)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "I",
+        "logical_name": "TODO_txtID",
+        "physical_name": "txtID",
+        "item_attribute": "テキストボックス",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 2,
+        "io": "O",
+        "logical_name": "ログインID",
+        "physical_name": "lblTODO_ログインID",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "ログインID：",
+        "notes": ""
+      },
+      {
+        "item_no": 3,
+        "io": "I",
+        "logical_name": "TODO_txtPass",
+        "physical_name": "txtPass",
+        "item_attribute": "テキストボックス",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "入力マスク: Password",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E003"
+      },
+      {
+        "item_no": 4,
+        "io": "O",
+        "logical_name": "パスワード",
+        "physical_name": "lblTODO_パスワード",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "パスワード：",
+        "notes": ""
+      },
+      {
+        "item_no": 5,
+        "io": "",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "item_attribute": "コマンドボタン",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E004"
+      },
+      {
+        "item_no": 6,
+        "io": "",
+        "logical_name": "閉じる",
+        "physical_name": "cmdTODO_閉じる",
+        "item_attribute": "コマンドボタン",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E005"
+      },
+      {
+        "item_no": 7,
+        "io": "O",
+        "logical_name": "施工店情報",
+        "physical_name": "lblTODO_施工店情報",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "新アフター管理DB",
+        "notes": "E006"
+      },
+      {
+        "item_no": 8,
+        "io": "",
+        "logical_name": "ラベル142",
+        "physical_name": "lblTODO_ラベル142",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E007,E008"
+      },
+      {
+        "item_no": 9,
+        "io": "O",
+        "logical_name": "ラベル7",
+        "physical_name": "lblTODO_ラベル7",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "※PCより自動取得",
+        "notes": ""
+      },
+      {
+        "item_no": 10,
+        "io": "",
+        "logical_name": "パスワードテーブルを開く",
+        "physical_name": "lblTODO_パスワードテーブルを開く",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E009"
+      },
+      {
+        "item_no": 11,
+        "io": "",
+        "logical_name": "プロセス終了",
+        "physical_name": "lblTODO_プロセス終了",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E010"
+      },
+      {
+        "item_no": 12,
+        "io": "O",
+        "logical_name": "ラベル400",
+        "physical_name": "lblTODO_ラベル400",
+        "item_attribute": "ラベル",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "2025/06/30公開Ver",
+        "notes": ""
+      },
+      {
+        "item_no": 13,
+        "io": "I/O",
+        "logical_name": "最新版公開日",
+        "physical_name": "txtTODO_最新版公開日",
+        "item_attribute": "テキストボックス",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[Access配信日]",
+        "source_field_or_fixed_value": "コメント",
+        "notes": ""
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": []
+}

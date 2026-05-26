@@ -28,7 +28,7 @@ function StepRow({ step, label, currentStep }: StepRowProps) {
   const done   = isStepDone(currentStep, step);
   const active = isStepActive(currentStep, step);
 
-  const color = active ? DD_COLOR : done ? '#10b981' : '#6b7280';
+  const color = active ? DD_COLOR : done ? '#10b981' : "var(--text-muted)";
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color, marginBottom: '4px' }}>
@@ -153,7 +153,7 @@ export const DdAgentNode = ({ data }: any) => {
               </button>
 
               {!canRun && (
-                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: 6, textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: "var(--text-muted)", marginTop: 6, textAlign: 'center' }}>
                   {isModuleMode ? 'Chờ truy vấn L1 Repo hoàn thành' : 'Chờ BD Agent hoàn thành trước'}
                 </div>
               )}

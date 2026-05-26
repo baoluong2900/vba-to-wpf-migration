@@ -31,7 +31,7 @@ if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
 DEFAULT_CSV = vba_dir / "Tables" / "AllColumns.csv"
-DEFAULT_OUTPUT_DIR = vba_dir / "output" / "tables"
+DEFAULT_OUTPUT_DIR = ROOT / "data" / "tables"
 
 FORBIDDEN_FILENAME = '\\/:*?"<>|'
 

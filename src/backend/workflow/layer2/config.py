@@ -10,8 +10,8 @@ import json
 from pathlib import Path
 
 # Ensure common is in sys.path
-_LAYER2_DIR = Path(__file__).resolve().parent.parent
-_BACKEND_DIR = _LAYER2_DIR.parent
+_LAYER2_DIR = Path(__file__).resolve().parent
+_BACKEND_DIR = _LAYER2_DIR.parent.parent
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
@@ -84,7 +84,7 @@ MAX_RETRIES: int = 3
 # ──────────────────────────────────────────────
 # Output directories
 # ──────────────────────────────────────────────
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 SCHEMA_TEMPLATE_DIR = os.path.join(BASE_DIR, "schema", "template")
 SCHEMA_OUTPUT_DIR = os.path.join(BASE_DIR, "schema", "output")

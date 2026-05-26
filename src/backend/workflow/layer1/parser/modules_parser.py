@@ -32,7 +32,7 @@ if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
 MOD_DIR = vba_dir / "Modules"
-OUT_DIR = vba_dir / "output" / "modules"
+OUT_DIR = ROOT / "data" / "modules"
 
 
 # ---------- encoding helpers ----------

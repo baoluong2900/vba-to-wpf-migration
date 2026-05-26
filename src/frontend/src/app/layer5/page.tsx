@@ -30,7 +30,7 @@ const LOGIC_CODE_CFG: Record<LogicCodeStatus, { icon: string; color: string; bg:
   DONE: { icon: "✅", color: "#10b981", bg: "#10b98118" },
   TODO: { icon: "⚠️", color: "#f59e0b", bg: "#f59e0b18" },
   EMPTY: { icon: "⚠️", color: "#f59e0b", bg: "#f59e0b18" },
-  SKIP: { icon: "⏭", color: "#6b7280", bg: "#6b728018" },
+  SKIP: { icon: "⏭", color: "var(--text-muted)", bg: "#6b728018" },
   ERROR: { icon: "❌", color: "#ef4444", bg: "#ef444418" },
 };
 interface TokenStats {
@@ -582,7 +582,7 @@ export default function Layer5Page() {
     const edgeStyle = (src: string) => {
       const st = agentStatuses[src]?.status;
       const c  = AGENTS.find(a => a.key === src);
-      return { stroke: st === "success" ? (c?.color || "#3b82f6") : "#2e3039", strokeWidth: 2 };
+      return { stroke: st === "success" ? (c?.color || "#3b82f6") : "var(--border-color)", strokeWidth: 2 };
     };
     const isDone = (k: string) => agentStatuses[k]?.status === "success";
 
@@ -668,13 +668,13 @@ export default function Layer5Page() {
           {/* Header row */}
           <div style={{ display: 'flex', alignItems: 'center', padding: taskSidebarCollapsed ? '12px 8px' : '10px 12px', borderBottom: '1px solid var(--border-color)', gap: 6, flexShrink: 0, minHeight: 42 }}>
             {!taskSidebarCollapsed && (
-              <span style={{ color: '#9ca3af', fontSize: '12px', fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                <strong style={{ color: '#e5e7eb' }}>L5</strong> Items
+              <span style={{ color: "var(--text-muted)", fontSize: '12px', fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                <strong style={{ color: "var(--text-main)" }}>L5</strong> Items
               </span>
             )}
             <button onClick={() => setTaskSidebarCollapsed(v => !v)}
               title={taskSidebarCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', padding: 2, borderRadius: 4, flexShrink: 0 }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: "var(--text-muted)", display: 'flex', alignItems: 'center', padding: 2, borderRadius: 4, flexShrink: 0 }}>
               {taskSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
             </button>
           </div>
@@ -686,7 +686,7 @@ export default function Layer5Page() {
                 <div key={idx} title={item.name}
                   onClick={() => { setScreenName(item.name); setTaskSidebarCollapsed(false); }}
                   style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: screenName === item.name ? 'rgba(168,85,247,0.2)' : 'transparent' }}>
-                  <DatabaseZap size={13} style={{ color: screenName === item.name ? '#a855f7' : '#6b7280' }} />
+                  <DatabaseZap size={13} style={{ color: screenName === item.name ? '#a855f7' : "var(--text-muted)" }} />
                 </div>
               ))}
             </div>
@@ -706,8 +706,8 @@ export default function Layer5Page() {
                     padding: "8px 14px", 
                     borderRadius: 6, 
                     border: "none", 
-                    background: screenName ? "linear-gradient(135deg, #a855f7, #6366f1)" : "#374151", 
-                    color: screenName ? "#fff" : "#6b7280", 
+                    background: screenName ? "linear-gradient(135deg, #a855f7, #6366f1)" : "var(--border-color)", 
+                    color: screenName ? "#fff" : "var(--text-muted)", 
                     fontSize: 12, 
                     fontWeight: 700, 
                     cursor: screenName ? "pointer" : "not-allowed",
@@ -717,7 +717,7 @@ export default function Layer5Page() {
                   <Play size={14} /> Run Pipeline
                 </button>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11 }}>
-                  <span style={{ color: "#9ca3af" }}>Progress: {pipelineProgress.done}/{pipelineProgress.total}</span>
+                  <span style={{ color: "var(--text-muted)" }}>Progress: {pipelineProgress.done}/{pipelineProgress.total}</span>
                   <span style={{ color: "#a855f7", fontWeight: 600 }}>{pipelineProgress.pct}%</span>
                 </div>
                 <div style={{ width: "100%", height: 6, background: "#1f2937", borderRadius: 4, overflow: "hidden" }}>
@@ -815,7 +815,7 @@ export default function Layer5Page() {
               }}
             >
               <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border-color)" />
-              <Controls style={{ background: "#1c1e26", fill: "#f3f4f6" }} />
+              <Controls style={{ background: "var(--bg-panel)", fill: "var(--text-main)" }} />
             </ReactFlow>
           </div>
         </div>
@@ -824,23 +824,23 @@ export default function Layer5Page() {
         <div className="terminal-sidebar" style={{ width: sidebarWidth }}>
           <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />
           <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "#151822" }}>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "#6b7280", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}
+            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}
               onClick={() => setRightTab("logs")}>
               <Settings2 size={13} /> Pipeline Log
             </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "preview" ? "#f59e0b" : "#6b7280", borderBottom: rightTab === "preview" ? "2px solid #f59e0b" : "2px solid transparent" }}
+            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "preview" ? "#f59e0b" : "var(--text-muted)", borderBottom: rightTab === "preview" ? "2px solid #f59e0b" : "2px solid transparent" }}
               onClick={() => setRightTab("preview")}>
               <Eye size={13} /> Preview
             </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tests" ? "#10b981" : "#6b7280", borderBottom: rightTab === "tests" ? "2px solid #10b981" : "2px solid transparent" }}
+            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tests" ? "#10b981" : "var(--text-muted)", borderBottom: rightTab === "tests" ? "2px solid #10b981" : "2px solid transparent" }}
               onClick={() => setRightTab("tests")}>
               <BarChart3 size={13} /> Tests
             </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tokens" ? "#a855f7" : "#6b7280", borderBottom: rightTab === "tokens" ? "2px solid #a855f7" : "2px solid transparent" }}
+            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tokens" ? "#a855f7" : "var(--text-muted)", borderBottom: rightTab === "tokens" ? "2px solid #a855f7" : "2px solid transparent" }}
               onClick={() => setRightTab("tokens")}>
               <BarChart3 size={13} /> Tokens
             </div>
-            <div style={{ padding: "10px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: rightTab === "logic" ? "#8b5cf6" : "#6b7280", borderBottom: rightTab === "logic" ? "2px solid #8b5cf6" : "2px solid transparent" }}
+            <div style={{ padding: "10px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: rightTab === "logic" ? "#8b5cf6" : "var(--text-muted)", borderBottom: rightTab === "logic" ? "2px solid #8b5cf6" : "2px solid transparent" }}
               onClick={() => setRightTab("logic")}>
               <Brain size={13} /> Logic
               {logicRunning && <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />}
@@ -860,7 +860,7 @@ export default function Layer5Page() {
                     <span className="log-time">[{log.time}]</span>
                     {log.agent && <span style={{ color: getAgentColor(log.agent), fontWeight: 600, fontSize: 11 }}>[{log.agent}]</span>}
                     <span style={{ color: getLogColor(log.level), fontWeight: "bold" }}> [{log.level}]</span>
-                    <span style={{ marginLeft: 6, color: "#e5e7eb" }}>{log.message}</span>
+                    <span style={{ marginLeft: 6, color: "var(--text-main)" }}>{log.message}</span>
                   </div>
                 ))}
                 <div ref={logsEndRef} />
@@ -876,7 +876,7 @@ export default function Layer5Page() {
                     style={{ flex: 1, fontFamily: "monospace", fontSize: 12, color: "#fbbf24", background: "#291c0a", padding: 16, borderRadius: 6, border: "1px solid #451a03", resize: "none", whiteSpace: "pre", overflowX: "auto" }} />
                 </>
               ) : (
-                <div style={{ color: "#6b7280", fontSize: 13, textAlign: "center", marginTop: 40 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", marginTop: 40 }}>
                   <Eye size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} /><br />
                   Click 👁 or 📄 on a node to preview files
                 </div>
@@ -893,7 +893,7 @@ export default function Layer5Page() {
                       <div style={{ fontSize: 14, fontWeight: 700, color: testResult.success ? "#10b981" : "#ef4444" }}>
                         {testResult.success ? "PASS" : "FAIL"} - dotnet test
                       </div>
-                      <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 3 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>
                         {testResult.formName} - {(testResult.duration / 1000).toFixed(1)}s - {testResult.timestamp}
                       </div>
                     </div>
@@ -903,8 +903,8 @@ export default function Layer5Page() {
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, fontSize: 11, color: "#d1d5db" }}>
-                    <div><span style={{ color: "#6b7280" }}>Project:</span> {testResult.project || "vba_brain.Tests"}</div>
-                    <div><span style={{ color: "#6b7280" }}>Filter:</span> {testResult.filter || "all tests"}</div>
+                    <div><span style={{ color: "var(--text-muted)" }}>Project:</span> {testResult.project || "vba_brain.Tests"}</div>
+                    <div><span style={{ color: "var(--text-muted)" }}>Filter:</span> {testResult.filter || "all tests"}</div>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
@@ -914,8 +914,8 @@ export default function Layer5Page() {
                       ["Failed", testSummary.failed, "#ef4444"],
                       ["Skipped", testSummary.skipped, "#f59e0b"],
                     ].map(([label, value, color]) => (
-                      <div key={String(label)} style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 6, padding: "8px 10px" }}>
-                        <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase" }}>{label}</div>
+                      <div key={String(label)} style={{ background: "var(--bg-dark)", border: "1px solid #1f2937", borderRadius: 6, padding: "8px 10px" }}>
+                        <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>{label}</div>
                         <div style={{ fontSize: 18, fontWeight: 800, color: String(color) }}>{String(value)}</div>
                       </div>
                     ))}
@@ -924,11 +924,11 @@ export default function Layer5Page() {
                   <div style={{ flex: 1, minHeight: 220, overflow: "auto", border: "1px solid #1f2937", borderRadius: 6, background: "#0b1220" }}>
                     {testResult.cases.length > 0 ? (
                       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-                        <thead style={{ position: "sticky", top: 0, background: "#111827", zIndex: 1 }}>
+                        <thead style={{ position: "sticky", top: 0, background: "var(--bg-dark)", zIndex: 1 }}>
                           <tr style={{ textAlign: "left" }}>
-                            <th style={{ padding: "8px 10px", color: "#9ca3af", width: 74 }}>Status</th>
-                            <th style={{ padding: "8px 10px", color: "#9ca3af" }}>Test case</th>
-                            <th style={{ padding: "8px 10px", color: "#9ca3af", width: 88 }}>Duration</th>
+                            <th style={{ padding: "8px 10px", color: "var(--text-muted)", width: 74 }}>Status</th>
+                            <th style={{ padding: "8px 10px", color: "var(--text-muted)" }}>Test case</th>
+                            <th style={{ padding: "8px 10px", color: "var(--text-muted)", width: 88 }}>Duration</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -939,9 +939,9 @@ export default function Layer5Page() {
                                   {testCase.outcome}
                                 </span>
                               </td>
-                              <td style={{ padding: "8px 10px", color: "#e5e7eb" }}>
+                              <td style={{ padding: "8px 10px", color: "var(--text-main)" }}>
                                 <div style={{ fontWeight: 700, lineHeight: 1.4, wordBreak: "break-word" }}>{testCase.name}</div>
-                                {testCase.className && <div style={{ color: "#6b7280", marginTop: 2, wordBreak: "break-word" }}>{testCase.className}</div>}
+                                {testCase.className && <div style={{ color: "var(--text-muted)", marginTop: 2, wordBreak: "break-word" }}>{testCase.className}</div>}
                                 {testCase.errorMessage && (
                                   <pre style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", color: "#fecaca", background: "#240b0b", border: "1px solid #7f1d1d", borderRadius: 4, padding: 8, fontFamily: "monospace", fontSize: 10 }}>
                                     {testCase.errorMessage}
@@ -953,13 +953,13 @@ export default function Layer5Page() {
                                   </pre>
                                 )}
                               </td>
-                              <td style={{ padding: "8px 10px", color: "#9ca3af", whiteSpace: "nowrap" }}>{testCase.duration || "-"}</td>
+                              <td style={{ padding: "8px 10px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{testCase.duration || "-"}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     ) : (
-                      <div style={{ color: "#6b7280", fontSize: 12, textAlign: "center", padding: 24 }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: 12, textAlign: "center", padding: 24 }}>
                         No testcase details found. Build may have failed before test execution.
                       </div>
                     )}
@@ -973,14 +973,14 @@ export default function Layer5Page() {
                     </>
                   )}
 
-                  <details style={{ color: "#9ca3af", fontSize: 12 }}>
+                  <details style={{ color: "var(--text-muted)", fontSize: 12 }}>
                     <summary style={{ cursor: "pointer", color: "#10b981", fontWeight: 700 }}>Raw dotnet output</summary>
                     <textarea readOnly value={testResult.output || "No dotnet test output."}
                       style={{ width: "100%", height: 120, marginTop: 8, fontFamily: "monospace", fontSize: 11, color: "#d1fae5", background: "#061b14", padding: 12, borderRadius: 6, border: "1px solid #064e3b", resize: "vertical", whiteSpace: "pre", overflowX: "auto" }} />
                   </details>
                 </>
               ) : (
-                <div style={{ color: "#6b7280", fontSize: 13, textAlign: "center", marginTop: 40 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", marginTop: 40 }}>
                   <BarChart3 size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} /><br />
                   Run Agent Test to see dotnet test results
                 </div>
@@ -1003,23 +1003,23 @@ export default function Layer5Page() {
               {tokenStats ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <div style={{ background: "#111827", padding: 12, borderRadius: 8, border: "1px solid #1f2937" }}>
-                      <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase" }}>Total Tokens</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: "#f3f4f6" }}>{tokenStats.total_tokens.toLocaleString()}</div>
+                    <div style={{ background: "var(--bg-dark)", padding: 12, borderRadius: 8, border: "1px solid #1f2937" }}>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Total Tokens</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)" }}>{tokenStats.total_tokens.toLocaleString()}</div>
                     </div>
-                    <div style={{ background: "#111827", padding: 12, borderRadius: 8, border: "1px solid #1f2937" }}>
-                      <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase" }}>Est. Cost (USD)</div>
+                    <div style={{ background: "var(--bg-dark)", padding: 12, borderRadius: 8, border: "1px solid #1f2937" }}>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>Est. Cost (USD)</div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>${tokenStats.total_cost_usd.toFixed(4)}</div>
                     </div>
                   </div>
 
-                  <div style={{ background: "#111827", borderRadius: 8, border: "1px solid #1f2937", overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-dark)", borderRadius: 8, border: "1px solid #1f2937", overflow: "hidden" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
                       <thead>
                         <tr style={{ background: "#1f2937", textAlign: "left" }}>
-                          <th style={{ padding: "8px 10px", color: "#9ca3af" }}>Agent / Task</th>
-                          <th style={{ padding: "8px 10px", color: "#9ca3af", textAlign: "right" }}>Tokens</th>
-                          <th style={{ padding: "8px 10px", color: "#9ca3af", textAlign: "right" }}>Cost</th>
+                          <th style={{ padding: "8px 10px", color: "var(--text-muted)" }}>Agent / Task</th>
+                          <th style={{ padding: "8px 10px", color: "var(--text-muted)", textAlign: "right" }}>Tokens</th>
+                          <th style={{ padding: "8px 10px", color: "var(--text-muted)", textAlign: "right" }}>Cost</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1027,9 +1027,9 @@ export default function Layer5Page() {
                           <tr key={i} style={{ borderBottom: "1px solid #1f2937" }}>
                             <td style={{ padding: "8px 10px" }}>
                               <div style={{ fontWeight: 600, color: getAgentColor(r.agent) }}>{r.agent.toUpperCase()}</div>
-                              <div style={{ fontSize: 10, color: "#6b7280" }}>{r.task_type} • {r.form_name}</div>
+                              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{r.task_type} • {r.form_name}</div>
                             </td>
-                            <td style={{ padding: "8px 10px", textAlign: "right", color: "#f3f4f6" }}>
+                            <td style={{ padding: "8px 10px", textAlign: "right", color: "var(--text-main)" }}>
                               {r.total_tokens.toLocaleString()}
                             </td>
                             <td style={{ padding: "8px 10px", textAlign: "right", color: "#10b981" }}>
@@ -1042,7 +1042,7 @@ export default function Layer5Page() {
                   </div>
                 </div>
               ) : (
-                <div style={{ color: "#6b7280", fontSize: 13, textAlign: "center", marginTop: 40 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", marginTop: 40 }}>
                   <BarChart3 size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} /><br />
                   Run an agent to see token usage
                 </div>
@@ -1055,12 +1055,12 @@ export default function Layer5Page() {
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
               {/* Phase selector — chỉ để xem/chọn, Run thực hiện từ node */}
               <div style={{ padding: "6px 12px", borderBottom: "1px solid var(--border-color)", background: "#151822", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 700 }}>PHASE</span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700 }}>PHASE</span>
                 {(["all", "ui", "service"] as LogicPhase[]).map(p => (
                   <button key={p} onClick={() => setLogicPhase(p)} style={{
-                    padding: "3px 8px", borderRadius: 4, border: `1px solid ${logicPhase === p ? "#8b5cf6" : "#2e3039"}`,
+                    padding: "3px 8px", borderRadius: 4, border: `1px solid ${logicPhase === p ? "#8b5cf6" : "var(--border-color)"}`,
                     background: logicPhase === p ? "#8b5cf622" : "transparent",
-                    color: logicPhase === p ? "#a78bfa" : "#6b7280",
+                    color: logicPhase === p ? "#a78bfa" : "var(--text-muted)",
                     fontSize: 11, fontWeight: 600, cursor: "pointer",
                   }}>{p.toUpperCase()}</button>
                 ))}
@@ -1079,7 +1079,7 @@ export default function Layer5Page() {
                   {[
                     { k: "DONE", v: logicSummary.done, color: "#10b981", icon: "✅" },
                     { k: "TODO", v: logicSummary.todo, color: "#f59e0b", icon: "⚠️" },
-                    { k: "SKIP", v: logicSummary.skip, color: "#6b7280", icon: "⏭" },
+                    { k: "SKIP", v: logicSummary.skip, color: "var(--text-muted)", icon: "⏭" },
                     { k: "ERROR", v: logicSummary.error, color: "#ef4444", icon: "❌" },
                   ].map(s => (
                     <div key={s.k} style={{ flex: 1, textAlign: "center", padding: "6px 4px", borderRight: "1px solid #1f2937" }}>
@@ -1096,7 +1096,7 @@ export default function Layer5Page() {
               {/* Log stream */}
               <div style={{ flex: 1, overflowY: "auto", padding: "8px 12px", fontFamily: "monospace", fontSize: 11, lineHeight: 1.6, background: "#0f1117" }}>
                 {logicLogs.length === 0 && !logicSummary && (
-                  <div style={{ color: "#374151", textAlign: "center", marginTop: 40, fontSize: 12 }}>
+                  <div style={{ color: "var(--border-color)", textAlign: "center", marginTop: 40, fontSize: 12 }}>
                     <Brain size={28} style={{ margin: "0 auto 8px", display: "block", opacity: 0.3 }} /><br />
                     Select form above → choose phase → Run Logic
                   </div>
@@ -1105,7 +1105,7 @@ export default function Layer5Page() {
                   const c = log.level === "ERROR" ? "#ef4444" : log.level === "SUCCESS" ? "#10b981" : log.level === "WARN" ? "#f59e0b" : log.level === "LLM" ? "#a855f7" : "#60a5fa";
                   return (
                     <div key={i} style={{ display: "flex", gap: 6, marginBottom: 1 }}>
-                      <span style={{ color: "#374151", flexShrink: 0 }}>[{log.ts}]</span>
+                      <span style={{ color: "var(--border-color)", flexShrink: 0 }}>[{log.ts}]</span>
                       <span style={{ color: c, fontWeight: 600, flexShrink: 0, minWidth: 50 }}>[{log.level}]</span>
                       <span style={{ color: "#d1d5db", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{log.message}</span>
                     </div>
@@ -1115,7 +1115,7 @@ export default function Layer5Page() {
                 {/* Event status table */}
                 {logicMethods.length > 0 && (
                   <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 10, color: "#6b7280", fontWeight: 700, marginBottom: 6, letterSpacing: 1 }}>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700, marginBottom: 6, letterSpacing: 1 }}>
                       EVENT STATUS — {screenName}
                       {logicPhase !== "all" && (
                         <span style={{
@@ -1131,7 +1131,7 @@ export default function Layer5Page() {
                       <thead>
                         <tr style={{ background: "#1a1d27" }}>
                           {["EID", "Type", "Handler", "C# Method", "Status", "Note"].map(h => (
-                            <th key={h} style={{ padding: "4px 6px", textAlign: "left", color: "#9ca3af", borderBottom: "1px solid #2e3039" }}>{h}</th>
+                            <th key={h} style={{ padding: "4px 6px", textAlign: "left", color: "var(--text-muted)", borderBottom: "1px solid #2e3039" }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -1146,7 +1146,7 @@ export default function Layer5Page() {
                               <tr key={i}
                                 onClick={() => m.code_preview && setPreviewContent({ title: m.cs_name ?? m.notes, content: m.code_preview })}
                                 style={{ borderBottom: "1px solid #1a1d27", cursor: m.code_preview ? "pointer" : "default", background: "transparent" }}>
-                                <td style={{ padding: "3px 6px", color: "#6b7280", fontFamily: "monospace" }}>{m.event_id}</td>
+                                <td style={{ padding: "3px 6px", color: "var(--text-muted)", fontFamily: "monospace" }}>{m.event_id}</td>
                                 <td style={{ padding: "3px 6px" }}>
                                   <span style={{
                                     padding: "1px 4px", borderRadius: 3, fontSize: 9, fontWeight: 700,
@@ -1156,14 +1156,14 @@ export default function Layer5Page() {
                                     {pt.toUpperCase()}
                                   </span>
                                 </td>
-                                <td style={{ padding: "3px 6px", color: "#e5e7eb", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={m.notes}>{m.notes}</td>
+                                <td style={{ padding: "3px 6px", color: "var(--text-main)", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={m.notes}>{m.notes}</td>
                                 <td style={{ padding: "3px 6px", color: "#93c5fd", fontFamily: "monospace", fontSize: 9 }}>{m.cs_name ?? "—"}</td>
                                 <td style={{ padding: "3px 6px" }}>
                                   <span style={{ display: "inline-flex", alignItems: "center", gap: 2, padding: "1px 5px", borderRadius: 3, fontSize: 9, fontWeight: 700, background: cfg.bg, color: cfg.color }}>
                                     {cfg.icon} {cs}
                                   </span>
                                 </td>
-                                <td style={{ padding: "3px 6px", color: "#6b7280", fontSize: 9, fontStyle: "italic" }}>{m.note}</td>
+                                <td style={{ padding: "3px 6px", color: "var(--text-muted)", fontSize: 9, fontStyle: "italic" }}>{m.note}</td>
                               </tr>
                             );
                           })}

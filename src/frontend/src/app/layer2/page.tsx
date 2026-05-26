@@ -157,9 +157,9 @@ export default function Layer2Workflow() {
   ];
 
   const initialEdgesScreen: Edge[] = [
-    { id: 'e2-3', source: '2', target: '3', animated: agentStatus === 'running' || agentStatus === 'success',  style: { stroke: queryStatus === 'success' ? '#3b82f6' : '#2e3039', strokeWidth: 2 } },
-    { id: 'e3-4', source: '3', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: agentStatus === 'success' ? '#f97316' : '#2e3039', strokeWidth: 2 } },
-    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : '#2e3039', strokeWidth: 2 } },
+    { id: 'e2-3', source: '2', target: '3', animated: agentStatus === 'running' || agentStatus === 'success',  style: { stroke: queryStatus === 'success' ? '#3b82f6' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e3-4', source: '3', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: agentStatus === 'success' ? '#f97316' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : "var(--border-color)", strokeWidth: 2 } },
   ];
 
   const initialNodesModule: Node[] = [
@@ -169,8 +169,8 @@ export default function Layer2Workflow() {
   ];
 
   const initialEdgesModule: Edge[] = [
-    { id: 'e2-4', source: '2', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: queryStatus === 'success' ? '#f97316' : '#2e3039', strokeWidth: 2 } },
-    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : '#2e3039', strokeWidth: 2 } },
+    { id: 'e2-4', source: '2', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: queryStatus === 'success' ? '#f97316' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : "var(--border-color)", strokeWidth: 2 } },
   ];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodesScreen);
@@ -537,14 +537,14 @@ export default function Layer2Workflow() {
           {/* Header row with toggle */}
           <div style={{ display: 'flex', alignItems: 'center', padding: taskSidebarCollapsed ? '12px 8px' : '10px 12px', borderBottom: '1px solid var(--border-color)', gap: 6, flexShrink: 0, minHeight: 42 }}>
             {!taskSidebarCollapsed && (
-              <span style={{ color: '#9ca3af', fontSize: '12px', fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                <strong style={{ color: '#e5e7eb' }}>vba_brain</strong> Explorer
+              <span style={{ color: "var(--text-muted)", fontSize: '12px', fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                <strong style={{ color: "var(--text-main)" }}>vba_brain</strong> Explorer
               </span>
             )}
             <button
               onClick={() => setTaskSidebarCollapsed(v => !v)}
               title={taskSidebarCollapsed ? 'Mở Task Explorer' : 'Thu gọn Task Explorer'}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', padding: 2, borderRadius: 4, flexShrink: 0 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: "var(--text-muted)", display: 'flex', alignItems: 'center', padding: 2, borderRadius: 4, flexShrink: 0 }}
             >
               {taskSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
             </button>
@@ -557,7 +557,7 @@ export default function Layer2Workflow() {
                 <div key={idx} title={item.name}
                   onClick={() => { setScreenName(item.name); setViewMode('screen'); setCenterView('graph'); setTaskSidebarCollapsed(false); }}
                   style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: screenName === item.name ? 'rgba(59,130,246,0.2)' : 'transparent' }}>
-                  <DatabaseZap size={13} style={{ color: screenName === item.name ? '#3b82f6' : '#6b7280' }} />
+                  <DatabaseZap size={13} style={{ color: screenName === item.name ? '#3b82f6' : "var(--text-muted)" }} />
                 </div>
               ))}
             </div>
@@ -652,8 +652,8 @@ export default function Layer2Workflow() {
               ◈ WPF Graph
             </button>
             {screenName && (
-              <span style={{ marginLeft: 8, fontSize: '12px', color: '#6b7280' }}>
-                — <span style={{ color: '#e5e7eb', fontWeight: 600 }}>{screenName}</span>
+              <span style={{ marginLeft: 8, fontSize: '12px', color: "var(--text-muted)" }}>
+                — <span style={{ color: "var(--text-main)", fontWeight: 600 }}>{screenName}</span>
               </span>
             )}
           </div>
@@ -673,7 +673,7 @@ export default function Layer2Workflow() {
                 maxZoom={2}
               >
                 <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border-color)" />
-                <Controls style={{ background: '#1c1e26', fill: '#f3f4f6' }} />
+                <Controls style={{ background: "var(--bg-panel)", fill: "var(--text-main)" }} />
               </ReactFlow>
             </div>
           )}
@@ -702,7 +702,7 @@ export default function Layer2Workflow() {
                   );
                 })()
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6b7280', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: "var(--text-muted)", gap: '12px' }}>
                   <span style={{ fontSize: 48, opacity: 0.5 }}>{centerView === "graphWpf" ? "◈" : "🕸"}</span>
                   <span style={{ fontSize: '14px' }}>Chọn một Form / Module / Macro từ Task Explorer bên trái</span>
                 </div>
@@ -717,19 +717,19 @@ export default function Layer2Workflow() {
           
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: '#151822' }}>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? '#10b981' : '#6b7280', borderBottom: activeTab === 'logs' ? '2px solid #10b981' : '2px solid transparent' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? '#10b981' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid #10b981' : '2px solid transparent' }}
               onClick={() => setActiveTab('logs')}
             >
               <Terminal size={13} /> System Log
             </div>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'preview' ? '#f59e0b' : '#6b7280', borderBottom: activeTab === 'preview' ? '2px solid #f59e0b' : '2px solid transparent' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'preview' ? '#f59e0b' : "var(--text-muted)", borderBottom: activeTab === 'preview' ? '2px solid #f59e0b' : '2px solid transparent' }}
               onClick={() => setActiveTab('preview')}
             >
               <DatabaseZap size={13} /> DB Preview
             </div>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'tokens' ? '#a855f7' : '#6b7280', borderBottom: activeTab === 'tokens' ? '2px solid #a855f7' : '2px solid transparent', position: 'relative' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'tokens' ? '#a855f7' : "var(--text-muted)", borderBottom: activeTab === 'tokens' ? '2px solid #a855f7' : '2px solid transparent', position: 'relative' }}
               onClick={() => setActiveTab('tokens')}
             >
               <BarChart2 size={13} /> Token Stats
@@ -746,7 +746,7 @@ export default function Layer2Workflow() {
                   <div key={i} className="log-line">
                     <span className="log-time">[{log.time}]</span>
                     <span style={{ color: getLogColor(log.level), fontWeight: 'bold' }}>[{log.level}]</span>
-                    <span style={{ marginLeft: 6, color: '#e5e7eb' }}>{log.message}</span>
+                    <span style={{ marginLeft: 6, color: "var(--text-main)" }}>{log.message}</span>
                   </div>
                 ))}
                 <div ref={logsEndRef} />
@@ -784,14 +784,14 @@ export default function Layer2Workflow() {
                     <thead>
                       <tr style={{ background: '#1a1f2e' }}>
                         {['Item', 'Model', 'Stage', 'Input', 'Output', 'Cost $'].map(h => (
-                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: '#6b7280', fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
+                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {tokenStats.records.map((r, i) => (
-                        <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : '#111827' }}>
-                          <td style={{ padding: '4px 6px', color: '#e5e7eb', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
+                        <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : "var(--bg-dark)" }}>
+                          <td style={{ padding: '4px 6px', color: "var(--text-main)", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
                           <td style={{ padding: '4px 6px', color: '#93c5fd', fontSize: 10 }}>{r.model}</td>
                           <td style={{ padding: '4px 6px', color: '#fbbf24', fontSize: 10 }}>{r.stage}</td>
                           <td style={{ padding: '4px 6px', color: '#a5b4fc', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
@@ -826,14 +826,14 @@ export default function Layer2Workflow() {
                     <thead>
                       <tr style={{ background: '#1a1f2e' }}>
                         {['Item', 'Model', 'Stage', 'Input', 'Output', 'Cost $'].map(h => (
-                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: '#6b7280', fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
+                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {ddTokenStats.records.map((r, i) => (
-                        <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : '#111827' }}>
-                          <td style={{ padding: '4px 6px', color: '#e5e7eb', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
+                        <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : "var(--bg-dark)" }}>
+                          <td style={{ padding: '4px 6px', color: "var(--text-main)", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
                           <td style={{ padding: '4px 6px', color: '#93c5fd', fontSize: 10 }}>{r.model}</td>
                           <td style={{ padding: '4px 6px', color: '#fbbf24', fontSize: 10 }}>{r.stage}</td>
                           <td style={{ padding: '4px 6px', color: '#a5b4fc', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
@@ -868,14 +868,14 @@ export default function Layer2Workflow() {
               })()}
 
               {!tokenStats && !ddTokenStats && (
-                <div style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', marginTop: 40 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: 'center', marginTop: 40 }}>
                   <BarChart2 size={32} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
                   Chưa có dữ liệu. Hãy chạy BD Agent hoặc DD Agent.
                 </div>
               )}
 
               {lastLogFile && (
-                <div style={{ marginTop: 16, padding: '8px 12px', background: '#111827', borderRadius: 6, border: '1px solid #1d4ed8', fontSize: 11, color: '#93c5fd' }}>
+                <div style={{ marginTop: 16, padding: '8px 12px', background: "var(--bg-dark)", borderRadius: 6, border: '1px solid #1d4ed8', fontSize: 11, color: '#93c5fd' }}>
                   📁 Log file: <span style={{ color: '#60a5fa', wordBreak: 'break-all' }}>{lastLogFile}</span>
                 </div>
               )}
@@ -916,7 +916,7 @@ export default function Layer2Workflow() {
                         </button>
                       )}
                       
-                      <div style={{ width: '1px', background: '#374151', margin: '0 4px' }} />
+                      <div style={{ width: '1px', background: "var(--border-color)", margin: '0 4px' }} />
                       
                       <button 
                         onClick={handleCopyJson}
@@ -952,7 +952,7 @@ export default function Layer2Workflow() {
                   />
                 </div>
               ) : (
-                <div style={{ color: '#6b7280', fontSize: '13px', textAlign: 'center', marginTop: '40px' }}>
+                <div style={{ color: "var(--text-muted)", fontSize: '13px', textAlign: 'center', marginTop: '40px' }}>
                   <DatabaseZap size={32} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
                   Dữ liệu rỗng. Hãy chạy Node truy vấn MongoDB.
                 </div>

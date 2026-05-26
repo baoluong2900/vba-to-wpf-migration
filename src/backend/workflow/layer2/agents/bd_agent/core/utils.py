@@ -242,7 +242,7 @@ def resolve_names(logical_in: str, attribute: str) -> tuple[str, str]:
         return "", logical_in
 
     # Load translation maps
-    schema_dir = Path(__file__).resolve().parent.parent.parent / "schema"
+    schema_dir = Path(__file__).resolve().parent.parent.parent.parent / "schema"
     config_path = schema_dir / "logical_to_physical.json"
     reverse_config_path = schema_dir / "physical_to_logical.json"
     

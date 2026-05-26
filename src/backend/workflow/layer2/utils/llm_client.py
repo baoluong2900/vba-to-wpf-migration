@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Ensure common is in sys.path
 _LAYER2_DIR = Path(__file__).resolve().parent.parent
-_BACKEND_DIR = _LAYER2_DIR.parent
+_BACKEND_DIR = _LAYER2_DIR.parent.parent
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 

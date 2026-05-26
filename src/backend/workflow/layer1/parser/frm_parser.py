@@ -25,7 +25,7 @@ if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
 DEFAULT_INPUT_DIR = vba_dir / "Forms"
-DEFAULT_OUTPUT_DIR = vba_dir / "output" / "forms"
+DEFAULT_OUTPUT_DIR = ROOT / "data" / "forms"
 
 
 # --------------------------------------------------------------------------- #

@@ -764,12 +764,13 @@ def put_value_right_of_label(
     return False
 
 
-def fill_branded_header_fields_by_label(ws: Worksheet) -> None:
+def fill_branded_header_fields_by_label(ws: Worksheet, author: str = None) -> None:
     """Fill fixed システム名 / 作成者 / 作成日 values on any sheet that uses the banner."""
     today = date.today().strftime("%d/%m/%Y")
+    creator = author or os.environ.get("L3_UPDATED_BY", "").strip() or "System"
     pairs = (
         ("システム名", "vba_brain"),
-        ("作成者", "RikkeiTool"),
+        ("作成者", creator),
         ("作成日", today),
     )
     for lbl, val in pairs:
@@ -884,7 +885,7 @@ def locate_template_row(ws: Worksheet,
 # ─────────────────────────────────────────────
 def fill_common_header_layout(ws: Worksheet, bd: dict) -> None:
     """Header block on Layout sheet (rows 1-4)."""
-    fill_branded_header_fields_by_label(ws)
+    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "W4", bd.get("screen_name"))
@@ -894,7 +895,7 @@ def fill_common_header_layout(ws: Worksheet, bd: dict) -> None:
 
 def fill_common_header_edit(ws: Worksheet, bd: dict) -> None:
     """Header block on Edit sheet (rows 1-4)."""
-    fill_branded_header_fields_by_label(ws)
+    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "W4", bd.get("screen_name"))
@@ -904,7 +905,7 @@ def fill_common_header_edit(ws: Worksheet, bd: dict) -> None:
 
 def fill_common_header_event(ws: Worksheet, bd: dict) -> None:
     """Header block on Event (Table Update) sheet."""
-    fill_branded_header_fields_by_label(ws)
+    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
     put(ws, "N3", bd.get("subsystem_name"))
     put(ws, "G6", bd.get("screen_id"))
     put(ws, "T6", bd.get("screen_name"))
@@ -951,6 +952,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
     author = (bd.get("author") or "").strip()
     if author.upper() == "N/A":
         author = ""
+    updater = os.environ.get("L3_UPDATED_BY", author or "System").strip() or "System"
         
     if is_english:
         approver = author or "(Approver not set)"
@@ -960,7 +962,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-01-15",
                 "content": f"First Edition: Newly created screen specification for {sid} ({sname})",
                 "reason": "Generated initial template from vba_brain POC / BD JSON",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -968,7 +970,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-01-29",
                 "content": "Reflected header information (System Name, Sub-system Name, Author)",
                 "reason": "To fill empty fields in the common header during review",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -976,7 +978,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-06",
                 "content": "Updated screen layout description, timing, and constraints",
                 "reason": "Reflected business-side review comments",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -984,7 +986,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-13",
                 "content": "Organized event list (Event ID, trigger, processing content)",
                 "reason": "Unified event granularity and naming conventions",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -992,7 +994,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-21",
                 "content": "Supplemented item definitions (logical name, physical name, type) in the edit sheet",
                 "reason": "Resolved lack of item definitions to front-load implementation preparation",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1000,7 +1002,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-04",
                 "content": "Reviewed input/output item mapping in the table update sheet",
                 "reason": "Corrected differences with the target update table",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1008,7 +1010,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-18",
                 "content": "Added file specifications (output layout, naming rules)",
                 "reason": "Added information necessary for report/CSV integration testing",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1016,7 +1018,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-31",
                 "content": "Supported automatic detection logic for template rows",
                 "reason": "To prevent layout break when adding Excel rows",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1024,7 +1026,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-04-12",
                 "content": "Unified the minimum displayed rows in the change history to 10 rows",
                 "reason": "Addressed review feedback regarding insufficient history rows",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1032,7 +1034,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-04-22",
                 "content": "Always enabled change history mock (improves display quality when empty)",
                 "reason": "Resolved the issue of history appearing empty during demos/reviews",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
         ]
@@ -1044,7 +1046,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-01-15",
                 "content": f"初版：{sid}（{sname}）画面仕様書を新規作成",
                 "reason": "vba_brain POC / BD JSON から initial template を生成",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1052,7 +1054,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-01-29",
                 "content": "ヘッダ情報（システム名・サブシステム名・作成者）を反映",
                 "reason": "レビュー時に共通ヘッダの空欄を解消するため",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1060,7 +1062,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-06",
                 "content": "画面レイアウト説明・タイミング・制約条件を更新",
                 "reason": "業務側レビューコメントを反映",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1068,7 +1070,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-13",
                 "content": "イベント一覧（イベントID・トリガー・処理内容）を整理",
                 "reason": "イベント粒度と命名規則を統一",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1076,7 +1078,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-02-21",
                 "content": "画面編集シートの項目定義（論理名・物理名・型）を補完",
                 "reason": "項目定義の不足を解消し実装準備を前倒し",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1084,7 +1086,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-04",
                 "content": "テーブル更新シートの入力/出力項目マッピングを見直し",
                 "reason": "更新対象テーブルとの差異を修正",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1092,7 +1094,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-18",
                 "content": "ファイル仕様書（出力レイアウト・命名規則）を追記",
                 "reason": "帳票/CSV連携テストに必要な情報を追加",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1100,7 +1102,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-03-31",
                 "content": "テンプレート行の自動検出ロジックに対応",
                 "reason": "Excel行追加時にも崩れないようにするため",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1108,7 +1110,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-04-12",
                 "content": "変更履歴の最小表示行数を10行へ統一",
                 "reason": "レビュー指摘（履歴行不足）への対応",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
             {
@@ -1116,7 +1118,7 @@ def build_mock_change_history(bd: dict) -> list[dict]:
                 "date": "2026-04-22",
                 "content": "変更履歴モックを常時有効化（空データ時の表示品質改善）",
                 "reason": "デモ/レビュー時に履歴が空に見える問題を解消",
-                "updated_by": "Quang Rikkei",
+                "updated_by": updater,
                 "approver": approver,
             },
         ]

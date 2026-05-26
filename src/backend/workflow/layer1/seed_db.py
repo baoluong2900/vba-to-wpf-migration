@@ -27,7 +27,13 @@ CONFIG_FILE = Path("config.json")
 if not CONFIG_FILE.exists():
     CONFIG_FILE = ROOT / "config.json"
 
-DATABASE_JSON_DIR = ROOT / "src" / "VBA" / "vba_source" / "output"
+# Add src/backend/ to sys.path to resolve common.config
+_LAYER1_DIR = Path(__file__).resolve().parent
+_BACKEND_DIR = _LAYER1_DIR.parent.parent
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+
+DATABASE_JSON_DIR = ROOT / "data"
 
 ALL_FOLDERS = ["forms", "macros", "modules", "queries", "tables"]
 
@@ -37,18 +43,24 @@ def load_config() -> tuple[str, str]:
     mongo_uri = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
     mongo_db = os.environ.get("MONGO_DB", "vba_brain_core")
 
-    if CONFIG_FILE.exists():
-        try:
-            cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-            mongo_cfg = cfg.get("mongodb", {})
-            if "uri" in mongo_cfg:
-                mongo_uri = mongo_cfg["uri"]
-            if "db" in mongo_cfg:
-                mongo_db = mongo_cfg["db"]
-        except Exception as e:
-            print(f"[WARN] Error reading config.json: {e}. Using defaults/environment.")
-            
-    return mongo_uri, mongo_db
+    try:
+        # Try loading from the unified common.config first
+        from common.config import MONGO_URI as cfg_uri, MONGO_DB as cfg_db
+        return cfg_uri, cfg_db
+    except Exception:
+        # Fallback to manual reading of config.json
+        if CONFIG_FILE.exists():
+            try:
+                cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+                mongo_cfg = cfg.get("mongodb", {})
+                if "uri" in mongo_cfg:
+                    mongo_uri = mongo_cfg["uri"]
+                if "db" in mongo_cfg:
+                    mongo_db = mongo_cfg["db"]
+            except Exception as e:
+                print(f"[WARN] Error reading config.json: {e}. Using defaults/environment.")
+                
+        return mongo_uri, mongo_db
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def clean_large_fields(obj: Any) -> None:

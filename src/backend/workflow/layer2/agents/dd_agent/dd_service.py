@@ -19,7 +19,7 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-_LAYER2_DIR = Path(__file__).resolve().parent.parent
+_LAYER2_DIR = Path(__file__).resolve().parent.parent.parent
 _SCHEMA_DIR  = _LAYER2_DIR / "schema" / "template"
 _OUTPUT_BASE = _LAYER2_DIR / "output"
 
@@ -87,7 +87,7 @@ class DDService:
 
         # ── File backup ───────────────────────────────────────────────────
         try:
-            backup_dir = _LAYER2_DIR.parent.parent.parent / "VBA" / "vba_source" / "output" / "dds"
+            backup_dir = _LAYER2_DIR.parent.parent.parent.parent / "data" / "dds"
             backup_dir.mkdir(parents=True, exist_ok=True)
             dest = backup_dir / d4_file.name
             shutil.copy2(d4_file, dest)
@@ -174,7 +174,7 @@ class DDService:
         logger.info("[DD Service] [D1] Fetching dd_code_json from DB for %s ...", screen_name)
         
         # Load BD source for dependency hints
-        bd_source_path = _OUTPUT_BASE / "bd_flow" / "s1_bd_form" / f"{screen_name}_source.json"
+        bd_source_path = _OUTPUT_BASE / "bd_flow" / "s1_bd_form" / f"{screen_name}.json"
         bd_source = None
         if bd_source_path.exists():
             try:

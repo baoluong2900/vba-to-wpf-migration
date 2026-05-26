@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
-import { layer2Client, promisifyGrpcCall } from "../grpcClient";
+import { NextRequest, NextResponse } from 'next/server';
+import { layer2Client, promisifyGrpcCall } from '../../../grpcClient';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { screenName, model, force } = body;
+    const screenName = body.screenName || body.screen_name;
+    const model = body.model || body.target_model;
+    const force = body.force !== undefined ? body.force : !(body.use_cache ?? true);
 
     if (!screenName) {
       return NextResponse.json({ success: false, error: "Missing screenName" }, { status: 400 });
@@ -20,17 +22,13 @@ export async function POST(request: Request) {
     );
 
     if (!response.success) {
-      return NextResponse.json(
-        { success: false, error: response.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: response.error }, { status: 500 });
     }
 
-    // Response structure
-    const result = JSON.parse(response.result_json);
-    const paths = JSON.parse(response.paths_json);
-    const tokenStats = JSON.parse(response.token_stats_json);
-    const logFiles = JSON.parse(response.log_files_json);
+    const result = JSON.parse(response.result_json || "{}");
+    const paths = JSON.parse(response.paths_json || "{}");
+    const tokenStats = JSON.parse(response.token_stats_json || "{}");
+    const logFiles = JSON.parse(response.log_files_json || "[]");
 
     return NextResponse.json({
       success: true,

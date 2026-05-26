@@ -6,7 +6,7 @@ import fs from 'fs';
 let _config: any = null;
 function getConfig() {
   if (_config) return _config;
-  const cfgPath = path.resolve(process.cwd(), '../config.json');
+  const cfgPath = path.resolve(process.cwd(), '../../config.json');
   _config = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
   return _config;
 }

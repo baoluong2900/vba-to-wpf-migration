@@ -85,7 +85,7 @@ def get_dd_skeleton(
     logic_items = parse_dd_source(dd_code_json_path)
     sample = json.loads(template_path.read_text(encoding="utf-8"))
     
-    l1_dir = Path(__file__).resolve().parent.parent / "db" / "l1_repo"
+    l1_dir = Path(__file__).resolve().parent.parent.parent.parent / "db" / "l1_repo"
     resolver = TableResolver(l1_dir if l1_dir.exists() else None)
     
     table_config = _load_table_config(template_path)

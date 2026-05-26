@@ -359,7 +359,7 @@ class BDScreenSummaryGraph:
         from config import AVAILABLE_MODELS, DEV_MODEL
         from pathlib import Path
         
-        proj_root = Path(__file__).resolve().parent.parent
+        proj_root = Path(__file__).resolve().parent.parent.parent.parent
         s3_dir = proj_root / "output" / "bd_flow" / "s3_bd_logic"
         s3_dir.mkdir(parents=True, exist_ok=True)
         

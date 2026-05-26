@@ -61,7 +61,7 @@ COL_DDS = "dds"   # target collection for DD final docs
 COL_BDS = "bds"   # target collection for BD final docs
 
 # ── Backup Directories ────────────────────────────────────────────────────────
-DATABASE_JSON_DIR = BASE_DIR.parent.parent.parent / "VBA" / "vba_source" / "output"
+DATABASE_JSON_DIR = BASE_DIR.parent.parent.parent.parent / "data"
 DDS_BACKUP_DIR = DATABASE_JSON_DIR / "dds"
 BDS_BACKUP_DIR = DATABASE_JSON_DIR / "bds"
 

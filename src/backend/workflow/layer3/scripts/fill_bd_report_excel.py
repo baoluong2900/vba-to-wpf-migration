@@ -126,7 +126,7 @@ from fill_bd_excel import LAYOUT_EVENT_COL, LAYOUT_PROC_COL  # noqa: E402
 
 def fill_common_header_report_layout(ws: Worksheet, bd: dict) -> None:
     """Header on 帳票仕様書(レイアウト)."""
-    fill_branded_header_fields_by_label(ws)
+    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "S4", bd.get("screen_name"))
@@ -136,7 +136,7 @@ def fill_common_header_report_layout(ws: Worksheet, bd: dict) -> None:
 
 def fill_common_header_report_edit(ws: Worksheet, bd: dict) -> None:
     """Header on 帳票仕様書（項目編集）."""
-    fill_branded_header_fields_by_label(ws)
+    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "S4", bd.get("screen_name"))

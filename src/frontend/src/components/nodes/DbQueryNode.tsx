@@ -21,14 +21,14 @@ export const DbQueryNode = ({ data }: any) => {
       <div className="node-body">
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--brand-primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span>Target:</span>
-          <span style={{ color: '#e5e7eb' }}>{data.screenName || "Chưa chọn"}</span>
+          <span style={{ color: "var(--text-main)" }}>{data.screenName || "Chưa chọn"}</span>
         </div>
         <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 8 }}>
           Gọi qua <strong>layer1_repo.py</strong> để trích xuất ngữ cảnh liên kết.
         </div>
         <button 
           className="run-btn nodrag" 
-          style={{ background: '#f59e0b', color: '#111827' }}
+          style={{ background: '#f59e0b', color: "var(--bg-dark)" }}
           onClick={(e) => { e.stopPropagation(); data.handleQueryDB(); }}
           disabled={data.queryStatus === "running"}
         >

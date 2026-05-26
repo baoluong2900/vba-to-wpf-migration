@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2].parent
-DATABASE_JSON_DIR = PROJECT_ROOT / "VBA" / "vba_source" / "output"
+DATABASE_JSON_DIR = PROJECT_ROOT.parent / "data"
 
 DEFAULT_FORMS_SRC = DATABASE_JSON_DIR / "forms"
 DEFAULT_REPORTS_SRC = DATABASE_JSON_DIR / "reports"

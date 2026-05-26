@@ -4,7 +4,7 @@ import { Handle, Position } from "@xyflow/react";
 import { Play, Loader2, CheckCircle, AlertCircle, Clock, Download, FileSpreadsheet } from "lucide-react";
 
 const STATUS_CFG: Record<string, { color: string; bg: string; text: string; Icon: any }> = {
-  idle:    { color: "#6b7280", bg: "rgba(107,114,128,0.15)", text: "Idle",     Icon: Clock },
+  idle:    { color: "var(--text-muted)", bg: "rgba(107,114,128,0.15)", text: "Idle",     Icon: Clock },
   running: { color: "#3b82f6", bg: "rgba(59,130,246,0.15)", text: "Running…", Icon: Loader2 },
   success: { color: "#10b981", bg: "rgba(16,185,129,0.15)", text: "Done",     Icon: CheckCircle },
   error:   { color: "#ef4444", bg: "rgba(239,68,68,0.15)", text: "Error",     Icon: AlertCircle },
@@ -24,10 +24,10 @@ function L3ExcelNodeInner({ data }: { data: any }) {
 
   return (
     <div style={{
-      background: "#1e212b",
+      background: "var(--node-bg)",
       borderRadius: 12,
       width: 280,
-      border: `1px solid ${status === "success" ? color : status === "running" ? "#3b82f6" : "#2e3039"}`,
+      border: `1px solid ${status === "success" ? color : status === "running" ? "var(--brand-primary)" : "var(--border-color)"}`,
       boxShadow: isRunning ? `0 0 24px ${color}33` : "0 4px 16px rgba(0,0,0,0.25)",
       transition: "all 0.3s",
       overflow: "hidden",
@@ -38,14 +38,14 @@ function L3ExcelNodeInner({ data }: { data: any }) {
         display: "flex",
         alignItems: "center",
         gap: 8,
-        borderBottom: "1px solid #2e3039",
+        borderBottom: "1px solid var(--border-color)",
         borderTop: `2px solid ${color}`,
         background: `linear-gradient(90deg, ${color}18, transparent)`,
       }}>
         <span style={{ fontSize: 20 }}>{icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#e5e7eb" }}>{label}</div>
-          <div style={{ fontSize: 10, color: "#9ca3af" }}>{description}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-main)" }}>{label}</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{description}</div>
         </div>
         <span style={{
           display: "inline-flex", alignItems: "center", gap: 3,
@@ -67,7 +67,7 @@ function L3ExcelNodeInner({ data }: { data: any }) {
             background: `${color}18`, border: `1px solid ${color}33`,
             borderRadius: 4, padding: "4px 8px",
           }}>
-            <span style={{ fontSize: 9, color: "#6b7280", fontWeight: 700, flexShrink: 0 }}>
+            <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, flexShrink: 0 }}>
               🖥️ Item:
             </span>
             <span style={{
@@ -98,7 +98,7 @@ function L3ExcelNodeInner({ data }: { data: any }) {
               {outputFile}
             </span>
             {outputSizeKb && (
-              <span style={{ fontSize: 9, color: "#9ca3af", flexShrink: 0 }}>
+              <span style={{ fontSize: 9, color: "var(--text-muted)", flexShrink: 0 }}>
                 {outputSizeKb} KB
               </span>
             )}
@@ -107,7 +107,7 @@ function L3ExcelNodeInner({ data }: { data: any }) {
 
         {/* Duration */}
         {status === "success" && duration && (
-          <div style={{ fontSize: 10, color: "#9ca3af" }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
             ⏱ {(duration / 1000).toFixed(1)}s
           </div>
         )}
@@ -133,8 +133,8 @@ function L3ExcelNodeInner({ data }: { data: any }) {
               display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
               padding: "7px 8px", borderRadius: 6, border: "none",
               fontSize: 11, fontWeight: 600, cursor: selectedInput && !isRunning ? "pointer" : "not-allowed",
-              background: selectedInput ? `linear-gradient(135deg, ${color}, ${color}cc)` : "#374151",
-              color: selectedInput ? "#fff" : "#6b7280",
+              background: selectedInput ? `linear-gradient(135deg, ${color}, ${color}cc)` : "var(--border-color)",
+              color: selectedInput ? "#fff" : "var(--text-muted)",
               opacity: isRunning ? 0.7 : 1,
             }}
           >
@@ -150,9 +150,9 @@ function L3ExcelNodeInner({ data }: { data: any }) {
             title={status === "success" ? "Download Excel file" : "Generate first"}
             style={{
               padding: "7px 10px", borderRadius: 6,
-              border: `1px solid ${status === "success" ? color : "#374151"}`,
+              border: `1px solid ${status === "success" ? color : "var(--border-color)"}`,
               background: status === "success" ? `${color}22` : "transparent",
-              color: status === "success" ? color : "#6b7280",
+              color: status === "success" ? color : "var(--text-muted)",
               cursor: status === "success" ? "pointer" : "not-allowed",
               display: "flex", alignItems: "center",
             }}

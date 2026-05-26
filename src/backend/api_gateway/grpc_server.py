@@ -48,7 +48,7 @@ import layer4.sql_migration.router as l4_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("vba_brain.grpc_gateway")
 
-CONFIG_FILE = WORKSPACE_DIR.parent / "config.json"
+from common.config import config_data
 
 # --- Cost Tracker Helpers ---
 def _reset_tracker() -> CostTracker:
@@ -85,8 +85,7 @@ def _resolve_stage(model: str) -> str:
     if not model:
         return STAGE
     try:
-        cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        for pname, pcfg in cfg.get("llm_providers", {}).items():
+        for pname, pcfg in config_data.get("llm_providers", {}).items():
             if model in pcfg.get("models", []):
                 return "pilot" if pname == "beeknoee" else "dev"
     except Exception:
@@ -168,8 +167,7 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
 
     def GetConfig(self, request, context):
         try:
-            cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-            providers = cfg.get("llm_providers", {})
+            providers = config_data.get("llm_providers", {})
             models = []
             for pname, pcfg in providers.items():
                 for m in pcfg.get("models", []):
@@ -202,9 +200,8 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
                         return {"model": model_id, "status": "quota_exceeded", "error": str(e)[:120]}
                     return {"model": model_id, "status": "error", "error": str(e)[:120]}
 
-            cfg_data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
             all_model_ids = []
-            for pcfg in cfg_data.get("llm_providers", {}).values():
+            for pcfg in config_data.get("llm_providers", {}).values():
                 all_model_ids.extend(pcfg.get("models", []))
 
             results = {}
@@ -221,7 +218,7 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
 
     def GetBdStatus(self, request, context):
         try:
-            output_base = BACKEND_DIR / "layer2" / "output"
+            output_base = BACKEND_DIR / "workflow" / "layer2" / "output"
             s4_file = output_base / "bd_flow" / "s4_bd_final" / f"{request.screen_name}.json"
 
             d4_file = None

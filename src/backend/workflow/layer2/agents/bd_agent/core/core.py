@@ -264,7 +264,10 @@ def get_bd_mapping_dict(repo: Any, form_name: str, bd_code_json: dict[str, Any])
     proj_root = Path(__file__).resolve().parent.parent.parent
 
     # 1. Load sample using template_loader
-    from backend.layer2.utils.template_loader import load_template
+    try:
+        from utils.template_loader import load_template
+    except ImportError:
+        from workflow.layer2.utils.template_loader import load_template
     sample_json = load_template("bd_form.json")
     if not sample_json:
         return {}  # Fallback

@@ -274,7 +274,7 @@ export default function Layer3Page() {
       source: "bd_excel", sourceHandle: "bottom",
       target: "dd_excel", targetHandle: "top",
       animated: bdStatus.status === "success",
-      style: { stroke: bdStatus.status === "success" ? "#f59e0b" : "#2e3039", strokeWidth: 2 },
+      style: { stroke: bdStatus.status === "success" ? "#f59e0b" : "var(--border-color)", strokeWidth: 2 },
     }];
   }, [bdStatus.status, selectedItem]);
 
@@ -308,8 +308,8 @@ export default function Layer3Page() {
         {/* ── Left Sidebar ── */}
         <div className="task-sidebar" style={{ width: sidebarCollapsed ? 40 : 240, flexShrink: 0, transition: "width 0.22s", overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", padding: sidebarCollapsed ? "12px 8px" : "10px 12px", borderBottom: "1px solid var(--border-color)", gap: 6, minHeight: 42 }}>
-            {!sidebarCollapsed && <span style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600, flex: 1 }}><strong style={{ color: "#e5e7eb" }}>L3</strong> Items</span>}
-            <button onClick={() => setSidebarCollapsed(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", display: "flex", padding: 2, borderRadius: 4 }}>
+            {!sidebarCollapsed && <span style={{ color: "var(--text-muted)", fontSize: 12, fontWeight: 600, flex: 1 }}><strong style={{ color: "var(--text-main)" }}>L3</strong> Items</span>}
+            <button onClick={() => setSidebarCollapsed(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", padding: 2, borderRadius: 4 }}>
               {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} />}
             </button>
           </div>
@@ -327,8 +327,8 @@ export default function Layer3Page() {
                       ? (selectedItem?.type === "module" || selectedItem?.type === "macro"
                         ? "linear-gradient(135deg, #06b6d4, #0891b2)"
                         : "linear-gradient(135deg, #f59e0b, #06b6d4)")
-                      : "#374151",
-                    color: selectedName ? "#fff" : "#6b7280",
+                      : "var(--border-color)",
+                    color: selectedName ? "#fff" : "var(--text-muted)",
                     fontSize: 12, fontWeight: 700, cursor: selectedName ? "pointer" : "not-allowed",
                     boxShadow: selectedName ? "0 4px 12px rgba(6,182,212,0.2)" : "none",
                     transition: "all 0.2s"
@@ -340,7 +340,7 @@ export default function Layer3Page() {
                 <div style={{ position: "relative" }}>
                   <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
                   <input type="text" placeholder="Tìm theo tên…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 6, paddingBottom: 6, background: "#111827", border: "1px solid #374151", borderRadius: 6, color: "#e5e7eb", fontSize: 12, outline: "none" }} />
+                    style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 6, paddingBottom: 6, background: "var(--bg-dark)", border: "1px solid #374151", borderRadius: 6, color: "var(--text-main)", fontSize: 12, outline: "none" }} />
                 </div>
                 <div style={{ marginTop: 6, fontSize: 9, color: "#4b5563", display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <span>🟢 BD+DD</span><span>🟡 BD only</span><span>🔵 DD only</span><span>⚪ none</span>
@@ -355,7 +355,7 @@ export default function Layer3Page() {
                 const groupItems = filteredItems.filter(i => i.type === typeMap[group]);
                 return (
                   <div key={group}>
-                    <div style={{ display: "flex", alignItems: "center", padding: "6px 12px", cursor: "pointer", color: "#9ca3af", fontSize: 11, fontWeight: 700, gap: 4 }} onClick={() => toggleGroup(group)}>
+                    <div style={{ display: "flex", alignItems: "center", padding: "6px 12px", cursor: "pointer", color: "var(--text-muted)", fontSize: 11, fontWeight: 700, gap: 4 }} onClick={() => toggleGroup(group)}>
                       {collapsedGroups[group] ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                       {labelMap[group]}
                       <span style={{ marginLeft: "auto", fontSize: 10, background: bgMap[group], color: colorMap[group], borderRadius: 10, padding: "1px 6px", fontWeight: 700 }}>{countMap[group]}</span>
@@ -366,7 +366,7 @@ export default function Layer3Page() {
                         style={{
                           display: "flex", alignItems: "center", gap: 8, padding: "5px 16px", cursor: "pointer", fontSize: 12,
                           background: selectedName === item.name ? "rgba(245,158,11,0.15)" : "transparent",
-                          color: selectedName === item.name ? "#fbbf24" : "#9ca3af",
+                          color: selectedName === item.name ? "#fbbf24" : "var(--text-muted)",
                           borderLeft: selectedName === item.name ? "2px solid #f59e0b" : "2px solid transparent",
                         }}>
                         <span style={{ fontSize: 10, flexShrink: 0 }} title={
@@ -394,7 +394,7 @@ export default function Layer3Page() {
               nodeTypes={nodeTypes} minZoom={0.3} maxZoom={1.5} proOptions={{ hideAttribution: true }}
               onInit={rf => setTimeout(() => rf.fitView({ padding: 0.4 }), 50)}>
               <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--border-color)" />
-              <Controls style={{ background: "#1c1e26", fill: "#f3f4f6" }} />
+              <Controls style={{ background: "var(--bg-panel)", fill: "var(--text-main)" }} />
             </ReactFlow>
           </div>
         </div>
@@ -402,10 +402,10 @@ export default function Layer3Page() {
         {/* ── Right Sidebar: Logs + Files ── */}
         <div className="terminal-sidebar" style={{ width: 360 }}>
           <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "#151822" }}>
-            <div onClick={() => setRightTab("logs")} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "#6b7280", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}>
+            <div onClick={() => setRightTab("logs")} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}>
               <Settings2 size={13} /> Logs
             </div>
-            <div onClick={() => { setRightTab("files"); refreshOutputs(); }} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "files" ? "#f59e0b" : "#6b7280", borderBottom: rightTab === "files" ? "2px solid #f59e0b" : "2px solid transparent" }}>
+            <div onClick={() => { setRightTab("files"); refreshOutputs(); }} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "files" ? "#f59e0b" : "var(--text-muted)", borderBottom: rightTab === "files" ? "2px solid #f59e0b" : "2px solid transparent" }}>
               <Eye size={13} /> Files ({outputFiles.length})
             </div>
           </div>
@@ -416,7 +416,7 @@ export default function Layer3Page() {
                 <div key={i} className="log-line">
                   <span className="log-time">[{log.time}]</span>
                   <span style={{ color: getLogColor(log.level), fontWeight: "bold" }}> [{log.level}]</span>
-                  <span style={{ marginLeft: 6, color: "#e5e7eb" }}>{log.message}</span>
+                  <span style={{ marginLeft: 6, color: "var(--text-main)" }}>{log.message}</span>
                 </div>
               ))}
               <div ref={logsEndRef} />
@@ -426,7 +426,7 @@ export default function Layer3Page() {
           {rightTab === "files" && (
             <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
               {outputFiles.length === 0 ? (
-                <div style={{ color: "#6b7280", fontSize: 12, textAlign: "center", marginTop: 32 }}>
+                <div style={{ color: "var(--text-muted)", fontSize: 12, textAlign: "center", marginTop: 32 }}>
                   <FileSpreadsheet size={28} style={{ margin: "0 auto 8px", display: "block", opacity: 0.4 }} /><br />
                   No Excel files generated yet.<br />Select an item and click Generate.
                 </div>
@@ -434,8 +434,8 @@ export default function Layer3Page() {
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderBottom: "1px solid #1f2937", borderRadius: 4 }}>
                   <span style={{ fontSize: 16 }}>{f.doc_kind === "BD" ? "📊" : "📄"}</span>
                   <div style={{ flex: 1, overflow: "hidden" }}>
-                    <div style={{ fontSize: 11, color: "#e5e7eb", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.filename}>{f.filename}</div>
-                    <div style={{ fontSize: 10, color: "#6b7280" }}>{f.doc_kind} {f.doc_type} — {f.size_kb} KB</div>
+                    <div style={{ fontSize: 11, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.filename}>{f.filename}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{f.doc_kind} {f.doc_type} — {f.size_kb} KB</div>
                   </div>
                   <button onClick={() => handleDownload(f.download_url, f.filename)}
                     style={{ background: "none", border: "1px solid #374151", color: "#60a5fa", borderRadius: 4, padding: "3px 6px", cursor: "pointer", display: "flex", alignItems: "center" }}>

@@ -33,7 +33,7 @@ if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
 DEFAULT_INPUT_DIR = vba_dir / "Queries"
-DEFAULT_OUTPUT_DIR = vba_dir / "output" / "queries"
+DEFAULT_OUTPUT_DIR = ROOT / "data" / "queries"
 
 _RE_FROM = re.compile(r"FROM\b", re.I)
 _RE_WHERE = re.compile(r"WHERE\b", re.I)

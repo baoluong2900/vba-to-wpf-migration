@@ -114,7 +114,7 @@ class BDService:
         return results
 
     def _get_out_dirs(self) -> dict[str, Path]:
-        proj_root = Path(__file__).resolve().parent.parent
+        proj_root = Path(__file__).resolve().parent.parent.parent
         out_dirs = {
             "s1": proj_root / "output" / "bd_flow" / "s1_bd_form",
             "s2": proj_root / "output" / "bd_flow" / "s2_bd_mapping",
@@ -220,7 +220,7 @@ class BDService:
 
     def _process_s1_raw_data(self, bd_code_json: dict, s1_dir: Path, screen_name: str) -> Path:
         logger.info("[Step 1] Saving raw DB data (s1_bd_form)...")
-        s1_file = s1_dir / f"{screen_name}_source.json"
+        s1_file = s1_dir / f"{screen_name}.json"
         with open(s1_file, "w", encoding="utf-8") as f:
             json.dump(bd_code_json, f, ensure_ascii=False, indent=2)
         return s1_file
@@ -256,9 +256,12 @@ class BDService:
                     notes_handler = ev.get("notes", "")
                     break
 
+            if notes_handler.startswith("macro."):
+                ref_name = notes_handler.split(".", 1)[1]
                 from .macro.macro_resolver import resolve_macro_module_info
                 synth = resolve_macro_module_info(repo, ref_name, "macro", mod_id, title)
-                if synth: macro_module_results.append(synth)
+                if synth:
+                    macro_module_results.append(synth)
                 continue
 
             if notes_handler.startswith("module."):

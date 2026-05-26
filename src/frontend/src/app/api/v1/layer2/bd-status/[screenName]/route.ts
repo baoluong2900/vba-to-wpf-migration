@@ -19,9 +19,11 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      status: response.status,
-      result_json: response.result_json,
-      token_stats: response.token_stats,
+      screen_name: response.screen_name,
+      bd_done: response.bd_done,
+      dd_done: response.dd_done,
+      s4_path: response.s4_path || null,
+      d4_path: response.d4_path || null,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

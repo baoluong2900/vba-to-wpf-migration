@@ -132,7 +132,7 @@ interface Stats {
 // ── Constants ─────────────────────────────────────────────────────────────
 
 const STATUS_COLOR: Record<string, string> = {
-  pending:   "#6b7280",
+  pending:   "var(--text-muted)",
   converted: "#10b981",
   error:     "#ef4444",
 };
@@ -146,7 +146,7 @@ const STATUS_ICON: Record<string, string> = {
 function StatsBar({ stats }: { stats: Stats }) {
   const items = [
     { label: "Total",     value: stats.total,     color: "#60a5fa" },
-    { label: "Pending",   value: stats.pending,   color: "#6b7280" },
+    { label: "Pending",   value: stats.pending,   color: "var(--text-muted)" },
     { label: "Converted", value: stats.converted, color: "#10b981" },
     { label: "Error",     value: stats.error,     color: "#ef4444" },
   ];
@@ -155,7 +155,7 @@ function StatsBar({ stats }: { stats: Stats }) {
       {items.map(({ label, value, color }) => (
         <div key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color, fontWeight: 700, fontSize: 18 }}>{value}</span>
-          <span style={{ color: "#6b7280", fontSize: 11 }}>{label}</span>
+          <span style={{ color: "var(--text-muted)", fontSize: 11 }}>{label}</span>
         </div>
       ))}
       {/* Progress bar */}
@@ -167,7 +167,7 @@ function StatsBar({ stats }: { stats: Stats }) {
           transition: "width 0.4s ease",
         }} />
       </div>
-      <span style={{ color: "#9ca3af", fontSize: 11 }}>
+      <span style={{ color: "var(--text-muted)", fontSize: 11 }}>
         {stats.total > 0 ? Math.round((stats.converted / stats.total) * 100) : 0}% done
       </span>
     </div>
@@ -181,26 +181,26 @@ function ConversionInfo({ query }: { query: QueryItem | null }) {
   return (
     <div style={{ padding: "12px 16px", background: "#151822", borderTop: "1px solid #2e3039", display: "flex", gap: 24, alignItems: "center", flexShrink: 0, fontSize: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ color: "#6b7280" }}>Status:</span>
+        <span style={{ color: "var(--text-muted)" }}>Status:</span>
         <span style={{ color: STATUS_COLOR[status], fontWeight: 600 }}>
           {STATUS_ICON[status]} {status}
         </span>
       </div>
       {query.conversion_method && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "#6b7280" }}>Method:</span>
+          <span style={{ color: "var(--text-muted)" }}>Method:</span>
           <span style={{ color: "#a78bfa", fontWeight: 600 }}>{query.conversion_method}</span>
         </div>
       )}
       {query.query_type && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "#6b7280" }}>Type:</span>
+          <span style={{ color: "var(--text-muted)" }}>Type:</span>
           <span style={{ color: "#60a5fa" }}>{query.query_type}</span>
         </div>
       )}
       {query.tables && query.tables.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "#6b7280" }}>Tables:</span>
+          <span style={{ color: "var(--text-muted)" }}>Tables:</span>
           <span style={{ color: "#34d399", fontFamily: "monospace" }}>
             {query.tables.slice(0, 3).join(", ")}{query.tables.length > 3 ? `... +${query.tables.length - 3}` : ""}
           </span>
@@ -250,8 +250,8 @@ function SqlPanel({
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, border: "1px solid #2e3039", borderRadius: 8, background: "#0d1117" }}>
       {/* Panel header */}
-      <div style={{ padding: "8px 12px", background: "#1c1e26", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "#e5e7eb" }}>{title}</span>
+      <div style={{ padding: "8px 12px", background: "var(--bg-panel)", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-main)" }}>{title}</span>
         {badge && (
           <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: `${badgeColor}22`, color: badgeColor, fontWeight: 600 }}>
             {badge}
@@ -263,7 +263,7 @@ function SqlPanel({
             <Code2 size={12} /> Format
           </button>
         )}
-        <button onClick={copy} title="Copy SQL" style={{ background: "none", border: "none", cursor: "pointer", color: copied ? "#10b981" : "#6b7280", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
+        <button onClick={copy} title="Copy SQL" style={{ background: "none", border: "none", cursor: "pointer", color: copied ? "#10b981" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
           <Copy size={12} /> {copied ? "Copied!" : "Copy"}
         </button>
       </div>
@@ -330,7 +330,7 @@ function QueryList({
   }, [queries, filterStatus, search]);
 
   return (
-    <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column", borderRight: "1px solid #2e3039", background: "#1c1e26" }}>
+    <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column", borderRight: "1px solid #2e3039", background: "var(--bg-panel)" }}>
       {/* Stats and Error Logs at the top of Sidebar */}
       <div style={{ padding: "12px", borderBottom: "1px solid #2e3039", display: "flex", flexDirection: "column", gap: 10 }}>
         <StatsBar stats={stats} />
@@ -364,11 +364,11 @@ function QueryList({
       {/* Search */}
       <div style={{ padding: "10px 12px", borderBottom: "1px solid #2e3039" }}>
         <div style={{ position: "relative" }}>
-          <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "#6b7280" }} />
+          <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
           <input
             type="text" placeholder="Search query..." value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: "100%", background: "#111827", border: "1px solid #2e3039", color: "#f3f4f6", borderRadius: 6, padding: "5px 8px 5px 26px", fontSize: 12, outline: "none" }}
+            style={{ width: "100%", background: "var(--bg-dark)", border: "1px solid #2e3039", color: "var(--text-main)", borderRadius: 6, padding: "5px 8px 5px 26px", fontSize: 12, outline: "none" }}
           />
         </div>
       </div>
@@ -379,7 +379,7 @@ function QueryList({
           <button key={s} onClick={() => onFilterChange(s)}
             style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, border: "none", cursor: "pointer", fontWeight: 600,
               background: filterStatus === s ? "#3b82f6" : "rgba(255,255,255,0.05)",
-              color: filterStatus === s ? "#fff" : "#9ca3af" }}>
+              color: filterStatus === s ? "#fff" : "var(--text-muted)" }}>
             {s}
           </button>
         ))}
@@ -388,12 +388,12 @@ function QueryList({
       {/* List */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {loading ? (
-          <div style={{ padding: 20, color: "#6b7280", fontSize: 12, textAlign: "center" }}>
+          <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 12, textAlign: "center" }}>
             <div style={{ border: "2px solid #3b82f6", borderTopColor: "transparent", borderRadius: "50%", width: 20, height: 20, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
             Loading queries...
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: 20, color: "#6b7280", fontSize: 12, textAlign: "center" }}>No queries found</div>
+          <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 12, textAlign: "center" }}>No queries found</div>
         ) : (
           filtered.map(q => {
             const status = q.conversion_status || "pending";
@@ -420,7 +420,7 @@ function QueryList({
 
       {/* Bottom actions */}
       <div style={{ padding: "10px 12px", borderTop: "1px solid #2e3039", display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ fontSize: 11, color: "#6b7280", textAlign: "center" }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center" }}>
           Loaded from queries
         </div>
       </div>
@@ -751,25 +751,25 @@ export default function Layer4Page() {
             <div key={selected.name} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
               {/* Toolbar */}
               <div style={{ padding: "8px 16px", background: "#151822", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#e5e7eb", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 400 }}
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 400 }}
                   title={selected.name}>{selected.name}</span>
 
                 <div style={{ flex: 1 }} />
 
                 {/* Token Estimator */}
-                <span style={{ fontSize: 11, color: "#9ca3af", background: "#1f2937", padding: "4px 8px", borderRadius: 4, border: "1px solid #374151" }} title="Estimated LLM prompt tokens (System + SQL)">
+                <span style={{ fontSize: 11, color: "var(--text-muted)", background: "#1f2937", padding: "4px 8px", borderRadius: 4, border: "1px solid #374151" }} title="Estimated LLM prompt tokens (System + SQL)">
                   ⚡ ~{300 + Math.ceil(accessSql.length / 3.5)} tokens
                 </span>
 
                 {/* Model selector */}
                 <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)}
-                  style={{ background: "#1c1e26", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none" }}>
+                  style={{ background: "var(--bg-panel)", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none" }}>
                   {models.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
 
                 {/* Dialect selector */}
                 <select value={selectedDialect} onChange={e => setSelectedDialect(e.target.value)}
-                  style={{ background: "#1c1e26", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
+                  style={{ background: "var(--bg-panel)", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
                   <option value="Oracle SQL">Oracle SQL</option>
                   <option value="PostgreSQL">PostgreSQL</option>
                   <option value="SQL Server">SQL Server</option>
@@ -839,14 +839,14 @@ export default function Layer4Page() {
                   badgeColor="#a78bfa"
                 />
                 {/* Center Divider with 2 Convert Buttons */}
-                <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: 1, background: "#2e3039", flexShrink: 0, zIndex: 10 }}>
+                <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: 1, background: "var(--border-color)", flexShrink: 0, zIndex: 10 }}>
                   {/* Standard AI Convert (blue) */}
                   <div style={{ position: "absolute", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                     <button onClick={handleConvert} disabled={converting || convertingAndTesting}
                       title="AI Convert: Access → Target SQL"
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
-                        background: (converting || convertingAndTesting) ? "#374151" : "#3b82f6",
+                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "#3b82f6",
                         border: "4px solid #0f1115",
                         color: "#fff", cursor: (converting || convertingAndTesting) ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -863,7 +863,7 @@ export default function Layer4Page() {
                       title="Convert & Auto-Test: Đổi SQL rồi tự động test trên Oracle DB, LLM tự fix nếu lỗi"
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
-                        background: (converting || convertingAndTesting) ? "#374151" : "#10b981",
+                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "#10b981",
                         border: "4px solid #0f1115",
                         color: "#fff", cursor: (converting || convertingAndTesting) ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -914,7 +914,7 @@ export default function Layer4Page() {
                       }}>
                         {testResult.success ? "SUCCESS" : "ERROR"}
                       </span>
-                      <span style={{ color: "#9ca3af", fontWeight: 600 }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
                         Oracle Test Result
                         {testHistory.length > 1 && (
                           <span style={{ marginLeft: 6, fontSize: 10, color: "#60a5fa", fontWeight: 400 }}>
@@ -924,7 +924,7 @@ export default function Layer4Page() {
                       </span>
                     </div>
                     <button onClick={() => { setTestResult(null); setTestHistory([]); setFixNotes([]); }}
-                      style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 11 }}>
+                      style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 11 }}>
                       ✕ Close
                     </button>
                   </div>
@@ -932,7 +932,7 @@ export default function Layer4Page() {
                   {/* Fix timeline (only when there were multiple attempts) */}
                   {testHistory.length > 1 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.5px" }}>Fix Timeline</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Fix Timeline</div>
                       {testHistory.map((t: any, idx: number) => (
                         <div key={idx} style={{
                           display: "flex", alignItems: "flex-start", gap: 8,
@@ -973,9 +973,9 @@ export default function Layer4Page() {
                       </div>
                       {testResult.preview?.columns ? (
                         <div style={{ overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", color: "#e5e7eb", textAlign: "left" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse", color: "var(--text-main)", textAlign: "left" }}>
                             <thead>
-                              <tr style={{ borderBottom: "1px solid #2e3039", background: "#1c1e26" }}>
+                              <tr style={{ borderBottom: "1px solid #2e3039", background: "var(--bg-panel)" }}>
                                 {testResult.preview.columns.map((col: string, idx: number) => (
                                   <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "#60a5fa" }}>{col}</th>
                                 ))}
@@ -984,33 +984,33 @@ export default function Layer4Page() {
                             <tbody>
                               {testResult.preview.rows && testResult.preview.rows.length > 0 ? (
                                 testResult.preview.rows.map((row: any[], rowIdx: number) => (
-                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "#111827" }}>
+                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
                                     {row.map((val: any, colIdx: number) => (
                                       <td key={colIdx} style={{ padding: "8px 12px", fontFamily: "monospace" }}>
-                                        {val === null ? <span style={{ color: "#6b7280", fontStyle: "italic" }}>NULL</span> : String(val)}
+                                        {val === null ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>NULL</span> : String(val)}
                                       </td>
                                     ))}
                                   </tr>
                                 ))
                               ) : (
-                                <tr><td colSpan={testResult.preview.columns.length || 1} style={{ padding: "12px", color: "#9ca3af", fontStyle: "italic", textAlign: "center" }}>No rows returned</td></tr>
+                                <tr><td colSpan={testResult.preview.columns.length || 1} style={{ padding: "12px", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" }}>No rows returned</td></tr>
                               )}
                             </tbody>
                           </table>
                         </div>
                       ) : testResult.preview?.rowcount !== undefined ? (
-                        <div style={{ color: "#e5e7eb" }}>
+                        <div style={{ color: "var(--text-main)" }}>
                           Rows affected: <span style={{ fontFamily: "monospace", color: "#60a5fa", fontWeight: 700 }}>{testResult.preview.rowcount}</span>
-                          <span style={{ marginLeft: 8, color: "#6b7280", fontSize: 10 }}>(transaction rolled back)</span>
+                          <span style={{ marginLeft: 8, color: "var(--text-muted)", fontSize: 10 }}>(transaction rolled back)</span>
                         </div>
                       ) : null}
 
                       {/* Columns/rows from standard Run Test */}
                       {testResult.columns && (
                         <div style={{ overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", color: "#e5e7eb", textAlign: "left" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse", color: "var(--text-main)", textAlign: "left" }}>
                             <thead>
-                              <tr style={{ borderBottom: "1px solid #2e3039", background: "#1c1e26" }}>
+                              <tr style={{ borderBottom: "1px solid #2e3039", background: "var(--bg-panel)" }}>
                                 {testResult.columns.map((col: string, idx: number) => (
                                   <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "#60a5fa" }}>{col}</th>
                                 ))}
@@ -1019,28 +1019,28 @@ export default function Layer4Page() {
                             <tbody>
                               {testResult.rows && testResult.rows.length > 0 ? (
                                 testResult.rows.map((row: any[], rowIdx: number) => (
-                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "#111827" }}>
+                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
                                     {row.map((val: any, colIdx: number) => (
                                       <td key={colIdx} style={{ padding: "8px 12px", fontFamily: "monospace" }}>
-                                        {val === null ? <span style={{ color: "#6b7280", fontStyle: "italic" }}>NULL</span> : String(val)}
+                                        {val === null ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>NULL</span> : String(val)}
                                       </td>
                                     ))}
                                   </tr>
                                 ))
                               ) : (
-                                <tr><td colSpan={testResult.columns.length || 1} style={{ padding: "12px", color: "#9ca3af", fontStyle: "italic", textAlign: "center" }}>No rows returned</td></tr>
+                                <tr><td colSpan={testResult.columns.length || 1} style={{ padding: "12px", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" }}>No rows returned</td></tr>
                               )}
                             </tbody>
                           </table>
                           {testResult.rows && testResult.rows.length > 0 && (
-                            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 8 }}>* Showing first {testResult.rows.length} row(s) from oracle_test</div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>* Showing first {testResult.rows.length} row(s) from oracle_test</div>
                           )}
                         </div>
                       )}
                       {testResult.rowcount !== undefined && !testResult.preview && (
-                        <div style={{ color: "#e5e7eb" }}>
+                        <div style={{ color: "var(--text-main)" }}>
                           Rows affected: <span style={{ fontFamily: "monospace", color: "#60a5fa", fontWeight: 700 }}>{testResult.rowcount}</span>
-                          <span style={{ marginLeft: 8, color: "#6b7280", fontSize: 10 }}>(transaction rolled back)</span>
+                          <span style={{ marginLeft: 8, color: "var(--text-muted)", fontSize: 10 }}>(transaction rolled back)</span>
                         </div>
                       )}
                     </div>
@@ -1089,11 +1089,11 @@ export default function Layer4Page() {
             </div>
           ) : (
             /* Empty state */
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#6b7280", gap: 16 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", gap: 16 }}>
               <span style={{ fontSize: 56, opacity: 0.4 }}>🗄</span>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#9ca3af", marginBottom: 6 }}>Select a query to convert</div>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>Choose from the list on the left, then click 🤖 AI Convert</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>Select a query to convert</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Choose from the list on the left, then click 🤖 AI Convert</div>
               </div>
             </div>
           )}
@@ -1135,14 +1135,14 @@ export default function Layer4Page() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <AlertCircle size={18} color="#ef4444" />
-              <span style={{ fontWeight: 700, color: "#f3f4f6", fontSize: 14 }}>Lịch sử lỗi Migration (Oracle DB)</span>
+              <span style={{ fontWeight: 700, color: "var(--text-main)", fontSize: 14 }}>Lịch sử lỗi Migration (Oracle DB)</span>
             </div>
             <button
               onClick={() => setShowErrorLogs(false)}
               style={{
                 background: "none",
                 border: "none",
-                color: "#9ca3af",
+                color: "var(--text-muted)",
                 cursor: "pointer",
                 fontSize: 18,
                 fontWeight: 300
@@ -1155,14 +1155,14 @@ export default function Layer4Page() {
           {/* Log List */}
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
             {loadingErrorLogs ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "#6b7280" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-muted)" }}>
                 <div style={{ border: "2px solid #ef4444", borderTopColor: "transparent", borderRadius: "50%", width: 24, height: 24, animation: "spin 1s linear infinite", marginBottom: 12 }} />
                 <span>Đang tải danh sách lỗi...</span>
               </div>
             ) : errorLogs.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "#6b7280", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-muted)", gap: 8 }}>
                 <CheckCircle size={32} color="#10b981" />
-                <span style={{ fontSize: 13, color: "#9ca3af" }}>Tuyệt vời! Không phát hiện lỗi nào.</span>
+                <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Tuyệt vời! Không phát hiện lỗi nào.</span>
               </div>
             ) : (
               errorLogs.map((log: any, idx: number) => {
@@ -1184,7 +1184,7 @@ export default function Layer4Page() {
                     {/* Log Meta */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontWeight: 700, color: "#60a5fa" }}>{log.query_name}</span>
-                      <span style={{ color: "#6b7280", fontSize: 10 }}>{dateStr}</span>
+                      <span style={{ color: "var(--text-muted)", fontSize: 10 }}>{dateStr}</span>
                     </div>
                     
                     {/* Error Banner */}
@@ -1225,7 +1225,7 @@ export default function Layer4Page() {
 
                     {/* SQL Collapsible */}
                     <details style={{ cursor: "pointer" }}>
-                      <summary style={{ color: "#9ca3af", fontWeight: 600, outline: "none", userSelect: "none" }}>Xem câu lệnh SQL</summary>
+                      <summary style={{ color: "var(--text-muted)", fontWeight: 600, outline: "none", userSelect: "none" }}>Xem câu lệnh SQL</summary>
                       <pre style={{
                         marginTop: 6,
                         padding: 8,

@@ -57,7 +57,7 @@ def get_dd_code_json_form(repo: Any, form_name: str, bd_source: dict | None = No
     dep_tables = set(form.get("dependencies", {}).get("tables", []))
 
     if bd_source:
-        # Extract from s1_bd_form/F_Login_source.json structure
+        # Extract from s1_bd_form/F_Login.json structure
         # (usually in 'references' field of each procedure)
         for proc in bd_source.get("form", {}).get("vba_procedures", []):
             refs = proc.get("references", {})

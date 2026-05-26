@@ -624,7 +624,10 @@ def get_dd_skeleton(
 
     # Build D2 skeleton
     logic_items = parse_dd_source(dd_code_json_path)
-    from backend.layer2.utils.template_loader import load_template
+    try:
+        from utils.template_loader import load_template
+    except ImportError:
+        from workflow.layer2.utils.template_loader import load_template
     sample = load_template(template_path.name)
     if not sample:
         sample = json.loads(template_path.read_text(encoding="utf-8"))
@@ -752,13 +755,16 @@ def main() -> None:
     parser.add_argument("--output", type=Path, help="Output path for skeleton JSON")
     args = parser.parse_args()
 
-    proj_root = Path(__file__).resolve().parent.parent
+    proj_root = Path(__file__).resolve().parent.parent.parent.parent
     sample_path = args.sample or (proj_root / "schema" / "template" / "dd_form.json")
     output_path = args.output or (proj_root / "output" / "dd_flow" / "d2_dd_mapping" / "output.json")
 
     logic_items = parse_dd_source(args.dd_source)
     bd_final = json.loads(args.bd_final.read_text(encoding="utf-8"))
-    from backend.layer2.utils.template_loader import load_template
+    try:
+        from utils.template_loader import load_template
+    except ImportError:
+        from workflow.layer2.utils.template_loader import load_template
     sample = load_template(sample_path.name)
     if not sample:
         sample = json.loads(sample_path.read_text(encoding="utf-8"))

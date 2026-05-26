@@ -43,19 +43,19 @@ export const AgentNode = ({ data }: any) => {
         {/* Steps Tracker */}
         {(data.agentStatus === "running" || data.agentStatus === "success") && (
           <div style={{ marginTop: 12, marginBottom: 12, fontSize: '11px', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's1' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's2' || data.agentStep === 's3' || data.agentStep === 's4' ? '#10b981' : '#6b7280'), marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's1' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's2' || data.agentStep === 's3' || data.agentStep === 's4' ? '#10b981' : "var(--text-muted)"), marginBottom: '4px' }}>
               {data.agentStep === 's1' ? <div className="loader" style={{width: 10, height: 10}}></div> : <CheckCircle2 size={12} />} 
               <span>S1: DB Raw Data</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's2' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's3' || data.agentStep === 's4' ? '#10b981' : '#6b7280'), marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's2' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's3' || data.agentStep === 's4' ? '#10b981' : "var(--text-muted)"), marginBottom: '4px' }}>
               {data.agentStep === 's2' ? <div className="loader" style={{width: 10, height: 10}}></div> : (data.agentStep === 's3' || data.agentStep === 's4' || data.agentStep === 'done' ? <CheckCircle2 size={12} /> : <div style={{width: 12, height: 12, borderRadius: '50%', border: '1px solid #6b7280'}} />)}
               <span>S2: Data Mapping</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's3' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's4' ? '#10b981' : '#6b7280'), marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's3' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's4' ? '#10b981' : "var(--text-muted)"), marginBottom: '4px' }}>
               {data.agentStep === 's3' ? <div className="loader" style={{width: 10, height: 10}}></div> : (data.agentStep === 'done' || data.agentStep === 's4' ? <CheckCircle2 size={12} /> : <div style={{width: 12, height: 12, borderRadius: '50%', border: '1px solid #6b7280'}} />)}
               <span>S3: Logic & Overview Gen</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's4' ? '#3b82f6' : (data.agentStep === 'done' ? '#10b981' : '#6b7280') }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's4' ? '#3b82f6' : (data.agentStep === 'done' ? '#10b981' : "var(--text-muted)") }}>
               {data.agentStep === 's4' ? <div className="loader" style={{width: 10, height: 10}}></div> : (data.agentStep === 'done' ? <CheckCircle2 size={12} /> : <div style={{width: 12, height: 12, borderRadius: '50%', border: '1px solid #6b7280'}} />)}
               <span>S4: Merge Final BD</span>
             </div>
