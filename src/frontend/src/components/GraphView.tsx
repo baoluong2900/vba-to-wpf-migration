@@ -304,6 +304,13 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
         setSelectedNode(nd);
         cy.elements().removeClass("highlighted");
         evt.target.connectedEdges().addClass("highlighted");
+        
+        // Pan camera to center on selected node smoothly
+        cy.animate({
+          center: { eles: evt.target },
+          zoom: Math.max(cy.zoom(), 1.1),
+          duration: 250
+        });
       });
       cy.on("tap", (evt: any) => {
         if (evt.target === cy) {
@@ -412,6 +419,16 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
     buildGraph();
     return () => { if (cyRef.current) { cyRef.current.destroy(); cyRef.current = null; } };
   }, [buildGraph]);
+
+  // Resize canvas when selection drawer toggles
+  useEffect(() => {
+    if (cyRef.current) {
+      const timer = setTimeout(() => {
+        if (cyRef.current) cyRef.current.resize();
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedNode]);
 
   const rootCfg =
     graphKind === "wpf"
@@ -602,6 +619,38 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
         {selectedNode && (() => {
           const nc = TYPE_CFG[selectedNode.type] ?? TYPE_CFG["form"];
           const isRoot = (selectedNode as any).isRoot === true;
+
+          const dependencies: { relation: string; targetLabel: string; targetType: string; direction: 'out' | 'in' }[] = [];
+          if (cyRef.current) {
+            const nodeEl = cyRef.current.getElementById(selectedNode.id);
+            if (nodeEl.length > 0) {
+              nodeEl.outgoers('edge').forEach((edge: any) => {
+                const edgeData = edge.data();
+                const targetNode = edge.target();
+                if (targetNode.length > 0) {
+                  dependencies.push({
+                    relation: edgeData.label || 'references',
+                    targetLabel: targetNode.data('label') || targetNode.data('id'),
+                    targetType: targetNode.data('type') || 'unknown',
+                    direction: 'out'
+                  });
+                }
+              });
+              nodeEl.incomers('edge').forEach((edge: any) => {
+                const edgeData = edge.data();
+                const sourceNode = edge.source();
+                if (sourceNode.length > 0) {
+                  dependencies.push({
+                    relation: edgeData.label || 'referenced by',
+                    targetLabel: sourceNode.data('label') || sourceNode.data('id'),
+                    targetType: sourceNode.data('type') || 'unknown',
+                    direction: 'in'
+                  });
+                }
+              });
+            }
+          }
+
           return (
             <div style={{ padding: 16, width: 240 }}>
               {/* Header */}
@@ -641,6 +690,32 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
 
               {/* Properties */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* Relationships list */}
+                {dependencies.length > 0 && (
+                  <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>RELATIONSHIPS ({dependencies.length})</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto", paddingRight: 4 }} className="custom-scrollbar">
+                      {dependencies.map((dep, index) => {
+                        const targetColor = TYPE_CFG[dep.targetType]?.color || "#94a3b8";
+                        return (
+                          <div key={index} style={{ display: "flex", flexDirection: "column", borderBottom: index < dependencies.length - 1 ? "1px solid #30363d" : "none", paddingBottom: 4, gap: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontSize: 8, padding: "1px 4px", borderRadius: 3, background: dep.direction === "out" ? "rgba(59,130,246,0.15)" : "rgba(16,185,129,0.15)", color: dep.direction === "out" ? "#3b82f6" : "#10b981", fontWeight: 800 }}>
+                                {dep.direction === "out" ? "OUT" : "IN"}
+                              </span>
+                              <span style={{ fontSize: 9, color: "#8b949e", textTransform: "uppercase", fontWeight: 700 }}>
+                                {dep.relation}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 11, color: targetColor, fontWeight: 600, wordBreak: "break-all" }}>
+                              {dep.targetLabel}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {selectedNode.badge && (
                   <div style={{ background: `${nc.color}18`, border: `1px solid ${nc.color}44`, borderRadius: 8, padding: "8px 10px" }}>
                     <div style={{ fontSize: 9, color: nc.color, fontWeight: 700, marginBottom: 3 }}>SUMMARY</div>

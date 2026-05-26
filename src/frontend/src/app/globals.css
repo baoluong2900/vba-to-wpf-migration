@@ -501,3 +501,38 @@ body {
   opacity: 1;
   color: var(--brand-primary);
 }
+
+/* React Flow Override */
+.react-flow__attribution {
+  display: none !important;
+}
+
+.react-flow__controls {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--bg-panel) !important;
+}
+
+.react-flow__controls-button {
+  background-color: var(--bg-panel) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transition: all 0.2s ease;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--border-color) !important;
+}
+
+.react-flow__controls-button svg,
+.react-flow__controls-button svg path {
+  fill: var(--text-main) !important;
+}
