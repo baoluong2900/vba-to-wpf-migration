@@ -2,26 +2,40 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-// ── Neo4j-style type config ──────────────────────────────────────────────────
-const TYPE_CFG: Record<string, {
-  icon: string; color: string; bg: string; ring: string; abbr: string;
-}> = {
-  form:    { icon: "⬡", color: "#4c9ef8", bg: "#1a3a6e", ring: "#4c9ef8", abbr: "F"  },
-  report:  { icon: "📄", color: "#72b7f7", bg: "#122c52", ring: "#72b7f7", abbr: "R"  },
-  module:  { icon: "⚙",  color: "#34d399", bg: "#063520", ring: "#34d399", abbr: "M"  },
-  macro:   { icon: "⚡", color: "#f97316", bg: "#3b1300", ring: "#f97316", abbr: "MC" },
-  query:   { icon: "🗄",  color: "#a3e635", bg: "#1a2e05", ring: "#a3e635", abbr: "Q"  },
-  event:   { icon: "▶",  color: "#c084fc", bg: "#2e1060", ring: "#c084fc", abbr: "EV" },
-  view:       { icon: "◈",  color: "#22d3ee", bg: "#083344", ring: "#22d3ee", abbr: "V"  },
-  viewmodel:  { icon: "◇",  color: "#a78bfa", bg: "#2e1060", ring: "#a78bfa", abbr: "VM" },
-  handler:    { icon: "▸",  color: "#f472b6", bg: "#3f0d28", ring: "#f472b6", abbr: "H"  },
-  repository: { icon: "⬢",  color: "#4ade80", bg: "#052e16", ring: "#4ade80", abbr: "Rep" },
-  service:    { icon: "◎",  color: "#2dd4bf", bg: "#042f2e", ring: "#2dd4bf", abbr: "S"  },
-  workflow:   { icon: "⚡", color: "#fb923c", bg: "#3b1300", ring: "#fb923c", abbr: "W"  },
+// ── Premium design system colors (Tailwind 600 shades for light & dark themes) ────────────────
+const BASE_COLORS: Record<string, string> = {
+  form:       "#2563eb", // Blue
+  report:     "#0284c7", // Sky Blue
+  module:     "#059669", // Emerald Green
+  macro:      "#ea580c", // Orange
+  query:      "#65a30d", // Lime Green
+  event:      "#7c3aed", // Violet
+  view:       "#0891b2", // Cyan
+  viewmodel:  "#8b5cf6", // Purple
+  handler:    "#db2777", // Pink
+  repository: "#16a34a", // Green
+  service:    "#0d9488", // Teal
+  workflow:   "#d97706", // Amber
+  navigation: "#0284c7", // Sky
+  warning:    "#ca8a04", // Gold / Dark Yellow
 };
 
-TYPE_CFG.navigation = { icon: "->", color: "#38bdf8", bg: "#082f49", ring: "#38bdf8", abbr: "Nav" };
-TYPE_CFG.warning = { icon: "!", color: "#facc15", bg: "#3f2f05", ring: "#facc15", abbr: "Warn" };
+const TYPE_CFG: Record<string, { icon: string; abbr: string; color: string }> = {
+  form:       { icon: "⬡", abbr: "F",   color: BASE_COLORS.form },
+  report:     { icon: "📄", abbr: "R",   color: BASE_COLORS.report },
+  module:     { icon: "⚙",  abbr: "M",   color: BASE_COLORS.module },
+  macro:      { icon: "⚡", abbr: "MC",  color: BASE_COLORS.macro },
+  query:      { icon: "🗄",  abbr: "Q",   color: BASE_COLORS.query },
+  event:      { icon: "▶",  abbr: "EV",  color: BASE_COLORS.event },
+  view:       { icon: "◈",  abbr: "V",   color: BASE_COLORS.view },
+  viewmodel:  { icon: "◇",  abbr: "VM",  color: BASE_COLORS.viewmodel },
+  handler:    { icon: "▸",  abbr: "H",   color: BASE_COLORS.handler },
+  repository: { icon: "⬢",  abbr: "Rep", color: BASE_COLORS.repository },
+  service:    { icon: "◎",  abbr: "S",   color: BASE_COLORS.service },
+  workflow:   { icon: "⚡", abbr: "W",   color: BASE_COLORS.workflow },
+  navigation: { icon: "->", abbr: "Nav", color: BASE_COLORS.navigation },
+  warning:    { icon: "!",  abbr: "Warn", color: BASE_COLORS.warning },
+};
 
 interface GraphStats {
   nodes: number;
@@ -66,6 +80,33 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
   const [sourceLoading, setSourceLoading] = useState(false);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState<boolean>(true);
+  const isDarkRef = useRef(isDark);
+
+  useEffect(() => {
+    isDarkRef.current = isDark;
+  }, [isDark]);
+
+  useEffect(() => {
+    const checkDark = () => {
+      if (typeof window !== "undefined") {
+        return document.documentElement.classList.contains("dark");
+      }
+      return true;
+    };
+    setIsDark(checkDark());
+
+    const observer = new MutationObserver(() => {
+      setIsDark(checkDark());
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const buildGraph = useCallback(async () => {
     if (!name || !containerRef.current) return;
@@ -115,6 +156,14 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
 
       if (cyRef.current) { cyRef.current.destroy(); cyRef.current = null; }
 
+      const textMain = isDarkRef.current ? "#f3f4f6" : "#0f172a";
+      const textMuted = isDarkRef.current ? "#9ca3af" : "#64748b";
+      const bgDark = isDarkRef.current ? "#0f1115" : "#f8fafc";
+      const borderColor = isDarkRef.current ? "#2e3039" : "#e2e8f0";
+      const edgeLineColor = isDarkRef.current ? "#384152" : "#cbd5e1";
+      const edgeArrowColor = isDarkRef.current ? "#4b5563" : "#94a3b8";
+      const nodeBgBase = isDarkRef.current ? "#1e2333" : "#f1f5f9";
+
       const cy = cytoscape({
         container: containerRef.current,
         elements: [...nodes, ...edges],
@@ -126,34 +175,40 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               "shape": "ellipse",
               "width": 28,
               "height": 28,
-              "background-color": "#1e2333",
+              "background-color": nodeBgBase,
               "border-width": 3,
-              "border-color": "var(--border-color)",
+              "border-color": borderColor,
               "label": "data(label)",
               "text-valign": "bottom",
               "text-halign": "center",
               "text-margin-y": 5,
               "font-size": 11,
               "font-family": "sans-serif",
-              "color": "var(--text-main)",
+              "color": textMain,
               "text-wrap": "ellipsis",
               "text-max-width": 100,
-              "text-background-color": "var(--bg-dark)",
+              "text-background-color": bgDark,
               "text-background-opacity": 0.8,
               "text-background-padding": "2px",
               "text-background-shape": "roundrectangle",
             } as any,
           },
           // ── Per-type: colored ring + bg ─────────────────────────────────
-          ...Object.entries(TYPE_CFG).map(([t, c]) => ({
-            selector: `node[type="${t}"]`,
-            style: {
-              "background-color": c.bg,
-              "border-color": c.color,
-              "color": c.color,
-              "background-opacity": 1,
-            } as any,
-          })),
+          ...Object.entries(TYPE_CFG).map(([t, c]) => {
+            const r = parseInt(c.color.slice(1, 3), 16);
+            const g = parseInt(c.color.slice(3, 5), 16);
+            const b = parseInt(c.color.slice(5, 7), 16);
+            const bg = `rgba(${r}, ${g}, ${b}, ${isDarkRef.current ? 0.24 : 0.12})`;
+            return {
+              selector: `node[type="${t}"]`,
+              style: {
+                "background-color": bg,
+                "border-color": c.color,
+                "color": textMain,
+                "background-opacity": 1,
+              } as any,
+            };
+          }),
           // Event / handler — small
           {
             selector: `node[type="event"], node[type="handler"]`,
@@ -216,7 +271,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
             style: {
               "border-color": "#f59e0b",
               "border-width": 6,
-              "color": "#fbbf24",
+              "color": isDarkRef.current ? "#fbbf24" : "#b45309",
               "z-index": 100,
               "overlay-color": "#f59e0b",
               "overlay-padding": 6,
@@ -237,17 +292,17 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
             selector: "edge",
             style: {
               "width": 1.5,
-              "line-color": "#2d3748",
-              "target-arrow-color": "#4b5563",
+              "line-color": edgeLineColor,
+              "target-arrow-color": edgeArrowColor,
               "target-arrow-shape": "triangle",
               "curve-style": "bezier",
               "control-point-step-size": 40,
               "arrow-scale": 0.8,
               "label": "data(label)",
               "font-size": 9,
-              "color": "var(--text-muted)",
+              "color": textMuted,
               "text-rotation": "autorotate",
-              "text-background-color": "var(--bg-dark)",
+              "text-background-color": bgDark,
               "text-background-opacity": 0.9,
               "text-background-padding": "2px",
               "text-background-shape": "roundrectangle",
@@ -430,6 +485,56 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
     }
   }, [selectedNode]);
 
+  // Dynamically update cytoscape style when theme mode changes
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    const textMain = isDark ? "#f3f4f6" : "#0f172a";
+    const textMuted = isDark ? "#9ca3af" : "#64748b";
+    const bgDark = isDark ? "#0f1115" : "#f8fafc";
+    const borderColor = isDark ? "#2e3039" : "#e2e8f0";
+    const edgeLineColor = isDark ? "#384152" : "#cbd5e1";
+    const edgeArrowColor = isDark ? "#4b5563" : "#94a3b8";
+    const nodeBgBase = isDark ? "#1e2333" : "#f1f5f9";
+
+    cy.style()
+      .selector("node")
+      .style({
+        "color": textMain,
+        "border-color": borderColor,
+        "background-color": nodeBgBase,
+        "text-background-color": bgDark,
+      })
+      .selector("edge")
+      .style({
+        "line-color": edgeLineColor,
+        "target-arrow-color": edgeArrowColor,
+        "color": textMuted,
+        "text-background-color": bgDark,
+      })
+      .selector("node:selected")
+      .style({
+        "color": isDark ? "#fbbf24" : "#b45309",
+      });
+
+    Object.entries(TYPE_CFG).forEach(([t, c]) => {
+      const r = parseInt(c.color.slice(1, 3), 16);
+      const g = parseInt(c.color.slice(3, 5), 16);
+      const b = parseInt(c.color.slice(5, 7), 16);
+      const bg = `rgba(${r}, ${g}, ${b}, ${isDark ? 0.24 : 0.12})`;
+      cy.style()
+        .selector(`node[type="${t}"]`)
+        .style({
+          "background-color": bg,
+          "border-color": c.color,
+          "color": textMain,
+        });
+    });
+
+    cy.style().update();
+  }, [isDark]);
+
   const rootCfg =
     graphKind === "wpf"
       ? type === "macro"
@@ -445,7 +550,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
       : ["form", "report", "module", "macro", "query", "event"];
 
   return (
-    <div style={{ display: "flex", height: "100%", overflow: "hidden", background: "#0d1117" }}>
+    <div style={{ display: "flex", height: "100%", overflow: "hidden", background: isDark ? "#0f1115" : "#f8fafc" }}>
       {/* ── Main canvas ─────────────────────────────────────────────────── */}
       <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
 
@@ -454,8 +559,9 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
           <div style={{
             position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)",
             zIndex: 20, display: "flex", gap: 6, alignItems: "center",
-            background: "rgba(13,17,23,0.9)", border: "1px solid #1f2937",
+            background: isDark ? "#1c1e26" : "#ffffff", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`,
             borderRadius: 20, padding: "4px 12px",
+            boxShadow: isDark ? "0 4px 12px rgba(0, 0, 0, 0.2)" : "0 4px 12px rgba(0, 0, 0, 0.05)",
           }}>
             {(graphKind === "wpf"
               ? [
@@ -476,23 +582,23 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 ]
             ).map((s, i) => (
               <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-                {i > 0 && <span style={{ color: "var(--border-color)" }}>·</span>}
+                {i > 0 && <span style={{ color: isDark ? "#2e3039" : "#e2e8f0" }}>·</span>}
                 <span style={{ color: s.c, fontWeight: 700 }}>{s.n}</span>
-                <span style={{ color: "var(--text-muted)" }}>{s.label}</span>
+                <span style={{ color: isDark ? "#9ca3af" : "#64748b" }}>{s.label}</span>
               </span>
             ))}
-            <span style={{ color: "var(--border-color)", margin: "0 4px" }}>·</span>
-            <button onClick={buildGraph} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Reload">↺</button>
+            <span style={{ color: isDark ? "#2e3039" : "#e2e8f0", margin: "0 4px" }}>·</span>
+            <button onClick={buildGraph} style={{ background: "none", border: "none", color: isDark ? "#9ca3af" : "#64748b", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Reload">↺</button>
             {graphKind === "wpf" && (
               <>
-                <span style={{ color: "var(--border-color)", margin: "0 4px" }}>·</span>
+                <span style={{ color: isDark ? "#2e3039" : "#e2e8f0", margin: "0 4px" }}>·</span>
                 <button
                   onClick={runSourceReview}
                   disabled={sourceLoading}
                   style={{
-                    background: "rgba(168,85,247,0.12)",
+                    background: isDark ? "rgba(168,85,247,0.12)" : "rgba(168,85,247,0.08)",
                     border: "1px solid #a855f7",
-                    color: "#c084fc",
+                    color: isDark ? "#c084fc" : "#7c3aed",
                     cursor: sourceLoading ? "wait" : "pointer",
                     fontSize: 11,
                     fontWeight: 700,
@@ -508,7 +614,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
             )}
           </div>
         )}
-
+ 
         {graphKind === "wpf" && testReport && !loading && (
           <div style={{
             position: "absolute",
@@ -518,27 +624,27 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
             width: 320,
             maxHeight: 260,
             overflow: "auto",
-            background: "rgba(13,17,23,0.96)",
+            background: isDark ? "#1c1e26" : "#ffffff",
             border: `1px solid ${testReport.success ? "#22c55e" : "#ef4444"}`,
             borderRadius: 10,
             padding: 12,
-            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+            boxShadow: isDark ? "0 12px 30px rgba(0,0,0,0.25)" : "0 12px 30px rgba(0,0,0,0.1)",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ color: testReport.success ? "#22c55e" : "#ef4444", fontSize: 12, fontWeight: 800 }}>
                 WPF Graph Test: {testReport.success ? "PASS" : "FAIL"}
               </span>
-              <button onClick={() => setTestReport(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 14 }}>x</button>
+              <button onClick={() => setTestReport(null)} style={{ background: "none", border: "none", color: isDark ? "#9ca3af" : "#64748b", cursor: "pointer", fontSize: 14 }}>x</button>
             </div>
-            <div style={{ color: "#94a3b8", fontSize: 11, marginBottom: 8 }}>
+            <div style={{ color: isDark ? "#9ca3af" : "#64748b", fontSize: 11, marginBottom: 8 }}>
               {testReport.summary?.errors ?? 0} errors · {testReport.summary?.warnings ?? 0} warnings · {testReport.summary?.nodes ?? 0} nodes · {testReport.summary?.edges ?? 0} edges
             </div>
             {!testReport.success && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.28)", borderRadius: 6, padding: 8 }}>
-                <div style={{ color: "#fecaca", fontSize: 11, lineHeight: 1.4 }}>
+              <div style={{ background: isDark ? "rgba(239,68,68,0.08)" : "rgba(239,68,68,0.04)", border: isDark ? "1px solid rgba(239,68,68,0.28)" : "1px solid rgba(239,68,68,0.18)", borderRadius: 6, padding: 8 }}>
+                <div style={{ color: "#ef4444", fontSize: 11, lineHeight: 1.4 }}>
                   Các node/đường màu đỏ trên graph là flow expected đang thiếu hoặc sai trong source.
                 </div>
-                <div style={{ color: "#94a3b8", fontSize: 10, marginTop: 6 }}>
+                <div style={{ color: isDark ? "#9ca3af" : "#64748b", fontSize: 10, marginTop: 6 }}>
                   Click node đỏ để xem id/type. Text report chi tiết vẫn nằm trong response API khi cần debug sâu.
                 </div>
               </div>
@@ -546,54 +652,65 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
             {testReport.success && (testReport.warnings || []).length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {(testReport.warnings || []).slice(0, 4).map((warn: any, idx: number) => (
-                  <div key={`${warn.rule}-${idx}`} style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.28)", borderRadius: 6, padding: 8 }}>
-                    <div style={{ color: "#86efac", fontSize: 10, fontWeight: 800 }}>{warn.rule}</div>
-                    <div style={{ color: "var(--text-main)", fontSize: 11, lineHeight: 1.35 }}>{warn.message}</div>
+                  <div key={`${warn.rule}-${idx}`} style={{ background: isDark ? "rgba(34,197,94,0.08)" : "rgba(34,197,94,0.04)", border: isDark ? "1px solid rgba(34,197,94,0.28)" : "1px solid rgba(34,197,94,0.18)", borderRadius: 6, padding: 8 }}>
+                    <div style={{ color: isDark ? "#10b981" : "#059669", fontSize: 10, fontWeight: 800 }}>{warn.rule}</div>
+                    <div style={{ color: isDark ? "#f3f4f6" : "#0f172a", fontSize: 11, lineHeight: 1.35 }}>{warn.message}</div>
                   </div>
                 ))}
               </div>
             )}
           </div>
         )}
-
+ 
         {/* Loading */}
         {loading && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 30, background: "#0d1117" }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 30, background: isDark ? "#0f1115" : "#f8fafc" }}>
             <div style={{ position: "relative", width: 64, height: 64, marginBottom: 16 }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", border: `4px solid ${rootCfg.ring}33`, borderTopColor: rootCfg.ring, animation: "spin 0.9s linear infinite" }} />
+              <div style={{ width: 64, height: 64, borderRadius: "50%", border: `4px solid ${rootCfg.color}${isDark ? "33" : "15"}`, borderTopColor: rootCfg.color, animation: "spin 0.9s linear infinite" }} />
               <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{rootCfg.icon}</span>
             </div>
-            <span style={{ color: "var(--text-muted)", fontSize: 12 }}>
-              Loading {graphKind === "wpf" ? "WPF " : ""}graph for <strong style={{ color: "var(--text-muted)" }}>{name}</strong>…
+            <span style={{ color: isDark ? "#9ca3af" : "#64748b", fontSize: 12 }}>
+              Loading {graphKind === "wpf" ? "WPF " : ""}graph for <strong style={{ color: isDark ? "#9ca3af" : "#64748b" }}>{name}</strong>…
             </span>
           </div>
         )}
-
+ 
         {/* Error */}
         {error && !loading && (
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
             <span style={{ fontSize: 36 }}>⚠️</span>
             <span style={{ color: "#ef4444", fontSize: 13 }}>{error}</span>
-            <button onClick={buildGraph} style={{ padding: "6px 18px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid #ef4444", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>Retry</button>
+            <button onClick={buildGraph} style={{ padding: "6px 18px", borderRadius: 8, background: isDark ? "rgba(239,68,68,0.1)" : "rgba(239,68,68,0.05)", border: "1px solid #ef4444", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>Retry</button>
           </div>
         )}
-
+ 
         {/* Legend */}
-        <div style={{ position: "absolute", bottom: 12, left: 12, zIndex: 20, background: "rgba(13,17,23,0.92)", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 14px" }}>
+        <div style={{ position: "absolute", bottom: 12, left: 12, zIndex: 20, background: isDark ? "#1c1e26" : "#ffffff", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 14px", boxShadow: isDark ? "0 4px 12px rgba(0, 0, 0, 0.2)" : "0 4px 12px rgba(0, 0, 0, 0.05)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px 14px" }}>
             {legendTypes.map((t) => {
               const c = TYPE_CFG[t];
               if (!c) return null;
               return (
                 <div key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: c.bg, border: `2px solid ${c.color}` }} />
+                  <div style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    background: (() => {
+                      const r = parseInt(c.color.slice(1, 3), 16);
+                      const g = parseInt(c.color.slice(3, 5), 16);
+                      const b = parseInt(c.color.slice(5, 7), 16);
+                      return `rgba(${r}, ${g}, ${b}, ${isDark ? "0.24" : "0.12"})`;
+                    })(),
+                    border: `2px solid ${c.color}`,
+                  }} />
                   <span style={{ fontSize: 10, color: c.color, fontWeight: 600 }}>{c.abbr}</span>
-                  <span style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "capitalize" }}>{t}</span>
+                  <span style={{ fontSize: 10, color: isDark ? "#9ca3af" : "#64748b", textTransform: "capitalize" }}>{t}</span>
                 </div>
               );
             })}
           </div>
-          <div style={{ marginTop: 6, fontSize: 9, color: "var(--border-color)" }}>
+          <div style={{ marginTop: 6, fontSize: 9, color: isDark ? "#9ca3af" : "#64748b" }}>
             {graphKind === "wpf" && (
               <div style={{ marginBottom: 4, color: "#22d3ee", fontWeight: 600 }}>
                 WPF Expected: View → ViewModel → Command → Service → Repository
@@ -612,8 +729,8 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
         width: selectedNode ? 240 : 0,
         overflow: "hidden",
         transition: "width 0.22s cubic-bezier(.4,0,.2,1)",
-        borderLeft: selectedNode ? "1px solid #1f2937" : "none",
-        background: "#10131c",
+        borderLeft: selectedNode ? `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}` : "none",
+        background: isDark ? "#1c1e26" : "#ffffff",
         flexShrink: 0,
       }}>
         {selectedNode && (() => {
@@ -658,7 +775,12 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 {/* Node icon — double ring if center node */}
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%",
-                  background: nc.bg,
+                  background: (() => {
+                    const r = parseInt(nc.color.slice(1, 3), 16);
+                    const g = parseInt(nc.color.slice(3, 5), 16);
+                    const b = parseInt(nc.color.slice(5, 7), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${isDark ? "0.24" : "0.12"})`;
+                  })(),
                   border: `3px solid ${nc.color}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 20, flexShrink: 0,
@@ -670,9 +792,9 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 9, color: nc.color, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 2 }}>{nc.abbr}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-main)", fontWeight: 600, wordBreak: "break-all", lineHeight: 1.3 }}>{selectedNode.label}</div>
+                  <div style={{ fontSize: 12, color: isDark ? "#f3f4f6" : "#0f172a", fontWeight: 600, wordBreak: "break-all", lineHeight: 1.3 }}>{selectedNode.label}</div>
                 </div>
-                <button onClick={() => setSelectedNode(null)} style={{ background: "none", border: "none", color: "#4b5563", cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
+                <button onClick={() => setSelectedNode(null)} style={{ background: "none", border: "none", color: isDark ? "#9ca3af" : "#64748b", cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
               </div>
 
               {/* CENTER NODE badge */}
@@ -692,18 +814,18 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {/* Relationships list */}
                 {dependencies.length > 0 && (
-                  <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: 8, padding: "8px 10px" }}>
-                    <div style={{ fontSize: 9, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>RELATIONSHIPS ({dependencies.length})</div>
+                  <div style={{ background: isDark ? "#0f1115" : "#f8fafc", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 9, color: isDark ? "#a78bfa" : "#7c3aed", fontWeight: 700, marginBottom: 5 }}>RELATIONSHIPS ({dependencies.length})</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto", paddingRight: 4 }} className="custom-scrollbar">
                       {dependencies.map((dep, index) => {
                         const targetColor = TYPE_CFG[dep.targetType]?.color || "#94a3b8";
                         return (
-                          <div key={index} style={{ display: "flex", flexDirection: "column", borderBottom: index < dependencies.length - 1 ? "1px solid #30363d" : "none", paddingBottom: 4, gap: 1 }}>
+                          <div key={index} style={{ display: "flex", flexDirection: "column", borderBottom: index < dependencies.length - 1 ? `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}` : "none", paddingBottom: 4, gap: 1 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                               <span style={{ fontSize: 8, padding: "1px 4px", borderRadius: 3, background: dep.direction === "out" ? "rgba(59,130,246,0.15)" : "rgba(16,185,129,0.15)", color: dep.direction === "out" ? "#3b82f6" : "#10b981", fontWeight: 800 }}>
                                 {dep.direction === "out" ? "OUT" : "IN"}
                               </span>
-                              <span style={{ fontSize: 9, color: "#8b949e", textTransform: "uppercase", fontWeight: 700 }}>
+                              <span style={{ fontSize: 9, color: isDark ? "#9ca3af" : "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
                                 {dep.relation}
                               </span>
                             </div>
@@ -723,26 +845,26 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
                   </div>
                 )}
                 {selectedNode.vbaLabel && selectedNode.vbaLabel !== selectedNode.label && (
-                  <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                    <div style={{ fontSize: 9, color: "#22d3ee", fontWeight: 700, marginBottom: 3 }}>VBA (Access)</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8", wordBreak: "break-all", lineHeight: 1.35 }}>{selectedNode.vbaLabel}</div>
+                  <div style={{ background: isDark ? "#0f1115" : "#f8fafc", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 9, color: isDark ? "#22d3ee" : "#0891b2", fontWeight: 700, marginBottom: 3 }}>VBA (Access)</div>
+                    <div style={{ fontSize: 11, color: isDark ? "#9ca3af" : "#475569", wordBreak: "break-all", lineHeight: 1.35 }}>{selectedNode.vbaLabel}</div>
                   </div>
                 )}
                 {selectedNode.mappingStatus && (
-                  <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                    <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>MAPPING</div>
-                    <span style={{ fontSize: 11, color: selectedNode.mappingStatus === "mapped" ? "#4ade80" : "#facc15", fontWeight: 700 }}>
+                  <div style={{ background: isDark ? "#0f1115" : "#f8fafc", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 9, color: isDark ? "#9ca3af" : "#64748b", fontWeight: 700, marginBottom: 3 }}>MAPPING</div>
+                    <span style={{ fontSize: 11, color: selectedNode.mappingStatus === "mapped" ? "#10b981" : "#d97706", fontWeight: 700 }}>
                       {selectedNode.mappingStatus}
                     </span>
                   </div>
                 )}
-                <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                  <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>NODE TYPE</div>
+                <div style={{ background: isDark ? "#0f1115" : "#f8fafc", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 9, color: isDark ? "#9ca3af" : "#64748b", fontWeight: 700, marginBottom: 3 }}>NODE TYPE</div>
                   <span style={{ fontSize: 11, background: `${nc.color}22`, border: `1px solid ${nc.color}55`, color: nc.color, padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>{nc.abbr}</span>
                 </div>
-                <div style={{ background: "#1a1d2e", borderRadius: 8, padding: "8px 10px" }}>
-                  <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, marginBottom: 3 }}>ID</div>
-                  <div style={{ fontSize: 10, color: "var(--text-muted)", wordBreak: "break-all", fontFamily: "monospace", lineHeight: 1.5 }}>{selectedNode.id}</div>
+                <div style={{ background: isDark ? "#0f1115" : "#f8fafc", border: `1px solid ${isDark ? "#2e3039" : "#e2e8f0"}`, borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 9, color: isDark ? "#9ca3af" : "#64748b", fontWeight: 700, marginBottom: 3 }}>ID</div>
+                  <div style={{ fontSize: 10, color: isDark ? "#9ca3af" : "#64748b", wordBreak: "break-all", fontFamily: "monospace", lineHeight: 1.5 }}>{selectedNode.id}</div>
                 </div>
               </div>
             </div>

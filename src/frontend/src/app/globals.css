@@ -292,7 +292,7 @@ body {
 /* Terminal Sidebar */
 .terminal-sidebar {
   min-width: 300px;
-  background-color: #0b0c10;
+  background-color: var(--bg-panel);
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -317,13 +317,13 @@ body {
 
 .terminal-header {
   height: 48px;
-  background-color: #151822;
+  background-color: var(--bg-panel);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0 16px;
-  color: #d1d5db;
+  color: var(--text-main);
 }
 
 .terminal-content {
@@ -422,7 +422,7 @@ body {
 
 /* Left Sidebar (Task List) */
 .task-sidebar {
-  background-color: #1c1e26;
+  background-color: var(--bg-panel);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -444,7 +444,7 @@ body {
 }
 
 .task-group-title:hover {
-  color: #d1d5db;
+  color: var(--text-main);
 }
 
 .task-search-container {
@@ -454,7 +454,7 @@ body {
 
 .task-search-input {
   width: 100%;
-  background: #111827;
+  background: var(--bg-dark);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-radius: 6px;
@@ -471,7 +471,7 @@ body {
 .task-item {
   padding: 8px 16px 8px 32px;
   font-size: 13px;
-  color: #d1d5db;
+  color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -482,7 +482,7 @@ body {
 }
 
 .task-item:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--border-color);
   color: var(--text-main);
 }
 

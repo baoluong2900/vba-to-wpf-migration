@@ -330,9 +330,9 @@ function QueryList({
   }, [queries, filterStatus, search]);
 
   return (
-    <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column", borderRight: "1px solid #2e3039", background: "var(--bg-panel)" }}>
+    <div className="task-sidebar" style={{ width: 280, flexShrink: 0, transition: "width 0.22s" }}>
       {/* Stats and Error Logs at the top of Sidebar */}
-      <div style={{ padding: "12px", borderBottom: "1px solid #2e3039", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ padding: "12px", borderBottom: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: 10 }}>
         <StatsBar stats={stats} />
         
         <button
@@ -341,7 +341,7 @@ function QueryList({
             width: "100%",
             background: "rgba(239, 68, 68, 0.08)",
             border: "1px solid rgba(239, 68, 68, 0.25)",
-            color: "#fca5a5",
+            color: "#ef4444",
             borderRadius: 6,
             padding: "6px 12px",
             fontSize: 12,
@@ -356,25 +356,25 @@ function QueryList({
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "rgba(239, 68, 68, 0.08)"; }}
         >
-          <AlertCircle size={13} color="#ef4444" />
+          <AlertCircle size={13} />
           <span>Lịch sử lỗi SQL</span>
         </button>
       </div>
 
       {/* Search */}
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid #2e3039" }}>
+      <div className="task-search-container">
         <div style={{ position: "relative" }}>
-          <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+          <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
           <input
             type="text" placeholder="Search query..." value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: "100%", background: "var(--bg-dark)", border: "1px solid #2e3039", color: "var(--text-main)", borderRadius: 6, padding: "5px 8px 5px 26px", fontSize: 12, outline: "none" }}
+            className="task-search-input"
           />
         </div>
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: "flex", padding: "6px 10px", gap: 4, borderBottom: "1px solid #2e3039", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", padding: "6px 10px", gap: 4, borderBottom: "1px solid var(--border-color)", flexWrap: "wrap" }}>
         {["all", "pending", "converted", "error"].map(s => (
           <button key={s} onClick={() => onFilterChange(s)}
             style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, border: "none", cursor: "pointer", fontWeight: 600,

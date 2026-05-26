@@ -337,10 +337,12 @@ export default function Layer3Page() {
                   {selectedItem?.type === "module" || selectedItem?.type === "macro" ? "⚡ Gen DD" : "⚡ Gen All"}
                 </button>
 
-                <div style={{ position: "relative" }}>
-                  <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-                  <input type="text" placeholder="Tìm theo tên…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 6, paddingBottom: 6, background: "var(--bg-dark)", border: "1px solid #374151", borderRadius: 6, color: "var(--text-main)", fontSize: 12, outline: "none" }} />
+                <div className="task-search-container" style={{ padding: "12px 0 0 0", borderBottom: "none" }}>
+                  <div style={{ position: "relative" }}>
+                    <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+                    <input type="text" placeholder="Tìm theo tên…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                      className="task-search-input" />
+                  </div>
                 </div>
                 <div style={{ marginTop: 6, fontSize: 9, color: "#4b5563", display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <span>🟢 BD+DD</span><span>🟡 BD only</span><span>🔵 DD only</span><span>⚪ none</span>
@@ -355,19 +357,18 @@ export default function Layer3Page() {
                 const groupItems = filteredItems.filter(i => i.type === typeMap[group]);
                 return (
                   <div key={group}>
-                    <div style={{ display: "flex", alignItems: "center", padding: "6px 12px", cursor: "pointer", color: "var(--text-muted)", fontSize: 11, fontWeight: 700, gap: 4 }} onClick={() => toggleGroup(group)}>
+                    <div className="task-group-title" onClick={() => toggleGroup(group)}>
                       {collapsedGroups[group] ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                       {labelMap[group]}
-                      <span style={{ marginLeft: "auto", fontSize: 10, background: bgMap[group], color: colorMap[group], borderRadius: 10, padding: "1px 6px", fontWeight: 700 }}>{countMap[group]}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10, background: "var(--border-color)", color: "var(--text-main)", borderRadius: 10, padding: "1px 6px", fontWeight: 700 }}>{countMap[group]}</span>
                     </div>
                     {!collapsedGroups[group] && groupItems.map((item, idx) => (
                       <div key={`${group}-${idx}`}
                         onClick={() => setSelectedName(item.name)}
+                        className={`task-item ${selectedName === item.name ? "active" : ""}`}
                         style={{
-                          display: "flex", alignItems: "center", gap: 8, padding: "5px 16px", cursor: "pointer", fontSize: 12,
-                          background: selectedName === item.name ? "rgba(245,158,11,0.15)" : "transparent",
-                          color: selectedName === item.name ? "#fbbf24" : "var(--text-muted)",
-                          borderLeft: selectedName === item.name ? "2px solid #f59e0b" : "2px solid transparent",
+                          padding: "6px 16px 6px 24px",
+                          borderLeftWidth: 3
                         }}>
                         <span style={{ fontSize: 10, flexShrink: 0 }} title={
                           item.has_bd && item.has_dd ? "BD + DD available"

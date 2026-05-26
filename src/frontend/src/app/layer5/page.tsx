@@ -737,7 +737,7 @@ export default function Layer5Page() {
               {/* Forms group */}
               <div className="task-group-title" onClick={() => toggleGroup('forms')}>
                 {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Forms
-                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.forms}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.forms}</span>
               </div>
               {!collapsedGroups.forms && filteredSidebarItems.filter(s =>
                 (s.type === 'form' && !s.name.toUpperCase().startsWith('R')) ||
@@ -754,7 +754,7 @@ export default function Layer5Page() {
               {/* Reports group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('reports')}>
                 {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Reports
-                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.reports}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.reports}</span>
               </div>
               {!collapsedGroups.reports && filteredSidebarItems.filter(s =>
                 s.type === 'report' ||
@@ -771,7 +771,7 @@ export default function Layer5Page() {
               {/* Modules group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('modules')}>
                 {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Modules
-                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'rgba(168,85,247,0.15)', color: '#d8b4fe', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.modules}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.modules}</span>
               </div>
               {!collapsedGroups.modules && filteredSidebarItems.filter(s => s.type === 'module').map((item, idx) => (
                 <div key={`mod-${idx}`}
@@ -785,13 +785,13 @@ export default function Layer5Page() {
               {/* Macros group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('macros')}>
                 {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Macros
-                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'rgba(168,85,247,0.15)', color: '#d8b4fe', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.macros}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.macros}</span>
               </div>
               {!collapsedGroups.macros && filteredSidebarItems.filter(s => s.type === 'macro').map((item, idx) => (
                 <div key={`mac-${idx}`}
                   className={`task-item ${screenName === item.name ? 'active' : ''}`}
                   onClick={() => { setScreenName(item.name); setMacroModuleName(item.name); setMappingType('macro'); setForcedItemType('macro'); }}>
-                  <Terminal size={14} className="task-icon" style={{ color: '#a855f7' }} />
+                  <Terminal size={14} className="task-icon" />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={item.name}>{item.name}</span>
                 </div>
               ))}

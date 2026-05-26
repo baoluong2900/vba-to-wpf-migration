@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { Settings2, Terminal, DatabaseZap, Search, ChevronDown, ChevronRight, BarChart2, Download, Bot, FileSpreadsheet, Database, Cpu, Sparkles } from "lucide-react";
+import { Settings2, Terminal, DatabaseZap, Search, ChevronDown, ChevronRight, BarChart2, Download, Bot, FileSpreadsheet, Database, Cpu, Sparkles, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 // @ts-ignore
@@ -514,6 +514,40 @@ export default function Layer2Workflow() {
     setTimeout(() => setCopyStatus(null), 2000);
   };
 
+  const [batchIsRunning, setBatchIsRunning] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<Record<string, "running" | "success" | "error">>({});
+
+  const handleRunBatch = async () => {
+    if (batchIsRunning) return;
+    setBatchIsRunning(true);
+    addLog("INFO", "--- BATCH RUN STARTED ---");
+    const targets = filteredSidebarScreens.map(s => s.name);
+    addLog("INFO", `Found ${targets.length} items to process in current filter.`);
+    
+    // Clear previous progress for the targets
+    const newProgress: any = { ...batchProgress };
+    targets.forEach(t => delete newProgress[t]);
+    setBatchProgress(newProgress);
+
+    for (const targetName of targets) {
+      setBatchProgress(prev => ({ ...prev, [targetName]: "running" }));
+      addLog("INFO", `[Batch] Processing ${targetName}...`);
+      
+      // Auto-select the item so UI centers on it
+      setScreenName(targetName);
+      
+      // Mock delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Mark as success (for simulation)
+      setBatchProgress(prev => ({ ...prev, [targetName]: "success" }));
+      addLog("SUCCESS", `[Batch] Completed ${targetName}`);
+    }
+    
+    setBatchIsRunning(false);
+    addLog("INFO", "--- BATCH RUN FINISHED ---");
+  };
+
   const getLogColor = (level: string) => {
     if (level === 'ERROR') return '#ef4444';
     if (level === 'SUCCESS') return '#10b981';
@@ -523,6 +557,8 @@ export default function Layer2Workflow() {
 
   return (
     <>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      
       <Header />
       
       <main className="layout-content">
@@ -566,6 +602,21 @@ export default function Layer2Workflow() {
           {/* Full sidebar content */}
           {!taskSidebarCollapsed && (
             <div style={{ overflowY: 'auto', flex: 1 }}>
+              <div style={{ padding: "12px 12px 0 12px" }}>
+                <button
+                  onClick={handleRunBatch}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    width: "100%", padding: "8px 14px", borderRadius: 6, border: "none",
+                    background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                    color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                    boxShadow: "0 4px 12px rgba(59,130,246,0.2)", transition: "all 0.2s"
+                  }}
+                >
+                  <Sparkles size={14} /> Batch Gen AST
+                </button>
+              </div>
+
               <div className="task-search-container">
                 <div style={{ position: 'relative' }}>
                   <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -581,48 +632,92 @@ export default function Layer2Workflow() {
 
               <div className="task-group-title" onClick={() => toggleGroup('forms')}>
                 {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Forms
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
+                  {dbScreens.filter(s => (s.type === "form" && !s.name.toUpperCase().startsWith("R")) || (!s.type && s.name.toUpperCase().startsWith("F"))).length}
+                </span>
               </div>
               {!collapsedGroups.forms && filteredSidebarScreens.filter(s => (s.type === "form" && !s.name.toUpperCase().startsWith("R")) || (!s.type && s.name.toUpperCase().startsWith("F"))).map((item, idx) => (
                 <div key={`form-${idx}`} 
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("screen"); setCenterView("graph"); }}>
-                  <DatabaseZap size={14} className="task-icon" />
+                  {batchProgress[item.name] === "running" ? (
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                  ) : batchProgress[item.name] === "success" ? (
+                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                  ) : batchProgress[item.name] === "error" ? (
+                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                  ) : (
+                    <DatabaseZap size={14} className="task-icon" />
+                  )}
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={item.name}>{item.name}</span>
                 </div>
               ))}
 
               <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('reports')}>
                 {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Reports
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
+                  {dbScreens.filter(s => s.type === "report" || (["form", "report", undefined].includes(s.type) && s.name.toUpperCase().startsWith("R"))).length}
+                </span>
               </div>
               {!collapsedGroups.reports && filteredSidebarScreens.filter(s => s.type === "report" || (["form", "report", undefined].includes(s.type) && s.name.toUpperCase().startsWith("R"))).map((item, idx) => (
                 <div key={`report-${idx}`} 
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("screen"); setCenterView("graph"); }}>
-                  <DatabaseZap size={14} className="task-icon" />
+                  {batchProgress[item.name] === "running" ? (
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                  ) : batchProgress[item.name] === "success" ? (
+                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                  ) : batchProgress[item.name] === "error" ? (
+                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                  ) : (
+                    <DatabaseZap size={14} className="task-icon" />
+                  )}
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={item.name}>{item.name}</span>
                 </div>
               ))}
 
               <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('modules')}>
                 {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Modules
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
+                  {dbScreens.filter(s => s.type === "module").length}
+                </span>
               </div>
               {!collapsedGroups.modules && filteredSidebarScreens.filter(s => s.type === "module").map((item, idx) => (
                 <div key={`mod-${idx}`} 
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("module"); setCenterView("graph"); }}>
-                  <Terminal size={14} className="task-icon" />
+                  {batchProgress[item.name] === "running" ? (
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                  ) : batchProgress[item.name] === "success" ? (
+                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                  ) : batchProgress[item.name] === "error" ? (
+                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                  ) : (
+                    <Terminal size={14} className="task-icon" />
+                  )}
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={item.name}>{item.name}</span>
                 </div>
               ))}
 
               <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('macros')}>
                 {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Macros
+                <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
+                  {dbScreens.filter(s => s.type === "macro").length}
+                </span>
               </div>
               {!collapsedGroups.macros && filteredSidebarScreens.filter(s => s.type === "macro").map((item, idx) => (
                 <div key={`mac-${idx}`} 
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("macro"); setCenterView("graph"); }}>
-                  <Settings2 size={14} className="task-icon" />
+                  {batchProgress[item.name] === "running" ? (
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                  ) : batchProgress[item.name] === "success" ? (
+                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                  ) : batchProgress[item.name] === "error" ? (
+                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                  ) : (
+                    <Settings2 size={14} className="task-icon" />
+                  )}
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={item.name}>{item.name}</span>
                 </div>
               ))}
@@ -632,7 +727,7 @@ export default function Layer2Workflow() {
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
           {/* Center Top View Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#151822', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: 'var(--bg-panel)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
             <button
               onClick={() => setCenterView('node')}
               style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'node' ? '#3b82f6' : 'rgba(59,130,246,0.1)', color: centerView === 'node' ? '#fff' : '#60a5fa', transition: 'all 0.2s' }}
@@ -715,7 +810,7 @@ export default function Layer2Workflow() {
         <div className="terminal-sidebar" style={{ width: sidebarWidth }}>
           <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />
           
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: '#151822' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)' }}>
             <div 
               style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? '#10b981' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid #10b981' : '2px solid transparent' }}
               onClick={() => setActiveTab('logs')}
@@ -857,11 +952,11 @@ export default function Layer2Workflow() {
                 const gt = tokenStats.total_tokens + ddTokenStats.total_tokens;
                 const gc = tokenStats.total_cost_usd + ddTokenStats.total_cost_usd;
                 return (
-                  <div style={{ border: '1px solid #374151', borderRadius: 8, padding: '10px 14px', background: '#0f172a', marginTop: 4 }}>
-                    <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 12, marginBottom: 4 }}>🔢 Grand Total (BD + DD)</div>
+                  <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px 14px', background: 'var(--bg-dark)', marginTop: 4 }}>
+                    <div style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: 12, marginBottom: 4 }}>🔢 Grand Total (BD + DD)</div>
                     <div style={{ display: 'flex', gap: 20 }}>
-                      <span style={{ color: '#a5b4fc' }}>Tokens: <strong style={{ color: '#fff' }}>{gt.toLocaleString()}</strong></span>
-                      <span style={{ color: '#f9a8d4' }}>Chi phí: <strong style={{ color: '#34d399' }}>${gc.toFixed(5)}</strong></span>
+                      <span style={{ color: 'var(--text-muted)' }}>Tokens: <strong style={{ color: 'var(--text-main)' }}>{gt.toLocaleString()}</strong></span>
+                      <span style={{ color: 'var(--text-muted)' }}>Chi phí: <strong style={{ color: 'var(--success)' }}>${gc.toFixed(5)}</strong></span>
                     </div>
                   </div>
                 );
@@ -935,11 +1030,11 @@ export default function Layer2Workflow() {
                     style={{ 
                       fontFamily: 'monospace', 
                       fontSize: '13px', 
-                      color: '#fbbf24', 
-                      background: '#291c0a', 
+                      color: 'var(--text-main)', 
+                      background: 'var(--bg-dark)', 
                       padding: '16px', 
                       borderRadius: '6px', 
-                      border: '1px solid #451a03', 
+                      border: '1px solid var(--border-color)', 
                       flex: 1, 
                       resize: 'none',
                       whiteSpace: 'pre',
