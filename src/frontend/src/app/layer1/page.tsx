@@ -112,19 +112,6 @@ export default function Layer1Parser() {
 
         <div className="flex flex-col w-full max-w-5xl gap-10 relative z-10">
           
-          {/* Hero Header */}
-          <div className="flex flex-col items-center text-center gap-4 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(99,102,241,0.15)]">
-              <Sparkles size={14} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
-              Layer 1 Extraction
-            </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight drop-shadow-sm">
-              Data Source <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Pipeline</span>
-            </h1>
-            <p className="text-neutral-500 dark:text-gray-400 text-sm md:text-base max-w-2xl leading-relaxed">
-              Automated MS Access database extraction. Converts legacy schemas and VBA modules into structured JSON seeded directly into MongoDB.
-            </p>
-          </div>
 
           {/* Main Dashboard Control Panel */}
           <div className="bg-white/40 dark:bg-[#151722]/60 backdrop-blur-xl border border-neutral-200 dark:border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
