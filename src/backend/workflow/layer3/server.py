@@ -81,6 +81,8 @@ def list_outputs():
     return {"success": True, "files": files}
 
 def gen_bd(req):
+    import time
+    start_time = time.time()
     screen_name = req.screenName
     doc_type = getattr(req, "type", "screen") or "screen"
 
@@ -124,8 +126,18 @@ def gen_bd(req):
     except Exception as e:
         print(f"[ERROR] BD Word Gen Failed: {e}")
 
+    size_kb = 0
+    if excel_path.exists():
+        size_kb = round(excel_path.stat().st_size / 1024, 1)
+        
+    duration_sec = round(time.time() - start_time, 2)
+
     return {
         "success": True,
+        "filename": excel_filename,
+        "size_kb": size_kb,
+        "duration_sec": duration_sec,
+        "download_url": f"/api/l3/download/BD/{doc_type_folder}/{excel_filename}",
         "file_info": {
             "url": f"/api/l3/download/BD/{doc_type_folder}/{excel_filename}",
             "docx_url": f"/api/l3/download/BD/{doc_type_folder}/{docx_filename}"
@@ -133,6 +145,8 @@ def gen_bd(req):
     }
 
 def gen_dd(req):
+    import time
+    start_time = time.time()
     screen_name = req.screenName
     doc_type = getattr(req, "type", "screen") or "screen"
 
@@ -190,8 +204,18 @@ def gen_dd(req):
     except Exception as e:
         print(f"[ERROR] DD Word Gen Failed: {e}")
 
+    size_kb = 0
+    if excel_path.exists():
+        size_kb = round(excel_path.stat().st_size / 1024, 1)
+        
+    duration_sec = round(time.time() - start_time, 2)
+
     return {
         "success": True,
+        "filename": excel_filename,
+        "size_kb": size_kb,
+        "duration_sec": duration_sec,
+        "download_url": f"/api/l3/download/DD/{item_type}/{excel_filename}",
         "file_info": {
             "url": f"/api/l3/download/DD/{item_type}/{excel_filename}",
             "docx_url": f"/api/l3/download/DD/{item_type}/{docx_filename}"
@@ -199,46 +223,14 @@ def gen_dd(req):
     }
 
 def gen_all(req):
-    screen_name = req.screenName
-
-    # 1. Run both generations
+    # Run both generations without zipping
     res_bd = gen_bd(req)
     res_dd = gen_dd(req)
 
-    zip_filename = f"{screen_name}_all.zip"
-    zip_path = OUTPUT_DIR / "ALL" / "screen" / zip_filename
-    zip_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # 2. Compress files
-    try:
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            if res_bd.get("success"):
-                bd_folder = "report" if "report" in res_bd["file_info"]["url"] else "screen"
-                bd_excel = OUTPUT_DIR / "BD" / bd_folder / f"{screen_name}.xlsx"
-                bd_docx = OUTPUT_DIR / "BD" / bd_folder / f"{screen_name}.docx"
-                if bd_excel.exists():
-                    zipf.write(bd_excel, arcname=f"BD/{bd_folder}/{screen_name}.xlsx")
-                if bd_docx.exists():
-                    zipf.write(bd_docx, arcname=f"BD/{bd_folder}/{screen_name}.docx")
-
-            if res_dd.get("success"):
-                parts = res_dd["file_info"]["url"].split('/')
-                dd_type = parts[-2] if len(parts) >= 2 else "screen"
-                dd_excel = OUTPUT_DIR / "DD" / dd_type / f"{screen_name}.xlsx"
-                dd_docx = OUTPUT_DIR / "DD" / dd_type / f"{screen_name}.docx"
-                if dd_excel.exists():
-                    zipf.write(dd_excel, arcname=f"DD/{dd_type}/{screen_name}.xlsx")
-                if dd_docx.exists():
-                    zipf.write(dd_docx, arcname=f"DD/{dd_type}/{screen_name}.docx")
-    except Exception as e:
-        print(f"[ERROR] Zip compression failed: {e}")
-        return {"success": False, "error": f"Zip compression failed: {e}"}
-
     return {
         "success": True,
-        "file_info": {
-            "url": f"/api/l3/download/ALL/screen/{zip_filename}"
-        }
+        "bd": res_bd,
+        "dd": res_dd
     }
 
 class MockFileResponse:

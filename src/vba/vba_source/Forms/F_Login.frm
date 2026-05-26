@@ -2,7 +2,7 @@ Version=0x0113
 VersionRequired=0x0113
 Begin Form
     Name ="F_Login"
-    Caption ="ログイン"
+    Caption ="Login"
     OnOpen ="Form_Open"
     OnLoad ="Form_Load"
     OnKeyDown ="Form_KeyDown"
@@ -12,8 +12,8 @@ Begin Form
             Locked =True
         End
         Begin Label
-            Name ="ログインID"
-            Caption ="ログインID："
+            Name ="lblLoginID"
+            Caption ="Login ID:"
         End
         Begin TextBox
             Name ="txtPass"
@@ -21,51 +21,51 @@ Begin Form
             AfterUpdate ="txtPass_AfterUpdate"
         End
         Begin Label
-            Name ="パスワード"
-            Caption ="パスワード："
+            Name ="lblPassword"
+            Caption ="Password:"
         End
         Begin CommandButton
             Name ="cmdLogin"
-            Caption ="ログイン"
+            Caption ="Login"
             Visible =False
             OnClick ="cmdLogin_Click"
         End
         Begin CommandButton
-            Name ="閉じる"
-            Caption ="閉じる"
-            OnClick ="閉じる_Click"
+            Name ="cmdClose"
+            Caption ="Close"
+            OnClick ="cmdClose_Click"
         End
         Begin Label
-            Name ="施工店情報"
-            Caption ="新アフター管理DB"
-            OnDblClick ="施工店情報_DblClick"
+            Name ="lblStoreInfo"
+            Caption ="New After Sales DB"
+            OnDblClick ="lblStoreInfo_DblClick"
         End
         Begin Label
-            Name ="ラベル142"
+            Name ="lblMenuTrigger"
             Caption =" "
             OnClick ="macro.A_メニューバーを表示"
             OnDblClick ="macro.M300_Splash(M)を開く"
         End
         Begin Label
-            Name ="ラベル7"
-            Caption ="※PCより自動取得"
+            Name ="lblAutoRetrieve"
+            Caption ="*Auto-retrieved from PC"
         End
         Begin Label
-            Name ="パスワードテーブルを開く"
+            Name ="lblOpenPasswordTable"
             Caption =" "
-            OnDblClick ="パスワードテーブルを開く_DblClick"
+            OnDblClick ="lblOpenPasswordTable_DblClick"
         End
         Begin Label
-            Name ="プロセス終了"
+            Name ="lblEndProcess"
             Caption =" "
-            OnDblClick ="プロセス終了_DblClick"
+            OnDblClick ="lblEndProcess_DblClick"
         End
         Begin Label
-            Name ="ラベル400"
-            Caption ="2025/06/30公開Ver"
+            Name ="lblVersion"
+            Caption ="Ver 2025/06/30"
         End
         Begin TextBox
-            Name ="最新版公開日"
+            Name ="txtReleasedDate"
             ControlSource ="=DLookUp(\"コメント\",\"Access配信日\")"
         End
     End
@@ -89,7 +89,7 @@ Private Sub Form_Load()
         End If
     Next Ref
     
-    sLvlCmnt = Me.ラベル400.Caption
+    sLvlCmnt = Me.lblVersion.Caption
     sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, "/") + 1, 5)
     
     sCmnt = Replace(Replace(DLookup("コメント", "Access配信日"), "最新版は", ""), "ver", "")
@@ -250,7 +250,7 @@ Err_Shori:
            "　　連絡してください！！　TEL 0766-20-2211", vbOKOnly + vbCritical
 End Sub
 
-Private Sub パスワードテーブルを開く_DblClick(Cancel As Integer)
+Private Sub lblOpenPasswordTable_DblClick(Cancel As Integer)
     DoCmd.Close acForm, "F_Login"
     DoCmd.Close acForm, "F_ユーザー追加", acSaveNo
     DoCmd.Close acForm, "F_ユーザー追加_A", acSaveNo
@@ -274,14 +274,14 @@ Private Sub パスワードテーブルを開く_DblClick(Cancel As Integer)
     DoCmd.Maximize
 End Sub
 
-Private Sub プロセス終了_DblClick(Cancel As Integer)
+Private Sub lblEndProcess_DblClick(Cancel As Integer)
     Dim objShell As Object
     Dim objExec As Object
     Set objShell = CreateObject("WScript.Shell")
     Set objExec = objShell.Exec("taskkill.exe /F /IM wmplayer.exe")
 End Sub
 
-Private Sub 閉じる_Click()
+Private Sub cmdClose_Click()
     DoCmd.Quit acQuitPrompt
 End Sub
 

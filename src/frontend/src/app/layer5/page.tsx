@@ -736,7 +736,7 @@ export default function Layer5Page() {
 
               {/* Forms group */}
               <div className="task-group-title" onClick={() => toggleGroup('forms')}>
-                {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Forms
+                {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 🖥️ Forms
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.forms}</span>
               </div>
               {!collapsedGroups.forms && filteredSidebarItems.filter(s =>
@@ -753,7 +753,7 @@ export default function Layer5Page() {
 
               {/* Reports group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('reports')}>
-                {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Reports
+                {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 📊 Reports
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.reports}</span>
               </div>
               {!collapsedGroups.reports && filteredSidebarItems.filter(s =>
@@ -770,7 +770,7 @@ export default function Layer5Page() {
 
               {/* Modules group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('modules')}>
-                {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Modules
+                {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 📦 Modules
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.modules}</span>
               </div>
               {!collapsedGroups.modules && filteredSidebarItems.filter(s => s.type === 'module').map((item, idx) => (
@@ -784,7 +784,7 @@ export default function Layer5Page() {
 
               {/* Macros group */}
               <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('macros')}>
-                {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Macros
+                {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} ⚙️ Macros
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>{groupCounts.macros}</span>
               </div>
               {!collapsedGroups.macros && filteredSidebarItems.filter(s => s.type === 'macro').map((item, idx) => (

@@ -1393,13 +1393,22 @@ def run_batch(input_dir: Path, output_dir: Path, config_opt: str | None) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     for frm_path in frm_paths:
         result = build_json(frm_path, config)
-        out_path = output_dir / f"{frm_path.stem}.json"
+        item_type = result.get("type", "Forms")
+        if item_type == "Reports" and output_dir.name == "forms":
+            actual_output_dir = output_dir.parent / "reports"
+        elif item_type == "Forms" and output_dir.name == "reports":
+            actual_output_dir = output_dir.parent / "forms"
+        else:
+            actual_output_dir = output_dir
+
+        actual_output_dir.mkdir(parents=True, exist_ok=True)
+        out_path = actual_output_dir / f"{frm_path.stem}.json"
         out_path.write_text(
             json.dumps(result, ensure_ascii=False, indent=4),
             encoding="utf-8",
         )
-        print(f"[OK] {frm_path.name} -> {out_path.name}")
-    print(f"[DONE] {len(frm_paths)} file(s) -> {output_dir}")
+        print(f"[OK] {frm_path.name} -> {out_path.name} ({item_type})")
+    print(f"[DONE] {len(frm_paths)} file(s) processed.")
     return 0
 
 
@@ -1412,9 +1421,17 @@ def run_single(frm_path: Path, output_path: Path | None, config_opt: str | None)
     result = build_json(frm_path, config)
     json_text = json.dumps(result, ensure_ascii=False, indent=4)
     if output_path is not None:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json_text, encoding="utf-8")
-        print(f"[OK] Written to {output_path}")
+        item_type = result.get("type", "Forms")
+        if item_type == "Reports" and output_path.parent.name == "forms":
+            actual_output_path = output_path.parent.parent / "reports" / output_path.name
+        elif item_type == "Forms" and output_path.parent.name == "reports":
+            actual_output_path = output_path.parent.parent / "forms" / output_path.name
+        else:
+            actual_output_path = output_path
+
+        actual_output_path.parent.mkdir(parents=True, exist_ok=True)
+        actual_output_path.write_text(json_text, encoding="utf-8")
+        print(f"[OK] Written to {actual_output_path} ({item_type})")
     else:
         print(json_text)
     return 0

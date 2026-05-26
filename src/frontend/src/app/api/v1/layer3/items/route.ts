@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { layer3Client, promisifyGrpcCall } from '../../../grpcClient';
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const response = await promisifyGrpcCall<any, any>(
@@ -12,7 +14,8 @@ export async function GET() {
       return NextResponse.json({ success: false, error: response.error }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, result: response.items });
+    const result = response.result.map((item: string) => JSON.parse(item));
+    return NextResponse.json({ success: true, result, total: result.length });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

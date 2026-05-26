@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,24 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   return handleExtract(req);
+}
+
+function getPythonExecutable(): string {
+  const candidates = [
+    '/Library/Frameworks/Python.framework/Versions/3.13/bin/python3',
+    '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3',
+    '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3',
+    '/opt/homebrew/bin/python3',
+    '/usr/local/bin/python3',
+    'python3',
+    'python'
+  ];
+  for (const c of candidates) {
+    if (c === 'python3' || c === 'python' || fs.existsSync(c)) {
+      return c;
+    }
+  }
+  return 'python3';
 }
 
 async function handleExtract(req: NextRequest) {
@@ -25,7 +44,8 @@ async function handleExtract(req: NextRequest) {
     start(controller) {
       controller.enqueue(encoder.encode(`data: {"type":"log", "level":"INFO", "message":"Initializing extraction for ${sourcePath}..."}\n\n`));
 
-      const child = spawn('python3', ['-u', SCRIPT_PATH], {
+      const pythonCmd = getPythonExecutable();
+      const child = spawn(pythonCmd, ['-u', SCRIPT_PATH], {
         cwd: LAYER1_DIR,
         env: { ...process.env, SOURCE_PATH: sourcePath, PYTHONIOENCODING: 'utf-8' }
       });

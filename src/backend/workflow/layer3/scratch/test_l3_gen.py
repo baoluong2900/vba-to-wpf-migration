@@ -23,24 +23,37 @@ class Req:
         self.type = doc_type
 
 def test_generation():
-    print("--- Starting BD Generation for F_Login ---")
-    req = Req("F_Login", "screen")
-    res_bd = server.gen_bd(req)
-    print("BD Result:", res_bd)
+    import tempfile
+    import shutil
+    
+    # Create temporary directory for test output files
+    temp_dir = Path(tempfile.mkdtemp())
+    original_output_dir = server.OUTPUT_DIR
+    server.OUTPUT_DIR = temp_dir
 
-    print("\n--- Starting DD Generation for F_Login ---")
-    res_dd = server.gen_dd(req)
-    print("DD Result:", res_dd)
+    try:
+        print("--- Starting BD Generation for F_Login ---")
+        req = Req("F_Login", "screen")
+        res_bd = server.gen_bd(req)
+        print("BD Result:", res_bd)
 
-    print("\n--- Starting Zip Generation for F_Login ---")
-    res_all = server.gen_all(req)
-    print("Zip Result:", res_all)
+        print("\n--- Starting DD Generation for F_Login ---")
+        res_dd = server.gen_dd(req)
+        print("DD Result:", res_dd)
 
-    # Check output files
-    output_base = server.OUTPUT_DIR
-    print(f"\nChecking outputs in {output_base}:")
-    for p in output_base.glob("**/*.*"):
-        print(f" - {p.relative_to(output_base)} (Size: {p.stat().st_size} bytes)")
+        print("\n--- Starting Zip Generation for F_Login ---")
+        res_all = server.gen_all(req)
+        print("Zip Result:", res_all)
+
+        # Check output files
+        print(f"\nChecking outputs in {temp_dir}:")
+        for p in temp_dir.glob("**/*.*"):
+            print(f" - {p.relative_to(temp_dir)} (Size: {p.stat().st_size} bytes)")
+    finally:
+        # Restore output directory configuration
+        server.OUTPUT_DIR = original_output_dir
+        # Clean up temporary files
+        shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     test_generation()

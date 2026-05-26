@@ -351,7 +351,7 @@ export default function Layer3Page() {
               {(["forms", "reports", "modules", "macros"] as const).map(group => {
                 const typeMap: Record<string, string> = { forms: "form", reports: "report", modules: "module", macros: "macro" };
                 const countMap: Record<string, number> = { forms: groupCounts.forms, reports: groupCounts.reports, modules: groupCounts.modules, macros: groupCounts.macros };
-                const labelMap: Record<string, string> = { forms: "Forms", reports: "Reports", modules: "Modules", macros: "Macros" };
+                const labelMap: Record<string, string> = { forms: "🖥️ Forms", reports: "📊 Reports", modules: "📦 Modules", macros: "⚙️ Macros" };
                 const colorMap: Record<string, string> = { forms: "#93c5fd", reports: "#6ee7b7", modules: "#d8b4fe", macros: "#fca5a5" };
                 const bgMap: Record<string, string> = { forms: "rgba(59,130,246,0.15)", reports: "rgba(16,185,129,0.15)", modules: "rgba(168,85,247,0.15)", macros: "rgba(239,68,68,0.15)" };
                 const groupItems = filteredItems.filter(i => i.type === typeMap[group]);

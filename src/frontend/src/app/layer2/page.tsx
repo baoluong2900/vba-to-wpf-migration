@@ -177,11 +177,19 @@ export default function Layer2Workflow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdgesScreen);
 
   useEffect(() => {
-    const nds = viewMode === "screen" ? initialNodesScreen : initialNodesModule;
-    const eds = viewMode === "screen" ? initialEdgesScreen : initialEdgesModule;
-    
-    setNodes(nds.map(node => ({ ...node, data: { ...node.data, ...commonData } })));
-    setEdges(eds);
+    setNodes((prevNodes) => {
+      const expectedNodes = viewMode === "screen" ? initialNodesScreen : initialNodesModule;
+      const expectedIds = expectedNodes.map(n => n.id).join(',');
+      const currentIds = prevNodes.map(n => n.id).join(',');
+      
+      let baseNodes = prevNodes;
+      if (expectedIds !== currentIds || prevNodes.length === 0) {
+        baseNodes = expectedNodes;
+        setEdges(viewMode === "screen" ? initialEdgesScreen : initialEdgesModule);
+      }
+      
+      return baseNodes.map(node => ({ ...node, data: { ...node.data, ...commonData } }));
+    });
   }, [viewMode, screenName, queryStatus, dbData, selectedModel, agentStatus, resultJson, agentStep, ddSelectedModel, ddAgentStatus, ddAgentStep, ddResultJson, models]);
 
 
@@ -311,7 +319,7 @@ export default function Layer2Workflow() {
     addLog("INFO", `Calling \`layer1_repo.py\` to resolve dependencies for screen: ${screenName}`);
     
     try {
-      const res = await fetch("/api/db-query", {
+      const res = await fetch("/api/v1/layer1/db-query", {
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ 
@@ -409,7 +417,7 @@ export default function Layer2Workflow() {
     const d3Timer = setTimeout(() => { setDdAgentStep("d3"); addLog("INFO", `[D3] LLM generating detail steps per module ...`); }, 3000);
 
     try {
-      const res = await fetch("/api/dd-flow-full", {
+      const res = await fetch("/api/v1/layer2/dd-flow-full", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ screenName, model: ddSelectedModel }),
@@ -520,32 +528,56 @@ export default function Layer2Workflow() {
   const handleRunBatch = async () => {
     if (batchIsRunning) return;
     setBatchIsRunning(true);
-    addLog("INFO", "--- BATCH RUN STARTED ---");
-    const targets = filteredSidebarScreens.map(s => s.name);
-    addLog("INFO", `Found ${targets.length} items to process in current filter.`);
-    
-    // Clear previous progress for the targets
-    const newProgress: any = { ...batchProgress };
-    targets.forEach(t => delete newProgress[t]);
-    setBatchProgress(newProgress);
+    addLog("INFO", "--- BATCH RUN STARTED (AST Extraction) ---");
+    addLog("INFO", "Calling Backend API to process tables, queries, forms, macros, and modules...");
 
-    for (const targetName of targets) {
-      setBatchProgress(prev => ({ ...prev, [targetName]: "running" }));
-      addLog("INFO", `[Batch] Processing ${targetName}...`);
-      
-      // Auto-select the item so UI centers on it
-      setScreenName(targetName);
-      
-      // Mock delay
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Mark as success (for simulation)
-      setBatchProgress(prev => ({ ...prev, [targetName]: "success" }));
-      addLog("SUCCESS", `[Batch] Completed ${targetName}`);
+    try {
+      const response = await fetch("/api/v1/layer1/extract?source_path=legacy_db.accdb", {
+        method: "GET"
+      });
+
+      if (!response.body) throw new Error("No response body received from server");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const lines = decoder.decode(value).split("\n").filter(Boolean);
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === "log") {
+                addLog(data.level as any, data.message);
+              } else if (data.type === "error") {
+                addLog("ERROR", data.message);
+              } else if (data.type === "done") {
+                addLog("SUCCESS", "Layer 1 Source Extraction completed successfully! Data seeded into MongoDB.");
+              }
+            } catch (e) {
+              console.error("Failed to parse SSE", e);
+            }
+          }
+        }
+      }
+
+      // Refresh explorer items
+      addLog("INFO", "Refreshing Explorer Item List...");
+      const itemsRes = await fetch("/api/items");
+      const itemsData = await itemsRes.json();
+      if (itemsData.success && Array.isArray(itemsData.result)) {
+        setDbScreens(itemsData.result);
+        addLog("SUCCESS", `Explorer updated: Loaded ${itemsData.result.length} items from database.`);
+      }
+
+    } catch (err: any) {
+      addLog("ERROR", `Batch AST Generation failed: ${err.message}`);
+    } finally {
+      setBatchIsRunning(false);
+      addLog("INFO", "--- BATCH RUN FINISHED ---");
     }
-    
-    setBatchIsRunning(false);
-    addLog("INFO", "--- BATCH RUN FINISHED ---");
   };
 
   const getLogColor = (level: string) => {
@@ -605,15 +637,29 @@ export default function Layer2Workflow() {
               <div style={{ padding: "12px 12px 0 12px" }}>
                 <button
                   onClick={handleRunBatch}
+                  disabled={batchIsRunning}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                     width: "100%", padding: "8px 14px", borderRadius: 6, border: "none",
-                    background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                    color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                    background: batchIsRunning 
+                      ? "linear-gradient(135deg, rgba(59,130,246,0.5), rgba(99,102,241,0.5))" 
+                      : "linear-gradient(135deg, #3b82f6, #6366f1)",
+                    opacity: batchIsRunning ? 0.7 : 1,
+                    color: "#fff", fontSize: 12, fontWeight: 700, 
+                    cursor: batchIsRunning ? "not-allowed" : "pointer",
                     boxShadow: "0 4px 12px rgba(59,130,246,0.2)", transition: "all 0.2s"
                   }}
                 >
-                  <Sparkles size={14} /> Batch Gen AST
+                  {batchIsRunning ? (
+                    <>
+                      <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid #fff", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+                      Generating AST...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} /> Batch Gen AST
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -631,7 +677,7 @@ export default function Layer2Workflow() {
               </div>
 
               <div className="task-group-title" onClick={() => toggleGroup('forms')}>
-                {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Forms
+                {collapsedGroups.forms ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 🖥️ Forms
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
                   {dbScreens.filter(s => (s.type === "form" && !s.name.toUpperCase().startsWith("R")) || (!s.type && s.name.toUpperCase().startsWith("F"))).length}
                 </span>
@@ -653,8 +699,8 @@ export default function Layer2Workflow() {
                 </div>
               ))}
 
-              <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('reports')}>
-                {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Reports
+              <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('reports')}>
+                {collapsedGroups.reports ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 📊 Reports
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
                   {dbScreens.filter(s => s.type === "report" || (["form", "report", undefined].includes(s.type) && s.name.toUpperCase().startsWith("R"))).length}
                 </span>
@@ -676,8 +722,8 @@ export default function Layer2Workflow() {
                 </div>
               ))}
 
-              <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('modules')}>
-                {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Modules
+              <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('modules')}>
+                {collapsedGroups.modules ? <ChevronRight size={14} /> : <ChevronDown size={14} />} 📦 Modules
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
                   {dbScreens.filter(s => s.type === "module").length}
                 </span>
@@ -699,8 +745,8 @@ export default function Layer2Workflow() {
                 </div>
               ))}
 
-              <div className="task-group-title" style={{ marginTop: '8px' }} onClick={() => toggleGroup('macros')}>
-                {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} Macros
+              <div className="task-group-title" style={{ marginTop: 8 }} onClick={() => toggleGroup('macros')}>
+                {collapsedGroups.macros ? <ChevronRight size={14} /> : <ChevronDown size={14} />} ⚙️ Macros
                 <span style={{ marginLeft: 'auto', fontSize: 10, background: 'var(--border-color)', color: 'var(--text-main)', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
                   {dbScreens.filter(s => s.type === "macro").length}
                 </span>

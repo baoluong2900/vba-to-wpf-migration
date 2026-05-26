@@ -58,10 +58,29 @@ export async function POST(req: NextRequest) {
         enq({ type: "log", level, ts: ts(), message: line.trim() });
       };
 
+function getPythonExecutable(): string {
+  const candidates = [
+    '/Library/Frameworks/Python.framework/Versions/3.13/bin/python3',
+    '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3',
+    '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3',
+    '/opt/homebrew/bin/python3',
+    '/usr/local/bin/python3',
+    'python3',
+    'python'
+  ];
+  for (const c of candidates) {
+    if (c === 'python3' || c === 'python' || fs.existsSync(c)) {
+      return c;
+    }
+  }
+  return 'python3';
+}
+
       // Helper: spawn a python process and stream its output
       const runPython = (args: string[]): Promise<number> =>
         new Promise((resolve) => {
-          const proc = spawn("python", args, { cwd: LAYER5_DIR, env });
+          const pythonCmd = getPythonExecutable();
+          const proc = spawn(pythonCmd, args, { cwd: LAYER5_DIR, env });
           let outBuf = "", errBuf = "";
           const flush = (buf: string) =>
             buf.split("\n").forEach(l => { if (l.trim()) logLine(l); });
