@@ -114,7 +114,7 @@ export default function Layer1Parser() {
           
 
           {/* Main Dashboard Control Panel */}
-          <div className="relative overflow-hidden bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border border-neutral-200/60 dark:border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-neutral-300/80 dark:hover:border-white/20 group animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div className="relative overflow-hidden bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 rounded-3xl p-8 md:p-10 shadow-xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 group animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             {/* Top glowing edge */}
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 opacity-80" />
             
@@ -123,8 +123,8 @@ export default function Layer1Parser() {
                 <DatabaseZap size={26} className="text-white drop-shadow-md" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Source Database Configuration</h2>
-                <p className="text-sm text-neutral-500 dark:text-gray-400 mt-1.5 leading-relaxed">Specify absolute path to the legacy `.accdb` file on the fileserver to begin extraction.</p>
+                <h2 className="text-lg md:text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Source Database Configuration</h2>
+                <p className="text-sm md:text-base text-neutral-500 dark:text-gray-400 mt-1.5 leading-relaxed">Specify absolute path to the legacy `.accdb` file on the fileserver to begin extraction.</p>
               </div>
             </div>
 
@@ -136,13 +136,13 @@ export default function Layer1Parser() {
                   value={dbPath}
                   onChange={e => setDbPath(e.target.value)}
                   placeholder="Enter MS Access Database Path..."
-                  className="w-full bg-white dark:bg-[#0b0c10] border border-neutral-300 dark:border-neutral-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 rounded-2xl py-4 pl-14 pr-4 text-neutral-900 dark:text-white text-sm outline-none transition-all duration-300 placeholder-neutral-400 font-mono shadow-inner"
+                  className="w-full bg-white dark:bg-[var(--bg-terminal)] border border-neutral-200 dark:border-neutral-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 rounded-2xl py-3 pl-12 pr-4 text-neutral-900 dark:text-white text-sm outline-none transition-all duration-300 placeholder-neutral-400 font-mono shadow-sm"
                 />
               </div>
               <button
                 onClick={handleStartExtraction}
                 disabled={isExtracting}
-                className={`px-8 py-4 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-3 select-none active:scale-[0.97] ${
+                className={`px-8 py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-5 select-none active:scale-[0.97] ${
                   isExtracting 
                     ? 'bg-gradient-to-r from-indigo-600/50 to-purple-600/50 text-white/70 border border-indigo-500/20 cursor-not-allowed shadow-[0_4px_12px_rgba(99,102,241,0.15)] animate-pulse'
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-[0_8px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_12px_25px_rgba(99,102,241,0.4)] cursor-pointer border border-indigo-400/30'
@@ -164,14 +164,14 @@ export default function Layer1Parser() {
           </div>
 
           {/* Fully Animated Workflow Pipeline */}
-          <div className="bg-white/50 dark:bg-slate-900/20 backdrop-blur-lg border border-neutral-200/50 dark:border-white/5 rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          <div className="bg-white/50 dark:bg-slate-900/20 backdrop-blur-lg border-t border-white/40 dark:border-white/5 rounded-3xl p-8 md:p-10 shadow-lg relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <div className="flex items-center justify-between mb-10">
-              <h3 className="text-sm font-extrabold text-neutral-700 dark:text-gray-300 uppercase tracking-widest drop-shadow-sm flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-neutral-700 dark:text-gray-300 uppercase tracking-widest drop-shadow-sm flex items-center gap-4">
                 <Cpu size={16} className="text-indigo-500" />
                 Execution Pipeline
               </h3>
               {isExtracting && (
-                <div className="inline-flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                <div className="inline-flex items-center gap-4 text-sm text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.2)]">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
@@ -218,7 +218,7 @@ export default function Layer1Parser() {
                           ) : isActive ? (
                             <Clock size={20} className="text-indigo-600 dark:text-indigo-400 animate-spin" />
                           ) : (
-                            <span className="text-sm font-black">{step.id}</span>
+                            <span className="text-base font-black">{step.id}</span>
                           )}
                         </div>
                       </div>
@@ -245,7 +245,7 @@ export default function Layer1Parser() {
                     {/* Step Description */}
                     <div className="flex flex-col justify-center">
                       <span 
-                        className={`text-sm md:text-xs lg:text-sm font-extrabold tracking-tight transition-colors duration-300 ${
+                        className={`text-base md:text-sm lg:text-base font-extrabold tracking-tight transition-colors duration-300 ${
                           isActive 
                             ? 'text-indigo-700 dark:text-white drop-shadow-sm' 
                             : isCompleted 
@@ -255,11 +255,11 @@ export default function Layer1Parser() {
                       >
                         {step.title}
                       </span>
-                      <span className="text-[11px] lg:text-xs text-neutral-500 dark:text-gray-400 mt-1.5 leading-relaxed font-medium">
+                      <span className="text-sm lg:text-sm text-neutral-500 dark:text-gray-400 mt-1.5 leading-relaxed font-medium">
                         {step.desc}
                       </span>
                       {isActive && (
-                        <span className="inline-flex md:justify-center text-[10px] text-indigo-600 dark:text-indigo-400 font-black uppercase mt-2 tracking-widest animate-pulse">
+                        <span className="inline-flex md:justify-center text-sm text-indigo-600 dark:text-indigo-400 font-black uppercase mt-2 tracking-widest animate-pulse">
                           Processing...
                         </span>
                       )}
@@ -271,26 +271,26 @@ export default function Layer1Parser() {
           </div>
 
           {/* Premium Glassmorphic Log Console */}
-          <div className="bg-white/70 dark:bg-black/60 backdrop-blur-2xl border border-neutral-200/80 dark:border-white/10 rounded-3xl h-[400px] flex flex-col overflow-hidden shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          <div className="bg-white/70 dark:bg-black/60 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 rounded-3xl h-[400px] flex flex-col overflow-hidden shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-fade-in-up" style={{ animationDelay: '300ms' }}>
             {/* macOS Style Window Header */}
-            <div className="h-[52px] bg-neutral-100/80 dark:bg-[#0a0a0f]/80 border-b border-neutral-200/80 dark:border-white/5 flex items-center justify-between px-6 backdrop-blur-sm">
-              <div className="flex items-center gap-2.5">
+            <div className="h-[52px] bg-neutral-100/80 dark:bg-[var(--bg-terminal)]/80 border-b border-neutral-200/80 dark:border-white/5 flex items-center justify-between px-6 backdrop-blur-sm">
+              <div className="flex items-center gap-4.5">
                 <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56] shadow-sm shadow-[#ff5f56]/20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer"></div>
                 <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e] shadow-sm shadow-[#ffbd2e]/20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer"></div>
                 <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f] shadow-sm shadow-[#27c93f]/20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer"></div>
-                <span className="ml-4 text-xs font-bold text-neutral-500 dark:text-gray-400 font-mono flex items-center gap-2 select-none">
+                <span className="ml-4 text-sm font-bold text-neutral-500 dark:text-gray-400 font-mono flex items-center gap-4 select-none">
                   <Terminal size={14} className="text-indigo-600 dark:text-indigo-400" />
                   pipeline_output.log
                 </span>
               </div>
               
               {/* Filter pills */}
-              <div className="flex gap-2 bg-neutral-200/50 dark:bg-white/5 p-1 rounded-xl">
+              <div className="flex gap-4 bg-neutral-200/50 dark:bg-white/5 p-1 rounded-xl">
                 {(['all', 'info', 'success', 'error'] as const).map(f => (
                   <button 
                     key={f}
                     onClick={() => setLogFilter(f)}
-                    className={`border-none px-4 py-1.5 rounded-lg text-[10px] font-black cursor-pointer transition-all duration-300 uppercase tracking-widest ${
+                    className={`border-none px-4 py-1.5 rounded-lg text-sm font-black cursor-pointer transition-all duration-300 uppercase tracking-widest ${
                       logFilter === f 
                         ? 'bg-white dark:bg-neutral-800 text-indigo-600 dark:text-white shadow-sm' 
                         : 'bg-transparent text-neutral-500 dark:text-gray-500 hover:text-neutral-800 dark:hover:text-gray-300'
@@ -303,14 +303,14 @@ export default function Layer1Parser() {
             </div>
             
             {/* Output log body */}
-            <div className="flex-1 p-6 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar bg-neutral-50/50 dark:bg-transparent">
+            <div className="flex-1 p-6 overflow-y-auto font-mono text-sm leading-relaxed custom-scrollbar bg-neutral-50/50 dark:bg-transparent">
               {logs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-gray-600 gap-3 select-none">
+                <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-gray-600 gap-5 select-none">
                   <Terminal size={32} className="opacity-50" />
-                  <div className="italic text-xs font-medium">System idle. Ready to initialize extraction pipeline.</div>
+                  <div className="italic text-sm font-medium">System idle. Ready to initialize extraction pipeline.</div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-4.5">
                   {filteredLogs.map((log, idx) => {
                     let levelStyles = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
                     if (log.level === 'ERROR') levelStyles = "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
@@ -319,10 +319,10 @@ export default function Layer1Parser() {
                     
                     return (
                       <div key={idx} className="flex items-start gap-4 border-b border-neutral-200/50 dark:border-white/[0.03] pb-2 last:border-0 hover:bg-white/50 dark:hover:bg-white/[0.02] px-2 py-1 rounded-lg transition-colors duration-200 group">
-                        <span className="text-neutral-400 dark:text-gray-600 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-2 py-1 rounded-md text-[10px] font-mono shadow-sm group-hover:text-neutral-600 dark:group-hover:text-gray-400 transition-colors">
+                        <span className="text-neutral-400 dark:text-gray-600 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-2 py-1 rounded-md text-sm font-mono shadow-sm group-hover:text-neutral-600 dark:group-hover:text-gray-400 transition-colors">
                           {log.time}
                         </span>
-                        <span className={`px-2 py-1 rounded-md border text-[10px] font-black tracking-widest uppercase shadow-sm ${levelStyles}`}>
+                        <span className={`px-2 py-1 rounded-md border text-sm font-black tracking-widest uppercase shadow-sm ${levelStyles}`}>
                           {log.level}
                         </span>
                         <span className="text-neutral-700 dark:text-slate-200 break-all select-text font-mono flex-1 whitespace-pre-wrap leading-relaxed mt-0.5 font-medium">
@@ -368,27 +368,6 @@ export default function Layer1Parser() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.3);
-          border-radius: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(156, 163, 175, 0.5);
-        }
-        
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
       `}} />
     </>
   );

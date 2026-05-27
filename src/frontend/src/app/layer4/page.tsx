@@ -273,7 +273,7 @@ export default function Layer4Page() {
       source: "bd_excel", sourceHandle: "bottom",
       target: "dd_excel", targetHandle: "top",
       animated: bdStatus.status === "success",
-      style: { stroke: bdStatus.status === "success" ? "#f59e0b" : "var(--border-color)", strokeWidth: 2 },
+      style: { stroke: bdStatus.status === "success" ? "var(--warning)" : "var(--border-color)", strokeWidth: 2 },
     }];
   }, [bdStatus.status, selectedItem]);
 
@@ -293,7 +293,7 @@ export default function Layer4Page() {
   useEffect(() => { setEdges(rfEdges); }, [rfEdges, setEdges]);
 
   const getLogColor = (level: string) =>
-    level === "ERROR" ? "#ef4444" : level === "SUCCESS" ? "#10b981" : level === "WARN" ? "#f59e0b" : "#60a5fa";
+    level === "ERROR" ? "var(--danger)" : level === "SUCCESS" ? "var(--success)" : level === "WARN" ? "var(--warning)" : "var(--info)";
 
   const toggleGroup = (g: string) => setCollapsedGroups(prev => ({ ...prev, [g]: !prev[g as keyof typeof prev] }));
 
@@ -323,13 +323,11 @@ export default function Layer4Page() {
                     width: "100%",
                     padding: "8px 14px", borderRadius: 6, border: "none",
                     background: selectedName
-                      ? (selectedItem?.type === "module" || selectedItem?.type === "macro"
-                        ? "linear-gradient(135deg, #06b6d4, #0891b2)"
-                        : "linear-gradient(135deg, #f59e0b, #06b6d4)")
+                      ? "var(--brand-gradient)"
                       : "var(--border-color)",
                     color: selectedName ? "#fff" : "var(--text-muted)",
                     fontSize: 12, fontWeight: 700, cursor: selectedName ? "pointer" : "not-allowed",
-                    boxShadow: selectedName ? "0 4px 12px rgba(6,182,212,0.2)" : "none",
+                    boxShadow: selectedName ? "0 4px 12px var(--brand-glow)" : "none",
                     transition: "all 0.2s"
                   }}
                 >
@@ -343,7 +341,7 @@ export default function Layer4Page() {
                       className="task-search-input" />
                   </div>
                 </div>
-                <div style={{ marginTop: 6, fontSize: 9, color: "#4b5563", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <div style={{ marginTop: 6, fontSize: 9, color: "var(--text-muted)", display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <span>🟢 BD+DD</span><span>🟡 BD only</span><span>🔵 DD only</span><span>⚪ none</span>
                 </div>
               </div>
@@ -351,8 +349,6 @@ export default function Layer4Page() {
                 const typeMap: Record<string, string> = { forms: "form", reports: "report", modules: "module", macros: "macro" };
                 const countMap: Record<string, number> = { forms: groupCounts.forms, reports: groupCounts.reports, modules: groupCounts.modules, macros: groupCounts.macros };
                 const labelMap: Record<string, string> = { forms: "🖥️ Forms", reports: "📊 Reports", modules: "📦 Modules", macros: "⚙️ Macros" };
-                const colorMap: Record<string, string> = { forms: "#93c5fd", reports: "#6ee7b7", modules: "#d8b4fe", macros: "#fca5a5" };
-                const bgMap: Record<string, string> = { forms: "rgba(59,130,246,0.15)", reports: "rgba(16,185,129,0.15)", modules: "rgba(168,85,247,0.15)", macros: "rgba(239,68,68,0.15)" };
                 const groupItems = filteredItems.filter(i => i.type === typeMap[group]);
                 return (
                   <div key={group}>
@@ -401,11 +397,11 @@ export default function Layer4Page() {
 
         {/* ── Right Sidebar: Logs + Files ── */}
         <div className="terminal-sidebar" style={{ width: 360 }}>
-          <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "#151822" }}>
-            <div onClick={() => setRightTab("logs")} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "var(--bg-tab-bar)" }}>
+            <div onClick={() => setRightTab("logs")} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "var(--success)" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid var(--success)" : "2px solid transparent" }}>
               <Settings2 size={13} /> Logs
             </div>
-            <div onClick={() => { setRightTab("files"); refreshOutputs(); }} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "files" ? "#f59e0b" : "var(--text-muted)", borderBottom: rightTab === "files" ? "2px solid #f59e0b" : "2px solid transparent" }}>
+            <div onClick={() => { setRightTab("files"); refreshOutputs(); }} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "files" ? "var(--warning)" : "var(--text-muted)", borderBottom: rightTab === "files" ? "2px solid var(--warning)" : "2px solid transparent" }}>
               <Eye size={13} /> Files ({outputFiles.length})
             </div>
           </div>
@@ -431,14 +427,14 @@ export default function Layer4Page() {
                   No Excel files generated yet.<br />Select an item and click Generate.
                 </div>
               ) : outputFiles.map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderBottom: "1px solid #1f2937", borderRadius: 4 }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderBottom: "1px solid var(--border-color)", borderRadius: 4 }}>
                   <span style={{ fontSize: 16 }}>{f.doc_kind === "BD" ? "📊" : "📄"}</span>
                   <div style={{ flex: 1, overflow: "hidden" }}>
                     <div style={{ fontSize: 11, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.filename}>{f.filename}</div>
                     <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{f.doc_kind} {f.doc_type} — {f.size_kb} KB</div>
                   </div>
                   <button onClick={() => handleDownload(f.download_url, f.filename)}
-                    style={{ background: "none", border: "1px solid #374151", color: "#60a5fa", borderRadius: 4, padding: "3px 6px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                    style={{ background: "none", border: "1px solid var(--border-color)", color: "var(--accent)", borderRadius: 4, padding: "3px 6px", cursor: "pointer", display: "flex", alignItems: "center" }}>
                     <Download size={12} />
                   </button>
                 </div>

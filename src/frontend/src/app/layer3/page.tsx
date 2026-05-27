@@ -132,8 +132,8 @@ interface Stats {
 
 const STATUS_COLOR: Record<string, string> = {
   pending:   "var(--text-muted)",
-  converted: "#10b981",
-  error:     "#ef4444",
+  converted: "var(--success)",
+  error:     "var(--danger)",
 };
 const STATUS_ICON: Record<string, string> = {
   pending:   "⬜",
@@ -144,10 +144,10 @@ const STATUS_ICON: Record<string, string> = {
 // ── StatsBar ──────────────────────────────────────────────────────────────
 function StatsBar({ stats }: { stats: Stats }) {
   const items = [
-    { label: "Total",     value: stats.total,     color: "#60a5fa" },
+    { label: "Total",     value: stats.total,     color: "var(--info)" },
     { label: "Pending",   value: stats.pending,   color: "var(--text-muted)" },
-    { label: "Converted", value: stats.converted, color: "#10b981" },
-    { label: "Error",     value: stats.error,     color: "#ef4444" },
+    { label: "Converted", value: stats.converted, color: "var(--success)" },
+    { label: "Error",     value: stats.error,     color: "var(--danger)" },
   ];
   return (
     <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
@@ -158,10 +158,10 @@ function StatsBar({ stats }: { stats: Stats }) {
         </div>
       ))}
       {/* Progress bar */}
-      <div style={{ flex: 1, height: 6, background: "#1f2937", borderRadius: 4, overflow: "hidden", maxWidth: 200 }}>
+      <div style={{ flex: 1, height: 6, background: "var(--border-color)", borderRadius: 4, overflow: "hidden", maxWidth: 200 }}>
         <div style={{
           height: "100%", borderRadius: 4,
-          background: "linear-gradient(90deg, #10b981, #f59e0b)",
+          background: "linear-gradient(90deg, var(--success), var(--warning))",
           width: `${stats.total > 0 ? Math.round((stats.converted / stats.total) * 100) : 0}%`,
           transition: "width 0.4s ease",
         }} />
@@ -178,7 +178,7 @@ function ConversionInfo({ query }: { query: QueryItem | null }) {
   if (!query) return null;
   const status = query.conversion_status || "pending";
   return (
-    <div style={{ padding: "12px 16px", background: "#151822", borderTop: "1px solid #2e3039", display: "flex", gap: 24, alignItems: "center", flexShrink: 0, fontSize: 12 }}>
+    <div style={{ padding: "12px 16px", background: "var(--bg-tab-bar)", borderTop: "1px solid var(--border-color)", display: "flex", gap: 24, alignItems: "center", flexShrink: 0, fontSize: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <span style={{ color: "var(--text-muted)" }}>Status:</span>
         <span style={{ color: STATUS_COLOR[status], fontWeight: 600 }}>
@@ -188,26 +188,26 @@ function ConversionInfo({ query }: { query: QueryItem | null }) {
       {query.conversion_method && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color: "var(--text-muted)" }}>Method:</span>
-          <span style={{ color: "#a78bfa", fontWeight: 600 }}>{query.conversion_method}</span>
+          <span style={{ color: "var(--brand-primary)", fontWeight: 600 }}>{query.conversion_method}</span>
         </div>
       )}
       {query.query_type && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color: "var(--text-muted)" }}>Type:</span>
-          <span style={{ color: "#60a5fa" }}>{query.query_type}</span>
+          <span style={{ color: "var(--info)" }}>{query.query_type}</span>
         </div>
       )}
       {query.tables && query.tables.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color: "var(--text-muted)" }}>Tables:</span>
-          <span style={{ color: "#34d399", fontFamily: "monospace" }}>
+          <span style={{ color: "var(--success)", fontFamily: "monospace" }}>
             {query.tables.slice(0, 3).join(", ")}{query.tables.length > 3 ? `... +${query.tables.length - 3}` : ""}
           </span>
         </div>
       )}
 
       {query.conversion_errors && query.conversion_errors.length > 0 && (
-        <div style={{ color: "#ef4444", fontSize: 11 }}>
+        <div style={{ color: "var(--danger)", fontSize: 11 }}>
           ⚠ {query.conversion_errors[0]}
         </div>
       )}
@@ -247,9 +247,9 @@ function SqlPanel({
   }, [isEditing]);
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, border: "1px solid #2e3039", borderRadius: 8, background: "#0d1117" }}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, border: "1px solid var(--border-color)", borderRadius: 8, background: "var(--bg-code)" }}>
       {/* Panel header */}
-      <div style={{ padding: "8px 12px", background: "var(--bg-panel)", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+      <div style={{ padding: "8px 12px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-main)" }}>{title}</span>
         {badge && (
           <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: `${badgeColor}22`, color: badgeColor, fontWeight: 600 }}>
@@ -258,11 +258,11 @@ function SqlPanel({
         )}
         <div style={{ flex: 1 }} />
         {editable && (
-          <button onClick={handleFormat} title="Format SQL" style={{ background: "none", border: "none", cursor: "pointer", color: "#60a5fa", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
+          <button onClick={handleFormat} title="Format SQL" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
             <Code2 size={12} /> Format
           </button>
         )}
-        <button onClick={copy} title="Copy SQL" style={{ background: "none", border: "none", cursor: "pointer", color: copied ? "#10b981" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
+        <button onClick={copy} title="Copy SQL" style={{ background: "none", border: "none", cursor: "pointer", color: copied ? "var(--success)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 6px" }}>
           <Copy size={12} /> {copied ? "Copied!" : "Copy"}
         </button>
       </div>
@@ -274,12 +274,12 @@ function SqlPanel({
             dangerouslySetInnerHTML={{ __html: highlighted || `<span style="color: #6b7280; font-style: italic;">No SQL provided</span>` }}
             style={{
               flex: 1, overflow: "auto", margin: 0, padding: 16,
-              background: editable ? "#0f1520" : "#0d1117",
+              background: editable ? "var(--bg-dark)" : "var(--bg-code)",
               fontFamily: "'Consolas', 'Monaco', 'Fira Code', monospace",
               fontSize: 12, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-all",
-              color: "#e2e8f0",
+              color: "var(--text-main)",
               cursor: editable ? "text" : "default",
-              borderLeft: editable ? "2px solid #3b82f6" : "2px solid #2e3039",
+              borderLeft: editable ? "2px solid var(--accent)" : "2px solid var(--border-color)",
             }}
           />
         ) : (
@@ -296,12 +296,12 @@ function SqlPanel({
             spellCheck={false}
             style={{
               flex: 1, resize: "none", border: "none", outline: "none",
-              background: "#0f1520",
-              color: "#e2e8f0",
+              background: "var(--bg-dark)",
+              color: "var(--text-main)",
               fontFamily: "'Consolas', 'Monaco', 'Fira Code', monospace",
               fontSize: 12, lineHeight: 1.6, padding: 16,
               overflow: "auto",
-              borderLeft: "2px solid #3b82f6",
+              borderLeft: "2px solid var(--accent)",
             }}
           />
         )}
@@ -338,9 +338,9 @@ function QueryList({
           onClick={onShowErrorLogs}
           style={{
             width: "100%",
-            background: "rgba(239, 68, 68, 0.08)",
-            border: "1px solid rgba(239, 68, 68, 0.25)",
-            color: "#ef4444",
+            background: "color-mix(in srgb, var(--danger) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--danger) 25%, transparent)",
+            color: "var(--danger)",
             borderRadius: 6,
             padding: "6px 12px",
             fontSize: 12,
@@ -352,8 +352,8 @@ function QueryList({
             gap: 6,
             transition: "all 0.2s"
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(239, 68, 68, 0.08)"; }}
+          onMouseEnter={e => { e.currentTarget.style.background = "color-mix(in srgb, var(--danger) 15%, transparent)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in srgb, var(--danger) 8%, transparent)"; }}
         >
           <AlertCircle size={13} />
           <span>Lịch sử lỗi SQL</span>
@@ -377,7 +377,7 @@ function QueryList({
         {["all", "pending", "converted", "error"].map(s => (
           <button key={s} onClick={() => onFilterChange(s)}
             style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, border: "none", cursor: "pointer", fontWeight: 600,
-              background: filterStatus === s ? "#3b82f6" : "rgba(255,255,255,0.05)",
+              background: filterStatus === s ? "var(--accent)" : "var(--border-subtle)",
               color: filterStatus === s ? "#fff" : "var(--text-muted)" }}>
             {s}
           </button>
@@ -388,7 +388,7 @@ function QueryList({
       <div style={{ flex: 1, overflowY: "auto" }}>
         {loading ? (
           <div style={{ padding: 20, color: "var(--text-muted)", fontSize: 12, textAlign: "center" }}>
-            <div style={{ border: "2px solid #3b82f6", borderTopColor: "transparent", borderRadius: "50%", width: 20, height: 20, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
+            <div style={{ border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", width: 20, height: 20, animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
             Loading queries...
           </div>
         ) : filtered.length === 0 ? (
@@ -399,15 +399,15 @@ function QueryList({
             const isActive = selected === q.name;
             return (
               <div key={q.name} onClick={() => onSelect(q)}
-                style={{ padding: "8px 12px", cursor: "pointer", borderLeft: `3px solid ${isActive ? "#3b82f6" : "transparent"}`,
-                  background: isActive ? "rgba(59,130,246,0.1)" : "transparent", transition: "all 0.15s",
+                style={{ padding: "8px 12px", cursor: "pointer", borderLeft: `3px solid ${isActive ? "var(--accent)" : "transparent"}`,
+                  background: isActive ? "var(--accent-subtle)" : "transparent", transition: "all 0.15s",
                   display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ flexShrink: 0, fontSize: 12 }}>{STATUS_ICON[status]}</span>
-                <span style={{ flex: 1, fontSize: 12, color: isActive ? "#93c5fd" : "#d1d5db",
+                <span style={{ flex: 1, fontSize: 12, color: isActive ? "var(--accent)" : "var(--text-muted)",
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: isActive ? 600 : 400 }}
                   title={q.name}>{q.name}</span>
                 {q.query_type && (
-                  <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "rgba(167,139,250,0.15)", color: "#a78bfa", flexShrink: 0 }}>
+                  <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "color-mix(in srgb, var(--brand-primary) 15%, transparent)", color: "var(--brand-primary)", flexShrink: 0 }}>
                     {q.query_type}
                   </span>
                 )}
@@ -418,7 +418,7 @@ function QueryList({
       </div>
 
       {/* Bottom actions */}
-      <div style={{ padding: "10px 12px", borderTop: "1px solid #2e3039", display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ padding: "10px 12px", borderTop: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center" }}>
           Loaded from queries
         </div>
@@ -458,7 +458,7 @@ function TableList({
               <Search size={14} style={{ position: "absolute", left: 10, top: 9, color: "var(--text-muted)" }} />
               <input
                 type="text" placeholder="Search tables..." value={search} onChange={e => setSearch(e.target.value)}
-                style={{ width: "100%", padding: "8px 10px 8px 30px", background: "#11141e", border: "1px solid var(--border-color)", borderRadius: 6, color: "var(--text-main)", fontSize: 12 }}
+                style={{ width: "100%", padding: "8px 10px 8px 30px", background: "var(--bg-dark)", border: "1px solid var(--border-color)", borderRadius: 6, color: "var(--text-main)", fontSize: 12 }}
               />
             </div>
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Total: {filtered.length} tables</div>
@@ -526,7 +526,7 @@ function TableViewer({
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <select 
             value={targetDb} onChange={(e) => setTargetDb(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: 6, background: "#151822", border: "1px solid #2e3039", color: "var(--text-main)", fontSize: 13 }}
+            style={{ padding: "8px 12px", borderRadius: 6, background: "var(--bg-tab-bar)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: 13 }}
           >
             <option value="PostgreSQL">PostgreSQL</option>
             <option value="Oracle">Oracle</option>
@@ -547,32 +547,32 @@ function TableViewer({
           <h3 style={{ fontSize: 14, marginTop: 0, marginBottom: 12, color: "var(--text-main)" }}>Access Columns</h3>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
-              <tr style={{ background: "#11141e", color: "var(--text-muted)", textAlign: "left" }}>
-                <th style={{ padding: "8px 12px", borderBottom: "1px solid #2e3039" }}>Name</th>
-                <th style={{ padding: "8px 12px", borderBottom: "1px solid #2e3039" }}>Data Type</th>
-                <th style={{ padding: "8px 12px", borderBottom: "1px solid #2e3039" }}>Length</th>
-                <th style={{ padding: "8px 12px", borderBottom: "1px solid #2e3039" }}>Required</th>
+              <tr style={{ background: "var(--bg-dark)", color: "var(--text-muted)", textAlign: "left" }}>
+                <th style={{ padding: "8px 12px", borderBottom: "1px solid var(--border-color)" }}>Name</th>
+                <th style={{ padding: "8px 12px", borderBottom: "1px solid var(--border-color)" }}>Data Type</th>
+                <th style={{ padding: "8px 12px", borderBottom: "1px solid var(--border-color)" }}>Length</th>
+                <th style={{ padding: "8px 12px", borderBottom: "1px solid var(--border-color)" }}>Required</th>
               </tr>
             </thead>
             <tbody>
               {columns.map((c: any, i: number) => (
-                <tr key={i} style={{ borderBottom: "1px solid #2e3039" }}>
+                <tr key={i} style={{ borderBottom: "1px solid var(--border-color)" }}>
                   <td style={{ padding: "8px 12px", color: "var(--text-main)" }}>{c.logical_name || c.physical_name}</td>
-                  <td style={{ padding: "8px 12px", color: "#60a5fa" }}>{c.data_type}</td>
-                  <td style={{ padding: "8px 12px", color: "#a78bfa" }}>{c.length}</td>
-                  <td style={{ padding: "8px 12px", color: String(c.required).toLowerCase() === "true" ? "#ef4444" : "#10b981" }}>{String(c.required)}</td>
+                  <td style={{ padding: "8px 12px", color: "var(--info)" }}>{c.data_type}</td>
+                  <td style={{ padding: "8px 12px", color: "var(--brand-primary)" }}>{c.length}</td>
+                  <td style={{ padding: "8px 12px", color: String(c.required).toLowerCase() === "true" ? "var(--danger)" : "var(--success)" }}>{String(c.required)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0d1117" }}>
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #2e3039", background: "var(--bg-panel)", color: "var(--text-main)", fontSize: 13, fontWeight: 600 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg-code)" }}>
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", color: "var(--text-main)", fontSize: 13, fontWeight: 600 }}>
             Generated DDL ({targetDb})
           </div>
           <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
             {tableDdl ? (
-              <pre style={{ margin: 0, color: "#e2e8f0", fontSize: 13, fontFamily: "'Consolas', 'Monaco', monospace" }}>{tableDdl}</pre>
+              <pre style={{ margin: 0, color: "var(--text-main)", fontSize: 13, fontFamily: "'Consolas', 'Monaco', monospace" }}>{tableDdl}</pre>
             ) : (
               <div style={{ color: "var(--text-muted)", fontSize: 13, fontStyle: "italic" }}>Click Convert to generate schema...</div>
             )}
@@ -963,26 +963,26 @@ export default function Layer3Page() {
           {selected ? (
             <div key={selected.name} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
               {/* Toolbar */}
-              <div style={{ padding: "8px 16px", background: "#151822", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              <div style={{ padding: "8px 16px", background: "var(--bg-tab-bar)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 400 }}
                   title={selected.name}>{selected.name}</span>
 
                 <div style={{ flex: 1 }} />
 
                 {/* Token Estimator */}
-                <span style={{ fontSize: 11, color: "var(--text-muted)", background: "#1f2937", padding: "4px 8px", borderRadius: 4, border: "1px solid #374151" }} title="Estimated LLM prompt tokens (System + SQL)">
+                <span style={{ fontSize: 11, color: "var(--text-muted)", background: "var(--bg-dark)", padding: "4px 8px", borderRadius: 4, border: "1px solid var(--border-color)" }} title="Estimated LLM prompt tokens (System + SQL)">
                   ⚡ ~{300 + Math.ceil(accessSql.length / 3.5)} tokens
                 </span>
 
                 {/* Model selector */}
                 <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)}
-                  style={{ background: "var(--bg-panel)", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none" }}>
+                  style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", color: "var(--text-muted)", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none" }}>
                   {models.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
 
                 {/* Dialect selector */}
                 <select value={selectedDialect} onChange={e => setSelectedDialect(e.target.value)}
-                  style={{ background: "var(--bg-panel)", border: "1px solid #374151", color: "#d1d5db", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
+                  style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", color: "var(--text-muted)", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
                   <option value="Oracle SQL">Oracle SQL</option>
                   <option value="PostgreSQL">PostgreSQL</option>
                   <option value="SQL Server">SQL Server</option>
@@ -991,9 +991,9 @@ export default function Layer3Page() {
 
                  <button onClick={handleRunTest} disabled={runningTest || !editedOracle || selectedDialect !== "Oracle SQL"}
                   style={{
-                    background: "rgba(16,185,129,0.1)",
-                    border: "1px solid #10b981",
-                    color: "#34d399",
+                    background: "color-mix(in srgb, var(--success) 10%, transparent)",
+                    border: "1px solid var(--success)",
+                    color: "var(--success)",
                     borderRadius: 6,
                     padding: "6px 12px",
                     fontSize: 12,
@@ -1013,14 +1013,14 @@ export default function Layer3Page() {
                 </button>
 
                 <button onClick={handleSave} disabled={saving}
-                  style={{ background: "rgba(245,158,11,0.1)", border: "1px solid #f59e0b", color: "#fbbf24", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 6, opacity: saving ? 0.7 : 1 }}>
+                  style={{ background: "color-mix(in srgb, var(--warning) 10%, transparent)", border: "1px solid var(--warning)", color: "var(--warning)", borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 6, opacity: saving ? 0.7 : 1 }}>
                   <Save size={13} /> {saving ? "Saving..." : "💾 Save"}
                 </button>
               </div>
 
               {/* Description / Summary - Beautiful Editable Textbox */}
-              <div style={{ padding: "8px 16px", background: "rgba(59,130,246,0.06)", borderBottom: "1px solid #2e3039", display: "flex", alignItems: "center", gap: 10, flexShrink: 0, fontSize: 13 }}>
-                <span style={{ color: "#60a5fa", fontWeight: 700, display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+              <div style={{ padding: "8px 16px", background: "var(--accent-subtle)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0, fontSize: 13 }}>
+                <span style={{ color: "var(--accent)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
                   💡 Ý nghĩa SQL:
                 </span>
                 <input
@@ -1030,9 +1030,9 @@ export default function Layer3Page() {
                   placeholder="Mô tả ý nghĩa nghiệp vụ của câu SQL này..."
                   style={{
                     flex: 1,
-                    background: "rgba(30,41,59,0.5)",
-                    border: "1px solid rgba(59,130,246,0.25)",
-                    color: "#e2e8f0",
+                    background: "var(--bg-dark)",
+                    border: "1px solid var(--accent-glow)",
+                    color: "var(--text-main)",
                     borderRadius: 6,
                     padding: "6px 12px",
                     fontSize: 12,
@@ -1059,8 +1059,8 @@ export default function Layer3Page() {
                       title="AI Convert: Access → Target SQL"
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
-                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "#3b82f6",
-                        border: "4px solid #0f1115",
+                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "var(--accent)",
+                        border: "4px solid var(--bg-dark)",
                         color: "#fff", cursor: (converting || convertingAndTesting) ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         boxShadow: "0 0 10px rgba(0,0,0,0.5)",
@@ -1076,11 +1076,11 @@ export default function Layer3Page() {
                       title="Convert & Auto-Test: Đổi SQL rồi tự động test trên Oracle DB, LLM tự fix nếu lỗi"
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
-                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "#10b981",
-                        border: "4px solid #0f1115",
+                        background: (converting || convertingAndTesting) ? "var(--border-color)" : "var(--success)",
+                        border: "4px solid var(--bg-dark)",
                         color: "#fff", cursor: (converting || convertingAndTesting) ? "not-allowed" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        boxShadow: "0 0 16px rgba(16,185,129,0.4)",
+                        boxShadow: "0 0 16px color-mix(in srgb, var(--success) 40%, transparent)",
                         transition: "transform 0.2s"
                       }}
                       onMouseEnter={(e) => { if (!converting && !convertingAndTesting) e.currentTarget.style.transform = "scale(1.1)"; }}
@@ -1099,7 +1099,7 @@ export default function Layer3Page() {
                   editable
                   onChange={setEditedOracle}
                   badge={hasDiff ? "Modified" : "Oracle"}
-                  badgeColor={hasDiff ? "#f59e0b" : "#10b981"}
+                  badgeColor={hasDiff ? "var(--warning)" : "var(--success)"}
                 />
               </div>
 
@@ -1107,9 +1107,9 @@ export default function Layer3Page() {
               {testResult && (
                 <div style={{
                   padding: "16px",
-                  background: "#0d1117",
-                  borderTop: "1px solid #2e3039",
-                  borderBottom: "1px solid #2e3039",
+                  background: "var(--bg-code)",
+                  borderTop: "1px solid var(--border-color)",
+                  borderBottom: "1px solid var(--border-color)",
                   maxHeight: "360px",
                   overflowY: "auto",
                   display: "flex",
@@ -1122,15 +1122,15 @@ export default function Layer3Page() {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{
                         padding: "4px 8px", borderRadius: 4, fontWeight: 700,
-                        background: testResult.success ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-                        color: testResult.success ? "#10b981" : "#ef4444"
+                        background: testResult.success ? "color-mix(in srgb, var(--success) 15%, transparent)" : "color-mix(in srgb, var(--danger) 15%, transparent)",
+                        color: testResult.success ? "var(--success)" : "var(--danger)"
                       }}>
                         {testResult.success ? "SUCCESS" : "ERROR"}
                       </span>
                       <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
                         Oracle Test Result
                         {testHistory.length > 1 && (
-                          <span style={{ marginLeft: 6, fontSize: 10, color: "#60a5fa", fontWeight: 400 }}>
+                          <span style={{ marginLeft: 6, fontSize: 10, color: "var(--info)", fontWeight: 400 }}>
                             ({testHistory.length} attempt{testHistory.length > 1 ? "s" : ""}, {fixNotes.length} LLM fix{fixNotes.length !== 1 ? "es" : ""})
                           </span>
                         )}
@@ -1150,25 +1150,25 @@ export default function Layer3Page() {
                         <div key={idx} style={{
                           display: "flex", alignItems: "flex-start", gap: 8,
                           padding: "6px 10px", borderRadius: 6,
-                          background: t.success ? "rgba(16,185,129,0.07)" : "rgba(239,68,68,0.07)",
-                          border: `1px solid ${t.success ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`
+                          background: t.success ? "color-mix(in srgb, var(--success) 7%, transparent)" : "color-mix(in srgb, var(--danger) 7%, transparent)",
+                          border: `1px solid ${t.success ? "color-mix(in srgb, var(--success) 20%, transparent)" : "color-mix(in srgb, var(--danger) 20%, transparent)"}`
                         }}>
                           <span style={{
                             fontSize: 10, fontWeight: 700, padding: "2px 5px", borderRadius: 3, flexShrink: 0,
-                            background: t.success ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)",
-                            color: t.success ? "#10b981" : "#ef4444"
+                            background: t.success ? "color-mix(in srgb, var(--success) 20%, transparent)" : "color-mix(in srgb, var(--danger) 20%, transparent)",
+                            color: t.success ? "var(--success)" : "var(--danger)"
                           }}>
                             {t.attempt === 0 ? "INIT" : `FIX ${t.attempt}`}
                           </span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             {t.success
-                              ? <span style={{ color: "#34d399" }}>Passed ✔</span>
-                              : <span style={{ color: "#fca5a5", fontFamily: "monospace", wordBreak: "break-all" }}>
+                              ? <span style={{ color: "var(--success)" }}>Passed ✔</span>
+                              : <span style={{ color: "var(--danger)", fontFamily: "monospace", wordBreak: "break-all" }}>
                                   {t.error_code ? `ORA-${t.error_code}: ` : ""}{t.error_message}
                                 </span>
                             }
                             {fixNotes[t.attempt] && (
-                              <div style={{ marginTop: 3, color: "#60a5fa", fontStyle: "italic", fontSize: 10 }}>
+                              <div style={{ marginTop: 3, color: "var(--info)", fontStyle: "italic", fontSize: 10 }}>
                                 ↳ {fixNotes[t.attempt]}
                               </div>
                             )}
@@ -1181,23 +1181,23 @@ export default function Layer3Page() {
                   {/* Final test result detail */}
                   {testResult.success ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <div style={{ color: "#34d399", fontWeight: 600 }}>
+                      <div style={{ color: "var(--success)", fontWeight: 600 }}>
                         {testResult.message || "Query executed successfully."}
                       </div>
                       {testResult.preview?.columns ? (
                         <div style={{ overflowX: "auto" }}>
                           <table style={{ width: "100%", borderCollapse: "collapse", color: "var(--text-main)", textAlign: "left" }}>
                             <thead>
-                              <tr style={{ borderBottom: "1px solid #2e3039", background: "var(--bg-panel)" }}>
+                              <tr style={{ borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
                                 {testResult.preview.columns.map((col: string, idx: number) => (
-                                  <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "#60a5fa" }}>{col}</th>
+                                  <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "var(--info)" }}>{col}</th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody>
                               {testResult.preview.rows && testResult.preview.rows.length > 0 ? (
                                 testResult.preview.rows.map((row: any[], rowIdx: number) => (
-                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
+                                  <tr key={rowIdx} style={{ borderBottom: "1px solid var(--border-color)", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
                                     {row.map((val: any, colIdx: number) => (
                                       <td key={colIdx} style={{ padding: "8px 12px", fontFamily: "monospace" }}>
                                         {val === null ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>NULL</span> : String(val)}
@@ -1213,7 +1213,7 @@ export default function Layer3Page() {
                         </div>
                       ) : testResult.preview?.rowcount !== undefined ? (
                         <div style={{ color: "var(--text-main)" }}>
-                          Rows affected: <span style={{ fontFamily: "monospace", color: "#60a5fa", fontWeight: 700 }}>{testResult.preview.rowcount}</span>
+                          Rows affected: <span style={{ fontFamily: "monospace", color: "var(--info)", fontWeight: 700 }}>{testResult.preview.rowcount}</span>
                           <span style={{ marginLeft: 8, color: "var(--text-muted)", fontSize: 10 }}>(transaction rolled back)</span>
                         </div>
                       ) : null}
@@ -1223,16 +1223,16 @@ export default function Layer3Page() {
                         <div style={{ overflowX: "auto" }}>
                           <table style={{ width: "100%", borderCollapse: "collapse", color: "var(--text-main)", textAlign: "left" }}>
                             <thead>
-                              <tr style={{ borderBottom: "1px solid #2e3039", background: "var(--bg-panel)" }}>
+                              <tr style={{ borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)" }}>
                                 {testResult.columns.map((col: string, idx: number) => (
-                                  <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "#60a5fa" }}>{col}</th>
+                                  <th key={idx} style={{ padding: "8px 12px", fontWeight: 600, color: "var(--info)" }}>{col}</th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody>
                               {testResult.rows && testResult.rows.length > 0 ? (
                                 testResult.rows.map((row: any[], rowIdx: number) => (
-                                  <tr key={rowIdx} style={{ borderBottom: "1px solid #1f2937", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
+                                  <tr key={rowIdx} style={{ borderBottom: "1px solid var(--border-color)", background: rowIdx % 2 === 0 ? "transparent" : "var(--bg-dark)" }}>
                                     {row.map((val: any, colIdx: number) => (
                                       <td key={colIdx} style={{ padding: "8px 12px", fontFamily: "monospace" }}>
                                         {val === null ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>NULL</span> : String(val)}
@@ -1252,18 +1252,18 @@ export default function Layer3Page() {
                       )}
                       {testResult.rowcount !== undefined && !testResult.preview && (
                         <div style={{ color: "var(--text-main)" }}>
-                          Rows affected: <span style={{ fontFamily: "monospace", color: "#60a5fa", fontWeight: 700 }}>{testResult.rowcount}</span>
+                          Rows affected: <span style={{ fontFamily: "monospace", color: "var(--info)", fontWeight: 700 }}>{testResult.rowcount}</span>
                           <span style={{ marginLeft: 8, color: "var(--text-muted)", fontSize: 10 }}>(transaction rolled back)</span>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-                      <div style={{ padding: "12px", borderRadius: 6, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ padding: "12px", borderRadius: 6, background: "color-mix(in srgb, var(--danger) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--danger) 20%, transparent)", display: "flex", flexDirection: "column", gap: 6 }}>
                         {(testResult.error_code) && (
-                          <div style={{ color: "#fca5a5", fontWeight: 700 }}>Oracle Error: {testResult.error_code}</div>
+                          <div style={{ color: "var(--danger)", fontWeight: 700 }}>Oracle Error: {testResult.error_code}</div>
                         )}
-                        <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all", color: "#fca5a5", fontFamily: "monospace", fontSize: 11 }}>
+                        <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all", color: "var(--danger)", fontFamily: "monospace", fontSize: 11 }}>
                           {testResult.error_message}
                         </pre>
                       </div>
@@ -1276,9 +1276,9 @@ export default function Layer3Page() {
                           <div style={{
                             padding: "12px",
                             borderRadius: 6,
-                            background: "rgba(245, 158, 11, 0.06)",
-                            border: "1px solid rgba(245, 158, 11, 0.2)",
-                            color: "#fde047"
+                            background: "color-mix(in srgb, var(--warning) 6%, transparent)",
+                            border: "1px solid color-mix(in srgb, var(--warning) 20%, transparent)",
+                            color: "var(--warning)"
                           }}>
                             <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
                               💡 Gợi ý sửa lỗi (Fix Suggestion):
@@ -1330,7 +1330,7 @@ export default function Layer3Page() {
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: "fixed", bottom: 24, right: 24, background: toast.ok ? "#064e3b" : "#7f1d1d", border: `1px solid ${toast.ok ? "#10b981" : "#ef4444"}`, color: toast.ok ? "#34d399" : "#fca5a5", borderRadius: 8, padding: "10px 18px", fontSize: 13, fontWeight: 600, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.4)", animation: "fadeIn 0.2s ease" }}>
+        <div style={{ position: "fixed", bottom: 24, right: 24, background: toast.ok ? "var(--success)" : "var(--danger)", border: `1px solid ${toast.ok ? "var(--success)" : "var(--danger)"}`, color: "#ffffff", borderRadius: 8, padding: "10px 18px", fontSize: 13, fontWeight: 600, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.4)", animation: "fadeIn 0.2s ease" }}>
           {toast.msg}
         </div>
       )}
@@ -1343,8 +1343,8 @@ export default function Layer3Page() {
           right: 0,
           width: 500,
           height: "100vh",
-          background: "#0f111a",
-          borderLeft: "1px solid #2e3039",
+          background: "var(--bg-dark)",
+          borderLeft: "1px solid var(--border-color)",
           boxShadow: "-10px 0 30px rgba(0,0,0,0.5)",
           zIndex: 1000,
           display: "flex",
@@ -1354,14 +1354,14 @@ export default function Layer3Page() {
           {/* Header */}
           <div style={{
             padding: "16px 20px",
-            borderBottom: "1px solid #2e3039",
+            borderBottom: "1px solid var(--border-color)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "#161824"
+            background: "var(--bg-panel)"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <AlertCircle size={18} color="#ef4444" />
+              <AlertCircle size={18} color="var(--danger)" />
               <span style={{ fontWeight: 700, color: "var(--text-main)", fontSize: 14 }}>Lịch sử lỗi Migration (Oracle DB)</span>
             </div>
             <button
@@ -1383,12 +1383,12 @@ export default function Layer3Page() {
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
             {loadingErrorLogs ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-muted)" }}>
-                <div style={{ border: "2px solid #ef4444", borderTopColor: "transparent", borderRadius: "50%", width: 24, height: 24, animation: "spin 1s linear infinite", marginBottom: 12 }} />
+                <div style={{ border: "2px solid var(--danger)", borderTopColor: "transparent", borderRadius: "50%", width: 24, height: 24, animation: "spin 1s linear infinite", marginBottom: 12 }} />
                 <span>Đang tải danh sách lỗi...</span>
               </div>
             ) : errorLogs.length === 0 ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, color: "var(--text-muted)", gap: 8 }}>
-                <CheckCircle size={32} color="#10b981" />
+                <CheckCircle size={32} color="var(--success)" />
                 <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Tuyệt vời! Không phát hiện lỗi nào.</span>
               </div>
             ) : (
@@ -1399,8 +1399,8 @@ export default function Layer3Page() {
                 
                 return (
                   <div key={idx} style={{
-                    background: "#1c1e29",
-                    border: "1px solid #2e3039",
+                    background: "var(--bg-sidebar)",
+                    border: "1px solid var(--border-color)",
                     borderRadius: 8,
                     padding: 12,
                     display: "flex",
@@ -1410,17 +1410,17 @@ export default function Layer3Page() {
                   }}>
                     {/* Log Meta */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontWeight: 700, color: "#60a5fa" }}>{log.query_name}</span>
+                      <span style={{ fontWeight: 700, color: "var(--info)" }}>{log.query_name}</span>
                       <span style={{ color: "var(--text-muted)", fontSize: 10 }}>{dateStr}</span>
                     </div>
                     
                     {/* Error Banner */}
                     <div style={{
-                      background: "rgba(239, 68, 68, 0.08)",
-                      border: "1px solid rgba(239, 68, 68, 0.2)",
+                      background: "color-mix(in srgb, var(--danger) 8%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--danger) 20%, transparent)",
                       borderRadius: 6,
                       padding: "8px 10px",
-                      color: "#fca5a5"
+                      color: "var(--danger)"
                     }}>
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>
                         {matchedOra ? matchedOra : "Error Detail"} {log.source_operation && `(${log.source_operation})`}
@@ -1433,11 +1433,11 @@ export default function Layer3Page() {
                     {/* Dynamic Fix Suggestions */}
                     {suggestions && (
                       <div style={{
-                        background: "rgba(245, 158, 11, 0.06)",
-                        border: "1px solid rgba(245, 158, 11, 0.2)",
+                        background: "color-mix(in srgb, var(--warning) 6%, transparent)",
+                        border: "1px solid color-mix(in srgb, var(--warning) 20%, transparent)",
                         borderRadius: 6,
                         padding: "8px 10px",
-                        color: "#fde047"
+                        color: "var(--warning)"
                       }}>
                         <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
                           💡 Gợi ý sửa lỗi (Fix Suggestion):
@@ -1456,13 +1456,13 @@ export default function Layer3Page() {
                       <pre style={{
                         marginTop: 6,
                         padding: 8,
-                        background: "#0d1117",
-                        border: "1px solid #1f2937",
+                        background: "var(--bg-code)",
+                        border: "1px solid var(--border-color)",
                         borderRadius: 4,
                         whiteSpace: "pre-wrap",
                         wordBreak: "break-all",
                         fontFamily: "monospace",
-                        color: "#e2e8f0",
+                        color: "var(--text-main)",
                         fontSize: 10
                       }}>
                         {log.sql}

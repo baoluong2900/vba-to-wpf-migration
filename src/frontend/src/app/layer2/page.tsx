@@ -157,9 +157,9 @@ export default function Layer2Workflow() {
   ];
 
   const initialEdgesScreen: Edge[] = [
-    { id: 'e2-3', source: '2', target: '3', animated: agentStatus === 'running' || agentStatus === 'success',  style: { stroke: queryStatus === 'success' ? '#3b82f6' : "var(--border-color)", strokeWidth: 2 } },
-    { id: 'e3-4', source: '3', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: agentStatus === 'success' ? '#f97316' : "var(--border-color)", strokeWidth: 2 } },
-    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e2-3', source: '2', target: '3', animated: agentStatus === 'running' || agentStatus === 'success',  style: { stroke: queryStatus === 'success' ? 'var(--accent)' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e3-4', source: '3', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: agentStatus === 'success' ? 'var(--warning)' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? 'var(--accent)' : "var(--border-color)", strokeWidth: 2 } },
   ];
 
   const initialNodesModule: Node[] = [
@@ -169,8 +169,8 @@ export default function Layer2Workflow() {
   ];
 
   const initialEdgesModule: Edge[] = [
-    { id: 'e2-4', source: '2', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: queryStatus === 'success' ? '#f97316' : "var(--border-color)", strokeWidth: 2 } },
-    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? '#8b5cf6' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e2-4', source: '2', target: '4', animated: ddAgentStatus === 'running' || ddAgentStatus === 'success', style: { stroke: queryStatus === 'success' ? 'var(--warning)' : "var(--border-color)", strokeWidth: 2 } },
+    { id: 'e4-5', source: '4', target: '5', animated: ddAgentStatus === 'success', style: { stroke: ddAgentStatus === 'success' ? 'var(--accent)' : "var(--border-color)", strokeWidth: 2 } },
   ];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodesScreen);
@@ -581,10 +581,10 @@ export default function Layer2Workflow() {
   };
 
   const getLogColor = (level: string) => {
-    if (level === 'ERROR') return '#ef4444';
-    if (level === 'SUCCESS') return '#10b981';
-    if (level === 'WARN') return '#f59e0b';
-    return '#60a5fa'; // INFO
+    if (level === 'ERROR') return 'var(--danger)';
+    if (level === 'SUCCESS') return 'var(--success)';
+    if (level === 'WARN') return 'var(--warning)';
+    return 'var(--info)'; // INFO
   };
 
   return (
@@ -624,8 +624,8 @@ export default function Layer2Workflow() {
               {dbScreens.filter(s => !s.type || ['form','report'].includes(s.type)).slice(0, 8).map((item, idx) => (
                 <div key={idx} title={item.name}
                   onClick={() => { setScreenName(item.name); setViewMode('screen'); setCenterView('graph'); setTaskSidebarCollapsed(false); }}
-                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: screenName === item.name ? 'rgba(59,130,246,0.2)' : 'transparent' }}>
-                  <DatabaseZap size={13} style={{ color: screenName === item.name ? '#3b82f6' : "var(--text-muted)" }} />
+                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: screenName === item.name ? 'var(--accent-subtle)' : 'transparent' }}>
+                  <DatabaseZap size={13} style={{ color: screenName === item.name ? 'var(--accent)' : "var(--text-muted)" }} />
                 </div>
               ))}
             </div>
@@ -642,12 +642,12 @@ export default function Layer2Workflow() {
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                     width: "100%", padding: "8px 14px", borderRadius: 6, border: "none",
                     background: batchIsRunning 
-                      ? "linear-gradient(135deg, rgba(59,130,246,0.5), rgba(99,102,241,0.5))" 
-                      : "linear-gradient(135deg, #3b82f6, #6366f1)",
+                      ? "var(--accent-subtle)" 
+                      : "var(--brand-gradient)",
                     opacity: batchIsRunning ? 0.7 : 1,
                     color: "#fff", fontSize: 12, fontWeight: 700, 
                     cursor: batchIsRunning ? "not-allowed" : "pointer",
-                    boxShadow: "0 4px 12px rgba(59,130,246,0.2)", transition: "all 0.2s"
+                    boxShadow: "0 4px 12px var(--accent-glow)", transition: "all 0.2s"
                   }}
                 >
                   {batchIsRunning ? (
@@ -687,11 +687,11 @@ export default function Layer2Workflow() {
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("screen"); setCenterView("graph"); }}>
                   {batchProgress[item.name] === "running" ? (
-                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
                   ) : batchProgress[item.name] === "success" ? (
-                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                    <CheckCircle size={14} className="task-icon" style={{ color: "var(--success)" }} />
                   ) : batchProgress[item.name] === "error" ? (
-                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                    <AlertCircle size={14} className="task-icon" style={{ color: "var(--danger)" }} />
                   ) : (
                     <DatabaseZap size={14} className="task-icon" />
                   )}
@@ -710,11 +710,11 @@ export default function Layer2Workflow() {
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("screen"); setCenterView("graph"); }}>
                   {batchProgress[item.name] === "running" ? (
-                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
                   ) : batchProgress[item.name] === "success" ? (
-                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                    <CheckCircle size={14} className="task-icon" style={{ color: "var(--success)" }} />
                   ) : batchProgress[item.name] === "error" ? (
-                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                    <AlertCircle size={14} className="task-icon" style={{ color: "var(--danger)" }} />
                   ) : (
                     <DatabaseZap size={14} className="task-icon" />
                   )}
@@ -733,11 +733,11 @@ export default function Layer2Workflow() {
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("module"); setCenterView("graph"); }}>
                   {batchProgress[item.name] === "running" ? (
-                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
                   ) : batchProgress[item.name] === "success" ? (
-                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                    <CheckCircle size={14} className="task-icon" style={{ color: "var(--success)" }} />
                   ) : batchProgress[item.name] === "error" ? (
-                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                    <AlertCircle size={14} className="task-icon" style={{ color: "var(--danger)" }} />
                   ) : (
                     <Terminal size={14} className="task-icon" />
                   )}
@@ -756,11 +756,11 @@ export default function Layer2Workflow() {
                      className={`task-item ${screenName === item.name ? 'active' : ''}`}
                      onClick={() => { setScreenName(item.name); setViewMode("macro"); setCenterView("graph"); }}>
                   {batchProgress[item.name] === "running" ? (
-                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "#3b82f6" }} />
+                    <Loader2 size={14} className="task-icon" style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
                   ) : batchProgress[item.name] === "success" ? (
-                    <CheckCircle size={14} className="task-icon" style={{ color: "#10b981" }} />
+                    <CheckCircle size={14} className="task-icon" style={{ color: "var(--success)" }} />
                   ) : batchProgress[item.name] === "error" ? (
-                    <AlertCircle size={14} className="task-icon" style={{ color: "#ef4444" }} />
+                    <AlertCircle size={14} className="task-icon" style={{ color: "var(--danger)" }} />
                   ) : (
                     <Settings2 size={14} className="task-icon" />
                   )}
@@ -776,19 +776,19 @@ export default function Layer2Workflow() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: 'var(--bg-panel)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
             <button
               onClick={() => setCenterView('node')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'node' ? '#3b82f6' : 'rgba(59,130,246,0.1)', color: centerView === 'node' ? '#fff' : '#60a5fa', transition: 'all 0.2s' }}
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'node' ? 'var(--accent)' : 'var(--accent-subtle)', color: centerView === 'node' ? '#fff' : 'var(--accent)', transition: 'all 0.2s' }}
             >
               ⬡ Task Node
             </button>
             <button
               onClick={() => setCenterView('graph')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'graph' ? '#a855f7' : 'rgba(168,85,247,0.1)', color: centerView === 'graph' ? '#fff' : '#c084fc', transition: 'all 0.2s' }}
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'graph' ? 'var(--warning)' : 'rgba(245, 158, 11, 0.1)', color: centerView === 'graph' ? '#fff' : 'var(--warning)', transition: 'all 0.2s' }}
             >
               🕸 Graph View (VBA)
             </button>
             <button
               onClick={() => setCenterView('graphWpf')}
-              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'graphWpf' ? '#0891b2' : 'rgba(8,145,178,0.12)', color: centerView === 'graphWpf' ? '#fff' : '#22d3ee', transition: 'all 0.2s' }}
+              style={{ padding: '5px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', background: centerView === 'graphWpf' ? 'var(--success)' : 'rgba(16, 185, 129, 0.1)', color: centerView === 'graphWpf' ? '#fff' : 'var(--success)', transition: 'all 0.2s' }}
             >
               ◈ WPF Graph
             </button>
@@ -856,7 +856,7 @@ export default function Layer2Workflow() {
         <div className="terminal-sidebar" style={{ width: terminalCollapsed ? 40 : sidebarWidth, overflow: "hidden", transition: "width 0.22s" }}>
           {!terminalCollapsed && <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />}
           
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tab-bar)' }}>
             <button 
               onClick={() => setTerminalCollapsed(v => !v)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 12px', display: 'flex', alignItems: 'center', height: 42, flexShrink: 0 }}
@@ -864,24 +864,24 @@ export default function Layer2Workflow() {
               {terminalCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
             </button>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? '#10b981' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid #10b981' : '2px solid transparent' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? 'var(--success)' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid var(--success)' : '2px solid transparent' }}
               onClick={() => setActiveTab('logs')}
             >
               <Terminal size={13} /> System Log
             </div>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'preview' ? '#f59e0b' : "var(--text-muted)", borderBottom: activeTab === 'preview' ? '2px solid #f59e0b' : '2px solid transparent' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'preview' ? 'var(--warning)' : "var(--text-muted)", borderBottom: activeTab === 'preview' ? '2px solid var(--warning)' : '2px solid transparent' }}
               onClick={() => setActiveTab('preview')}
             >
               <DatabaseZap size={13} /> DB Preview
             </div>
             <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'tokens' ? '#a855f7' : "var(--text-muted)", borderBottom: activeTab === 'tokens' ? '2px solid #a855f7' : '2px solid transparent', position: 'relative' }}
+              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'tokens' ? 'var(--accent)' : "var(--text-muted)", borderBottom: activeTab === 'tokens' ? '2px solid var(--accent)' : '2px solid transparent', position: 'relative' }}
               onClick={() => setActiveTab('tokens')}
             >
               <BarChart2 size={13} /> Token Stats
               {(tokenStats || ddTokenStats) && (
-                <span style={{ position: 'absolute', top: 6, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#a855f7' }} />
+                <span style={{ position: 'absolute', top: 6, right: 4, width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />
               )}
             </div>
           </div>
@@ -905,11 +905,11 @@ export default function Layer2Workflow() {
             <div style={{ overflowY: 'auto', flex: 1, padding: '16px' }}>
               {/* Header + Download button */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 13 }}>📊 Token Usage Report</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 13 }}>📊 Token Usage Report</span>
                 <a
                   href="/api/v1/layer5/download-token-report"
                   download
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid #7c3aed', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
                 >
                   <Download size={13} /> Download Excel
                 </a>
@@ -918,20 +918,20 @@ export default function Layer2Workflow() {
               {/* BD Stats */}
               {tokenStats && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ color: '#3b82f6', fontWeight: 700, fontSize: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                     🔵 BD Agent
-                    <span style={{ background: 'rgba(59,130,246,0.15)', padding: '2px 8px', borderRadius: 10, color: '#60a5fa' }}>
+                    <span style={{ background: 'var(--accent-subtle)', padding: '2px 8px', borderRadius: 10, color: 'var(--accent)' }}>
                       {tokenStats.total_tokens.toLocaleString()} tokens
                     </span>
-                    <span style={{ background: 'rgba(16,185,129,0.15)', padding: '2px 8px', borderRadius: 10, color: '#34d399' }}>
+                    <span style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: 10, color: 'var(--success)' }}>
                       ${tokenStats.total_cost_usd.toFixed(5)}
                     </span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                     <thead>
-                      <tr style={{ background: '#1a1f2e' }}>
+                      <tr style={{ background: 'var(--bg-tab-bar)' }}>
                         {['Item', 'Model', 'Stage', 'Input', 'Output', 'Cost $'].map(h => (
-                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
+                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -939,18 +939,18 @@ export default function Layer2Workflow() {
                       {tokenStats.records.map((r, i) => (
                         <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : "var(--bg-dark)" }}>
                           <td style={{ padding: '4px 6px', color: "var(--text-main)", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
-                          <td style={{ padding: '4px 6px', color: '#93c5fd', fontSize: 10 }}>{r.model}</td>
-                          <td style={{ padding: '4px 6px', color: '#fbbf24', fontSize: 10 }}>{r.stage}</td>
-                          <td style={{ padding: '4px 6px', color: '#a5b4fc', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
-                          <td style={{ padding: '4px 6px', color: '#86efac', textAlign: 'right' }}>{r.output_tokens.toLocaleString()}</td>
-                          <td style={{ padding: '4px 6px', color: '#f9a8d4', textAlign: 'right' }}>{r.cost_usd.toFixed(5)}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--accent)', fontSize: 10 }}>{r.model}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--warning)', fontSize: 10 }}>{r.stage}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--text-muted)', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--success)', textAlign: 'right' }}>{r.output_tokens.toLocaleString()}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--text-main)', textAlign: 'right' }}>{r.cost_usd.toFixed(5)}</td>
                         </tr>
                       ))}
-                      <tr style={{ background: '#0d1a0f', borderTop: '1px solid #166534' }}>
-                        <td colSpan={3} style={{ padding: '5px 6px', color: '#34d399', fontWeight: 700, fontSize: 11 }}>TỔNG</td>
-                        <td style={{ padding: '5px 6px', color: '#a5b4fc', textAlign: 'right', fontWeight: 700 }}>{tokenStats.records.reduce((s,r)=>s+r.input_tokens,0).toLocaleString()}</td>
-                        <td style={{ padding: '5px 6px', color: '#86efac', textAlign: 'right', fontWeight: 700 }}>{tokenStats.records.reduce((s,r)=>s+r.output_tokens,0).toLocaleString()}</td>
-                        <td style={{ padding: '5px 6px', color: '#f9a8d4', textAlign: 'right', fontWeight: 700 }}>${tokenStats.total_cost_usd.toFixed(5)}</td>
+                      <tr style={{ background: 'rgba(16, 185, 129, 0.1)', borderTop: '1px solid var(--success)' }}>
+                        <td colSpan={3} style={{ padding: '5px 6px', color: 'var(--success)', fontWeight: 700, fontSize: 11 }}>TỔNG</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--text-muted)', textAlign: 'right', fontWeight: 700 }}>{tokenStats.records.reduce((s,r)=>s+r.input_tokens,0).toLocaleString()}</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--success)', textAlign: 'right', fontWeight: 700 }}>{tokenStats.records.reduce((s,r)=>s+r.output_tokens,0).toLocaleString()}</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--success)', textAlign: 'right', fontWeight: 700 }}>${tokenStats.total_cost_usd.toFixed(5)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -960,20 +960,20 @@ export default function Layer2Workflow() {
               {/* DD Stats */}
               {ddTokenStats && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ color: '#f97316', fontWeight: 700, fontSize: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ color: 'var(--warning)', fontWeight: 700, fontSize: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                     🟠 DD Agent
-                    <span style={{ background: 'rgba(249,115,22,0.15)', padding: '2px 8px', borderRadius: 10, color: '#fb923c' }}>
+                    <span style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: 10, color: 'var(--warning)' }}>
                       {ddTokenStats.total_tokens.toLocaleString()} tokens
                     </span>
-                    <span style={{ background: 'rgba(16,185,129,0.15)', padding: '2px 8px', borderRadius: 10, color: '#34d399' }}>
+                    <span style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: 10, color: 'var(--success)' }}>
                       ${ddTokenStats.total_cost_usd.toFixed(5)}
                     </span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                     <thead>
-                      <tr style={{ background: '#1a1f2e' }}>
+                      <tr style={{ background: 'var(--bg-tab-bar)' }}>
                         {['Item', 'Model', 'Stage', 'Input', 'Output', 'Cost $'].map(h => (
-                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid #2d3347' }}>{h}</th>
+                          <th key={h} style={{ padding: '5px 6px', textAlign: 'left', color: "var(--text-muted)", fontWeight: 600, borderBottom: '1px solid var(--border-color)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -981,18 +981,18 @@ export default function Layer2Workflow() {
                       {ddTokenStats.records.map((r, i) => (
                         <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : "var(--bg-dark)" }}>
                           <td style={{ padding: '4px 6px', color: "var(--text-main)", maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.item}>{r.item}</td>
-                          <td style={{ padding: '4px 6px', color: '#93c5fd', fontSize: 10 }}>{r.model}</td>
-                          <td style={{ padding: '4px 6px', color: '#fbbf24', fontSize: 10 }}>{r.stage}</td>
-                          <td style={{ padding: '4px 6px', color: '#a5b4fc', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
-                          <td style={{ padding: '4px 6px', color: '#86efac', textAlign: 'right' }}>{r.output_tokens.toLocaleString()}</td>
-                          <td style={{ padding: '4px 6px', color: '#f9a8d4', textAlign: 'right' }}>{r.cost_usd.toFixed(5)}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--accent)', fontSize: 10 }}>{r.model}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--warning)', fontSize: 10 }}>{r.stage}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--text-muted)', textAlign: 'right' }}>{r.input_tokens.toLocaleString()}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--success)', textAlign: 'right' }}>{r.output_tokens.toLocaleString()}</td>
+                          <td style={{ padding: '4px 6px', color: 'var(--text-main)', textAlign: 'right' }}>{r.cost_usd.toFixed(5)}</td>
                         </tr>
                       ))}
-                      <tr style={{ background: '#0d1a0f', borderTop: '1px solid #166534' }}>
-                        <td colSpan={3} style={{ padding: '5px 6px', color: '#34d399', fontWeight: 700, fontSize: 11 }}>TỔNG</td>
-                        <td style={{ padding: '5px 6px', color: '#a5b4fc', textAlign: 'right', fontWeight: 700 }}>{ddTokenStats.records.reduce((s,r)=>s+r.input_tokens,0).toLocaleString()}</td>
-                        <td style={{ padding: '5px 6px', color: '#86efac', textAlign: 'right', fontWeight: 700 }}>{ddTokenStats.records.reduce((s,r)=>s+r.output_tokens,0).toLocaleString()}</td>
-                        <td style={{ padding: '5px 6px', color: '#f9a8d4', textAlign: 'right', fontWeight: 700 }}>${ddTokenStats.total_cost_usd.toFixed(5)}</td>
+                      <tr style={{ background: 'rgba(16, 185, 129, 0.1)', borderTop: '1px solid var(--success)' }}>
+                        <td colSpan={3} style={{ padding: '5px 6px', color: 'var(--success)', fontWeight: 700, fontSize: 11 }}>TỔNG</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--text-muted)', textAlign: 'right', fontWeight: 700 }}>{ddTokenStats.records.reduce((s,r)=>s+r.input_tokens,0).toLocaleString()}</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--success)', textAlign: 'right', fontWeight: 700 }}>{ddTokenStats.records.reduce((s,r)=>s+r.output_tokens,0).toLocaleString()}</td>
+                        <td style={{ padding: '5px 6px', color: 'var(--success)', textAlign: 'right', fontWeight: 700 }}>${ddTokenStats.total_cost_usd.toFixed(5)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1046,19 +1046,19 @@ export default function Layer2Workflow() {
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
                         onClick={() => setPreviewMode("json")}
-                        style={{ padding: '6px 8px', background: previewMode === 'json' ? '#3b82f6' : 'rgba(59, 130, 246, 0.2)', color: previewMode === 'json' ? '#fff' : '#60a5fa', border: '1px solid #3b82f6', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
+                        style={{ padding: '6px 8px', background: previewMode === 'json' ? 'var(--accent)' : 'var(--accent-subtle)', color: previewMode === 'json' ? '#fff' : 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
                         View JSON
                       </button>
                       <button 
                         onClick={() => setPreviewMode("jsonl")}
-                        style={{ padding: '6px 8px', background: previewMode === 'jsonl' ? '#10b981' : 'rgba(16, 185, 129, 0.2)', color: previewMode === 'jsonl' ? '#fff' : '#34d399', border: '1px solid #10b981', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
+                        style={{ padding: '6px 8px', background: previewMode === 'jsonl' ? 'var(--success)' : 'rgba(16, 185, 129, 0.15)', color: previewMode === 'jsonl' ? '#fff' : 'var(--success)', border: '1px solid var(--success)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
                         View JSONL
                       </button>
                       
                       {dbData?.macro?.raw_xml && (
                         <button 
                           onClick={() => setPreviewMode("xml")}
-                          style={{ padding: '6px 8px', background: previewMode === 'xml' ? '#eab308' : 'rgba(234, 179, 8, 0.2)', color: previewMode === 'xml' ? '#fff' : '#facc15', border: '1px solid #eab308', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
+                          style={{ padding: '6px 8px', background: previewMode === 'xml' ? 'var(--warning)' : 'rgba(234, 179, 8, 0.15)', color: previewMode === 'xml' ? '#fff' : 'var(--warning)', border: '1px solid var(--warning)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}>
                           View XML
                         </button>
                       )}
@@ -1067,12 +1067,12 @@ export default function Layer2Workflow() {
                       
                       <button 
                         onClick={handleCopyJson}
-                        style={{ padding: '6px 12px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid #3b82f6', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        style={{ padding: '6px 12px', background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {copyStatus === "json" ? "✅ Đã Copy!" : "📋 Copy JSON"}
                       </button>
                       <button 
                         onClick={handleCopyJsonL}
-                        style={{ padding: '6px 12px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid #10b981', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        style={{ padding: '6px 12px', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)', border: '1px solid var(--success)', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                         title="Đóng gói JSONL (Newline-Delimited JSON) để Fine-tuning hoặc RAG">
                         {copyStatus === "jsonl" ? "✅ Đã Copy!" : "🧩 Convert to JSONL"}
                       </button>
