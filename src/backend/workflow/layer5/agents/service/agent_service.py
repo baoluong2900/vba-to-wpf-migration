@@ -125,9 +125,9 @@ def _resolve_feature_name(form_name: str, name_map: dict[str, dict]) -> str:
     logger.debug("[agent_service] Feature fallback: %r → %r", form_name, name)
     return name or "Default"
 
-LAYER3_DD_DIR = (
+LAYER4_DD_DIR = (
     Path(__file__).resolve().parent.parent.parent.parent
-    / "layer3" / "inputs" / "DD_json" / "form"
+    / "layer4" / "inputs" / "DD_json" / "form"
 )
 
 # VBA query / data-access operators — events whose handler contains any of
@@ -248,7 +248,7 @@ def load_dd_json(form_name: str) -> tuple[dict, Path | None, str]:
     Preference order:
       1. MongoDB ``dds`` — ``{ \"name\": form_name }`` (then form_name/screen_name)
       2. inputs/{form_name}_dd.json (local snapshot)
-      3. layer3/inputs/DD_json/form/{form_name}.json
+      3. layer4/inputs/DD_json/form/{form_name}.json
 
     Returns ``(dd_json, file_path_or_none, origin_tag)`` where ``origin_tag`` is
     ``mongodb:dds`` or ``file:<path>``.
@@ -260,7 +260,7 @@ def load_dd_json(form_name: str) -> tuple[dict, Path | None, str]:
 
     candidates = [
         INPUTS_DIR / f"{form_name}_dd.json",
-        LAYER3_DD_DIR / f"{form_name}.json",
+        LAYER4_DD_DIR / f"{form_name}.json",
     ]
     for path in candidates:
         if path.exists():

@@ -14,19 +14,21 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 LAYER1_DIR = Path(__file__).parent.resolve()
 
 SCRIPTS = [
-    ("parser/table_parser.py", "Parsing Tables"),
-    ("parser/query_parser.py", "Parsing Queries"),
-    ("parser/frm_parser.py", "Parsing Forms"),
-    ("parser/macro_parser.py", "Parsing Macros"),
-    ("parser/modules_parser.py", "Parsing Modules"),
-    ("aggregator.py", "Aggregating References"),
-    ("seed_db.py", "Seeding MongoDB")
+    (["parser/table_parser.py"], "Parsing Tables"),
+    (["parser/query_parser.py"], "Parsing Queries"),
+    (["parser/frm_parser.py"], "Parsing Forms"),
+    (["parser/macro_parser.py"], "Parsing Macros"),
+    (["parser/modules_parser.py"], "Parsing Modules"),
+    (["aggregator.py"], "Aggregating References"),
+    (["seed_db.py"], "Seeding MongoDB"),
+    (["../layer2/runners/main.py", "--all", "--stage", "dev"], "Generating BD & DD Specifications (Layer 2)")
 ]
 
 def run():
-    print("[LAYER1] Starting full extraction pipeline...", flush=True)
+    print("[WORKFLOW] Starting full migration pipeline...", flush=True)
     total = len(SCRIPTS)
-    for idx, (script, desc) in enumerate(SCRIPTS):
+    for idx, (cmd_args, desc) in enumerate(SCRIPTS):
+        script = cmd_args[0]
         script_path = LAYER1_DIR / script
         if not script_path.exists():
             print(f"[ERROR] Script not found: {script}", flush=True)
@@ -35,8 +37,9 @@ def run():
         print(f"\n[STEP {idx+1}/{total}] {desc}...", flush=True)
         try:
             # We run python script synchronously and stream its output to our own stdout
+            full_cmd = [sys.executable, "-X", "utf8", str(script_path)] + cmd_args[1:]
             process = subprocess.Popen(
-                [sys.executable, "-X", "utf8", str(script_path)],
+                full_cmd,
                 cwd=str(LAYER1_DIR),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
@@ -59,7 +62,7 @@ def run():
         print(f"[DONE] {desc} completed successfully.", flush=True)
         time.sleep(1) # Small pause for UI effect
         
-    print("\n[SUCCESS] Layer 1 Extraction Pipeline completed successfully!", flush=True)
+    print("\n[SUCCESS] Full Workflow Pipeline completed successfully!", flush=True)
 
 if __name__ == "__main__":
     run()

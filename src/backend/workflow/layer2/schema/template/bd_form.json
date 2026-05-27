@@ -8,7 +8,7 @@
   "updated_by": "更新者 - người cập nhật",
   "updated_date": "更新日 - ngày cập nhật",
   "sheet_1_change_history": {
-    "sheet_name": "変更履歴",
+    "sheet_name": "Change History",
     "data": [
       {
         "revision_no": "改訂 - số phiên bản",
@@ -21,7 +21,7 @@
     ]
   },
   "sheet_2_layout": {
-    "sheet_name": "画面仕様書(レイアウト)",
+    "sheet_name": "Screen Spec (Layout)",
     "description": "●機能概要 - mô tả chức năng màn hình",
     "timing": "●タイミング - thời điểm sử dụng",
     "constraints": "●制約事項 - điều kiện/ràng buộc",
@@ -51,7 +51,7 @@
     ]
   },
   "sheet_3_screen_edit": {
-    "sheet_name": "画面仕様書(画面編集)",
+    "sheet_name": "Screen Spec (Edit)",
     "items": [
       {
         "item_no": "№ - số thứ tự hoặc block (I/II/III...)",
@@ -71,7 +71,7 @@
     ]
   },
   "sheet_4_table_update": {
-    "sheet_name_pattern": "画面仕様書（E***） - sheet cập nhật bảng theo event",
+    "sheet_name_pattern": "Screen Spec (E***) - sheet cập nhật bảng theo event",
     "header": {
       "project_name": "プロジェクト名 - tên project",
       "table_physical_name": "テーブル名(物理名) - tên bảng vật lý",
@@ -92,7 +92,7 @@
     ]
   },
   "sheet_5_file_spec": {
-    "sheet_name_pattern": "ファイル仕様書（E***） - sheet file spec (nếu có)",
+    "sheet_name_pattern": "File Spec (E***) - sheet file spec (nếu có)",
     "header": {
       "file_name": "ファイル名 - tên file output",
       "file_type": "ファイルタイプ - loại file"

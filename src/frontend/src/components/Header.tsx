@@ -35,8 +35,8 @@ export default function Header() {
   const tabs = [
     { href: "/layer1", label: "L1 Parser", icon: DatabaseZap, color: "#6366f1" },
     { href: "/layer2", label: "L2 Workflow", icon: Bot, color: "#6366f1" },
-    { href: "/layer3", label: "L3 Excel", icon: FileSpreadsheet, color: "#6366f1" },
-    { href: "/layer4", label: "L4 SQL", icon: Database, color: "#6366f1" },
+    { href: "/layer3", label: "L3 SQL", icon: Database, color: "#6366f1" },
+    { href: "/layer4", label: "L4 Specs", icon: FileSpreadsheet, color: "#6366f1" },
     { href: "/layer5", label: "L5 Agents", icon: Cpu, color: "#6366f1" },
   ];
 

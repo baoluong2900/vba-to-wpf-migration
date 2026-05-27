@@ -1,0 +1,228 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_ProductDetail",
+  "screen_name": "F_ProductDetail",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "",
+    "timing": "",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [
+      {
+        "query_name": "TBL_Products",
+        "query_display": "F000_SelQuery01"
+      }
+    ],
+    "process_overview": [
+      {
+        "summary_line": ""
+      },
+      {
+        "summary_line": ""
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open"
+      },
+      {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "Before Update",
+        "event_content": "",
+        "module_id": "F001",
+        "notes": "Form_BeforeUpdate"
+      },
+      {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnSave",
+        "physical_name": "cmdbtnSave",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F002",
+        "notes": "btnSave_Click"
+      },
+      {
+        "event_id": "E003",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnDelete",
+        "physical_name": "cmdbtnDelete",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F003",
+        "notes": "btnDelete_Click"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "I/O",
+        "logical_name": "TODO_txtProductID",
+        "physical_name": "txtProductID",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[TBL_Products]",
+        "source_field_or_fixed_value": "ProductID",
+        "notes": ""
+      },
+      {
+        "item_no": 2,
+        "io": "I/O",
+        "logical_name": "TODO_txtProductName",
+        "physical_name": "txtProductName",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[TBL_Products]",
+        "source_field_or_fixed_value": "ProductName",
+        "notes": ""
+      },
+      {
+        "item_no": 3,
+        "io": "I/O",
+        "logical_name": "TODO_cboSupplier",
+        "physical_name": "cmbcboSupplier",
+        "item_attribute": "Combo Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[TBL_Products]",
+        "source_field_or_fixed_value": "SupplierID",
+        "notes": ""
+      },
+      {
+        "item_no": 4,
+        "io": "O",
+        "logical_name": "TODO_optStatus",
+        "physical_name": "grpoptStatus",
+        "item_attribute": "Option Group",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[TBL_Products]",
+        "source_field_or_fixed_value": "ProductStatus",
+        "notes": ""
+      },
+      {
+        "item_no": 5,
+        "io": "",
+        "logical_name": "TODO_optActive",
+        "physical_name": "optActive",
+        "item_attribute": "Option Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 6,
+        "io": "",
+        "logical_name": "TODO_optInactive",
+        "physical_name": "optInactive",
+        "item_attribute": "Option Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 7,
+        "io": "I/O",
+        "logical_name": "TODO_chkDiscontinued",
+        "physical_name": "chkDiscontinued",
+        "item_attribute": "Check Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[TBL_Products]",
+        "source_field_or_fixed_value": "Discontinued",
+        "notes": ""
+      },
+      {
+        "item_no": 8,
+        "io": "",
+        "logical_name": "TODO_btnSave",
+        "physical_name": "cmdbtnSave",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E002"
+      },
+      {
+        "item_no": 9,
+        "io": "",
+        "logical_name": "TODO_btnDelete",
+        "physical_name": "cmdbtnDelete",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E003"
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": []
+}

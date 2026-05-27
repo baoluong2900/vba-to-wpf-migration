@@ -275,11 +275,19 @@ def push_dd(dry_run: bool = False) -> None:
 
 
 def push_bd(dry_run: bool = False) -> None:
-    """Push BD Final to MongoDB."""
+    """Push BD Final to MongoDB (Forms and Reports only)."""
     logger.info("── BD Final → collection '%s' (%s)", COL_BDS, BD_FINAL_DIR)
-    docs = _load_json_files(BD_FINAL_DIR)
-    logger.info("   Found %d file(s)", len(docs))
-    # type is resolved per-item via L1 lookup (form or report)
+    raw_docs = _load_json_files(BD_FINAL_DIR)
+    logger.info("   Found %d file(s) in BD directory", len(raw_docs))
+    
+    docs = []
+    for name, doc, path in raw_docs:
+        itype = doc.get("type") or _detect_item_type_from_l1(name)
+        if itype in ("form", "report"):
+            docs.append((name, doc, path))
+        else:
+            logger.info("[BD Push] Skipping non-form/report item: %s (type=%s)", name, itype)
+            
     ins, upd, fail = _upsert_docs(COL_BDS, docs, dry_run=dry_run)
     logger.info("   Mongo Result: inserted=%d  updated=%d  failed=%d", ins, upd, fail)
     _copy_to_backup(docs, BDS_BACKUP_DIR, dry_run=dry_run)

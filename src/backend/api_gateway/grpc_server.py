@@ -17,9 +17,9 @@ sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer1"))
 sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer2"))
 sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer2" / "runners"))
-sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer3"))
-sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer3" / "scripts"))
 sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer4"))
+sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer4" / "scripts"))
+sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer3"))
 sys.path.insert(0, str(BACKEND_DIR / "workflow"))
 
 # Load dotenv if present
@@ -39,11 +39,11 @@ from agents.bd_agent.bd_service import BDService
 from agents.dd_agent.dd_service import DDService
 from utils.cost_tracker import get_tracker, CostTracker
 
-# For Layer 3
-import layer3.server as l3_server
-
 # For Layer 4
-import layer4.sql_migration.router as l4_router
+import layer4.server as l3_server
+
+# For Layer 3
+import layer3.sql_migration.router as l4_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("vba_brain.grpc_gateway")
@@ -52,7 +52,7 @@ from common.config import config_data
 
 # --- Cost Tracker Helpers ---
 def _reset_tracker() -> CostTracker:
-    from llm import cost_tracker as _ct
+    from utils import cost_tracker as _ct
     _ct._tracker = CostTracker()
     return _ct._tracker
 
@@ -296,6 +296,8 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
                 log_files_json=json.dumps({"excel": excel_path, "json": json_path})
             )
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.error("RunBdFlowFull error: %s", e)
             return workflow_pb2.BdAgentResponse(success=False, error=str(e))
 
@@ -548,12 +550,32 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
                 return workflow_pb2.SeedQueriesResponse(success=True, count=res.get("count", 0))
             else:
                 # Fallback to manual seeding
-                from layer4.sql_migration.seed_queries_v2 import seed_v2
+                from layer3.sql_migration.seed_queries_v2 import seed_v2
                 count = seed_v2()
                 return workflow_pb2.SeedQueriesResponse(success=True, count=count)
         except Exception as e:
             logger.error("SeedQueries error: %s", e)
             return workflow_pb2.SeedQueriesResponse(success=False, error=str(e))
+
+    def ListMigrationTables(self, request, context):
+        try:
+            res = l4_router.list_tables()
+            if isinstance(res, dict) and res.get("success"):
+                return workflow_pb2.MigrationTablesResponse(success=True, tables_json=json.dumps(res.get("result", [])))
+            return workflow_pb2.MigrationTablesResponse(success=False, error=str(res))
+        except Exception as e:
+            logger.error("ListMigrationTables error: %s", e)
+            return workflow_pb2.MigrationTablesResponse(success=False, error=str(e))
+
+    def ConvertTableSchema(self, request, context):
+        try:
+            res = l4_router.convert_table_schema(request.table_name, request.target_db)
+            if isinstance(res, dict) and res.get("success"):
+                return workflow_pb2.ConvertTableResponse(success=True, ddl=res.get("ddl"))
+            return workflow_pb2.ConvertTableResponse(success=False, error=str(res))
+        except Exception as e:
+            logger.error("ConvertTableSchema error: %s", e)
+            return workflow_pb2.ConvertTableResponse(success=False, error=str(e))
 
     def GetStats(self, request, context):
         try:

@@ -935,6 +935,16 @@ class Layer4ServiceStub(object):
                 request_serializer=workflow__pb2.Empty.SerializeToString,
                 response_deserializer=workflow__pb2.StatsResponse.FromString,
                 _registered_method=True)
+        self.ListMigrationTables = channel.unary_unary(
+                '/api.v1.Layer4Service/ListMigrationTables',
+                request_serializer=workflow__pb2.Empty.SerializeToString,
+                response_deserializer=workflow__pb2.MigrationTablesResponse.FromString,
+                _registered_method=True)
+        self.ConvertTableSchema = channel.unary_unary(
+                '/api.v1.Layer4Service/ConvertTableSchema',
+                request_serializer=workflow__pb2.ConvertTableRequest.SerializeToString,
+                response_deserializer=workflow__pb2.ConvertTableResponse.FromString,
+                _registered_method=True)
 
 
 class Layer4ServiceServicer(object):
@@ -977,6 +987,18 @@ class Layer4ServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListMigrationTables(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ConvertTableSchema(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_Layer4ServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -1009,6 +1031,16 @@ def add_Layer4ServiceServicer_to_server(servicer, server):
                     servicer.GetStats,
                     request_deserializer=workflow__pb2.Empty.FromString,
                     response_serializer=workflow__pb2.StatsResponse.SerializeToString,
+            ),
+            'ListMigrationTables': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMigrationTables,
+                    request_deserializer=workflow__pb2.Empty.FromString,
+                    response_serializer=workflow__pb2.MigrationTablesResponse.SerializeToString,
+            ),
+            'ConvertTableSchema': grpc.unary_unary_rpc_method_handler(
+                    servicer.ConvertTableSchema,
+                    request_deserializer=workflow__pb2.ConvertTableRequest.FromString,
+                    response_serializer=workflow__pb2.ConvertTableResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -1174,6 +1206,60 @@ class Layer4Service(object):
             '/api.v1.Layer4Service/GetStats',
             workflow__pb2.Empty.SerializeToString,
             workflow__pb2.StatsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListMigrationTables(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.v1.Layer4Service/ListMigrationTables',
+            workflow__pb2.Empty.SerializeToString,
+            workflow__pb2.MigrationTablesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ConvertTableSchema(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.v1.Layer4Service/ConvertTableSchema',
+            workflow__pb2.ConvertTableRequest.SerializeToString,
+            workflow__pb2.ConvertTableResponse.FromString,
             options,
             channel_credentials,
             insecure,

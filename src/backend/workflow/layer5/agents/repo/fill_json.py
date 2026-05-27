@@ -38,8 +38,8 @@ def load_dd_json(form_name: str) -> dict:
     candidates = [
         INPUTS_DIR / f"{form_name}.json",
         INPUTS_DIR / f"{form_name}_dd.json",
-        # Layer 3 DD directory fallback
-        BASE_DIR.parent.parent.parent / "layer3" / "inputs" / "DD_json" / "form" / f"{form_name}.json"
+        # Layer 4 DD directory fallback
+        BASE_DIR.parent.parent.parent / "layer4" / "inputs" / "DD_json" / "form" / f"{form_name}.json"
     ]
     
     for path in candidates:

@@ -133,6 +133,7 @@ export default function Layer5Page() {
   const [testResult, setTestResult] = useState<TestRunResult | null>(null);
   const [rightTab, setRightTab] = useState<"logs" | "preview" | "tests" | "tokens" | "logic">("logs");
   const [sidebarWidth, setSidebarWidth] = useState(420);
+  const [terminalCollapsed, setTerminalCollapsed] = useState(false);
 
   // Logic Console state
   const [logicPhase, setLogicPhase] = useState<LogicPhase>("all");
@@ -821,9 +822,15 @@ export default function Layer5Page() {
         </div>
 
         {/* ── Right Sidebar: Logs + Preview ── */}
-        <div className="terminal-sidebar" style={{ width: sidebarWidth }}>
-          <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />
+        <div className="terminal-sidebar" style={{ width: terminalCollapsed ? 40 : sidebarWidth, overflow: "hidden", transition: "width 0.22s" }}>
+          {!terminalCollapsed && <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />}
           <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "#151822" }}>
+            <button 
+              onClick={() => setTerminalCollapsed(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 12px', display: 'flex', alignItems: 'center', height: 42, flexShrink: 0 }}
+            >
+              {terminalCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
+            </button>
             <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "#10b981" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid #10b981" : "2px solid transparent" }}
               onClick={() => setRightTab("logs")}>
               <Settings2 size={13} /> Pipeline Log

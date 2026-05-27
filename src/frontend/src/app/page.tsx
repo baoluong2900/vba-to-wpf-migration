@@ -142,8 +142,8 @@ function renderLogLine(line: string) {
     let layerColor = "text-indigo-400";
     if (layer === "Layer 1") layerColor = "text-cyan-400";
     else if (layer === "Layer 2") layerColor = "text-purple-450";
-    else if (layer === "Layer 3") layerColor = "text-emerald-400";
-    else if (layer === "Layer 4") layerColor = "text-amber-400";
+    else if (layer === "Layer 4") layerColor = "text-emerald-400";
+    else if (layer === "Layer 3") layerColor = "text-amber-400";
     else if (layer === "Layer 5") layerColor = "text-rose-400";
 
     let msgColor = "text-neutral-300";
@@ -199,10 +199,10 @@ export default function LandingPage() {
     const logs = [
       "[Layer 1] Extracted AST JSON for F_Menu.frm (12 controls parsed).",
       "[Layer 2] Mapping logic graph: Form F_Menu ──► Query Q_ActiveProducts.",
-      "[Layer 4] Converting Access SQL 'IIf(Stock <= 0, 0, Stock)' to Oracle SQL.",
+      "[Layer 3] Converting Access SQL 'IIf(Stock <= 0, 0, Stock)' to Oracle SQL.",
       "[Layer 5] Generating Avalonia WPF View Model: F_MenuViewModel.cs",
       "[Layer 5] Compile validation: compile successful (0 errors, 2 warnings).",
-      "[Layer 3] Seeded Excel specification workbook: DD_ScreenDefinition.xlsx",
+      "[Layer 4] Seeded Excel specification workbook: DD_ScreenDefinition.xlsx",
       "[Layer 1] Parsed VBA Module Mod_CommonUtils: 14 functions mapped."
     ];
 
@@ -293,11 +293,11 @@ export default function LandingPage() {
     },
     {
       id: 2,
-      layer: "Layer 3",
+      layer: "Layer 4",
       title: "Excel Documentation",
       shortDesc: "Compiles technical specifications into review Excel sheets.",
       icon: FileSpreadsheet,
-      link: "/layer3",
+      link: "/layer4",
       color: "indigo",
       badgeColor: "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20",
       glowColor: "rgba(99, 102, 241, 0.05)",
@@ -311,11 +311,11 @@ export default function LandingPage() {
     },
     {
       id: 3,
-      layer: "Layer 4",
+      layer: "Layer 3",
       title: "SQL Dialect Conversion",
       shortDesc: "Translates MS Access SQL formulas into standard enterprise SQL.",
       icon: Database,
-      link: "/layer4",
+      link: "/layer3",
       color: "indigo",
       badgeColor: "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20",
       glowColor: "rgba(99, 102, 241, 0.05)",
@@ -830,14 +830,14 @@ export default function LandingPage() {
                     title: "Automated Specification Sheets",
                     subtitle: "Technical documentation compilation",
                     desc: "Generates standardized technical specification workbooks detailing form layouts and mappings.",
-                    badge: "Layer 3: Specs"
+                    badge: "Layer 4: Specs"
                   },
                   {
                     step: "04",
                     title: "SQL Dialect Conversion",
                     subtitle: "Proprietary dialect rewrite",
                     desc: "Rewrites proprietary Access SQL queries into optimized PostgreSQL or Oracle server scripts.",
-                    badge: "Layer 4: SQL"
+                    badge: "Layer 3: SQL"
                   },
                   {
                     step: "05",

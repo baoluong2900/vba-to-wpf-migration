@@ -62,6 +62,8 @@ async function handleExtract(req: NextRequest) {
               step = 3;
             } else if (text.includes("Seeding MongoDB")) {
               step = 4;
+            } else if (text.includes("Generating BD & DD Specifications")) {
+              step = 5;
             }
             
             const payload: any = { type: 'log', level: 'INFO', message: text };

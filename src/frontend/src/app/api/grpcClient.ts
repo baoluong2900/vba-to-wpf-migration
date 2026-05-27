@@ -28,12 +28,12 @@ export const layer2Client = new apiV1.Layer2Service(
   grpc.credentials.createInsecure()
 );
 
-export const layer3Client = new apiV1.Layer3Service(
+export const layer3Client = new apiV1.Layer4Service(
   grpcAddress,
   grpc.credentials.createInsecure()
 );
 
-export const layer4Client = new apiV1.Layer4Service(
+export const layer4Client = new apiV1.Layer3Service(
   grpcAddress,
   grpc.credentials.createInsecure()
 );

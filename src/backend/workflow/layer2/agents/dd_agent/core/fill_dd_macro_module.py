@@ -32,7 +32,7 @@ def _build_dd_skeleton(
     for key in ["system_name", "subsystem_name", "author", "created_date", "updated_by", "updated_date"]:
         out[key] = bd_final.get(key, "")
 
-    out["sheet_1_change_history"] = {"sheet_name": "変更履歴", "data": []}
+    out["sheet_1_change_history"] = {"sheet_name": "Change History", "data": []}
 
     details = []
     for item in logic_items:
@@ -58,7 +58,7 @@ def _build_dd_skeleton(
         details.append(detail_obj)
 
     if category == "macro":
-        out["sheet_2_detail"] = {"sheet_name_pattern": "詳細仕様書", "details": details}
+        out["sheet_2_detail"] = {"sheet_name_pattern": "Detailed Spec", "details": details}
         out.pop("sheet_2_overview", None)
         out.pop("sheet_3_detail_specs", None)
     else: # common / module

@@ -140,14 +140,14 @@ def main() -> None:
             parser.error("--type is required when --item is specified")
         items = [(args.item, args.type)]
     elif args.all_forms:
-        items = [(n, "form") for n in repo.list_forms()]
+        items = [(n["name"] if isinstance(n, dict) else n, "form") for n in repo.list_forms()]
     elif args.all_reports:
         items = [(n, "report") for n in repo.list_reports()]
     elif args.all_modules:
         items = [(n, "module") for n in repo.list_modules()]
     elif args.all:
         items = (
-            [(n, "form") for n in repo.list_forms()]
+            [(n["name"] if isinstance(n, dict) else n, "form") for n in repo.list_forms()]
             + [(n, "report") for n in repo.list_reports()]
             + [(n, "module") for n in repo.list_modules()]
         )

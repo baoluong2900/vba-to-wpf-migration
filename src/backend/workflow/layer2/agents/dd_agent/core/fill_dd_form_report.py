@@ -208,10 +208,10 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
     # Overview Sheet
     repo = Layer1Repo()
     layout = bd_final.get("sheet_2_layout") or {}
-    out["sheet_1_change_history"] = {"sheet_name": "変更履歴", "data": []}
+    out["sheet_1_change_history"] = {"sheet_name": "Change History", "data": []}
     _param_info = _extract_parameter_info(logic_items, repo, all_queries=all_queries) if repo else []
     _overview: dict = {
-        "sheet_name": "概要仕様書",
+        "sheet_name": "Overview Spec",
         "description": layout.get("description", ""),
         "grouping_sorting_pagebreak": {"sort_fields": [], "group_fields": []},
         "special_notes": layout.get("constraints", ""),
@@ -286,7 +286,7 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
             event_content_value = s3_entry.get("event_content", "") if s3_entry else bd_ev.get("event_content", "")
             
             detail_obj = {
-                "sheet_name_pattern": f"詳細仕様書_{mid}",
+                "sheet_name_pattern": f"Detailed Spec_{mid}",
                 "module_id": mid,
                 "module_name": m_name,
                 "event_trigger": bd_ev.get("event_trigger", ""),

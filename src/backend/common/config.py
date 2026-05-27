@@ -12,7 +12,15 @@ from pathlib import Path
 # ── Paths ──────────────────────────────────────────────────
 COMMON_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = COMMON_DIR.parent
+
+# Robustly find workspace root containing config.json by climbing up
+_curr = COMMON_DIR
 WORKSPACE_DIR = BACKEND_DIR.parent
+for _ in range(5):
+    if (_curr / "config.json").exists():
+        WORKSPACE_DIR = _curr
+        break
+    _curr = _curr.parent
 
 # ── Load environment variables (.env) ──────────────────────
 try:
@@ -91,6 +99,7 @@ DEFAULT_MODEL_NAME = get_setting("DEFAULT_LLM_MODEL", ["llm_settings", "default_
 LAYER2_DEV_MODEL_NAME = get_setting("LAYER2_DEV_MODEL", ["llm_settings", "layer2_dev_model"], "qwen-max")
 LAYER2_PILOT_MODEL_NAME = get_setting("LAYER2_PILOT_MODEL", ["llm_settings", "layer2_pilot_model"], "qwen-max")
 LAYER4_MIGRATION_MODEL_NAME = get_setting("LAYER4_MIGRATION_MODEL", ["llm_settings", "layer4_migration_model"], "qwen-max")
+LAYER3_MIGRATION_MODEL_NAME = get_setting("LAYER3_MIGRATION_MODEL", ["llm_settings", "layer3_migration_model"], "qwen-max")
 LAYER5_DEFAULT_MODEL_NAME = get_setting("LAYER5_DEFAULT_MODEL", ["llm_settings", "layer5_default_model"], "qwen3-coder-480b-a35b-instruct")
 LAYER5_SERVICE_MODEL_NAME = get_setting("LAYER5_SERVICE_MODEL", ["llm_settings", "layer5_service_model"], "qwen3-coder-480b-a35b-instruct")
 LAYER5_VIEWMODEL_MODEL_NAME = get_setting("LAYER5_VIEWMODEL_MODEL", ["llm_settings", "layer5_viewmodel_model"], "qwen-plus-2025-07-28")

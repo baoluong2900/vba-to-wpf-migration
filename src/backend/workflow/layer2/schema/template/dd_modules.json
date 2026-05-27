@@ -8,7 +8,7 @@
   "updated_by": "更新者 - người cập nhật",
   "updated_date": "更新日 - ngày cập nhật",
   "sheet_1_change_history": {
-    "sheet_name": "変更履歴",
+    "sheet_name": "Change History",
     "data": [
       {
         "revision_no": "改訂 - số phiên bản",
@@ -21,7 +21,7 @@
     ]
   },
   "sheet_2_detail": {
-    "sheet_name_pattern": "詳細仕様書",
+    "sheet_name_pattern": "Detailed Spec",
     "details": [
       {
         "module_id": "画面ID - id module",

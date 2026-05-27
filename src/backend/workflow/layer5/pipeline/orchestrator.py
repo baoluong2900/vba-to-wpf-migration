@@ -30,9 +30,9 @@ from pipeline.base_gen import ensure_base_classes
 
 logger = logging.getLogger(__name__)
 
-LAYER3_DIR    = Path(__file__).parent.parent.parent / "layer3" / "inputs"
-BD_SCREEN_DIR = LAYER3_DIR / "BD_json" / "screen"
-DD_FORM_DIR   = LAYER3_DIR / "DD_json" / "form"
+LAYER4_DIR    = Path(__file__).parent.parent.parent / "layer4" / "inputs"
+BD_SCREEN_DIR = LAYER4_DIR / "BD_json" / "screen"
+DD_FORM_DIR   = LAYER4_DIR / "DD_json" / "form"
 
 AGENTS_DIR = Path(__file__).parent.parent / "agents"
 
@@ -301,9 +301,9 @@ from pipeline.base_gen import ensure_base_classes
 logger = logging.getLogger(__name__)
 
 # BD/DD JSON directories
-LAYER3_DIR = Path(__file__).parent.parent.parent / "layer3" / "inputs"
-BD_SCREEN_DIR = LAYER3_DIR / "BD_json" / "screen"
-DD_FORM_DIR = LAYER3_DIR / "DD_json" / "form"
+LAYER4_DIR = Path(__file__).parent.parent.parent / "layer4" / "inputs"
+BD_SCREEN_DIR = LAYER4_DIR / "BD_json" / "screen"
+DD_FORM_DIR = LAYER4_DIR / "DD_json" / "form"
 
 
 @dataclass

@@ -61,11 +61,11 @@ def strip_placeholder_text(obj: Any) -> Any:
 
 def build_skeleton(sample: dict[str, Any]) -> dict[str, Any]:
     base = strip_placeholder_text(deepcopy(sample))
-    base["sheet_1_change_history"]["sheet_name"] = "変更履歴"
-    base["sheet_2_layout"]["sheet_name"] = "画面仕様書(レイアウト)"
-    base["sheet_3_screen_edit"]["sheet_name"] = "画面仕様書(画面編集)"
-    base["sheet_4_table_update"]["sheet_name_pattern"] = "画面仕様書（E***）"
-    base["sheet_5_file_spec"]["sheet_name_pattern"] = "ファイル仕様書（E***）"
+    base["sheet_1_change_history"]["sheet_name"] = "Change History"
+    base["sheet_2_layout"]["sheet_name"] = "Screen Spec (Layout)"
+    base["sheet_3_screen_edit"]["sheet_name"] = "Screen Spec (Edit)"
+    base["sheet_4_table_update"]["sheet_name_pattern"] = "Screen Spec (E***)"
+    base["sheet_5_file_spec"]["sheet_name_pattern"] = "File Spec (E***)"
     base["sheet_1_change_history"]["data"] = []
     base["sheet_2_layout"]["record_sources"] = []
     base["sheet_2_layout"]["process_overview"] = []

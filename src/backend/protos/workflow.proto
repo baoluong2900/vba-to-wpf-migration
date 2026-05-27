@@ -148,6 +148,8 @@ service Layer4Service {
     rpc ConvertQuery (ConvertQueryRequest) returns (MigrationQueryDetailResponse);
     rpc SeedQueries (Empty) returns (SeedQueriesResponse);
     rpc GetStats (Empty) returns (StatsResponse);
+    rpc ListMigrationTables (Empty) returns (MigrationTablesResponse);
+    rpc ConvertTableSchema (ConvertTableRequest) returns (ConvertTableResponse);
 }
 
 message MigrationQueriesResponse {
@@ -192,4 +194,23 @@ message StatsResponse {
     bool success = 1;
     string error = 2;
     string stats_json = 3; // Stats detail in JSON
+}
+
+
+// --- Table Explorer Messages ---
+message MigrationTablesResponse {
+    bool success = 1;
+    string tables_json = 2; // JSON array of table schemas
+    string error = 3;
+}
+
+message ConvertTableRequest {
+    string table_name = 1;
+    string target_db = 2; // "PostgreSQL", "Oracle", "SQL Server", "MySQL"
+}
+
+message ConvertTableResponse {
+    bool success = 1;
+    string ddl = 2;
+    string error = 3;
 }

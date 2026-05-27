@@ -255,7 +255,7 @@ def _build_dd_skeleton(
     out["updated_date"] = bd_final.get("updated_date", "")
 
     # sheet_1: empty change history
-    out["sheet_1_change_history"] = {"sheet_name": "変更履歴", "data": []}
+    out["sheet_1_change_history"] = {"sheet_name": "Change History", "data": []}
 
     # sheet_2_overview
     param_info = _build_parameter_info_from_bd(bd_final) if bd_final.get("sheet_3_screen_edit") else []
@@ -266,7 +266,7 @@ def _build_dd_skeleton(
     is_report = screen_id.startswith("R_") or "report" in bd_final
     
     overview: dict[str, Any] = {
-        "sheet_name": "概要仕様書",
+        "sheet_name": "Overview Spec",
         "description": layout.get("description", ""),
         "parameter_info": param_info if param_info else [],
         "grouping_sorting_pagebreak": {
@@ -344,8 +344,8 @@ def _build_dd_skeleton(
         else:
             detail_obj["module_id"] = final_mid
             detail_obj["module_name"] = m_name
-            # User requested simplified pattern: 詳細仕様書_F001
-            detail_obj["sheet_name_pattern"] = f"詳細仕様書_{final_mid}"
+            # User requested simplified pattern: Detailed Spec_F001
+            detail_obj["sheet_name_pattern"] = f"Detailed Spec_{final_mid}"
 
         details.append(detail_obj)
 
@@ -360,7 +360,7 @@ def _build_dd_skeleton(
             f_id = vba_handler if re.match(r"^F\d{3}", vba_handler) else f"F{idx:03d}"
 
             macro_details.append({
-                "sheet_name_pattern": f"詳細仕様書_{f_id}",
+                "sheet_name_pattern": f"Detailed Spec_{f_id}",
                 "module_id": f_id,
                 "module_name": m_name,
                 "key_id": vba_handler,
@@ -391,7 +391,7 @@ def _build_dd_skeleton(
             f_id = vba_handler if re.match(r"^F\d{3}", vba_handler) else f"F{idx:03d}"
             
             module_details.append({
-                "sheet_name_pattern": f"詳細仕様書_{f_id}",
+                "sheet_name_pattern": f"Detailed Spec_{f_id}",
                 "module_id": f_id,
                 "module_name": m_name,
                 "key_id": vba_handler,

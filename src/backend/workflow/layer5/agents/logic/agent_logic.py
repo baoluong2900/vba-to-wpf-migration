@@ -551,7 +551,7 @@ class LogicAgent(BaseAgent):
             return doc
         
         # Fallback to local file if not in DB
-        bd_dir = Path(__file__).parent.parent.parent.parent / "layer3" / "inputs" / "BD_json" / "screen"
+        bd_dir = Path(__file__).parent.parent.parent.parent / "layer4" / "inputs" / "BD_json" / "screen"
         f = bd_dir / f"{form_name}.json"
         if f.exists():
             logger.info("[Agent Logic] Loaded BD for %s from local file", form_name)
@@ -568,7 +568,7 @@ class LogicAgent(BaseAgent):
             return doc
 
         # Fallback to local file if not in DB
-        dd_dir = Path(__file__).parent.parent.parent.parent / "layer3" / "inputs" / "DD_json" / "form"
+        dd_dir = Path(__file__).parent.parent.parent.parent / "layer4" / "inputs" / "DD_json" / "form"
         f = dd_dir / f"{form_name}.json"
         if f.exists():
             logger.info("[Agent Logic] Loaded DD for %s from local file", form_name)

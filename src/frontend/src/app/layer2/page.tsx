@@ -59,6 +59,7 @@ export default function Layer2Workflow() {
   const [activeTab, setActiveTab] = useState<"logs" | "preview" | "tokens">("logs");
   const [centerView, setCenterView] = useState<"node" | "graph" | "graphWpf">("node");
   const [sidebarWidth, setSidebarWidth] = useState(480);
+  const [terminalCollapsed, setTerminalCollapsed] = useState(false);
   const isResizing = useRef(false);
 
   const addLog = (level: string, message: string) => {
@@ -853,10 +854,16 @@ export default function Layer2Workflow() {
         </div>
 
         {/* Global Sidebar with Custom Width Resizer */}
-        <div className="terminal-sidebar" style={{ width: sidebarWidth }}>
-          <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />
+        <div className="terminal-sidebar" style={{ width: terminalCollapsed ? 40 : sidebarWidth, overflow: "hidden", transition: "width 0.22s" }}>
+          {!terminalCollapsed && <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />}
           
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)' }}>
+            <button 
+              onClick={() => setTerminalCollapsed(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 12px', display: 'flex', alignItems: 'center', height: 42, flexShrink: 0 }}
+            >
+              {terminalCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
+            </button>
             <div 
               style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? '#10b981' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid #10b981' : '2px solid transparent' }}
               onClick={() => setActiveTab('logs')}
