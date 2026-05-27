@@ -1,4 +1,4 @@
-"""Layer3 CLI output filename prefixes for DD and BD Excel scripts.
+"""Layer4 CLI output filename prefixes for DD and BD Excel scripts.
 
 Reads ``layer4_output.env`` next to this file. If missing, falls back to legacy
 ``dd_output.env`` so older checkouts keep working.

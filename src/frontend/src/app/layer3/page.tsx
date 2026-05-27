@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
 import { Search, ChevronDown, ChevronRight, Database, Zap, CheckCircle, Clock, AlertCircle, Copy, Save, RefreshCw, Code2, Wand2, Play, DatabaseZap, Table, Bot, FileSpreadsheet, Cpu, Sparkles } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -616,6 +615,11 @@ export default function Layer3Page() {
   const [errorLogs, setErrorLogs]           = useState<any[]>([]);
   const [loadingErrorLogs, setLoadingErrorLogs] = useState(false);
 
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const loadTables = async () => {
     setLoadingTables(true);
     try {
@@ -656,11 +660,6 @@ export default function Layer3Page() {
       showToast("❌ Error converting schema", false);
     }
     setConvertingTable(false);
-  };
-
-  const showToast = (msg: string, ok = true) => {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const loadErrorLogs = async () => {

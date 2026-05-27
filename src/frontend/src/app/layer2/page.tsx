@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import Link from "next/link";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Settings2, Terminal, DatabaseZap, Search, ChevronDown, ChevronRight, BarChart2, Download, Bot, FileSpreadsheet, Database, Cpu, Sparkles, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";

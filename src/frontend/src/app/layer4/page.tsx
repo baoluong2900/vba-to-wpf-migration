@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import Link from "next/link";
 import { FileSpreadsheet, Search, ChevronDown, ChevronRight, Download, Settings2, Eye, DatabaseZap, Bot, Database, Cpu, Sparkles } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
