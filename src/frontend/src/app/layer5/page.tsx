@@ -240,7 +240,7 @@ export default function Layer5Page() {
   // Fetch forms from DB — default F_Login
   useEffect(() => {
     addLog("INFO", "Loading forms from MongoDB...");
-    fetch("/api/v1/layer3/items").then(r => r.json()).then(d => {
+    fetch("/api/v1/layer4/items").then(r => r.json()).then(d => {
       if (d.success && Array.isArray(d.result)) {
         setDbScreens(d.result);
         const forms = d.result.filter((s: any) => s.type === "form" || (!s.type && s.name.startsWith("F")));
@@ -254,7 +254,7 @@ export default function Layer5Page() {
   // Fetch queries list from MongoDB queries_v2
   useEffect(() => {
     addLog("INFO", "Loading queries from MongoDB...");
-    fetch("/api/v1/layer4/queries").then(r => r.json()).then(d => {
+    fetch("/api/v1/layer3/queries").then(r => r.json()).then(d => {
       if (d.success && Array.isArray(d.queries)) {
         setDbQueries(d.queries);
         if (d.queries.length > 0) setQueryName(d.queries[0].name);

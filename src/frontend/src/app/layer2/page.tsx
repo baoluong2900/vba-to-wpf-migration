@@ -908,7 +908,7 @@ export default function Layer2Workflow() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 13 }}>📊 Token Usage Report</span>
                 <a
-                  href="/api/download-token-report"
+                  href="/api/v1/layer5/download-token-report"
                   download
                   style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid #7c3aed', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
                 >

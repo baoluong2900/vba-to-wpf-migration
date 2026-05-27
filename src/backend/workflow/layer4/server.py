@@ -6,8 +6,8 @@ from db.layer1_repo import Layer1Repo
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent.parent.parent / "excel_outputs"
 
-L3_DIR = Path(__file__).resolve().parent
-TEMPLATE_DIR = L3_DIR / "template"
+L4_DIR = Path(__file__).resolve().parent
+TEMPLATE_DIR = L4_DIR / "template"
 
 BD_SCREEN_TEMPLATE = TEMPLATE_DIR / "BD_Screen" / "bd_template.xlsx"
 BD_REPORT_TEMPLATE = TEMPLATE_DIR / "BD_Report" / "bd_report_template.xlsx"

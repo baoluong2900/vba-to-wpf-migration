@@ -40,10 +40,10 @@ from agents.dd_agent.dd_service import DDService
 from utils.cost_tracker import get_tracker, CostTracker
 
 # For Layer 4
-import layer4.server as l3_server
+import layer4.server as l4_server
 
 # For Layer 3
-import layer3.sql_migration.router as l4_router
+import layer3.sql_migration.router as l3_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("vba_brain.grpc_gateway")
@@ -414,7 +414,7 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
 class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
     def ListItems(self, request, context):
         try:
-            res = l3_server.list_items()
+            res = l4_server.list_items()
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.ListResponse(success=True, result=[json.dumps(item) for item in res.get("result", [])])
             return workflow_pb2.ListResponse(success=False, error=str(res))
@@ -424,7 +424,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
 
     def ListOutputs(self, request, context):
         try:
-            res = l3_server.list_outputs()
+            res = l4_server.list_outputs()
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.ListResponse(success=True, result=[json.dumps(f) for f in res.get("files", [])])
             return workflow_pb2.ListResponse(success=False, error=str(res))
@@ -438,7 +438,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
                 screenName = request.screen_name
                 type = request.type
             
-            res = l3_server.gen_bd(GenReqObj())
+            res = l4_server.gen_bd(GenReqObj())
             return workflow_pb2.GenResponse(success=True, result_json=json.dumps(res))
         except Exception as e:
             logger.error("GenBd error: %s", e)
@@ -450,7 +450,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
                 screenName = request.screen_name
                 type = request.type
             
-            res = l3_server.gen_dd(GenReqObj())
+            res = l4_server.gen_dd(GenReqObj())
             return workflow_pb2.GenResponse(success=True, result_json=json.dumps(res))
         except Exception as e:
             logger.error("GenDd error: %s", e)
@@ -462,7 +462,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
                 screenName = request.screen_name
                 type = request.type
             
-            res = l3_server.gen_all(GenReqObj())
+            res = l4_server.gen_all(GenReqObj())
             return workflow_pb2.GenResponse(success=True, result_json=json.dumps(res))
         except Exception as e:
             logger.error("GenAll error: %s", e)
@@ -470,7 +470,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
 
     def DownloadExcel(self, request, context):
         try:
-            res = l3_server.download_file(request.doc_kind, request.doc_type, request.filename)
+            res = l4_server.download_file(request.doc_kind, request.doc_type, request.filename)
             # res is a FileResponse. Let's read the file contents as bytes
             file_path = Path(res.path)
             if file_path.exists():
@@ -485,7 +485,7 @@ class Layer3ServiceServicer(workflow_pb2_grpc.Layer3ServiceServicer):
 class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
     def ListMigrationQueries(self, request, context):
         try:
-            res = l4_router.list_queries()
+            res = l3_router.list_queries()
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.MigrationQueriesResponse(success=True, queries_json=json.dumps(res.get("result", [])))
             return workflow_pb2.MigrationQueriesResponse(success=False, error=str(res))
@@ -495,7 +495,7 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
 
     def GetMigrationQuery(self, request, context):
         try:
-            res = l4_router.get_query(request.name)
+            res = l3_router.get_query(request.name)
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.MigrationQueryDetailResponse(success=True, query_json=json.dumps(res.get("result", {})))
             return workflow_pb2.MigrationQueryDetailResponse(success=False, error=str(res))
@@ -514,10 +514,10 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
                 description = request.description
                 model = request.model
             
-            res = l4_router.update_query(request.name, SaveReqObj())
+            res = l3_router.update_query(request.name, SaveReqObj())
             if isinstance(res, dict) and res.get("success"):
                 # Fetch updated query
-                updated = l4_router.get_query(request.name)
+                updated = l3_router.get_query(request.name)
                 return workflow_pb2.MigrationQueryDetailResponse(success=True, query_json=json.dumps(updated.get("result", {})))
             return workflow_pb2.MigrationQueryDetailResponse(success=False, error=str(res))
         except Exception as e:
@@ -530,10 +530,10 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
                 name = request.name
                 model = request.model
             
-            res = l4_router.convert_query(ConvertReqObj())
+            res = l3_router.convert_query(ConvertReqObj())
             if isinstance(res, dict) and res.get("success"):
                 # Fetch updated query
-                updated = l4_router.get_query(request.name)
+                updated = l3_router.get_query(request.name)
                 return workflow_pb2.MigrationQueryDetailResponse(success=True, query_json=json.dumps(updated.get("result", {})))
             return workflow_pb2.MigrationQueryDetailResponse(success=False, error=str(res))
         except Exception as e:
@@ -544,9 +544,9 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
         try:
             # Replicate route seed_queries logic if it exists
             # In router.py, there is a seed endpoint. Let's see if we can trigger it.
-            # Usually, seed uses l4_router.seed_queries() or similar. Let's try calling it if defined.
-            if hasattr(l4_router, 'seed_queries'):
-                res = l4_router.seed_queries()
+            # Usually, seed uses l3_router.seed_queries() or similar. Let's try calling it if defined.
+            if hasattr(l3_router, 'seed_queries'):
+                res = l3_router.seed_queries()
                 return workflow_pb2.SeedQueriesResponse(success=True, count=res.get("count", 0))
             else:
                 # Fallback to manual seeding
@@ -559,7 +559,7 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
 
     def ListMigrationTables(self, request, context):
         try:
-            res = l4_router.list_tables()
+            res = l3_router.list_tables()
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.MigrationTablesResponse(success=True, tables_json=json.dumps(res.get("result", [])))
             return workflow_pb2.MigrationTablesResponse(success=False, error=str(res))
@@ -569,7 +569,7 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
 
     def ConvertTableSchema(self, request, context):
         try:
-            res = l4_router.convert_table_schema(request.table_name, request.target_db)
+            res = l3_router.convert_table_schema(request.table_name, request.target_db)
             if isinstance(res, dict) and res.get("success"):
                 return workflow_pb2.ConvertTableResponse(success=True, ddl=res.get("ddl"))
             return workflow_pb2.ConvertTableResponse(success=False, error=str(res))
@@ -579,7 +579,7 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
 
     def GetStats(self, request, context):
         try:
-            res = l4_router.get_stats()
+            res = l3_router.get_stats()
             return workflow_pb2.StatsResponse(success=True, stats_json=json.dumps(res))
         except Exception as e:
             logger.error("GetStats error: %s", e)

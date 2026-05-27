@@ -7,8 +7,8 @@ from pathlib import Path
 from pymongo import MongoClient
 
 # Add necessary paths to sys.path
-L4_DIR = Path(__file__).resolve().parent.parent
-BACKEND_DIR = L4_DIR.parent.parent
+L3_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = L3_DIR.parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 if str(BACKEND_DIR / "workflow" / "layer2") not in sys.path:
@@ -30,6 +30,11 @@ def _get_db():
             db = client["vba_brain_core"]
     return db
 
+def _enrich_query_raw_sql(q: dict | None) -> dict | None:
+    if q and "sql" in q and "raw_sql" not in q:
+        q["raw_sql"] = q["sql"]
+    return q
+
 def _parse_sql_components(sql: str) -> list[str]:
     """Helper used by verify_fix.py to simulate bind variable extraction."""
     # Matches :var_name including Japanese characters and Roman numerals
@@ -41,6 +46,8 @@ def list_queries():
         db = _get_db()
         col = db["queries_v2"]
         queries = list(col.find({}, {"_id": 0}))
+        for q in queries:
+            _enrich_query_raw_sql(q)
         return {"success": True, "result": queries}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -51,6 +58,7 @@ def get_query(name):
         col = db["queries_v2"]
         q = col.find_one({"name": name}, {"_id": 0})
         if q:
+            _enrich_query_raw_sql(q)
             return {"success": True, "result": q}
         return {"success": False, "error": "Query not found"}
     except Exception as e:
@@ -86,6 +94,7 @@ def update_query(name, req):
         result = col.update_one({"name": name}, {"$set": update_data})
         if result.matched_count > 0:
             updated = col.find_one({"name": name}, {"_id": 0})
+            _enrich_query_raw_sql(updated)
             return {"success": True, "result": updated}
         return {"success": False, "error": "Query not found"}
     except Exception as e:
@@ -180,6 +189,7 @@ def convert_query(req):
         
         col.update_one({"name": req.name}, {"$set": update_data})
         updated = col.find_one({"name": req.name}, {"_id": 0})
+        _enrich_query_raw_sql(updated)
         return {"success": True, "result": updated}
         
     except Exception as e:
