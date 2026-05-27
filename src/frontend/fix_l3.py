@@ -1,5 +1,0 @@
-with open("src/app/layer3/page.tsx", "r") as f: c = f.read()
-c = c.replace("  const [taskSidebarCollapsed, setTaskSidebarCollapsed] = useState(false);\n", "", 1)
-c = c.replace("function QueryList({", "function QueryList({\n")
-c = c.replace("  const [search, setSearch] = useState(\"\");", "  const [search, setSearch] = useState(\"\");\n  const [taskSidebarCollapsed, setTaskSidebarCollapsed] = useState(false);")
-with open("src/app/layer3/page.tsx", "w") as f: f.write(c)

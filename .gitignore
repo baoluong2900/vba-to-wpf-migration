@@ -8,6 +8,16 @@ src/backend/workflow/layer2/logs/
 *.log
 *.pyc
 __pycache__/
+**/scratch/
+
+# Backend logs (layer5)
+src/backend/workflow/layer5/logs/
+
+# Frontend build artifacts
+.next/
+node_modules/
+*.tsbuildinfo
+next-env.d.ts
 
 # CRITICAL: ABSOLUTELY DO NOT PUSH RAW DATABASE EXPORTS OR BACKUPS
 data/database_json/
