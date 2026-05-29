@@ -67,7 +67,10 @@ def _parse_query_sql_dict(query: dict[str, Any]) -> dict[str, Any]:
     # sql field may be JSON string or already a dict
     if isinstance(raw_sql_str, str):
         try:
-            return json.loads(raw_sql_str)
+            val = json.loads(raw_sql_str)
+            if isinstance(val, dict):
+                return val
+            return {"raw_sql": str(val)}
         except json.JSONDecodeError:
             return {"raw_sql": raw_sql_str}
     if isinstance(raw_sql_str, dict):

@@ -672,8 +672,13 @@ def _get_target_table(sql_obj: dict) -> str:
 
 def _parse_sql(sql_str: Any) -> dict:
     if isinstance(sql_str, dict): return sql_str
-    try: return json.loads(sql_str)
-    except: return {"raw_sql": str(sql_str)}
+    try:
+        val = json.loads(sql_str)
+        if isinstance(val, dict):
+            return val
+        return {"raw_sql": str(val)}
+    except:
+        return {"raw_sql": str(sql_str)}
 
 def _collect_export_groups(all_queries: list, table_config: dict) -> dict:
     export_groups = {}
