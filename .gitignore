@@ -13,6 +13,9 @@ __pycache__/
 # Backend logs (layer5)
 src/backend/workflow/layer5/logs/
 
+# Generated Excel outputs (runtime artifacts)
+src/excel_outputs/
+
 # Frontend build artifacts
 .next/
 node_modules/
