@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-run_bd_agent.py — CLI Entrypoint cho BD Agent (được gọi từ Next.js route)
+run_bd_agent.py — CLI Entrypoint for BD Agent (called from Next.js route)
 
-Nhận payload JSON từ stdin, chạy BDService, in kết quả ra stdout.
+Receives JSON payload from stdin, runs BDService, and prints the result to stdout.
 
 Input stdin (JSON):
     {
         "screenName": "C000_MAIN",
-        "model": "gpt-5.4-mini",     # optional — nếu có sẽ ghi đè stage routing
-        "dbData": { ... }             # bd_code_json từ MongoDB
+        "model": "gpt-5.4-mini",     # optional — if provided, overrides stage routing
+        "dbData": { ... }             # bd_code_json from MongoDB
     }
 
-Output stdout (dòng cuối cùng là JSON):
+Output stdout (the last line is JSON):
     { "success": true, "result": "<json_string>", "savedPath": "<path>" }
-    hoặc:
+    or:
     { "error": "<message>" }
 
-Cách gọi từ Next.js:
+How to call from Next.js:
     echo '<json_payload>' | python -X utf8 run_bd_agent.py
 """
 from __future__ import annotations
@@ -27,11 +27,11 @@ import os
 import sys
 from pathlib import Path
 
-# ── Tắt log debug ra stdout ───────────────────────────────────────────────
+# ── Disable debug log to stdout ───────────────────────────────────────────────
 logging.getLogger("pymongo").setLevel(logging.ERROR)
 logging.basicConfig(level=logging.ERROR)
 
-# ── Đảm bảo layer2/ và runners/ trong sys.path ────────────────────────────
+# ── Ensure layer2/ and runners/ are in sys.path ────────────────────────────
 _RUNNERS_DIR = os.path.dirname(os.path.abspath(__file__))
 _LAYER2_DIR = os.path.dirname(_RUNNERS_DIR)
 if _LAYER2_DIR not in sys.path:
@@ -39,7 +39,7 @@ if _LAYER2_DIR not in sys.path:
 if _RUNNERS_DIR not in sys.path:
     sys.path.insert(0, _RUNNERS_DIR)
 
-# ── Tìm config.json và out_dir ────────────────────────────────────────────
+# ── Find config.json and out_dir ────────────────────────────────────────────
 def _find_workspace_root() -> Path:
     curr = Path(_LAYER2_DIR)
     for _ in range(5):
@@ -55,8 +55,8 @@ OUT_DIR = WORKSPACE_ROOT / "src" / "backend" / "out"
 
 def _stage_from_config(model: str) -> str:
     """
-    Nếu model được truyền vào khớp với provider trong config.json,
-    trả về stage tương ứng. Mặc định 'dev'.
+    If the passed model matches a provider in config.json,
+    return the corresponding stage. Default 'dev'.
     """
     try:
         cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
@@ -71,7 +71,7 @@ def _stage_from_config(model: str) -> str:
 
 
 def main() -> None:
-    # ── Đọc payload từ stdin ────────────────────────────────────────────────
+    # ── Read payload from stdin ────────────────────────────────────────────────
     try:
         raw = sys.stdin.read()
         inp = json.loads(raw)
@@ -91,10 +91,10 @@ def main() -> None:
         print(json.dumps({"error": "Missing dbData"}))
         sys.exit(1)
 
-    # ── Xác định stage từ model được chọn ──────────────────────────────────
+    # ── Determine stage from the selected model ──────────────────────────────────
     stage = _stage_from_config(model) if model else os.getenv("L2_STAGE", "dev")
 
-    # ── Xác định item_type từ cấu trúc dbData ──────────────────────────────
+    # ── Determine item_type from dbData structure ──────────────────────────────
     if "form" in db_data:
         item_type = "form"
     elif "report" in db_data:
@@ -104,7 +104,7 @@ def main() -> None:
     else:
         item_type = "form"  # fallback
 
-    # ── Chạy BDService ──────────────────────────────────────────────────────
+    # ── Run BDService ──────────────────────────────────────────────────────
     try:
         from agents.bd_agent.bd_service import BDService
 
@@ -115,7 +115,7 @@ def main() -> None:
         print(json.dumps({"error": f"BDService failed: {e}"}))
         sys.exit(1)
 
-    # ── Lưu output file ─────────────────────────────────────────────────────
+    # ── Save output file ─────────────────────────────────────────────────────
     import re
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     safe_name = re.sub(r"[^\w\u0080-\uFFFF]", "", screen_name)
@@ -123,7 +123,7 @@ def main() -> None:
     result_str = json.dumps(bd_docs, ensure_ascii=False, indent=2)
     out_path.write_text(result_str, encoding="utf-8")
 
-    # ── In kết quả ra stdout ─────────────────────────────────────────────────
+    # ── Print result to stdout ─────────────────────────────────────────────────
     print(json.dumps({
         "success": True,
         "result": result_str,

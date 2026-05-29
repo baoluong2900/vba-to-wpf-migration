@@ -142,7 +142,7 @@ class Layer1Repo:
     # ──────────────────────────────────────────────────────────────────────
     
     def _remove_empty(self, data: Any) -> Any:
-        """Đệ quy để xóa bỏ các giá trị null, rỗng, list rỗng, hoặc dict rỗng."""
+        """Recursively remove null, empty strings, empty lists, or empty dicts."""
         if isinstance(data, dict):
             cleaned = {}
             for k, v in data.items():
@@ -167,7 +167,7 @@ class Layer1Repo:
         for item in items:
             new_item = {"name": item.get("name"), "type": item.get("type")}
             
-            # Giữ lại các metadata gốc nhưng bỏ đi uuid 'key' và '_id' thừa thãi
+            # Retain original metadata but discard redundant uuid 'key' and '_id'
             for k, v in item.items():
                 if k not in ["name", "type", "properties", "key", "_id"]:
                     new_item[k] = v
@@ -181,12 +181,12 @@ class Layer1Repo:
                         continue
                     
                     cat_lower = cat.lower()
-                    # Đặc biệt ưu tiên giữ lại toàn bộ khối 'data' và 'event' (không lọc lẻ tẻ)
+                    # Specially prioritize retaining the entire 'data' and 'event' blocks (no piecemeal filtering)
                     if cat_lower in ["data", "event"]:
                         if cat_props:
                             clean_props[cat] = cat_props
                     else:
-                        # Các khối khác (format, other, ...) thì lọc theo whitelist
+                        # Other blocks (format, other, ...) are filtered according to whitelist
                         clean_cat = {pk: pv for pk, pv in cat_props.items() if pk.lower() in self.CRITICAL_PROPS}
                         if clean_cat:
                             clean_props[cat] = clean_cat

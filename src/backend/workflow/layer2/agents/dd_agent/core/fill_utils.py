@@ -200,7 +200,7 @@ def collect_pending_refers(code: str) -> list[str]:
     return refers
 
 def build_event_map(bd_final: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Build module_id → event dict from s4_bd_final."""
+    """Build module_id → event dict from bd4_bd_final."""
     event_map: dict[str, dict[str, Any]] = {}
     
     events = (bd_final.get("sheet_2_layout") or {}).get("events") or []

@@ -1,7 +1,7 @@
 """
-llm/cost_tracker.py — Theo dõi token usage và chi phí ước tính.
+llm/cost_tracker.py — Track token usage and estimated cost.
 
-Singleton: get_tracker() trả về instance dùng chung trong một session.
+Singleton: get_tracker() returns a shared instance within a session.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from config import LOG_DIR
 
 logger = logging.getLogger(__name__)
 
-# Chi phí ước tính theo USD / 1M tokens (input / output riêng biệt)
+# Estimated cost in USD / 1M tokens (separate input / output)
 _PRICE_INPUT_PER_1M: dict[str, float] = {
     "gemini-2.0-flash":     0.10,
     "gemini-1.5-flash":     0.10,
@@ -117,7 +117,7 @@ class CostTracker:
         )
 
     def save_report(self, label: str = "", flow_type: str = "Unknown") -> str:
-        """Lưu cost report vào file JSON chung (token_log.json), append thêm bản ghi mới."""
+        """Save cost report to common JSON file (token_log.json), append new records."""
         path = Path(LOG_DIR) / "token_log.json"
         os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -163,7 +163,7 @@ class CostTracker:
         return str(path)
 
     def save_excel_report(self, label: str = "", flow_type: str = "Unknown") -> str:
-        """Xuất cost report vào file Excel chung (token_log.xlsx), append thêm dòng mới."""
+        """Export cost report to common Excel file (token_log.xlsx), append new row."""
         try:
             import openpyxl
             from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -252,7 +252,7 @@ _tracker: CostTracker | None = None
 
 
 def get_tracker() -> CostTracker:
-    """Trả về singleton CostTracker cho session hiện tại."""
+    """Returns the singleton CostTracker for the current session."""
     global _tracker
     if _tracker is None:
         _tracker = CostTracker()

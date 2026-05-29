@@ -73,7 +73,7 @@ class BDService:
         def process_batch(start_idx):
             end_idx = min(start_idx + batch_size, len(vba_items))
             batch = vba_items[start_idx:end_idx]
-            logger.info(f"[BD Service] [D3] Processing batch {start_idx//batch_size + 1}")
+            logger.info(f"[BD Service] [BD3] Processing batch {start_idx//batch_size + 1}")
             
             batch_results = agent.run_logic_batch(batch, model_id=model_id)
             
@@ -116,10 +116,10 @@ class BDService:
     def _get_out_dirs(self) -> dict[str, Path]:
         proj_root = Path(__file__).resolve().parent.parent.parent
         out_dirs = {
-            "s1": proj_root / "output" / "bd_flow" / "s1_bd_form",
-            "s2": proj_root / "output" / "bd_flow" / "s2_bd_mapping",
-            "s3": proj_root / "output" / "bd_flow" / "s3_bd_logic",
-            "s4": proj_root / "output" / "bd_flow" / "s4_bd_final"
+            "bd1": proj_root / "output" / "bd_flow" / "bd1_bd_form",
+            "bd2": proj_root / "output" / "bd_flow" / "bd2_bd_mapping",
+            "bd3": proj_root / "output" / "bd_flow" / "bd3_bd_logic",
+            "bd4": proj_root / "output" / "bd_flow" / "bd4_bd_final"
         }
         for d in out_dirs.values():
             d.mkdir(parents=True, exist_ok=True)
@@ -135,14 +135,14 @@ class BDService:
         out_dirs = self._get_out_dirs()
         logger.info(f"--- Starting BD Extraction Phase for {screen_name} ---")
         
-        s1_file = self._process_s1_raw_data(bd_code_json, out_dirs["s1"], screen_name)
-        mapped_data, s2_file = self._process_s2_mapping(repo, screen_name, bd_code_json, out_dirs["s2"])
+        bd1_file = self._process_bd1_raw_data(bd_code_json, out_dirs["bd1"], screen_name)
+        mapped_data, bd2_file = self._process_bd2_mapping(repo, screen_name, bd_code_json, out_dirs["bd2"])
         
         logger.info(f"--- BD Extraction Phase for {screen_name} completed ---")
         return {
             "mapped_data": mapped_data,
-            "s1_source_file": str(s1_file),
-            "s2_mapping_file": str(s2_file)
+            "bd1_source_file": str(bd1_file),
+            "bd2_mapping_file": str(bd2_file)
         }
 
     def run_analysis_phase(
@@ -161,26 +161,26 @@ class BDService:
 
         # 1. Step 3a: Analyze Business Logic (with multithreading & caching)
         logic_results, jsonl_path, result_path = self.run_logic_analysis(
-            screen_name, mapped_data, bd_code_json, repo, model_id, out_dirs["s3"], force=force
+            screen_name, mapped_data, bd_code_json, repo, model_id, out_dirs["bd3"], force=force
         )
 
         # 2. Step 3b: Extract and Translate UI Formulas
-        ui_formulas_translated = self._process_s3_ui_formulas(
-            mapped_data, out_dirs["s3"], screen_name, model_id
+        ui_formulas_translated = self._process_bd3_ui_formulas(
+            mapped_data, out_dirs["bd3"], screen_name, model_id
         )
 
         # 3. Step 4: Assemble Final Document (S4)
-        s4_file = self._process_s4_assembly(
-            mapped_data, logic_results, ui_formulas_translated, bd_code_json, out_dirs["s4"], screen_name, model_id,
+        bd4_file = self._process_bd4_assembly(
+            mapped_data, logic_results, ui_formulas_translated, bd_code_json, out_dirs["bd4"], screen_name, model_id,
             item_type=item_type,
         )
 
         logger.info(f"--- BD Analysis Phase for {screen_name} completed ---")
         return {
             "logic_results": logic_results,
-            "s3_logic_jsonl": str(jsonl_path),
-            "s3_logic_result": str(result_path),
-            "s4_final_file": str(s4_file),
+            "bd3_logic_jsonl": str(jsonl_path),
+            "bd3_logic_result": str(result_path),
+            "bd4_final_file": str(bd4_file),
             "logic_items_processed": len(logic_results),
         }
 
@@ -208,29 +208,29 @@ class BDService:
         )
 
         return {
-            "s1_input_type": item_type,
-            "s1_source_file": extract_res["s1_source_file"],
-            "s2_mapping_file": extract_res["s2_mapping_file"],
-            "s3_logic_jsonl": analysis_res["s3_logic_jsonl"],
-            "s3_logic_result": analysis_res["s3_logic_result"],
-            "s3_logic_summary": "",
-            "s4_final_file": analysis_res["s4_final_file"],
+            "bd1_input_type": item_type,
+            "bd1_source_file": extract_res["bd1_source_file"],
+            "bd2_mapping_file": extract_res["bd2_mapping_file"],
+            "bd3_logic_jsonl": analysis_res["bd3_logic_jsonl"],
+            "bd3_logic_result": analysis_res["bd3_logic_result"],
+            "bd3_logic_summary": "",
+            "bd4_final_file": analysis_res["bd4_final_file"],
             "logic_items_processed": analysis_res.get("logic_items_processed", len(analysis_res.get("logic_results", [])))
         }
 
-    def _process_s1_raw_data(self, bd_code_json: dict, s1_dir: Path, screen_name: str) -> Path:
-        logger.info("[Step 1] Saving raw DB data (s1_bd_form)...")
-        s1_file = s1_dir / f"{screen_name}.json"
-        with open(s1_file, "w", encoding="utf-8") as f:
+    def _process_bd1_raw_data(self, bd_code_json: dict, bd1_dir: Path, screen_name: str) -> Path:
+        logger.info("[BD1] Saving raw DB data (bd1_bd_form)...")
+        bd1_file = bd1_dir / f"{screen_name}.json"
+        with open(bd1_file, "w", encoding="utf-8") as f:
             json.dump(bd_code_json, f, ensure_ascii=False, indent=2)
-        return s1_file
+        return bd1_file
 
-    def _process_s2_mapping(self, repo: Any, screen_name: str, bd_code_json: dict, s2_dir: Path) -> tuple[dict, Path]:
-        logger.info("[Step 2] Generating mapping (s2_bd_mapping)...")
+    def _process_bd2_mapping(self, repo: Any, screen_name: str, bd_code_json: dict, bd2_dir: Path) -> tuple[dict, Path]:
+        logger.info("[BD2] Generating mapping (bd2_bd_mapping)...")
         from .core.core import get_bd_mapping_dict
         mapped_data = get_bd_mapping_dict(repo, screen_name, bd_code_json)
-        s2_file = s2_dir / f"{screen_name}.json"
-        return mapped_data, s2_file
+        bd2_file = bd2_dir / f"{screen_name}.json"
+        return mapped_data, bd2_file
 
     def _get_vba_logic_items(self, mapped_data: dict, bd_code_json: dict, repo: Any) -> tuple[list[dict], list[dict]]:
         """Extract module_ids from mapped_data and find corresponding VBA code."""
@@ -299,8 +299,8 @@ class BDService:
 
         return vba_logic_items, macro_module_results
 
-    def _process_s3_vba_logic(self, mapped_data: dict, bd_code_json: dict, s3_dir: Path, screen_name: str, repo: Any, model_id: str) -> tuple[list, list, str, str]:
-        """Legacy helper for s3 phase, now consolidated into run_logic_analysis."""
+    def _process_bd3_vba_logic(self, mapped_data: dict, bd_code_json: dict, bd3_dir: Path, screen_name: str, repo: Any, model_id: str) -> tuple[list, list, str, str]:
+        """Legacy helper for bd3 phase, now consolidated into run_logic_analysis."""
         vba_items, macro_results = self._get_vba_logic_items(mapped_data, bd_code_json, repo)
         return vba_items, macro_results, "", ""
 
@@ -309,7 +309,7 @@ class BDService:
             llm_results = self.run_logic_analysis(
                 screen_name, {"logic_items": vba_logic_items},
                 model_id=model_id,
-                out_dir=s3_dir,
+                out_dir=bd3_dir,
             )[0]  # run_logic_analysis returns (results, jsonl_path, result_path)
 
         # ── Merge: LLM results + synthetic macro/module results ──────────────
@@ -319,7 +319,7 @@ class BDService:
             logger.info(f"No logic items found for {screen_name}, skipping logic analysis.")
             return [], [], str(jsonl_path), ""
 
-        result_path = s3_dir / f"logic_{screen_name}_result.json"
+        result_path = bd3_dir / f"logic_{screen_name}_result.json"
         with open(result_path, "w", encoding="utf-8") as f:
             json.dump(all_results, f, ensure_ascii=False, indent=2)
 
@@ -329,7 +329,7 @@ class BDService:
 
 
 
-    def _process_s3_ui_formulas(self, mapped_data: dict, s3_dir: Path, screen_name: str, model_id: str) -> list[dict]:
+    def _process_bd3_ui_formulas(self, mapped_data: dict, bd3_dir: Path, screen_name: str, model_id: str) -> list[dict]:
         logger.info(f"Extracting UI formulas for {screen_name}...")
         from utils.extract_ui_formulas import find_all_formulas
         
@@ -339,19 +339,19 @@ class BDService:
         ui_formulas_translated = []
         if ui_formulas:
             # Save input to JSONL before sending to LLM to track context
-            input_jsonl_path = s3_dir / f"ui_formulas_{screen_name}.jsonl"
+            input_jsonl_path = bd3_dir / f"ui_formulas_{screen_name}.jsonl"
             with open(input_jsonl_path, "w", encoding="utf-8") as f:
                 for item in ui_formulas:
                     f.write(json.dumps({
                         "item_no": item.get("item_no", ""),
                         "formula": item.get("formula", "")
-                    }, ensure_ascii=False) + "\n")
+                     }, ensure_ascii=False) + "\n")
 
             logger.info(f"Translating {len(ui_formulas)} UI formulas...")
             ui_formulas_translated = self.run_ui_formula_analysis(ui_formulas, model_id=model_id)
             
             # Save LLM output as JSONL
-            output_jsonl_path = s3_dir / f"ui_formulas_{screen_name}_result.jsonl"
+            output_jsonl_path = bd3_dir / f"ui_formulas_{screen_name}_result.jsonl"
             with open(output_jsonl_path, "w", encoding="utf-8") as f:
                 for item in ui_formulas_translated:
                     f.write(json.dumps({
@@ -361,8 +361,8 @@ class BDService:
                 
         return ui_formulas_translated
 
-    def _process_s4_assembly(self, mapped_data: dict, logic_results: list, ui_formulas_translated: list, bd_code_json: dict, s4_dir: Path, screen_name: str, model_id: str | None = None, *, item_type: str = "") -> Path:
-        logger.info("[Step 4] Merging S2 mapping and S3 logic into S4 final output...")
+    def _process_bd4_assembly(self, mapped_data: dict, logic_results: list, ui_formulas_translated: list, bd_code_json: dict, bd4_dir: Path, screen_name: str, model_id: str | None = None, *, item_type: str = "") -> Path:
+        logger.info("[BD4] Merging BD2 mapping and BD3 logic into BD4 final output...")
         
         logic_dict = {item.get("module_id"): item for item in logic_results}
         final_data = copy.deepcopy(mapped_data)
@@ -449,9 +449,9 @@ class BDService:
                     item["source_table"] = ""
 
 
-        # Save S4
-        # ── Inject type vào final_data để push_to_mongo.py đọc đúng ────────
-        # Nếu item_type chưa có → detect từ L1 (macro/module/report/form)
+        # Save BD4
+        # ── Inject type into final_data so push_to_mongo.py reads it correctly ──
+        # If item_type not set → detect from L1 (macro/module/report/form)
         if not item_type:
             item_type = (
                 "macro"  if "macro"  in bd_code_json else
@@ -462,8 +462,8 @@ class BDService:
         final_data["type"] = item_type
         final_data["name"] = screen_name
 
-        s4_file = s4_dir / f"{screen_name}.json"
-        with open(s4_file, "w", encoding="utf-8") as f:
+        bd4_file = bd4_dir / f"{screen_name}.json"
+        with open(bd4_file, "w", encoding="utf-8") as f:
             json.dump(final_data, f, ensure_ascii=False, indent=2)
 
-        return s4_file
+        return bd4_file

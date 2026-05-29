@@ -360,8 +360,8 @@ class BDScreenSummaryGraph:
         from pathlib import Path
         
         proj_root = Path(__file__).resolve().parent.parent.parent.parent
-        s3_dir = proj_root / "output" / "bd_flow" / "s3_bd_logic"
-        s3_dir.mkdir(parents=True, exist_ok=True)
+        bd3_dir = proj_root / "output" / "bd_flow" / "bd3_bd_logic"
+        bd3_dir.mkdir(parents=True, exist_ok=True)
         
         model_cfg = AVAILABLE_MODELS.get(model_id, DEV_MODEL) if model_id else DEV_MODEL
         
@@ -442,9 +442,9 @@ class BDScreenSummaryGraph:
                 # Sort raw_items by source_table for the user's JSONL file
                 raw_items.sort(key=lambda x: x.get("source_table", ""))
                 
-            # Dump raw_items grouped by source_table to JSONL in s3_bd_logic to save tokens for the user
+            # Dump raw_items grouped by source_table to JSONL in bd3_bd_logic to save tokens for the user
             try:
-                jsonl_path = s3_dir / f"ui_items_{screen_name}.jsonl"
+                jsonl_path = bd3_dir / f"ui_items_{screen_name}.jsonl"
                 with open(jsonl_path, "w", encoding="utf-8") as f:
                     for tbl, tbl_items in table_groups.items():
                         grouped_items = []
@@ -499,9 +499,9 @@ class BDScreenSummaryGraph:
                 
             parsed_result = json.loads(raw)
             
-            # Dump parsed_result to JSONL in s3_bd_logic
+            # Dump parsed_result to JSONL in bd3_bd_logic
             try:
-                result_jsonl_path = s3_dir / f"ui_items_{screen_name}_result.jsonl"
+                result_jsonl_path = bd3_dir / f"ui_items_{screen_name}_result.jsonl"
                 with open(result_jsonl_path, "w", encoding="utf-8") as f:
                     f.write(json.dumps(parsed_result, ensure_ascii=False) + "\n")
             except Exception as e:
@@ -517,7 +517,7 @@ class BDScreenSummaryGraph:
                 "process_overview": []
             }
             try:
-                result_jsonl_path = s3_dir / f"ui_items_{screen_name}_result.jsonl"
+                result_jsonl_path = bd3_dir / f"ui_items_{screen_name}_result.jsonl"
                 with open(result_jsonl_path, "w", encoding="utf-8") as f:
                     f.write(json.dumps(err_result, ensure_ascii=False) + "\n")
             except Exception:

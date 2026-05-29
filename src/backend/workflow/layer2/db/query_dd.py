@@ -57,7 +57,7 @@ def get_dd_code_json_form(repo: Any, form_name: str, bd_source: dict | None = No
     dep_tables = set(form.get("dependencies", {}).get("tables", []))
 
     if bd_source:
-        # Extract from s1_bd_form/F_Login.json structure
+        # Extract from bd1_bd_form/F_Login.json structure
         # (usually in 'references' field of each procedure)
         for proc in bd_source.get("form", {}).get("vba_procedures", []):
             refs = proc.get("references", {})
@@ -73,7 +73,7 @@ def get_dd_code_json_form(repo: Any, form_name: str, bd_source: dict | None = No
 
     graph_context = repo._get_graph_context(L1_COLLECTION_GRAPH, form_name)
 
-    # Lấy thông tin thuộc tính nâng cao nếu có trong DB schema cũ
+    # Get advanced properties if present in the old DB schema
     props = form.get("properties", {})
     data_props = props.get("data", {})
 

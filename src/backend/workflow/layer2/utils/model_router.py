@@ -1,7 +1,7 @@
 """
-llm/model_router.py — Chọn ModelConfig phù hợp dựa trên complexity và stage.
+llm/model_router.py — Select the appropriate ModelConfig based on complexity and stage.
 
-Dùng bởi BDAgent và DDAgent để dispatch tới đúng model.
+Used by BDAgent and DDAgent to dispatch to the correct model.
 """
 from __future__ import annotations
 
@@ -21,17 +21,17 @@ def select_model(
     model_id: str | None = None,
 ) -> ModelConfig:
     """
-    Chọn ModelConfig phù hợp theo complexity và stage hiện tại, hoặc dùng model_id cụ thể.
+    Select the appropriate ModelConfig based on complexity and current stage, or use a specific model_id.
 
     Args:
         complexity_level: "critical" | "high" | "medium" | "low"
-        stage: "dev" | "pilot" | "production" (mặc định dùng STAGE từ env)
+        stage: "dev" | "pilot" | "production" (default is STAGE from env)
         model_id: Explicitly requested model ID (e.g. from UI)
 
     Returns:
         ModelConfig instance.
     """
-    # 1. Nếu có model_id cụ thể, ưu tiên trả về config đó
+    # 1. If a specific model_id is provided, prioritize returning that config
     if model_id and model_id in AVAILABLE_MODELS:
         return AVAILABLE_MODELS[model_id]
 

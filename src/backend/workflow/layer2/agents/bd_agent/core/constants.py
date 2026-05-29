@@ -124,14 +124,14 @@ ATTR_PREFIX = {
 }
 
 ACTION_TYPES = [
-    {"key": "READ", "description": "Đọc dữ liệu từ DB, tìm kiếm."},
-    {"key": "CREATE", "description": "Thêm mới dữ liệu."},
-    {"key": "UPDATE", "description": "Cập nhật dữ liệu."},
-    {"key": "DELETE", "description": "Xóa dữ liệu."},
-    {"key": "NAV", "description": "Chuyển màn hình, đóng/mở form."},
-    {"key": "UI", "description": "Thay đổi hiển thị, ẩn/hiện, màu sắc UI."},
-    {"key": "VALID", "description": "Kiểm tra hợp lệ, thông báo lỗi nhập liệu."},
-    {"key": "FILE", "description": "Thao tác File Excel/CSV (Import/Export)."},
-    {"key": "SYS", "description": "Thao tác hệ thống (Clipboard, Registry, Taskkill)."},
-    {"key": "ETC", "description": "Các xử lý logic khác."}
+    {"key": "READ", "description": "Read data from DB, search."},
+    {"key": "CREATE", "description": "Insert new data."},
+    {"key": "UPDATE", "description": "Update data."},
+    {"key": "DELETE", "description": "Delete data."},
+    {"key": "NAV", "description": "Navigate screen, close/open form."},
+    {"key": "UI", "description": "Change display, hide/show, UI colors."},
+    {"key": "VALID", "description": "Validation, input error messages."},
+    {"key": "FILE", "description": "Excel/CSV file operations (Import/Export)."},
+    {"key": "SYS", "description": "System operations (Clipboard, Registry, Taskkill)."},
+    {"key": "ETC", "description": "Other logic processing."}
 ]

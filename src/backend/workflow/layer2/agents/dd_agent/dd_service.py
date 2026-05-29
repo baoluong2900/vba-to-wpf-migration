@@ -27,14 +27,14 @@ _OUTPUT_BASE = _LAYER2_DIR / "output"
 class DDService:
     """Orchestrates the DD pipeline D1→D4 for one screen."""
 
-    # ── Internal: push single D4 file to MongoDB + backup ─────────────────
-    def _push_d4_to_mongo(self, screen_name: str, doc: dict, d4_file: Path, category: str = "") -> None:
+    # ── Internal: push single DD4 file to MongoDB + backup ─────────────────
+    def _push_dd4_to_mongo(self, screen_name: str, doc: dict, dd4_file: Path, category: str = "") -> None:
         """
         Upsert *doc* into the ``dds`` MongoDB collection and copy the JSON file
         to the database_json/dds/ backup directory.
 
         Mirrors the logic in push_to_mongo._upsert_docs / _copy_to_backup but
-        operates on a single document so it can be called inline after D4.
+        operates on a single document so it can be called inline after DD4.
 
         Adds ``type`` field: macro → "macro", common → "module",
         screen + R-prefix → "report", screen → "form".
@@ -89,9 +89,9 @@ class DDService:
         try:
             backup_dir = _LAYER2_DIR.parent.parent.parent.parent / "data" / "dds"
             backup_dir.mkdir(parents=True, exist_ok=True)
-            dest = backup_dir / d4_file.name
-            shutil.copy2(d4_file, dest)
-            logger.info("[DD Service] [BACKUP] Copied %s → %s", d4_file.name, backup_dir)
+            dest = backup_dir / dd4_file.name
+            shutil.copy2(dd4_file, dest)
+            logger.info("[DD Service] [BACKUP] Copied %s → %s", dd4_file.name, backup_dir)
         except Exception as exc:
             logger.error("[DD Service] [BACKUP] File backup failed for %s: %s", screen_name, exc)
 
@@ -107,19 +107,19 @@ class DDService:
 
         """
         Run full DD flow:
-          D1: Fetch dd_code_json from DB -> d1_dd_source
-          D2: Parse d1_dd_source + s4_bd_final → skeleton (no LLM) -> d2_dd_mapping
-          D3: LLM fill detail steps per module -> d3_dd_logic/logic_{screen_name}.jsonl
-          D4: Merge D2 + D3 → final JSON -> d4_dd_final
+          DD1: Fetch dd_code_json from DB -> dd1_dd_source
+          DD2: Parse dd1_dd_source + bd4_bd_final → skeleton (no LLM) -> dd2_dd_mapping
+          DD3: LLM fill detail steps per module -> dd3_dd_logic/logic_{screen_name}.jsonl
+          DD4: Merge DD2 + DD3 → final JSON -> dd4_dd_final
 
         Reads:
-          output/bd_flow/s4_bd_final/{screen_name}.json
+          output/bd_flow/bd4_bd_final/{screen_name}.json
 
         Writes:
-          output/dd_flow/d1_dd_source/{screen_name}.json
-          output/dd_flow/d2_dd_mapping/{screen_name}.json
-          output/dd_flow/d3_dd_logic/logic_{screen_name}.jsonl
-          output/dd_flow/d4_dd_final/{screen_name}.json
+          output/dd_flow/dd1_dd_source/{screen_name}.json
+          output/dd_flow/dd2_dd_mapping/{screen_name}.json
+          output/dd_flow/dd3_dd_logic/logic_{screen_name}.jsonl
+          output/dd_flow/dd4_dd_final/{screen_name}.json
 
         Returns:
           dict with paths and stats
@@ -141,14 +141,14 @@ class DDService:
 
 
         # ── Paths ──────────────────────────────────────────────────────────
-        bd_final_dir = _OUTPUT_BASE / "bd_flow" / "s4_bd_final"
+        bd_final_dir = _OUTPUT_BASE / "bd_flow" / "bd4_bd_final"
         
-        # New structure: dd_flow/{category}/d{n}_...
+        # New structure: dd_flow/{category}/dd{n}_...
         category_dir = _OUTPUT_BASE / "dd_flow" / category
-        d1_dir = category_dir / "d1_dd_skeleton"
-        d2_dir = category_dir / "d2_dd_mapping"
-        d3_dir = category_dir / "d3_dd_logic"
-        d4_dir = category_dir / "d4_dd_final"
+        dd1_dir = category_dir / "dd1_dd_skeleton"
+        dd2_dir = category_dir / "dd2_dd_mapping"
+        dd3_dir = category_dir / "dd3_dd_logic"
+        dd4_dir = category_dir / "dd4_dd_final"
 
         bd_final_path    = bd_final_dir / f"{screen_name}.json"
         if category == "macro":
@@ -171,10 +171,10 @@ class DDService:
             raise FileNotFoundError(f"dd_form.json template not found: {dd_form_sample}")
 
         # ── D1: Extract Source (Deep) from DB ────────────────────────────
-        logger.info("[DD Service] [D1] Fetching dd_code_json from DB for %s ...", screen_name)
+        logger.info("[DD Service] [DD1] Fetching dd_code_json from DB for %s ...", screen_name)
         
         # Load BD source for dependency hints
-        bd_source_path = _OUTPUT_BASE / "bd_flow" / "s1_bd_form" / f"{screen_name}.json"
+        bd_source_path = _OUTPUT_BASE / "bd_flow" / "bd1_bd_form" / f"{screen_name}.json"
         bd_source = None
         if bd_source_path.exists():
             try:
@@ -186,17 +186,17 @@ class DDService:
         # repo = Layer1Repo()
         dd_source = repo.get_dd_code_json_unified(screen_name, bd_source=bd_source)
         
-        d1_dir.mkdir(parents=True, exist_ok=True)
-        d1_file = d1_dir / f"{screen_name}.json"
-        d1_file.write_text(json.dumps(dd_source, ensure_ascii=False, indent=2), encoding="utf-8")
-        logger.info("[DD Service] [D1] Source saved: %s", d1_file)
+        dd1_dir.mkdir(parents=True, exist_ok=True)
+        dd1_file = dd1_dir / f"{screen_name}.json"
+        dd1_file.write_text(json.dumps(dd_source, ensure_ascii=False, indent=2), encoding="utf-8")
+        logger.info("[DD Service] [DD1] Source saved: %s", dd1_file)
 
         if stop_step == 1:
-            return {"screen_name": screen_name, "d1_source_file": str(d1_file), "status": "stopped_at_d1"}
+            return {"screen_name": screen_name, "dd1_source_file": str(dd1_file), "status": "stopped_at_dd1"}
 
 
         # ── D2: Skeleton & Mapping ─────────────────────────────────────────
-        logger.info("[DD Service] [D2] Building mapping skeleton for %s ...", screen_name)
+        logger.info("[DD Service] [DD2] Building mapping skeleton for %s ...", screen_name)
         
         from .core.fill_utils import parse_dd_source
         if category == "screen":
@@ -210,27 +210,27 @@ class DDService:
 
         skeleton, logic_items = get_dd_skeleton(
             screen_name=screen_name,
-            dd_code_json_path=d1_file,
+            dd_code_json_path=dd1_file,
             bd_final_path=bd_final_path,
             template_path=dd_form_sample,
-            output_dir=d2_dir,
+            output_dir=dd2_dir,
             category=category,
         )
-        d2_file = d2_dir / f"{screen_name}.json"
-        logger.info("[DD Service] [D2] Mapping saved: %s", d2_file)
+        dd2_file = dd2_dir / f"{screen_name}.json"
+        logger.info("[DD Service] [DD2] Mapping saved: %s", dd2_file)
 
         if stop_step == 2:
             return {
                 "screen_name": screen_name,
-                "d1_source_file": str(d1_file),
-                "d2_mapping_file": str(d2_file),
-                "status": "stopped_at_d2"
+                "dd1_source_file": str(dd1_file),
+                "dd2_mapping_file": str(dd2_file),
+                "status": "stopped_at_dd2"
             }
 
 
 
         # ── D3: LLM detail steps per module ───────────────────────────────
-        logger.info("[DD Service] [D3] Running LLM detail generation ...")
+        logger.info("[DD Service] [DD3] Running LLM detail generation ...")
         from .core.dd_agent import DDAgent
 
         dd_schema_template = ""
@@ -248,9 +248,9 @@ class DDService:
         else:
             bd_final = {"screen_id": screen_name, "screen_name": screen_name}
 
-        # ── Load S3 BD Logic result (event_content per module_id) ─────────
+        # ── Load BD3 BD Logic result (event_content per module_id) ─────────
         s3_logic_map: dict[str, dict] = {}
-        s3_logic_path = _OUTPUT_BASE / "bd_flow" / "s3_bd_logic" / f"logic_{screen_name}_result.json"
+        s3_logic_path = _OUTPUT_BASE / "bd_flow" / "bd3_bd_logic" / f"logic_{screen_name}_result.json"
         if s3_logic_path.exists():
             try:
                 s3_results = json.loads(s3_logic_path.read_text(encoding="utf-8"))
@@ -258,14 +258,14 @@ class DDService:
                     mid = r.get("module_id", "")
                     if mid:
                         s3_logic_map[mid] = r
-                logger.info("[DD Service] [D3] Loaded S3 BD logic result: %d entries", len(s3_logic_map))
+                logger.info("[DD Service] [DD3] Loaded BD3 BD logic result: %d entries", len(s3_logic_map))
             except Exception as e:
-                logger.warning("[DD Service] [D3] Could not load S3 logic result: %s", e)
+                logger.warning("[DD Service] [DD3] Could not load BD3 logic result: %s", e)
 
 
-        # Load D1 source for form/report controls (used when no real VBA code exists)
+        # Load DD1 source for form/report controls (used when no real VBA code exists)
         try:
-            d1_raw = json.loads(d1_file.read_text(encoding="utf-8"))
+            d1_raw = json.loads(dd1_file.read_text(encoding="utf-8"))
             _form_item = d1_raw.get("form") or d1_raw.get("report") or {}
             d1_form_controls = _form_item.get("controls", [])
         except Exception:
@@ -295,23 +295,23 @@ class DDService:
             f_id = vba_to_f_map.get(normalize_vba_name(vba_id), vba_to_f_map.get(vba_id, vba_id))
             logic_items_map[f_id] = li
         
-        logger.info("[DD Service] [D3] logic_items_map keys: %s", list(logic_items_map.keys()))
+        logger.info("[DD Service] [DD3] logic_items_map keys: %s", list(logic_items_map.keys()))
         if "F000" in logic_items_map:
             f000_code = logic_items_map["F000"].get("code", "")
-            logger.info("[DD Service] [D3] F000 code snippet (first 100 chars): %s", f000_code[:100].replace("\n", " "))
+            logger.info("[DD Service] [DD3] F000 code snippet (first 100 chars): %s", f000_code[:100].replace("\n", " "))
         agent = DDAgent()
         d3_results: dict[str, dict] = {}
         
-        d3_dir.mkdir(parents=True, exist_ok=True)
-        input_file_json = d3_dir / f"input_{screen_name}.json"
-        output_file_json = d3_dir / f"output_{screen_name}.json"
+        dd3_dir.mkdir(parents=True, exist_ok=True)
+        input_file_json = dd3_dir / f"input_{screen_name}.json"
+        output_file_json = dd3_dir / f"output_{screen_name}.json"
         
-        # ── D3 cache: clear nếu force=True ────────────────────────────────
+        # ── DD3 cache: clear if force=True ────────────────────────────────
         if force:
             for _f in [input_file_json, output_file_json]:
                 if _f.exists():
                     _f.unlink()
-                    logger.info("[DD Service] [D3] Force: cleared cache %s", _f.name)
+                    logger.info("[DD Service] [DD3] Force: cleared cache %s", _f.name)
 
         # Load existing input entries to avoid duplicates
         existing_input_modules = set()
@@ -373,38 +373,12 @@ class DDService:
                     "// This event runs Access macro",
                     "' No logic found",
                     "' Original VBA code not found",
-                    "' No VBA Sub",
-                )
-
-                # For macro category the "code" field may be raw XML from the macro AST.
-                # A macro stub is empty or contains no action nodes — detect by checking
-                # for the absence of any meaningful XML tag (e.g. <Action …>).
-                _macro_xml_is_empty = (
-                    category == "macro"
-                    and (
-                        not code
-                        or not code.strip()
-                        or "<Action" not in code
-                    )
-                )
-
-                # Also respect explicit flag set by fill_dd_form_report stub builder
-                _flagged_no_code = li.get("_no_real_code", False) or item.get("_no_real_code", False)
-
-                _code_is_missing = (
-                    not code
-                    or not code.strip()
-                    or any(code.strip().startswith(m) for m in _NO_CODE_MARKERS)
-                    or _macro_xml_is_empty
-                    or _flagged_no_code
-                )
-
-                # Apply skip for screen, report, common (module), and macro.
+                             # Apply skip for screen, report, common (module), and macro.
                 # (Previously only "screen" was covered.)
                 _categories_with_skip = ("screen", "report", "common", "macro")
                 if _code_is_missing and category in _categories_with_skip:
                     logger.info(
-                        "[DD Service] [D3] Skipping LLM for %s/%s — no real code/macro (placeholder). "
+                        "[DD Service] [DD3] Skipping LLM for %s/%s — no real code/macro (placeholder). "
                         "Writing 'なし' placeholder steps.",
                         category, mid,
                     )
@@ -423,6 +397,27 @@ class DDService:
                     return
 
                 # Legacy guard: skip genuinely empty common/module items that have
+                # no code AND no macro XML (catches edge cases not covered above).
+                if not code and category not in ("screen", "macro", "report"):
+                    logger.info("[DD Service] [DD3] Skipping empty module: %s", mid)
+                    return
+
+                with d3_lock:
+                    if mid in d3_results:
+                        logger.info("[DD Service] [DD3] %d/%d module=%s (Cached)", idx + 1, len(iter_items), mid)
+                        return
+
+                bd_event = bd_events_map.get(mid, {})
+                # For screens/reports, BD events provide high-level context
+                if category in ("screen", "report"):
+                    bd_event = {
+                        **bd_event,
+                        "event_trigger": item.get("event_trigger", ""),
+                        "event_content": item.get("event_content", ""),
+                        "action_type": item.get("action_type", ""),
+                    }
+
+                logger.info("[DD Service] [DD3] %d/%d module=%s (Starting parallel)", idx + 1, len(iter_items), mid)
                 # no code AND no macro XML (catches edge cases not covered above).
                 if not code and category not in ("screen", "macro", "report"):
                     logger.info("[DD Service] [D3] Skipping empty module: %s", mid)
@@ -572,10 +567,10 @@ class DDService:
                 # Save results to JSON array
                 with d3_lock:
                     d3_results[mid] = result
-                    logger.info("[DD Service] [D3] %d/%d module=%s (Parallel Done)", idx + 1, len(iter_items), mid)
+                    logger.info("[DD Service] [DD3] %d/%d module=%s (Parallel Done)", idx + 1, len(iter_items), mid)
 
             max_workers = 5
-            logger.info("[DD Service] [D3] Starting parallel processing with %d workers...", max_workers)
+            logger.info("[DD Service] [DD3] Starting parallel processing with %d workers...", max_workers)
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 list(executor.map(process_module, enumerate(iter_items)))
             
@@ -584,22 +579,22 @@ class DDService:
                 json.dumps(existing_inputs, ensure_ascii=False, indent=2), 
                 encoding="utf-8"
             )
-            logger.info("[DD Service] [D3] Saved input JSON: %s", input_file_json)
+            logger.info("[DD Service] [DD3] Saved input JSON: %s", input_file_json)
             
             output_results = [{"module_id": mid, **result} for mid, result in d3_results.items()]
             output_file_json.write_text(
                 json.dumps(output_results, ensure_ascii=False, indent=2),
                 encoding="utf-8"
             )
-            logger.info("[DD Service] [D3] Saved output JSON: %s", output_file_json)
+            logger.info("[DD Service] [DD3] Saved output JSON: %s", output_file_json)
 
 
 
 
-        logger.info("[DD Service] [D3] Done — %d modules processed.", len(d3_results))
+        logger.info("[DD Service] [DD3] Done — %d modules processed.", len(d3_results))
 
         # ── D4: Merge D1+D2 skeleton with D3 steps ────────────────────────
-        logger.info("[DD Service] [D4] Merging into final output ...")
+        logger.info("[DD Service] [DD4] Merging into final output ...")
         final = copy.deepcopy(skeleton)
 
         if category in ("screen", "report"):
@@ -700,13 +695,13 @@ class DDService:
                         final["sheet_3_detail_specs"] = [merged_detail]
                     elif isinstance(s3, dict):
                         s3["details"] = [merged_detail]
-        # Save D4
-        # ── Inject type + name vào final để push_dd_one() đọc đúng type ──
+        # Save DD4
+        # ── Inject type + name into final so push_dd_one() reads correct type ──
         _CAT_TO_TYPE_SAVE = {"macro": "macro", "common": "module", "report": "report"}
         if category in _CAT_TO_TYPE_SAVE:
             _item_type = _CAT_TO_TYPE_SAVE[category]
         else:
-            # screen: lookup L1 để phân biệt form vs report
+            # screen: lookup L1 to distinguish form vs report
             try:
                 from db.layer1_repo import Layer1Repo
                 from config import L1_COLLECTION_REPORTS
@@ -717,28 +712,29 @@ class DDService:
         final["type"] = _item_type
         final["name"] = screen_name
 
-        d4_dir.mkdir(parents=True, exist_ok=True)
-        d4_file = d4_dir / f"{screen_name}.json"
-        d4_file.write_text(
-            json.dumps(final, ensure_ascii=False, indent=2), encoding="utf-8"
+        dd4_dir.mkdir(parents=True, exist_ok=True)
+        dd4_file = dd4_dir / f"{screen_name}.json"
+        final_str = json.dumps(final, ensure_ascii=False, indent=2)
+        dd4_file.write_text(
+            final_str, encoding="utf-8"
         )
-        logger.info("[DD Service] [D4] Final saved: %s (type=%s)", d4_file, _item_type)
+        logger.info("[DD Service] [DD4] Final saved: %s (type=%s)", dd4_file, _item_type)
 
         # ── Auto Push to MongoDB + Backup (macro / common only) ───────────
         # screen/report are pushed via main.py → push_to_mongo.push_dd() after
         # the full pipeline finishes. For standalone macro/module runs (which
-        # bypass main.py), we push immediately after D4 so the DB stays in sync.
+        # bypass main.py), we push immediately after DD4 so the DB stays in sync.
         if category in ("macro", "common"):
-            self._push_d4_to_mongo(screen_name, final, d4_file, category=category)
+            self._push_dd4_to_mongo(screen_name, final, dd4_file, category=category)
 
         return {
             "screen_name": screen_name,
-            "d1_source_file": str(d1_file),
-            "d2_mapping_file": str(d2_file),
-            "d3_input_json": str(input_file_json),
-            "d3_output_json": str(output_file_json),
-            "d4_final_file": str(d4_file),
+            "dd1_source_file": str(dd1_file),
+            "dd2_mapping_file": str(dd2_file),
+            "dd3_input_json": str(input_file_json),
+            "dd3_output_json": str(output_file_json),
+            "dd4_final_file": str(dd4_file),
             "logic_items_total": len(logic_items),
-            "d3_modules_processed": len(d3_results),
+            "dd3_modules_processed": len(d3_results),
             "auto_pushed": category in ("macro", "common"),
         }

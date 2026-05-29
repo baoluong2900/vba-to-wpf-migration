@@ -1,15 +1,15 @@
 """
-dd_agent/fill_dd_from_bd_json.py — D1 & D2 static processing (NO LLM)
+dd_agent/fill_dd_from_bd_json.py — DD1 & DD2 static processing (NO LLM)
 
-D1: Parse logic_{screen}.jsonl + s4_bd_final → build dd_form.json skeleton
-D2: Map SQL queries → sheet_4 (SELECT) / sheet_5 (UPDATE/INSERT/DELETE)
+DD1: Parse logic_{screen}.jsonl + bd4_bd_final → build dd_form.json skeleton
+DD2: Map SQL queries → sheet_4 (SELECT) / sheet_5 (UPDATE/INSERT/DELETE)
 
 CLI usage:
     python -m dd_agent.fill_dd_from_bd_json \
-        --logic-jsonl output/bd_flow/s3_bd_logic/logic_F_Login.jsonl \
-        --bd-final output/bd_flow/s4_bd_final/F_Login.json \
+        --logic-jsonl output/bd_flow/bd3_bd_logic/logic_F_Login.jsonl \
+        --bd-final output/bd_flow/bd4_bd_final/F_Login.json \
         --sample schema/template/dd_form.json \
-        --output output/dd_flow/d1_dd_skeleton/F_Login.json
+        --output output/dd_flow/dd1_dd_skeleton/F_Login.json
 """
 from __future__ import annotations
 
@@ -240,7 +240,7 @@ def _build_dd_skeleton(
     sample: dict[str, Any],
     category: str = "screen",
 ) -> dict[str, Any]:
-    """Build full DD skeleton bám sát dd_form.json structure."""
+    """Build full DD skeleton closely following the dd_form.json structure."""
     from copy import deepcopy
 
     out = deepcopy(sample)
@@ -751,16 +751,16 @@ def get_dd_skeleton(
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build DD skeleton (D2) from D1 source + BD final.")
-    parser.add_argument("--dd-source", type=Path, required=True, help="Path to d1_dd_source/{screen}.json")
-    parser.add_argument("--bd-final", type=Path, required=True, help="Path to s4_bd_final/{screen}.json")
+    parser = argparse.ArgumentParser(description="Build DD skeleton (DD2) from DD1 source + BD final.")
+    parser.add_argument("--dd-source", type=Path, required=True, help="Path to dd1_dd_source/{screen}.json")
+    parser.add_argument("--bd-final", type=Path, required=True, help="Path to bd4_bd_final/{screen}.json")
     parser.add_argument("--sample", type=Path, help="Path to dd_form.json template")
     parser.add_argument("--output", type=Path, help="Output path for skeleton JSON")
     args = parser.parse_args()
 
     proj_root = Path(__file__).resolve().parent.parent.parent.parent
     sample_path = args.sample or (proj_root / "schema" / "template" / "dd_form.json")
-    output_path = args.output or (proj_root / "output" / "dd_flow" / "d2_dd_mapping" / "output.json")
+    output_path = args.output or (proj_root / "output" / "dd_flow" / "dd2_dd_mapping" / "output.json")
 
     logic_items = parse_dd_source(args.dd_source)
     bd_final = json.loads(args.bd_final.read_text(encoding="utf-8"))

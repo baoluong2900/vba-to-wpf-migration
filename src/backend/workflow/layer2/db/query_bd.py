@@ -49,7 +49,7 @@ def get_bd_code_json_form(repo: Any, form_name: str) -> dict[str, Any]:
     related_queries = repo._get_related_queries(form.get("dependencies", {}).get("queries", []))
     graph_context = repo._get_graph_context(L1_COLLECTION_GRAPH, form_name)
 
-    # Lấy thông tin thuộc tính nâng cao nếu có trong DB schema cũ
+    # Get advanced properties if present in the old DB schema
     props = form.get("properties", {})
     data_props = props.get("data", {})
     format_props = props.get("format", {})
@@ -181,23 +181,23 @@ def get_bd_code_json_selective(
     function_names: list[str]
 ) -> dict[str, Any]:
     """
-    Lấy dữ liệu AST của một form nhưng chỉ trả về tên form và danh sách các function 
-    khớp với danh sách tên (event/handler) truyền vào.
+    Get the AST data of a form but only return the form name and the list of functions 
+    matching the provided list of names (event/handler).
     """
     from db.layer1_repo import L1_COLLECTION_FORMS
     
-    # 1. Lấy dữ liệu form
+    # 1. Get form data
     form = repo._find_one(L1_COLLECTION_FORMS, form_name)
     if not form:
         raise ValueError(f"Form not found in Layer 1: {form_name}")
 
-    # 2. Lấy toàn bộ procedures (VBA code)
+    # 2. Get all procedures (VBA code)
     all_procedures = form.get("vba_procedures", form.get("functions", []))
     
-    # 3. Lọc: So khớp danh sách function_names (tên event/handler) với name của procedure
+    # 3. Filter: Match the list of function_names (event/handler name) with the procedure name
     filtered_procedures = []
     if function_names:
-        # Chuyển function_names về set để search nhanh và normalize (nếu cần)
+        # Convert function_names to set for fast search and normalization (if needed)
         search_set = set(function_names)
         filtered_procedures = [
             p for p in all_procedures 
@@ -206,7 +206,7 @@ def get_bd_code_json_selective(
     else:
         filtered_procedures = all_procedures
 
-    # 4. Trả về payload rút gọn tối đa
+    # 4. Return maximum reduced payload
     payload = {
         "form_name": form.get("name"),
         "vba_procedures": filtered_procedures
@@ -216,7 +216,7 @@ def get_bd_code_json_selective(
 
 
 def get_bd_code_json_table(repo: Any, table_name: str) -> dict[str, Any]:
-    """Lấy toàn bộ dữ liệu của một table từ Layer 1."""
+    """Get all data of a table from Layer 1."""
     from config import L1_COLLECTION_TABLES
     t = repo._find_one(L1_COLLECTION_TABLES, table_name)
     if not t:
@@ -225,7 +225,7 @@ def get_bd_code_json_table(repo: Any, table_name: str) -> dict[str, Any]:
 
 
 def get_bd_code_json_query_raw(repo: Any, query_name: str) -> dict[str, Any]:
-    """Lấy toàn bộ dữ liệu của một query từ Layer 1 (không qua transform)."""
+    """Get all data of a query from Layer 1 (without transformation)."""
     from config import L1_COLLECTION_QUERIES
     q = repo._find_one(L1_COLLECTION_QUERIES, query_name)
     if not q:

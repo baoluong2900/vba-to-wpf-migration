@@ -371,7 +371,7 @@ def get_bd_mapping_dict(repo: Any, form_name: str, bd_code_json: dict[str, Any])
 
     # 4. Save output
     try:
-        output_dir = proj_root / "output" / "bd_flow" / "s2_bd_mapping"
+        output_dir = proj_root / "output" / "bd_flow" / "bd2_bd_mapping"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file = output_dir / f"{form_name}.json"
         output_file.write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")

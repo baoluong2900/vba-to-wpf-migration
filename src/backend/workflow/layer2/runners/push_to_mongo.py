@@ -2,8 +2,8 @@
 push_to_mongo.py — Push Layer 2 final outputs to MongoDB
 
 Reads all JSON files from:
-  - output/dd_flow/screen/d4_dd_final/  → collection: dds
-  - output/bd_flow/s4_bd_final/         → collection: bds
+  - output/dd_flow/screen/dd4_dd_final/  → collection: dds
+  - output/bd_flow/bd4_bd_final/         → collection: bds
 
 Each file is upserted using `name` = stem of the filename (without .json) as the
 primary key so re-running layer2 always keeps the DB up-to-date (no duplicates).
@@ -52,9 +52,9 @@ MONGO_DB  = os.environ.get("MONGO_DB",  "vba_brain_core")
 # ── Directories ───────────────────────────────────────────────────────────────
 BASE_DIR = Path(_LAYER2_DIR)
 
-BD_FINAL_DIR = BASE_DIR / "output" / "bd_flow" / "s4_bd_final"
+BD_FINAL_DIR = BASE_DIR / "output" / "bd_flow" / "bd4_bd_final"
 
-# All DD categories that produce d4_dd_final output
+# All DD categories that produce dd4_dd_final output
 _DD_CATEGORIES = ("screen", "report", "macro", "common")
 
 COL_DDS = "dds"   # target collection for DD final docs
@@ -180,16 +180,16 @@ def _upsert_docs(
 
     for name, raw_doc, _ in docs:
         # Determine type — priority:
-        #   1. extra_fields["type"] — caller biết chắc (macro/module category folder)
-        #   2. raw_doc["type"] — chỉ tin nếu là "macro" hoặc "module" (không thể sai)
-        #      "form"/"report" trong file cũ có thể sai → luôn verify lại qua L1
-        #   3. L1 lookup — nguồn chính xác nhất
+        #   1. extra_fields["type"] — caller knows for sure (macro/module category folder)
+        #   2. raw_doc["type"] — only trust if it's "macro" or "module" (cannot be wrong)
+        #      "form"/"report" in old file can be wrong → always verify again via L1
+        #   3. L1 lookup — most authoritative source
         _extra_type = (extra_fields or {}).get("type")
         _doc_type   = raw_doc.get("type", "")
         if _extra_type:
             item_type = _extra_type
         elif _doc_type in ("macro", "module"):
-            item_type = _doc_type   # macro/module không thể nhầm với form/report
+            item_type = _doc_type   # macro/module cannot be mistaken for form/report
         else:
             item_type = _detect_item_type_from_l1(name)
         doc = {
@@ -247,7 +247,7 @@ def _copy_to_backup(docs: list[tuple[str, dict, Path]], backup_dir: Path, dry_ru
 # ─────────────────────────────────────────────────────────────────────────────
 
 def push_dd(dry_run: bool = False) -> None:
-    """Push D4 DD final output from ALL categories (screen, report, macro, common) into MongoDB."""
+    """Push DD4 DD final output from ALL categories (screen, report, macro, common) into MongoDB."""
     # Map category directory → item type
     _CAT_TO_TYPE = {
         "screen": None,     # will be resolved per-item via L1 lookup (form or report)
@@ -257,7 +257,7 @@ def push_dd(dry_run: bool = False) -> None:
     }
     total_ins = total_upd = total_fail = 0
     for cat in _DD_CATEGORIES:
-        cat_dir = BASE_DIR / "output" / "dd_flow" / cat / "d4_dd_final"
+        cat_dir = BASE_DIR / "output" / "dd_flow" / cat / "dd4_dd_final"
         if not cat_dir.exists():
             logger.debug("[DD] Skipping missing dir: %s", cat_dir)
             continue
@@ -294,19 +294,19 @@ def push_bd(dry_run: bool = False) -> None:
 
 
 def push_bd_one(screen_name: str, dry_run: bool = False) -> bool:
-    """Upsert một S4 file cụ thể vào MongoDB bds — dùng sau khi BD flow hoàn thành."""
-    s4_file = BD_FINAL_DIR / f"{screen_name}.json"
-    if not s4_file.exists():
-        logger.warning("[push_bd_one] S4 file not found: %s", s4_file)
+    """Upsert a specific BD4 file into MongoDB bds — used after the BD flow is completed."""
+    bd4_file = BD_FINAL_DIR / f"{screen_name}.json"
+    if not bd4_file.exists():
+        logger.warning("[push_bd_one] BD4 file not found: %s", bd4_file)
         return False
 
     try:
-        doc = json.loads(s4_file.read_text(encoding="utf-8"))
+        doc = json.loads(bd4_file.read_text(encoding="utf-8"))
     except Exception as exc:
-        logger.error("[push_bd_one] Failed to load %s: %s", s4_file.name, exc)
+        logger.error("[push_bd_one] Failed to load %s: %s", bd4_file.name, exc)
         return False
 
-    docs = [(screen_name, doc, s4_file)]
+    docs = [(screen_name, doc, bd4_file)]
     ins, upd, fail = _upsert_docs(COL_BDS, docs, dry_run=dry_run)
     _copy_to_backup(docs, BDS_BACKUP_DIR, dry_run=dry_run)
     logger.info("[push_bd_one] %s → inserted=%d updated=%d failed=%d", screen_name, ins, upd, fail)
@@ -314,38 +314,38 @@ def push_bd_one(screen_name: str, dry_run: bool = False) -> bool:
 
 
 def push_dd_one(screen_name: str, dry_run: bool = False) -> bool:
-    """Upsert một D4 file cụ thể vào MongoDB dds — dùng sau khi DD flow hoàn thành."""
-    # Map category → forced type (None = cần L1 lookup)
+    """Upsert a specific DD4 file into MongoDB dds — used after the DD flow is completed."""
+    # Map category → forced type (None = L1 lookup required)
     _CAT_TO_TYPE = {
-        "screen": None,    # form hoặc report — cần L1 lookup
+        "screen": None,    # form or report — L1 lookup required
         "report": "report",
         "macro":  "macro",
         "common": "module",
     }
 
-    d4_file: Path | None = None
+    dd4_file: Path | None = None
     category: str = ""
     for cat in ("screen", "report", "macro", "common"):
-        candidate = BASE_DIR / "output" / "dd_flow" / cat / "d4_dd_final" / f"{screen_name}.json"
+        candidate = BASE_DIR / "output" / "dd_flow" / cat / "dd4_dd_final" / f"{screen_name}.json"
         if candidate.exists():
-            d4_file = candidate
+            dd4_file = candidate
             category = cat
             break
 
-    if d4_file is None:
-        logger.warning("[push_dd_one] D4 file not found for: %s", screen_name)
+    if dd4_file is None:
+        logger.warning("[push_dd_one] DD4 file not found for: %s", screen_name)
         return False
 
     try:
-        doc = json.loads(d4_file.read_text(encoding="utf-8"))
+        doc = json.loads(dd4_file.read_text(encoding="utf-8"))
     except Exception as exc:
-        logger.error("[push_dd_one] Failed to load %s: %s", d4_file.name, exc)
+        logger.error("[push_dd_one] Failed to load %s: %s", dd4_file.name, exc)
         return False
 
     forced_type = _CAT_TO_TYPE.get(category)
     extra = {"type": forced_type} if forced_type else None
 
-    docs = [(screen_name, doc, d4_file)]
+    docs = [(screen_name, doc, dd4_file)]
     ins, upd, fail = _upsert_docs(COL_DDS, docs, dry_run=dry_run, extra_fields=extra)
     _copy_to_backup(docs, DDS_BACKUP_DIR, dry_run=dry_run)
     logger.info("[push_dd_one] %s (category=%s) → inserted=%d updated=%d failed=%d",
@@ -355,7 +355,7 @@ def push_dd_one(screen_name: str, dry_run: bool = False) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Push Layer 2 d4_dd_final + s4_bd_final outputs into MongoDB.",
+        description="Push Layer 2 dd4_dd_final + bd4_bd_final outputs into MongoDB.",
     )
     parser.add_argument(
         "--only",

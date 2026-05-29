@@ -1,8 +1,8 @@
 """
-core/pipeline.py — LangGraph pipeline builder cho Layer 2.
+core/pipeline.py — LangGraph pipeline builder for Layer 2.
 
-Hiện tại: stub đơn giản vì server.py gọi trực tiếp BDService.
-Pipeline đầy đủ (BD → DD → Review) sẽ được mở rộng trong phiên bản sau.
+Currently: simple stub because server.py directly calls BDService.
+Full pipeline (BD → DD → Review) will be expanded in a future version.
 """
 from __future__ import annotations
 
@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 def build_pipeline():
     """
-    Xây dựng và trả về LangGraph pipeline object.
+    Build and return LangGraph pipeline object.
 
-    Gọi theo thứ tự BD → DD.
+    Call in BD → DD order.
     """
     try:
         from langgraph.graph import StateGraph, END
@@ -68,7 +68,7 @@ def build_pipeline():
 
 
 class _MinimalPipeline:
-    """Fallback pipeline khi LangGraph chưa được cài."""
+    """Fallback pipeline when LangGraph is not installed."""
 
     def invoke(self, state: dict) -> dict:
         from agents.bd_agent.bd_service import BDService
