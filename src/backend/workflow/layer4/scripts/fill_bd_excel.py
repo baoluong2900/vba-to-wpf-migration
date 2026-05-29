@@ -45,6 +45,7 @@ Usage (from 02_tools):
 from __future__ import annotations
 
 import argparse
+import os
 import copy
 import json
 import math
@@ -1591,6 +1592,17 @@ def fill_excel(
 
     wb = load_workbook(output_path)
 
+    try:
+        import sys
+        from pathlib import Path
+        _scripts_dir = Path(__file__).resolve().parent
+        if str(_scripts_dir) not in sys.path:
+            sys.path.insert(0, str(_scripts_dir))
+        from excel_translator import restore_japanese_sheet_names
+        restore_japanese_sheet_names(wb)
+    except Exception as e:
+        print(f"[WARN] Failed to restore Japanese sheet names: {e}")
+
     if SHEET_CHANGE_HISTORY in wb.sheetnames:
         ch_data = (bd.get("sheet_1_change_history", {}) or {}).get("data", []) or []
         if not ch_data and mock_change_history:
@@ -1617,10 +1629,12 @@ def fill_excel(
     handle_event_sheets(wb, bd)
 
     try:
-        try:
-            from excel_translator import translate_workbook
-        except ImportError:
-            from .excel_translator import translate_workbook
+        import sys
+        from pathlib import Path
+        _scripts_dir = Path(__file__).resolve().parent
+        if str(_scripts_dir) not in sys.path:
+            sys.path.insert(0, str(_scripts_dir))
+        from excel_translator import translate_workbook
         translate_workbook(wb)
     except Exception as e:
         print(f"[WARN] Failed to translate workbook: {e}")

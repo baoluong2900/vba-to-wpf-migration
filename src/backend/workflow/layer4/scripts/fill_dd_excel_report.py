@@ -2019,6 +2019,17 @@ def fill_excel(template_path: Path, dd: dict, output_path: Path, *,
 
     wb = load_workbook(output_path)
 
+    try:
+        import sys
+        from pathlib import Path
+        _scripts_dir = Path(__file__).resolve().parent
+        if str(_scripts_dir) not in sys.path:
+            sys.path.insert(0, str(_scripts_dir))
+        from excel_translator import restore_japanese_sheet_names
+        restore_japanese_sheet_names(wb)
+    except Exception as e:
+        print(f"[WARN] Failed to restore Japanese sheet names: {e}")
+
     tmpl_prefix = _detect_template_prefix(wb.sheetnames)
     screen_id = (
         (dd.get("screen_id") or dd.get("form_id") or "").strip()
@@ -2073,10 +2084,12 @@ def fill_excel(template_path: Path, dd: dict, output_path: Path, *,
         reorder_related_sheets(wb, active_prefix)
 
     try:
-        try:
-            from excel_translator import translate_workbook
-        except ImportError:
-            from .excel_translator import translate_workbook
+        import sys
+        from pathlib import Path
+        _scripts_dir = Path(__file__).resolve().parent
+        if str(_scripts_dir) not in sys.path:
+            sys.path.insert(0, str(_scripts_dir))
+        from excel_translator import translate_workbook
         translate_workbook(wb)
     except Exception as e:
         print(f"[WARN] Failed to translate workbook: {e}")
