@@ -1,20 +1,20 @@
-# vba_brain — Docker Compose
-# Chạy MongoDB + PostgreSQL nội bộ để cả team dùng chung.
+# vba_brain — Docker Compose (Secured)
+# Runs internal MongoDB and PostgreSQL databases safely using environment configurations.
 #
-# Cách dùng:
-#   docker compose up -d           → Khởi động tất cả services (background)
-#   docker compose down            → Dừng tất cả
-#   docker compose logs -f mongo   → Xem log MongoDB
-#   docker compose logs -f postgres→ Xem log PostgreSQL
-#   docker compose ps              → Kiểm tra trạng thái
+# Usage:
+#   docker compose up -d           → Launch all services (background)
+#   docker compose down            → Terminate all services
+#   docker compose logs -f mongo   → Monitor MongoDB logs
+#   docker compose logs -f postgres→ Monitor PostgreSQL logs
+#   docker compose ps              → Verify status of running containers
 #
-# MongoDB URI (có auth):
-#   mongodb://vba_brain:REDACTED_PASSWORD@<HOST>:27017/vba_brain_core?authSource=admin
-# PostgreSQL connection string:
-#   Host=<HOST>;Port=5432;Database=vba_brain;Username=vba_brain;Password=REDACTED_PASSWORD
+# MongoDB URI (with Authentication):
+#   mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@<HOST>:27017/${MONGO_DATABASE}?authSource=admin
+# PostgreSQL Connection String:
+#   Host=<HOST>;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
 
 services:
-  # ── MongoDB ────────────────────────────────────────────────────────────────
+  # ── MongoDB Service ────────────────────────────────────────────────────────
   mongo:
     image: mongo:7.0
     container_name: vba_brain_mongo
@@ -22,17 +22,17 @@ services:
     ports:
       - "0.0.0.0:27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: vba_brain
-      MONGO_INITDB_ROOT_PASSWORD: REDACTED_PASSWORD
-      MONGO_INITDB_DATABASE: vba_brain_core
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     volumes:
       - ../data/mongo:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d:ro
     command: mongod --bind_ip_all --wiredTigerCacheSizeGB 1
 
-  # ── Mongo Express — Web UI ──────────────────────────────────────────────────
-  # Truy cập: http://localhost:8082
-  # Login: admin / REDACTED_PASSWORD
+  # ── Mongo Express (Web admin panel UI) ──────────────────────────────────────
+  # Access: http://localhost:8082
+  # Credentials are populated dynamically via environmental variables
   mongo-express:
     image: mongo-express:1.0.2
     container_name: vba_brain_mongo_ui
@@ -40,20 +40,17 @@ services:
     ports:
       - "0.0.0.0:8082:8081"
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: vba_brain
-      ME_CONFIG_MONGODB_ADMINPASSWORD: REDACTED_PASSWORD
-      ME_CONFIG_MONGODB_URL: mongodb://vba_brain:REDACTED_PASSWORD@mongo:27017/
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: REDACTED_PASSWORD
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
     depends_on:
       - mongo
 
-  # ── PostgreSQL ─────────────────────────────────────────────────────────────
-  # Host: localhost:5432
-  # User: vba_brain / REDACTED_PASSWORD
-  # Database: vba_brain
-  # Connection string (ADO.NET):
-  #   Host=localhost;Port=5432;Database=vba_brain;Username=vba_brain;Password=REDACTED_PASSWORD
+  # ── PostgreSQL Service ─────────────────────────────────────────────────────
+  # Port binding: localhost:5432
+  # Credentials are populated dynamically via environmental variables
   postgres:
     image: postgres:16-alpine
     container_name: vba_brain_postgres
@@ -61,9 +58,9 @@ services:
     ports:
       - "0.0.0.0:5432:5432"
     environment:
-      POSTGRES_USER: vba_brain
-      POSTGRES_PASSWORD: REDACTED_PASSWORD
-      POSTGRES_DB: vba_brain
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ../data/postgres:/var/lib/postgresql/data
     command: >
