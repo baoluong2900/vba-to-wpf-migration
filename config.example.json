@@ -7,34 +7,34 @@
   ],
 
   "localization": {
-    "_comment": "Ngôn ngữ nguồn (source_language) và ngôn ngữ đích (target_language) cho dịch thuật Excel",
+    "_comment": "Ngôn ngữ nguồn (source) và đích (target) cho dịch thuật Excel. Hiện hỗ trợ: ja → en",
     "source_language": "ja",
     "target_language": "en"
   },
 
   "migration": {
-    "_comment": "Dialect SQL mục tiêu cho Layer 3. Hiện hỗ trợ: PostgreSQL, Oracle",
+    "_comment": "Dialect SQL mục tiêu cho Layer 3. Hiện chỉ dùng: PostgreSQL",
     "target_sql_dialect": "PostgreSQL"
   },
 
   "llm_settings": {
-    "_comment": "Model mặc định cho từng layer. Có thể override qua environment variable (xem README).",
-    "default_model":              "qwen-max",
-    "layer2_dev_model":           "qwen-max",
-    "layer2_pilot_model":         "qwen-max",
-    "layer3_migration_model":     "qwen-max",
-    "layer4_migration_model":     "qwen-max",
-    "layer5_default_model":       "qwen3-coder-480b-a35b-instruct",
-    "layer5_service_model":       "qwen3-coder-480b-a35b-instruct",
-    "layer5_viewmodel_model":     "qwen-plus-2025-07-28",
-    "layer5_repository_model":    "qwen3-coder-480b-a35b-instruct"
+    "_comment": "Model mặc định cho từng layer. Override qua biến môi trường (xem README).",
+    "default_model":            "qwen-max",
+    "layer2_dev_model":         "qwen-max",
+    "layer2_pilot_model":       "qwen-max",
+    "layer3_migration_model":   "qwen-max",
+    "layer4_migration_model":   "qwen-max",
+    "layer5_default_model":     "qwen3-coder-480b-a35b-instruct",
+    "layer5_service_model":     "qwen3-coder-480b-a35b-instruct",
+    "layer5_viewmodel_model":   "qwen-plus-2025-07-28",
+    "layer5_repository_model":  "qwen3-coder-480b-a35b-instruct"
   },
 
   "llm_providers": {
-    "_comment": "Khai báo API keys và danh sách models của từng provider. Chỉ provider có api_key hợp lệ mới được dùng.",
+    "_comment": "Khai báo API keys và danh sách models. Chỉ provider có api_key hợp lệ mới được dùng.",
 
     "alibaba": {
-      "_comment": "Alibaba Cloud DashScope — Provider chính. Đăng ký tại https://dashscope.aliyuncs.com",
+      "_comment": "Provider chính — Alibaba Cloud DashScope. Đăng ký: https://dashscope.aliyuncs.com",
       "api_key": "sk-YOUR_ALIBABA_API_KEY_HERE",
       "models": [
         "qwen3-coder-480b-a35b-instruct",
@@ -49,97 +49,60 @@
     },
 
     "openai": {
-      "_comment": "Optional. Bỏ qua nếu không dùng OpenAI. Đăng ký tại https://platform.openai.com",
+      "_comment": "Optional. Bỏ qua nếu không dùng. Đăng ký: https://platform.openai.com",
       "api_key": "sk-YOUR_OPENAI_API_KEY_HERE",
-      "models": [
-        "gpt-4o",
-        "gpt-4o-mini"
-      ]
+      "models": ["gpt-4o", "gpt-4o-mini"]
     },
 
     "anthropic": {
-      "_comment": "Optional. Bỏ qua nếu không dùng Anthropic. Đăng ký tại https://console.anthropic.com",
+      "_comment": "Optional. Bỏ qua nếu không dùng. Đăng ký: https://console.anthropic.com",
       "api_key": "YOUR_ANTHROPIC_API_KEY_HERE",
-      "models": [
-        "claude-3-5-sonnet-20241022",
-        "claude-3-haiku-20240307"
-      ]
+      "models": ["claude-3-5-sonnet-20241022"]
     },
 
     "groq": {
-      "_comment": "Optional. Groq cho inference nhanh với open-source models. Đăng ký tại https://console.groq.com",
+      "_comment": "Optional. Groq inference nhanh. Đăng ký: https://console.groq.com",
       "api_key": "YOUR_GROQ_API_KEY_HERE",
-      "models": [
-        "llama-3.3-70b-versatile",
-        "mixtral-8x7b-32768"
-      ]
-    },
-
-    "deepseek": {
-      "_comment": "Optional. DeepSeek AI. Đăng ký tại https://platform.deepseek.com",
-      "api_key": "YOUR_DEEPSEEK_API_KEY_HERE",
-      "models": [
-        "deepseek-chat",
-        "deepseek-reasoner"
-      ]
+      "models": ["llama-3.3-70b-versatile"]
     }
   },
 
   "mongodb": {
-    "_comment": "MongoDB connection. Dùng docker-compose trong infa/ để khởi động local MongoDB.",
+    "_comment": "MongoDB — Document store cho Layer 1/2 state. Dùng docker-compose trong infa/ để khởi động.",
     "uri":  "mongodb://localhost:27017/vba_brain_core",
     "db":   "vba_brain_core",
     "host": "localhost",
     "port": 27017,
 
-    "_comment_docker": "Nếu dùng Docker Compose với auth (infa/docker-compose.yml), đổi uri thành:",
-    "_docker_uri":     "mongodb://vba_brain:vba_brain2024@localhost:27017/vba_brain_core?authSource=admin"
+    "_comment_docker_auth": "Nếu dùng Docker Compose (infa/docker-compose.yml) với auth:",
+    "_docker_uri": "mongodb://vba_brain:vba_brain2024@localhost:27017/vba_brain_core?authSource=admin"
   },
 
   "postgresql": {
-    "_comment": "PostgreSQL — dùng cho Layer 3 SQL migration và Layer 5 Repository code gen",
+    "_comment": "PostgreSQL — Target database cho Layer 3 migration và Layer 5 Repository gen.",
+    "_comment_docker": "Khi dùng Docker (infa/docker-compose.yml): user=vba_brain, password=vba_brain2024",
     "host":              "localhost",
     "port":              5432,
     "database":          "vba_brain",
-    "username":          "postgres",
+    "username":          "vba_brain",
     "password":          "YOUR_POSTGRES_PASSWORD",
-    "connection_string": "Host=localhost;Port=5432;Database=vba_brain;Username=postgres;Password=YOUR_POSTGRES_PASSWORD"
-  },
-
-  "oracle": {
-    "_comment": "Oracle XE 23ai Dev — chạy qua Docker (infa/docker-compose.yml port 1522). Service: FREEPDB1",
-    "host":              "localhost",
-    "port":              1522,
-    "service":           "FREEPDB1",
-    "username":          "vba_brain",
-    "password":          "vba_brain2024",
-    "connection_string": "vba_brain/vba_brain2024@localhost:1522/FREEPDB1"
-  },
-
-  "oracle_test": {
-    "_comment": "Oracle XE 23ai Test — chạy qua Docker (infa/docker-compose.yml port 1523). Service: FREEPDB1",
-    "host":              "localhost",
-    "port":              1523,
-    "service":           "FREEPDB1",
-    "username":          "vba_brain",
-    "password":          "vba_brain2024",
-    "connection_string": "vba_brain/vba_brain2024@localhost:1523/FREEPDB1"
+    "connection_string": "Host=localhost;Port=5432;Database=vba_brain;Username=vba_brain;Password=YOUR_POSTGRES_PASSWORD"
   },
 
   "frontend": {
-    "_comment": "Next.js dev server config",
+    "_comment": "Next.js dev server settings",
     "port":        3000,
     "dev_command": "yarn dev"
   },
 
   "backend": {
-    "_comment": "gRPC gateway config (port 50051 là hardcoded, field này cho tham khảo)",
+    "_comment": "gRPC Gateway port (50051 hardcoded trong grpc_server.py)",
     "port": 8000,
     "host": "0.0.0.0"
   },
 
   "model_overrides": {
-    "_comment": "Override model ID cho 1 model cụ thể. Key là model alias, value là model ID thực muốn dùng thay thế.",
+    "_comment": "Override model alias → model ID thực. Ví dụ: dùng model mạnh hơn thay qwen-max",
     "_example": {
       "qwen-max": "qwen3-coder-480b-a35b-instruct"
     }

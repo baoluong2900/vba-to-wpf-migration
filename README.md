@@ -225,7 +225,7 @@ workflow/
 | API Gateway | gRPC (`grpcio`) | ≥ 1.62 |
 | AI Orchestration | LangGraph + LangChain | ≥ 0.2 |
 | Database Client | PyMongo | ≥ 4.8 |
-| Vector DB Client | Qdrant Client | ≥ 1.17 |
+| PostgreSQL Driver | psycopg2-binary | ≥ 2.9 |
 | Excel Processing | openpyxl | ≥ 3.1 |
 | Template Engine | Jinja2 | ≥ 3.1 |
 | HTTP / Async | FastAPI + uvicorn | ≥ 0.111 |
@@ -258,7 +258,7 @@ workflow/
 |-----------|----------|
 | Desktop App | Avalonia UI |
 | Runtime | .NET 10 |
-| ORM | Dapper (Oracle / PostgreSQL) |
+| ORM | Dapper (PostgreSQL) |
 | Architecture | MVVM — Domain / Application / Infrastructure |
 
 ---
@@ -295,7 +295,7 @@ Kết quả được ghi vào `data/graphs/` và seeded vào collection `depende
 
 ---
 
-### Layer 2 — AI Design Specification
+## 🏗️ Layer 2 — AI Design Specification
 
 **Entry point**: `src/backend/workflow/layer2/runners/main.py`  
 **Orchestration**: LangGraph `StateGraph` (BD node → DD node → END)  
@@ -374,16 +374,16 @@ python main.py --all --dry-run
 
 ---
 
-### Layer 3 — SQL Migration
+## ⚙️ Layer 3 — SQL Migration
 
 **Input**: MongoDB collection `queries_v2` + `tables`  
-**Output**: PostgreSQL / Oracle DDL SQL
+**Output**: PostgreSQL DDL SQL
 
 #### Modules
 
 | File | Chức năng |
 |------|----------|
-| `table_converter.py` | Chuyển Access data types → PostgreSQL/Oracle DDL |
+| `table_converter.py` | Chuyển Access data types → PostgreSQL DDL |
 | `postgres_migrator.py` | LLM-assisted runner: đọc từng table → sinh CREATE TABLE → execute |
 | `seed_queries_v2.py` | Seed queries (với cả `raw_sql` và `sql` field) vào MongoDB |
 | `router.py` | API endpoints: list/get/update/convert query, convert table schema, get stats |
@@ -394,14 +394,14 @@ python main.py --all --dry-run
 MongoDB (queries_v2 / tables)
          │
          ▼
-  table_converter.py        → Access DDL → PostgreSQL/Oracle DDL
+  table_converter.py        → Access DDL → PostgreSQL DDL
   postgres_migrator.py      → Execute DDL trên PostgreSQL target
   router.py::convert_query  → LLM dịch Access SQL → target SQL dialect
 ```
 
 ---
 
-### Layer 4 — Excel Specification Export
+## 📊 Layer 4 — Excel Specification Export
 
 **Input**: BD/DD JSON (từ `layer2/output/` hoặc MongoDB `bds`/`dds`)  
 **Output**: `.xlsx` files tại `src/excel_outputs/`
@@ -426,7 +426,7 @@ Khi `config.json → localization.target_language = "en"`:
 
 ---
 
-### Layer 5 — Automated Code Generation
+## 💻 Layer 5 — Automated Code Generation
 
 **Input**: DD JSON + Access→WPF name mapping  
 **Output**: C# source files (Avalonia/WPF architecture)
@@ -583,7 +583,7 @@ export L2_STAGE=production
 | Python | ≥ 3.9 | Khuyến nghị 3.11+ |
 | Node.js | ≥ 18 | Cần cho Frontend |
 | Yarn | 1.x | `npm install -g yarn` |
-| Docker Desktop | latest | Cho MongoDB + Qdrant + Oracle |
+| Docker Desktop | latest | Cho MongoDB + Qdrant + PostgreSQL |
 | .NET SDK | 10 | Chỉ cần nếu dùng Layer 5 / WPF |
 
 ### Bước 1: Clone & Dependencies
@@ -614,6 +614,7 @@ nano config.json  # hoặc editor của bạn
 Các trường bắt buộc:
 - `llm_providers.alibaba.api_key` — Alibaba Cloud API key
 - `mongodb.uri` — MongoDB connection string
+- `postgres_db.connection_string` — PostgreSQL connection string
 
 > ⚠️ **KHÔNG bao giờ commit `config.json`**. File này đã trong `.gitignore`.
 
@@ -622,7 +623,7 @@ Các trường bắt buộc:
 ```bash
 cd infa
 
-# Start MongoDB + Qdrant + Oracle (background)
+# Start MongoDB + Qdrant + PostgreSQL (background)
 docker compose up -d
 
 # Chỉ start MongoDB (tối thiểu)
@@ -636,9 +637,7 @@ docker compose ps
 |---------|-----|------------|
 | MongoDB | `localhost:27017` | `vba_brain` / `vba_brain2024` |
 | Mongo Express UI | `http://localhost:8082` | `admin` / `admin123` |
-| Qdrant Dashboard | `http://localhost:6333/dashboard` | No auth |
-| Oracle Dev | `localhost:1522/FREEPDB1` | `vba_brain` / `vba_brain2024` |
-| Oracle Test | `localhost:1523/FREEPDB1` | `vba_brain` / `vba_brain2024` |
+| PostgreSQL | `localhost:5432` | `vba_brain` / `vba_brain2024` — DB: `vba_brain` |
 
 ---
 
@@ -764,8 +763,12 @@ Các biến có thể set trong `.env` hoặc shell environment, sẽ override `
 | `ANTHROPIC_API_KEY` | Anthropic API key | từ `config.json` |
 | `GROQ_API_KEY` | Groq API key | từ `config.json` |
 | `L2_STAGE` | Layer 2 model stage | `dev` |
-| `DEFAULT_LLM_MODEL` | Override default model | từ `config.json` |
-| `LAYER2_DEV_MODEL` | Override L2 dev model | từ `config.json` |
+| `POSTGRES_CONN` | PostgreSQL ADO.NET connection string | từ `config.json` |
+| `POSTGRES_HOST` | PostgreSQL host | `localhost` |
+| `POSTGRES_PORT` | PostgreSQL port | `5432` |
+| `POSTGRES_DB` | PostgreSQL database name | `vba_brain` |
+| `POSTGRES_USER` | PostgreSQL username | `vba_brain` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | từ `config.json` |
 | `LAYER5_SERVICE_MODEL` | Override L5 service model | từ `config.json` |
 | `LAYER5_REPOSITORY_MODEL` | Override L5 repo model | từ `config.json` |
 | `SOURCE_LANGUAGE` | Source language code | `ja` |

@@ -1,35 +1,38 @@
 # vba_brain — Docker Compose
-# Chạy MongoDB nội bộ để cả team dùng chung.
+# Chạy MongoDB + PostgreSQL nội bộ để cả team dùng chung.
 #
 # Cách dùng:
-#   docker compose up -d           → Khởi động MongoDB (background)
-#   docker compose down            → Dừng
+#   docker compose up -d           → Khởi động tất cả services (background)
+#   docker compose down            → Dừng tất cả
 #   docker compose logs -f mongo   → Xem log MongoDB
+#   docker compose logs -f postgres→ Xem log PostgreSQL
 #   docker compose ps              → Kiểm tra trạng thái
 #
-# Sau khi chạy xong, các member trong cùng mạng LAN trỏ MongoDB URI về:
-#   mongodb://vba_brain:REDACTED_PASSWORD@:27017/vba_brain_core?authSource=admin
+# MongoDB URI (có auth):
+#   mongodb://vba_brain:REDACTED_PASSWORD@<HOST>:27017/vba_brain_core?authSource=admin
+# PostgreSQL connection string:
+#   Host=<HOST>;Port=5432;Database=vba_brain;Username=vba_brain;Password=REDACTED_PASSWORD
 
 services:
+  # ── MongoDB ────────────────────────────────────────────────────────────────
   mongo:
     image: mongo:7.0
     container_name: vba_brain_mongo
     restart: unless-stopped
     ports:
-      # Bind ra tất cả interfaces để LAN có thể kết nối
       - "0.0.0.0:27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: vba_brain
       MONGO_INITDB_ROOT_PASSWORD: REDACTED_PASSWORD
       MONGO_INITDB_DATABASE: vba_brain_core
     volumes:
-      # Persistent data
       - ../data/mongo:/data/db
-      # Init scripts — chỉ chạy lần đầu khi data dir còn trống
       - ./mongo-init:/docker-entrypoint-initdb.d:ro
     command: mongod --bind_ip_all --wiredTigerCacheSizeGB 1
 
-  # Optional: Mongo Express — Web UI để xem database trên browser
+  # ── Mongo Express — Web UI ──────────────────────────────────────────────────
+  # Truy cập: http://localhost:8082
+  # Login: admin / REDACTED_PASSWORD
   mongo-express:
     image: mongo-express:1.0.2
     container_name: vba_brain_mongo_ui
@@ -45,53 +48,26 @@ services:
     depends_on:
       - mongo
 
-  # Qdrant — Vector Database for semantic search / embeddings
-  # Dashboard: http://localhost:6333/dashboard
-  # REST API:  http://localhost:6333
-  # gRPC:      localhost:6334
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: vba_brain_qdrant
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  # Host: localhost:5432
+  # User: vba_brain / REDACTED_PASSWORD
+  # Database: vba_brain
+  # Connection string (ADO.NET):
+  #   Host=localhost;Port=5432;Database=vba_brain;Username=vba_brain;Password=REDACTED_PASSWORD
+  postgres:
+    image: postgres:16-alpine
+    container_name: vba_brain_postgres
     restart: unless-stopped
     ports:
-      - "0.0.0.0:6333:6333"   # REST API + Dashboard
-      - "0.0.0.0:6334:6334"   # gRPC
-    volumes:
-      - ../data/qdrant:/qdrant/storage
+      - "0.0.0.0:5432:5432"
     environment:
-      QDRANT__SERVICE__GRPC_PORT: 6334
-
-  # Oracle XE 23ai Free — Dev Database (exposed to LAN)
-  # SQL Developer: 0.0.0.0:1522 / Service: FREEPDB1
-  # User: vba_brain / Pass: REDACTED_PASSWORD
-  # LAN members: vba_brain/REDACTED_PASSWORD@:1522/FREEPDB1
-  oracle:
-    image: gvenzl/oracle-free:23-slim
-    container_name: vba_brain_oracle
-    restart: unless-stopped
-    ports:
-      - "0.0.0.0:1522:1521"       # Expose to all interfaces (LAN accessible)
-    environment:
-      ORACLE_PASSWORD: REDACTED_PASSWORD        # SYS / SYSTEM password
-      APP_USER: vba_brain                   # Application user (auto-created)
-      APP_USER_PASSWORD: REDACTED_PASSWORD      # Application user password
+      POSTGRES_USER: vba_brain
+      POSTGRES_PASSWORD: REDACTED_PASSWORD
+      POSTGRES_DB: vba_brain
     volumes:
-      - ../backup/oracle_backup_20260519_094334/oracle_data:/opt/oracle/oradata
-
-  # Oracle XE 23ai Free — Test Database (exposed to LAN)
-  # SQL Developer: 0.0.0.0:1523 / Service: FREEPDB1
-  # User: vba_brain / Pass: REDACTED_PASSWORD
-  # LAN members: vba_brain/REDACTED_PASSWORD@:1523/FREEPDB1
-  oracle-test:
-    image: gvenzl/oracle-free:23-slim
-    container_name: vba_brain_oracle_test
-    restart: unless-stopped
-    ports:
-      - "0.0.0.0:1523:1521"     # Expose to all interfaces (LAN accessible)
-    environment:
-      ORACLE_PASSWORD: REDACTED_PASSWORD        # SYS / SYSTEM password
-      APP_USER: vba_brain                   # Application user (auto-created)
-      APP_USER_PASSWORD: REDACTED_PASSWORD      # Application user password
-    volumes:
-      - ../data/oracle_test:/opt/oracle/oradata
-
+      - ../data/postgres:/var/lib/postgresql/data
+    command: >
+      postgres
+        -c max_connections=100
+        -c shared_buffers=256MB
+        -c log_statement=ddl

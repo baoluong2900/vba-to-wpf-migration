@@ -13,7 +13,7 @@ langchain-core>=0.2.0
 
 # ── Database ──────────────────────────────────────────────────────────────────
 pymongo>=4.8.0
-qdrant-client>=1.17.0
+psycopg2-binary>=2.9.0              # PostgreSQL driver
 
 # ── LLM Providers ─────────────────────────────────────────────────────────────
 google-generativeai>=0.8.0

@@ -85,9 +85,19 @@ _mongo_cfg = config_data.get("mongodb", {})
 MONGO_URI = os.getenv("MONGO_URI", _mongo_cfg.get("uri", "mongodb://localhost:27017"))
 MONGO_DB = os.getenv("MONGO_DB", _mongo_cfg.get("db", "vba_brain_core"))
 
-ORACLE_DEV_CONN = os.getenv("ORACLE_DEV_CONN", config_data.get("oracle", {}).get("connection_string", ""))
-ORACLE_TEST_CONN = os.getenv("ORACLE_TEST_CONN", config_data.get("oracle_test", {}).get("connection_string", ""))
-ORACLE_PROD_CONN = os.getenv("ORACLE_PROD_CONN", config_data.get("oracle_prod", {}).get("connection_string", ""))
+_pg_cfg = config_data.get("postgresql", {})
+POSTGRES_CONN = os.getenv(
+    "POSTGRES_CONN",
+    _pg_cfg.get(
+        "connection_string",
+        f"Host={_pg_cfg.get('host', 'localhost')};Port={_pg_cfg.get('port', 5432)};Database={_pg_cfg.get('database', 'vba_brain')};Username={_pg_cfg.get('username', 'vba_brain')};Password={_pg_cfg.get('password', '')}"
+    )
+)
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", _pg_cfg.get("host", "localhost"))
+POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", str(_pg_cfg.get("port", 5432))))
+POSTGRES_DB   = os.getenv("POSTGRES_DB", _pg_cfg.get("database", "vba_brain"))
+POSTGRES_USER = os.getenv("POSTGRES_USER", _pg_cfg.get("username", "vba_brain"))
+POSTGRES_PASS = os.getenv("POSTGRES_PASSWORD", _pg_cfg.get("password", ""))
 
 # ── Localization ───────────────────────────────────────────
 SOURCE_LANGUAGE = get_setting("SOURCE_LANGUAGE", ["localization", "source_language"], "ja")
