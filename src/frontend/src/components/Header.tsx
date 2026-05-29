@@ -48,13 +48,13 @@ export default function Header() {
         ? "h-[60px] bg-transparent border-b-0 shadow-none" 
         : "layout-header bg-white dark:bg-[#0a0b10]/95 border-b border-neutral-200 dark:border-neutral-900"
     }`}>
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2 cursor-pointer group no-underline">
+      <div className="flex items-center gap-5">
+        <Link href="/" className="flex items-center gap-4 cursor-pointer group no-underline">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm group-hover:scale-105 transition-all duration-300">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-neutral-900 dark:text-white/95">
-            vba_brain{!isHomePage && <span className="text-indigo-650 dark:text-indigo-400 text-xs tracking-[0.15em] uppercase ml-1 opacity-80 font-semibold hidden sm:inline">Studio</span>}
+            vba_brain{!isHomePage && <span className="text-indigo-600 dark:text-indigo-400 text-base tracking-[0.15em] uppercase ml-1 opacity-80 font-semibold hidden sm:inline">Studio</span>}
           </span>
         </Link>
       </div>
@@ -91,7 +91,7 @@ export default function Header() {
         </div>
       ) : (
         <div className="flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center pointer-events-none">
-          <span className="text-[8px] sm:text-[10px] md:text-[11px] font-semibold tracking-wider text-neutral-550 dark:text-neutral-455 bg-neutral-150/40 dark:bg-neutral-900/60 border border-neutral-250 dark:border-neutral-800/80 px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full uppercase select-none pointer-events-auto whitespace-nowrap">
+          <span className="text-[8px] sm:text-base md:text-base font-semibold tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-200/40 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800/80 px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full uppercase select-none pointer-events-auto whitespace-nowrap">
             <span className="inline sm:hidden">VBA to C#</span>
             <span className="hidden sm:inline">Next-Gen VBA to C# Scaffold Migration</span>
           </span>

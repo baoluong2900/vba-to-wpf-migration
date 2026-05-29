@@ -733,6 +733,7 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
         background: isDark ? "#1c1e26" : "#ffffff",
         flexShrink: 0,
       }}>
+        {/* eslint-disable-next-line react-hooks/refs */}
         {selectedNode && (() => {
           const nc = TYPE_CFG[selectedNode.type] ?? TYPE_CFG["form"];
           const isRoot = (selectedNode as any).isRoot === true;
