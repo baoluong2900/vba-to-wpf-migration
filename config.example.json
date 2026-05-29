@@ -75,12 +75,12 @@
     "port": 27017,
 
     "_comment_docker_auth": "Nếu dùng Docker Compose (infa/docker-compose.yml) với auth:",
-    "_docker_uri": "mongodb://vba_brain:vba_brain2024@localhost:27017/vba_brain_core?authSource=admin"
+    "_docker_uri": "mongodb://vba_brain:YOUR_DOCKER_PASSWORD@localhost:27017/vba_brain_core?authSource=admin"
   },
 
   "postgresql": {
     "_comment": "PostgreSQL — Target database cho Layer 3 migration và Layer 5 Repository gen.",
-    "_comment_docker": "Khi dùng Docker (infa/docker-compose.yml): user=vba_brain, password=vba_brain2024",
+    "_comment_docker": "Khi dùng Docker (infa/docker-compose.yml): user=vba_brain, password=YOUR_DOCKER_PASSWORD",
     "host":              "localhost",
     "port":              5432,
     "database":          "vba_brain",
