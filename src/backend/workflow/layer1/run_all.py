@@ -21,7 +21,8 @@ SCRIPTS = [
     (["parser/modules_parser.py"], "Parsing Modules"),
     (["aggregator.py"], "Aggregating References"),
     (["seed_db.py"], "Seeding MongoDB"),
-    (["../layer2/runners/main.py", "--all", "--stage", "dev"], "Generating BD & DD Specifications (Layer 2)")
+    (["../layer2/runners/main.py", "--all", "--stage", "dev"], "Generating BD & DD Specifications (Layer 2)"),
+    (["../layer3/sql_migration/postgres_migrator.py"], "Migrating Tables to PostgreSQL Database")
 ]
 
 def run():
