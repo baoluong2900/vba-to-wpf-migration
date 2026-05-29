@@ -1,146 +1,457 @@
-# 🚀 VBA & Access Modernization Pipeline (vba_brain)
+# vba_brain — VBA & Access Modernization Pipeline
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![Next.js](https://img.shields.io/badge/next.js-v15.0-black?logo=next.js)](https://nextjs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-database-green?logo=mongodb)](https://www.mongodb.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-agents-orange)](https://github.com/langchain-ai/langgraph)
+[![Python](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12%20|%203.13-blue?logo=python)](https://www.python.org/)
+[![Next.js](https://img.shields.io/badge/next.js-v15-black?logo=next.js)](https://nextjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb)](https://www.mongodb.com/)
+[![gRPC](https://img.shields.io/badge/gRPC-API%20Gateway-orange?logo=grpc)](https://grpc.io/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-agents-purple)](https://github.com/langchain-ai/langgraph)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/licenses/MIT)
 
-An enterprise-grade, 5-layer AI-assisted pipeline designed to parse legacy MS Access databases (`.accdb` / `.mdb`) and VBA codebases, generate modern English design specifications (BD/DD), migrate databases, and automatically compile target modern application source code (e.g., WPF/C#, React/TypeScript).
+**vba_brain** là một pipeline AI 5 lớp (layer) dạng enterprise, được thiết kế để phân tích toàn bộ codebase MS Access (`.accdb` / `.mdb`) và VBA — sau đó tự động sinh ra:
+
+- 📄 **Tài liệu thiết kế** BD (Business Design) & DD (Detailed Design) bằng tiếng Anh
+- 🗄️ **Schema SQL** cho PostgreSQL / Oracle từ Access queries & tables
+- 📊 **Excel Specification Sheets** (BD + DD) đã được dịch và format đẹp
+- 💻 **Source code hiện đại** (Avalonia/WPF C# hoặc React/TypeScript)
 
 ---
 
-## 🏗️ 5-Layer Pipeline Architecture
+## 🏗️ Kiến trúc Pipeline
 
-```mermaid
-graph TD
-    A[Legacy Access DB .accdb] -->|Layer 1: AST Extraction| B[(MongoDB L1)]
-    B -->|Layer 2: AI Design Gen| C[(MongoDB L2)]
-    C -->|Layer 3: SQL Migration| D[Target SQL Server / Postgres]
-    C -->|Layer 4: Doc Compiler| E[Excel Specifications .xlsx]
-    C -->|Layer 5: Automated Codegen| F[Modern Codebase WPF / React]
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style E fill:#bbf,stroke:#333,stroke-width:2px
-    style F fill:#bfb,stroke:#333,stroke-width:2px
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     vba_brain 5-Layer Pipeline                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+  Legacy MS Access DB (.accdb)
+          │
+          ▼
+  ┌───────────────┐   AST parse forms/reports/modules/queries/macros
+  │   Layer 1     │──────────────────────────────────────────────────▶ MongoDB (L1)
+  │  Extraction   │   frm_parser, query_parser, macro_parser, ...
+  └───────────────┘
+          │
+          ▼
+  ┌───────────────┐   LangGraph agents: BDService + DDService (parallel)
+  │   Layer 2     │──────────────────────────────────────────────────▶ MongoDB (L2)
+  │  AI Design    │   BD (Business Design) → DD (Detailed Design)
+  └───────────────┘
+          │
+    ┌─────┴──────────────────────┐
+    ▼                            ▼
+  ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
+  │   Layer 3     │     │   Layer 4     │     │   Layer 5     │
+  │  SQL Migration│     │  Excel Export │     │  Code  Gen    │
+  │  → PostgreSQL │     │  → .xlsx docs │     │  → C# / React │
+  │  → Oracle     │     │               │     │               │
+  └───────────────┘     └───────────────┘     └───────────────┘
 ```
 
-### 🔹 Layer 1: AST Extraction & Parsing
-Parses MS Access files using AST parser scripts to extract tables, query definitions, form/report layouts, and VBA modules. All raw data is stored in the MongoDB Layer 1 collection.
-
-### 🔹 Layer 2: Business & Detailed Design (BD/DD) Generation
-Invokes LangGraph parallel LLM agents (`alibaba/qwen-max`, `deepseek-v4-flash`, etc.) to generate Business Design (BD) and Detailed Design (DD) metadata in English.
-*   **Forms & Reports**: Generate both BD and DD.
-*   **Modules & Macros**: Generate only DD (bypassing BD).
-*   *Note: All Japanese names and variables from legacy code are automatically translated to English.*
-
-### 🔹 Layer 3: SQL & Database Migration
-Translates MS Access database structures, relationships, and queries into modern SQL dialects (e.g., T-SQL for SQL Server or PL/pgSQL for PostgreSQL).
-
-### 🔹 Layer 4: Design Documentation Compiler (Excel Export)
-Reads Layer 2 design JSON metadata and writes it back into beautifully formatted, structured, and translated Excel design specification sheets (`.xlsx` templates) using `openpyxl`.
-
-### 🔹 Layer 5: Automated Source Code Modernization (Codegen)
-Translates the structural specifications and logic steps from DD specifications into modern modular target code (e.g., C#/WPF, React/TypeScript components).
-
 ---
 
-## 🛠️ Technology Stack
-
-*   **Frontend**: Next.js 15, TailwindCSS (for styling), Lucide icons, React Flow (for canvas pipeline visualization).
-*   **Backend & Gateway**: Python, gRPC API Gateway, FastAPI.
-*   **Agentic Orchestration**: LangGraph, LangChain, ThreadPoolExecutor.
-*   **Database**: MongoDB (state tracking, backups, document registry).
-*   **Office Automation**: `openpyxl` (Excel sheet processing & styling).
-
----
-
-## 📁 Repository Structure
+## 📁 Cấu trúc thư mục
 
 ```
 workflow/
 ├── src/
-│   ├── frontend/             # Next.js Web UI Console
-│   └── backend/
-│       ├── api_gateway/      # Unified gRPC server gateway
-│       └── workflow/
-│           ├── layer1/       # AST parser and Access extractor
-│           ├── layer2/       # AI BD & DD generators (agents/)
-│           ├── layer3/       # SQL migration compiler
-│           ├── layer4/       # Excel specification exporter
-│           └── layer5/       # C# / React source code generator
-├── data/                     # Backups folder (bds/ and dds/ JSONs)
-├── start.py                  # CLI and Web UI Server Launcher
-├── config.json               # Environment configurations & Models
-└── README.md
+│   ├── backend/
+│   │   ├── api_gateway/                   # Unified gRPC API Gateway
+│   │   │   ├── grpc_server.py             # Entry point — gRPC server port 50051
+│   │   │   ├── workflow_pb2.py            # Generated protobuf stubs
+│   │   │   └── workflow_pb2_grpc.py       # Generated gRPC stubs
+│   │   ├── common/
+│   │   │   └── config.py                  # Shared config — đọc config.json & .env
+│   │   ├── protos/
+│   │   │   └── workflow.proto             # Protobuf service definitions
+│   │   ├── requirements.txt               # Python dependencies
+│   │   └── workflow/
+│   │       ├── layer1/                    # Parser & Extractor
+│   │       │   ├── parser/
+│   │       │   │   ├── frm_parser.py      # Form / Report parser
+│   │       │   │   ├── query_parser.py    # Query & SQL parser
+│   │       │   │   ├── macro_parser.py    # Macro parser
+│   │       │   │   ├── modules_parser.py  # VBA module parser
+│   │       │   │   └── table_parser.py    # Table structure parser
+│   │       │   ├── aggregator.py          # Reference enrichment (cross-form, DLookup, ...)
+│   │       │   ├── seed_db.py             # Seed parsed data → MongoDB
+│   │       │   └── run_all.py             # Full pipeline runner (Layer 1 → 3)
+│   │       ├── layer2/                    # AI Design Specification Generator
+│   │       │   ├── agents/
+│   │       │   │   ├── bd_agent/          # Business Design agent
+│   │       │   │   │   ├── bd_service.py  # BDService — orchestrates BD flow
+│   │       │   │   │   └── core/          # s1→s4 stage processors
+│   │       │   │   └── dd_agent/          # Detailed Design agent
+│   │       │   │       ├── dd_service.py  # DDService — orchestrates DD flow
+│   │       │   │       └── core/          # d1→d4 stage processors
+│   │       │   ├── db/                    # MongoDB read/write helpers (Layer1Repo)
+│   │       │   ├── utils/                 # LLM client, cost tracker, helpers
+│   │       │   ├── schema/                # JSON schemas & templates
+│   │       │   ├── runners/               # CLI runners (main.py --all)
+│   │       │   ├── pipeline.py            # LangGraph BD→DD pipeline builder
+│   │       │   └── state.py               # PipelineState definition
+│   │       ├── layer3/                    # SQL & Database Migration
+│   │       │   └── sql_migration/
+│   │       │       ├── router.py          # Layer 3 API router (list/get/convert/update)
+│   │       │       ├── table_converter.py # Access → target SQL DDL converter
+│   │       │       ├── postgres_migrator.py # LLM-assisted PostgreSQL migration runner
+│   │       │       └── seed_queries_v2.py # Seed Access queries → MongoDB
+│   │       ├── layer4/                    # Excel Specification Exporter
+│   │       │   ├── scripts/
+│   │       │   │   ├── excel_translator.py        # JP → EN translation engine
+│   │       │   │   ├── fill_bd_excel.py            # Fill BD Screen Excel template
+│   │       │   │   ├── fill_bd_report_excel.py     # Fill BD Report Excel template
+│   │       │   │   ├── fill_dd_excel_frm.py        # Fill DD Form template
+│   │       │   │   ├── fill_dd_excel_macro.py      # Fill DD Macro template
+│   │       │   │   ├── fill_dd_excel_module.py     # Fill DD Module template
+│   │       │   │   └── fill_dd_excel_report.py     # Fill DD Report template
+│   │       │   ├── template/                       # Excel .xlsx templates (BD/DD)
+│   │       │   ├── inputs/                         # Input JSON data for generation
+│   │       │   └── outputs/                        # Generated .xlsx output
+│   │       └── layer5/                    # Automated Code Generation
+│   │           ├── agents/
+│   │           │   ├── graphview/         # WPF/Access graph mapping agent
+│   │           │   ├── logic/             # Business logic analyzer
+│   │           │   ├── mapping/           # Access→WPF name mapper
+│   │           │   ├── repo/              # Repository pattern generator
+│   │           │   ├── report/            # Report generator
+│   │           │   ├── service/           # Service layer generator
+│   │           │   └── ui/                # UI (View/ViewModel) generator
+│   │           ├── codegen/
+│   │           │   ├── jinja_engine.py    # Jinja2 template engine
+│   │           │   └── templates/         # C# / XAML code templates
+│   │           ├── core/
+│   │           │   └── llm/               # LLM client wrappers
+│   │           └── pipeline/
+│   │               ├── orchestrator.py    # Full generation pipeline
+│   │               ├── deploy_to_source.py# Copy generated files → WPF solution
+│   │               └── build_verify.py    # dotnet build + AI fix loop
+│   ├── frontend/                          # Next.js 15 Web Console
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── api/                   # API routes (proxy → gRPC backend)
+│   │       │   │   ├── graph/             # VBA dependency graph builder
+│   │       │   │   ├── graph-wpf/         # WPF mapping graph & validation
+│   │       │   │   └── v1/layer5/         # Layer 5 run-agent / run-logic endpoints
+│   │       │   └── (pages)/               # Layer 1–5 dashboard pages
+│   │       └── components/                # Shared UI components (Header, Footer, GraphView, ...)
+│   ├── vba/
+│   │   └── vba_source/                    # Exported VBA source files & table schemas
+│   └── wpf/                               # Generated/target WPF (Avalonia) solution
+│       ├── vba_brain.Application/
+│       ├── vba_brain.Domain/
+│       ├── vba_brain.Infrastructure/
+│       └── vba_brain.UI.Avalonia/
+├── data/                                  # (gitignored) Raw Access exports & DB backups
+├── infa/
+│   ├── docker-compose.yml                 # MongoDB + Qdrant + Oracle containers
+│   └── mongo-init/                        # MongoDB init scripts
+├── docs/                                  # Additional documentation
+├── start.py                               # 🚀 Web Console launcher (FE + BE)
+├── start_wpf.py                           # 🖥️  WPF app launcher (dotnet build + run)
+├── config.json                            # ⚙️  Config (gitignored — do NOT commit)
+└── config.example.json                    # ⚙️  Config template (commit-safe)
 ```
 
 ---
 
-## ⚡ Getting Started
+## ⚙️ Layer Chi Tiết
 
-### 📋 Prerequisites
-*   Python 3.9+
-*   Node.js 18+
-*   MongoDB Instance (Running on default port `27017` or configured in `config.json`)
+### Layer 1 — AST Extraction & Parsing
 
-### 📦 Installation
+Parse toàn bộ dữ liệu từ MS Access export files:
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/vba-modernization.git
-    cd vba-modernization
-    ```
+| Parser | Đầu vào | Đầu ra (MongoDB) |
+|--------|---------|-----------------|
+| `frm_parser.py` | Form/Report JSON export | Controls, events, VBA procedures |
+| `query_parser.py` | Query definitions | SQL text, parameters, joins |
+| `macro_parser.py` | Macro action sequences | Action list, conditions |
+| `modules_parser.py` | VBA standard modules | Procedures, functions, constants |
+| `table_parser.py` | Table schema | Columns, data types, constraints |
+| `aggregator.py` | All above | Cross-reference enrichment (DoCmd calls, DLookup, form references) |
 
-2.  Install Backend Dependencies:
-    ```bash
-    pip install -r src/backend/requirements.txt
-    ```
+### Layer 2 — AI Business & Detailed Design
 
-3.  Install Frontend Dependencies:
-    ```bash
-    cd src/frontend
-    npm install
-    cd ../..
-    ```
+Sử dụng **LangGraph** để chạy song song hai agent:
 
-4.  Configure `config.json` in the root folder with your LLM API keys:
-    ```json
-    {
-      "MONGO_URI": "mongodb://localhost:27017",
-      "MONGO_DB": "vba_brain_core",
-      "GOOGLE_API_KEY": "your-key",
-      "OPENAI_API_KEY": "your-key",
-      "ALIBABA_API_KEY": "your-key"
-    }
-    ```
+- **BDService** (4 stages: s1 extraction → s2 mapping → s3 logic → s4 BD final)
+  - Skip cho `module` và `macro` (chỉ có DD)
+- **DDService** (4 stages: d1 skeleton → d2 SQL mapping → d3 LLM enrich → d4 DD final)
+  - Áp dụng cho tất cả: form, report, module, macro
+
+Output JSON được persist vào MongoDB và file system (`output/bd_flow/`, `output/dd_flow/`).
+
+> **Cost tracking**: Mỗi lần chạy đều ghi lại token usage và chi phí USD vào report Excel/JSON.
+
+### Layer 3 — SQL Migration
+
+Chuyển đổi Access queries và table schemas sang SQL hiện đại:
+
+- **`table_converter.py`** — DDL conversion (Access → PostgreSQL/Oracle data types)
+- **`postgres_migrator.py`** — LLM-assisted migration runner, tích hợp với `run_all`
+- **`seed_queries_v2.py`** — Seed Access queries (với `raw_sql`) vào MongoDB để review
+- **`router.py`** — API: list/get/update/convert queries, per-table schema conversion
+
+### Layer 4 — Excel Specification Export
+
+Đọc BD/DD JSON → ghi vào template `.xlsx` bằng `openpyxl`:
+
+- Hỗ trợ **dịch tự động JP → EN** (qua `excel_translator.py`)
+- Tự động phục hồi tên sheet tiếng Nhật sau khi export (nếu yêu cầu)
+- Template riêng cho: BD Screen, BD Report, DD Screen (Form/Module/Macro), DD Report
+
+### Layer 5 — Automated Code Generation
+
+Sinh source code C#/Avalonia từ DD specifications:
+
+- **Graphview agent** — Map Access forms → WPF View/ViewModel names
+- **Service agent** — Sinh C# Service classes
+- **Repository agent** — Sinh Repository với PostgreSQL/Oracle queries
+- **UI agent** — Sinh XAML views và ViewModel classes
+- **`orchestrator.py`** — Full pipeline: analyze → generate → deploy → build → AI fix loop
+- **`deploy_to_source.py`** — Copy generated files vào WPF solution đúng chỗ
+- **`build_verify.py`** — `dotnet build` + AI auto-fix nếu có build errors (tối đa 3 lần)
 
 ---
 
-## 🚀 Running the Pipeline
+## 🛠️ Tech Stack
 
-You can run both the frontend console and the backend gRPC server simultaneously with a single launcher script:
+| Layer | Công nghệ |
+|-------|----------|
+| Frontend | Next.js 15, TailwindCSS, React Flow, Lucide Icons |
+| API Gateway | Python gRPC (port `50051`) |
+| AI Orchestration | LangGraph, LangChain |
+| LLM Providers | Alibaba Qwen, OpenAI, Anthropic, Groq, DeepSeek |
+| Database | MongoDB 7.0 (state), Qdrant (vector search) |
+| Target DB | PostgreSQL, Oracle XE 23ai |
+| Excel Export | `openpyxl` |
+| Code Templates | Jinja2 |
+| WPF Target | .NET 10, Avalonia UI |
+| Infrastructure | Docker Compose (MongoDB, Qdrant, Oracle dev + test) |
+
+---
+
+## ⚡ Cài Đặt & Chạy
+
+### 📋 Yêu cầu
+
+- Python **3.9+**
+- Node.js **18+** (yarn hoặc npm)
+- MongoDB **7.0** (local hoặc Docker)
+- .NET **10 SDK** (nếu dùng Layer 5 / WPF)
+
+### 1. Clone & cài dependencies
 
 ```bash
-python start.py
+git clone <repo-url>
+cd workflow
+
+# Backend Python
+pip install -r src/backend/requirements.txt
+
+# Frontend Node.js
+cd src/frontend
+yarn install   # hoặc npm install
+cd ../..
 ```
 
-### 💡 Launcher Options:
-*   `python start.py --fe-only` — Start only the Next.js frontend UI (default port `3000`).
-*   `python start.py --be-only` — Start only the python gRPC API Gateway (default port `50051`).
+### 2. Cấu hình
 
-### 💻 Running Batch Generation via CLI
-To parse and migrate the entire MS Access file, run the batch extraction script:
+Copy file template rồi điền thông tin thực:
+
+```bash
+cp config.example.json config.json
+```
+
+Chỉnh sửa `config.json`:
+
+```jsonc
+{
+  "llm_providers": {
+    "alibaba": {
+      "api_key": "sk-YOUR_ALIBABA_KEY",
+      "models": ["qwen-max", "qwen3-coder-480b-a35b-instruct"]
+    }
+  },
+  "mongodb": {
+    "uri": "mongodb://localhost:27017/vba_brain_core",
+    "db": "vba_brain_core"
+  },
+  "postgresql": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "vba_brain",
+    "username": "postgres",
+    "password": "YOUR_PG_PASSWORD"
+  },
+  "localization": {
+    "source_language": "ja",
+    "target_language": "en"
+  },
+  "llm_settings": {
+    "default_model": "qwen-max",
+    "layer5_default_model": "qwen3-coder-480b-a35b-instruct"
+  }
+}
+```
+
+> ⚠️ **KHÔNG commit `config.json`** — file này đã có trong `.gitignore`.
+
+### 3. Khởi động infrastructure (Docker)
+
+```bash
+cd infa
+
+# Khởi động MongoDB + Qdrant + Oracle
+docker compose up -d
+
+# Kiểm tra trạng thái
+docker compose ps
+
+# Xem log MongoDB
+docker compose logs -f mongo
+```
+
+| Service | URL/Port | Mô tả |
+|---------|----------|--------|
+| MongoDB | `localhost:27017` | Document database |
+| Mongo Express UI | `http://localhost:8082` | Web UI xem database |
+| Qdrant | `http://localhost:6333` | Vector DB + dashboard |
+| Oracle Dev | `localhost:1522` | Oracle XE 23ai dev DB |
+| Oracle Test | `localhost:1523` | Oracle XE 23ai test DB |
+
+---
+
+## 🚀 Chạy Hệ Thống
+
+### Chạy Web Console (Frontend + Backend)
+
+```bash
+# Chạy cả FE (Next.js :3000) + BE (gRPC :50051)
+python start.py
+
+# Chỉ chạy Frontend
+python start.py --fe-only
+
+# Chỉ chạy Backend gRPC gateway
+python start.py --be-only
+
+# Clean Next.js cache trước khi chạy (dùng khi gặp lỗi Turbopack)
+python start.py --clean
+```
+
+Sau khi chạy: mở **http://localhost:3000** để truy cập dashboard.
+
+### Chạy Pipeline Batch (CLI)
+
+Phân tích toàn bộ Access database và sinh tài liệu:
+
 ```bash
 cd src/backend/workflow/layer1
-python run_all.py --source legacy_db.accdb
+
+# Chạy toàn bộ pipeline: Layer 1 parse → seed DB → Layer 2 BD/DD → Layer 3 SQL migrate
+python run_all.py
 ```
-This will:
-1.  Extract AST structures from `legacy_db.accdb`.
-2.  Seed MongoDB collections.
-3.  Automatically trigger Layer 2 to generate BD & DD JSONs for all forms, reports, and modules.
+
+Thứ tự thực hiện:
+1. Parse Forms → Seed MongoDB
+2. Parse Reports → Seed MongoDB
+3. Parse Queries → Seed MongoDB
+4. Parse Macros → Seed MongoDB
+5. Parse Modules → Seed MongoDB
+6. Aggregate cross-references
+7. Seed tất cả data vào MongoDB
+8. Chạy Layer 2: sinh BD & DD cho toàn bộ items
+9. Chạy Layer 3: migrate tables → PostgreSQL
+
+### Chạy WPF Application (Avalonia)
+
+```bash
+# Build Debug + Run
+python start_wpf.py
+
+# Chỉ Build
+python start_wpf.py --build-only
+
+# Chạy bằng build cũ
+python start_wpf.py --run-only
+
+# Build Release
+python start_wpf.py --release
+
+# Clean trước build
+python start_wpf.py --clean
+```
+
+---
+
+## 📊 Dashboard Web Console
+
+| Trang | URL | Mô tả |
+|-------|-----|--------|
+| Landing | `/` | Giới thiệu pipeline |
+| Layer 1 | `/layer1` | Xem danh sách forms/reports đã parse |
+| Layer 2 | `/layer2` | Chạy BD/DD agent, xem kết quả |
+| Layer 3 | `/layer3` | Review & convert SQL queries |
+| Layer 4 | `/layer4` | Generate Excel specification files |
+| Layer 5 | `/layer5` | Run code generation, view graph |
+| Graph VBA | `/graph` | Visualize Access dependency graph |
+| Graph WPF | `/graph-wpf` | Xem WPF mapping graph |
+
+---
+
+## 🔌 gRPC API Gateway
+
+Server chạy tại port `50051`. Các service được định nghĩa trong `workflow.proto`:
+
+| gRPC Service | Method | Mô tả |
+|-------------|--------|--------|
+| `Layer1Service` | `ListForms`, `ListQueries`, `GetDbQuery` | Đọc dữ liệu L1 từ MongoDB |
+| `Layer2Service` | `RunBdFlowFull`, `RunDdFlowFull`, `GetConfig`, `GetModelsHealth` | Chạy AI agents |
+| `Layer3Service` | `GenBd`, `GenDd`, `GenAll`, `ListOutputs`, `DownloadExcel` | Generate Excel |
+| `Layer4Service` | `ListMigrationQueries`, `ConvertQuery`, `ConvertTableSchema`, `SeedQueries` | SQL migration |
+
+---
+
+## 🤖 LLM Models
+
+Config trong `config.json → llm_settings` và `llm_providers`. Các model đang sử dụng:
+
+| Layer | Model mặc định | Mô tả |
+|-------|---------------|--------|
+| Layer 2 BD/DD | `qwen-max` | Alibaba Qwen Max |
+| Layer 4 Migration | `qwen-max` | SQL migration |
+| Layer 5 Service/Repo | `qwen3-coder-480b-a35b-instruct` | 480B MoE coder |
+| Layer 5 ViewModel | `qwen-plus-2025-07-28` | Fast + smart |
+
+Model có thể override qua environment variable:
+```bash
+export DEFAULT_LLM_MODEL=qwen3-coder-480b-a35b-instruct
+```
+
+---
+
+## 🗂️ Output Files
+
+| Loại | Đường dẫn | Mô tả |
+|------|-----------|--------|
+| BD JSON | `layer2/output/bd_flow/s4_bd_final/<name>.json` | Business Design |
+| DD JSON | `layer2/output/dd_flow/{screen|macro|common}/d4_dd_final/<name>.json` | Detailed Design |
+| Excel BD | `layer4/outputs/BD/<name>.xlsx` | BD specification sheet |
+| Excel DD | `layer4/outputs/DD/<name>.xlsx` | DD specification sheet |
+| Generated C# | `layer5/output/` | Avalonia Views, Services, Repositories |
+| Cost Report | `layer2/output/token_reports/` | Token usage & cost per run |
+
+---
+
+## 🔒 Bảo Mật
+
+- **`config.json`** đã được thêm vào `.gitignore` — **không bao giờ commit file này**
+- **`config.example.json`** là file template an toàn để commit
+- **`.env`** files cũng đã trong `.gitignore`
+- Nếu API key bị lộ: rotate key ngay trên Alibaba Cloud / OpenAI console
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+MIT License — xem [LICENSE](LICENSE).

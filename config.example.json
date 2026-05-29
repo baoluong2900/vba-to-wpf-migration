@@ -1,0 +1,71 @@
+{
+  "_comment": "vba_brain Workflow Configuration — Copy file này thành config.json và điền thông tin thực. KHÔNG commit config.json lên git.",
+  "localization": {
+    "source_language": "ja",
+    "target_language": "en"
+  },
+  "migration": {
+    "target_sql_dialect": "PostgreSQL"
+  },
+  "llm_settings": {
+    "default_model": "qwen-max",
+    "layer2_dev_model": "qwen-max",
+    "layer2_pilot_model": "qwen-max",
+    "layer4_migration_model": "qwen-max",
+    "layer5_default_model": "qwen3-coder-480b-a35b-instruct",
+    "layer5_service_model": "qwen3-coder-480b-a35b-instruct",
+    "layer5_viewmodel_model": "qwen-plus-2025-07-28",
+    "layer5_repository_model": "qwen3-coder-480b-a35b-instruct"
+  },
+  "llm_providers": {
+    "alibaba": {
+      "api_key": "sk-YOUR_ALIBABA_API_KEY_HERE",
+      "models": [
+        "qwen3-coder-480b-a35b-instruct",
+        "qwen3-235b-a22b-instruct-2507",
+        "qwen-plus-2025-07-28",
+        "qwen3-vl-235b-a22b-thinking",
+        "qwen3-vl-30b-a3b-thinking",
+        "qwen-vl-plus-latest",
+        "qwen-max",
+        "qvq-max-2025-03-25"
+      ]
+    },
+    "openai": {
+      "api_key": "sk-YOUR_OPENAI_API_KEY_HERE",
+      "models": ["gpt-4o", "gpt-4o-mini"]
+    },
+    "anthropic": {
+      "api_key": "YOUR_ANTHROPIC_API_KEY_HERE",
+      "models": ["claude-3-5-sonnet-20241022"]
+    },
+    "groq": {
+      "api_key": "YOUR_GROQ_API_KEY_HERE",
+      "models": ["llama-3.3-70b-versatile"]
+    }
+  },
+  "mongodb": {
+    "_comment": "MongoDB local không auth. Dùng docker-compose trong infa/ để khởi động.",
+    "uri": "mongodb://localhost:27017/vba_brain_core",
+    "db": "vba_brain_core",
+    "host": "localhost",
+    "port": 27017
+  },
+  "postgresql": {
+    "_comment": "PostgreSQL connection — dùng cho Layer 3 migration và Layer 5 Repository gen",
+    "host": "localhost",
+    "port": 5432,
+    "database": "vba_brain",
+    "username": "postgres",
+    "password": "YOUR_POSTGRES_PASSWORD",
+    "connection_string": "Host=localhost;Port=5432;Database=vba_brain;Username=postgres;Password=YOUR_POSTGRES_PASSWORD"
+  },
+  "frontend": {
+    "port": 3000,
+    "dev_command": "yarn dev"
+  },
+  "backend": {
+    "port": 8000,
+    "host": "0.0.0.0"
+  }
+}
