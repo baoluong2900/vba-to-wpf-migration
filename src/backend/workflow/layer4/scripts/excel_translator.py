@@ -5,6 +5,15 @@ JP_REGEX = re.compile(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]')
 
 JP_EN_MAPPING = {
     # Thay thế chung & Change History
+    
+    "ページ": "Page",
+    "更新": "Update",
+    "備    考": "Notes",
+    "MONOSビルOM出荷": "MONOS Building OM Shipment",
+    "補修部品": "Repair Parts",
+    "出荷実績_当日": "Shipment_Result_Today",
+    "出荷実績入力": "Shipment Result Input",
+
     "変更履歴": "Change History",
     "改訂": "Revision",
     "初版": "First Edition",
@@ -137,13 +146,20 @@ JP_EN_MAPPING = {
     "情報": "Information",
 }
 
-def translate_workbook(wb: Workbook):
+def get_target_language():
     try:
-        from config import TARGET_LANGUAGE
-    except ImportError:
-        # Fallback if imported from outer python script
-        TARGET_LANGUAGE = "en"
-        
+        import json
+        from pathlib import Path
+        config_path = Path(__file__).resolve().parent.parent.parent.parent.parent / "config.json"
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                return json.load(f).get("localization", {}).get("target_language", "en")
+    except Exception:
+        pass
+    return "en"
+
+def translate_workbook(wb: Workbook):
+    TARGET_LANGUAGE = get_target_language()
     if TARGET_LANGUAGE.lower() not in ("en", "english"):
         return
         
@@ -178,3 +194,39 @@ def translate_workbook(wb: Workbook):
                         if jp in val_clean:
                             val_clean = val_clean.replace(jp, en)
                     cell.value = val_clean
+
+
+def restore_japanese_sheet_names(wb):
+    mapping = {
+        "Change History": "変更履歴",
+        "Screen Spec (Layout)": "画面仕様書(レイアウト)",
+        "Screen Spec (Edit)": "画面仕様書(画面編集)",
+        "Screen Spec (Table Update)": "画面仕様書（テーブル更新）",
+        "Overview Spec": "概要仕様書",
+        "Report Spec (Layout)": "帳票仕様書(レイアウト)",
+        "Report Spec (Field Edit)": "帳票仕様書（項目編集）",
+    }
+    for name in list(wb.sheetnames):
+        ws = wb[name]
+        new_name = name
+        if name in mapping:
+            new_name = mapping[name]
+        else:
+            if name.startswith("Screen Spec（") or name.startswith("Screen Spec ("):
+                prefix_len = len("Screen Spec（") if name.startswith("Screen Spec（") else len("Screen Spec (")
+                suffix = name[prefix_len:]
+                if suffix.endswith(")") or suffix.endswith("）"):
+                    inner = suffix[:-1]
+                    new_name = f"画面仕様書（{inner}）"
+            elif name.startswith("File Spec（") or name.startswith("File Spec ("):
+                prefix_len = len("File Spec（") if name.startswith("File Spec（") else len("File Spec (")
+                suffix = name[prefix_len:]
+                if suffix.endswith(")") or suffix.endswith("）"):
+                    inner = suffix[:-1]
+                    new_name = f"ファイル仕様書（{inner}）"
+                    
+        if new_name != name:
+            try:
+                ws.title = new_name
+            except Exception as e:
+                print(f"[WARN] Failed to restore sheet name '{name}' to '{new_name}': {e}")
