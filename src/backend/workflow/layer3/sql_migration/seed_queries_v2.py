@@ -65,6 +65,7 @@ def seed_v2() -> int:
         new_doc = {
             "name": name,
             "sql": raw_sql,
+            "raw_sql": raw_sql,
             "parameters": doc.get("parameters") or [],
             "target_sql": "",
             "target_query_json": {},
