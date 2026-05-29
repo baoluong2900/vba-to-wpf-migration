@@ -8,29 +8,29 @@
 [![Avalonia](https://img.shields.io/badge/Avalonia-UI-.NET10-purple)](https://avaloniaui.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**vba_brain** là pipeline AI 5 lớp (layer) enterprise-grade để hiện đại hoá toàn bộ codebase MS Access (`.accdb` / `.mdb`) + VBA — từ việc phân tích AST, sinh tài liệu thiết kế, dịch SQL sang database hiện đại, xuất Excel specs, cho đến tự động sinh C#/Avalonia source code sẵn sàng build.
+**vba_brain** is an enterprise-grade 5-layer AI pipeline to modernize the entire MS Access (`.accdb` / `.mdb`) + VBA codebase — from AST analysis, design document generation, modern database SQL migration, Excel specs export, to automated generation of build-ready C#/Avalonia source code.
 
 ---
 
-## 📋 Mục Lục
+## 📋 Table of Contents
 
-- [Kiến trúc tổng quan](#-kiến-trúc-tổng-quan)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
+- [Architecture Overview](#-architecture-overview)
+- [Directory Structure](#-directory-structure)
 - [Tech Stack](#-tech-stack)
-- [Chi tiết từng Layer](#-chi-tiết-từng-layer)
+- [Detailed Layers](#-detailed-layers)
 - [MongoDB Collections](#-mongodb-collections)
 - [gRPC API Gateway](#-grpc-api-gateway)
 - [LLM Model Routing](#-llm-model-routing)
-- [Cài đặt & Setup](#-cài-đặt--setup)
-- [Chạy hệ thống](#-chạy-hệ-thống)
+- [Installation & Setup](#-installation--setup)
+- [Running the System](#-running-the-system)
 - [Web Console Dashboard](#-web-console-dashboard)
 - [Output & Artifacts](#-output--artifacts)
 - [Environment Variables](#-environment-variables)
-- [Bảo mật](#-bảo-mật)
+- [Security](#-security)
 
 ---
 
-## 🏗️ Kiến Trúc Tổng Quan
+## 🏗️ Architecture Overview
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -49,7 +49,7 @@
           ▼
   ╔═══════════════╗
   ║   LAYER  2   ║  AI Design Specification (LangGraph agents)
-  ║  (Python)    ║  BDService (s1→s4)  +  DDService (d1→d4)
+  ║  (Python)    ║  BDService (bd1→bd4)  +  DDService (dd1→dd4)
   ╚═══════════════╝
           │  BD/DD JSON → MongoDB (collections: bds, dds)
           │  Token cost report → layer2/output/token_reports/
@@ -80,20 +80,20 @@
 
 ---
 
-## 📁 Cấu Trúc Thư Mục
+## 📁 Directory Structure
 
 ```
 workflow/
 ├── start.py                        # Launcher: FE (Next.js :3000) + BE (gRPC :50051)
 ├── start_wpf.py                    # Launcher: Avalonia WPF app (dotnet build + run)
 ├── config.json                     # ⚠ GITIGNORED — local secrets (API keys, passwords)
-├── config.example.json             # ✅ Template an toàn để copy
+├── config.example.json             # ✅ Safe template to copy
 │
 ├── src/
 │   ├── backend/
 │   │   ├── requirements.txt        # Python dependencies
 │   │   ├── common/
-│   │   │   └── config.py           # Singleton config: đọc config.json + .env, export constants
+│   │   │   └── config.py           # Singleton config: reads config.json + .env, exports constants
 │   │   ├── protos/
 │   │   │   └── workflow.proto      # Protobuf service + message definitions
 │   │   ├── api_gateway/
@@ -111,16 +111,16 @@ workflow/
 │   │       │   ├── aggregator.py           # Cross-reference enrichment engine
 │   │       │   │                           # (DoCmd, DLookup, form refs, CallSub, ...)
 │   │       │   ├── seed_db.py              # Seed all parsed JSON → MongoDB
-│   │       │   └── run_all.py              # CLI batch: Layer1 parse→seed→L2→L3
+│   │       │   └── run_all.py              # CLI batch: Layer 1 parse→seed→L2→L3
 │   │       │
 │   │       ├── layer2/             # ── Layer 2: AI Design Generation ──────────
 │   │       │   ├── agents/
 │   │       │   │   ├── bd_agent/
 │   │       │   │   │   ├── bd_service.py       # BDService: orchestrates BD flow
-│   │       │   │   │   └── core/               # s1_extract → s2_map → s3_logic → s4_final
+│   │       │   │   │   └── core/               # bd1_extract → bd2_map → bd3_logic → bd4_final
 │   │       │   │   └── dd_agent/
 │   │       │   │       ├── dd_service.py       # DDService: orchestrates DD flow
-│   │       │   │       └── core/               # d1_skeleton → d2_sql → d3_llm → d4_final
+│   │       │   │       └── core/               # dd1_skeleton → dd2_sql → dd3_llm → dd4_final
 │   │       │   ├── db/
 │   │       │   │   └── layer1_repo.py      # MongoDB read: forms/reports/modules/queries
 │   │       │   ├── utils/
@@ -219,7 +219,7 @@ workflow/
 
 ### Backend
 
-| Thành phần | Công nghệ | Version |
+| Component | Technology | Version |
 |-----------|----------|---------|
 | Language | Python | 3.9 – 3.13 |
 | API Gateway | gRPC (`grpcio`) | ≥ 1.62 |
@@ -233,7 +233,7 @@ workflow/
 
 ### Frontend
 
-| Thành phần | Công nghệ | Version |
+| Component | Technology | Version |
 |-----------|----------|---------|
 | Framework | Next.js | 15 |
 | Styling | TailwindCSS | 3.x |
@@ -244,7 +244,7 @@ workflow/
 
 ### Infrastructure
 
-| Service | Image | Port | Dùng cho |
+| Service | Image | Port | Used for |
 |---------|-------|------|---------|
 | MongoDB | `mongo:7.0` | 27017 | Document store (L1/L2 state) |
 | Mongo Express | `mongo-express:1.0.2` | 8082 | DB Web UI |
@@ -254,7 +254,7 @@ workflow/
 
 ### Target Platform
 
-| Thành phần | Công nghệ |
+| Component | Technology |
 |-----------|----------|
 | Desktop App | Avalonia UI |
 | Runtime | .NET 10 |
@@ -263,17 +263,17 @@ workflow/
 
 ---
 
-## 🔬 Chi Tiết Từng Layer
+## 🔬 Detailed Layers
 
 ### Layer 1 — AST Extraction & Parsing
 
-**Entry point**: `src/backend/workflow/layer1/run_all.py`  
-**Input**: JSON files exported từ MS Access (đặt trong `data/`)  
+**Entry Point**: `src/backend/workflow/layer1/run_all.py`  
+**Input**: JSON files exported from MS Access (placed in `data/`)  
 **Output**: MongoDB collections (L1)
 
 #### Parsers
 
-| File | Input data | MongoDB collection | Nội dung chính |
+| File | Input data | MongoDB collection | Main Content |
 |------|-----------|-------------------|----------------|
 | `frm_parser.py` | `data/forms/*.json` | `forms` | Controls, events, VBA procedures, form properties |
 | `frm_parser.py` | `data/reports/*.json` | `reports` | Report sections, fields, embedded queries |
@@ -284,27 +284,27 @@ workflow/
 
 #### Aggregator (`aggregator.py`)
 
-Sau khi parse, `aggregator.py` enrich mỗi form/report với:
+After parsing, `aggregator.py` enriches each form/report with:
 - **DoCmd references**: `OpenForm`, `OpenReport`, `OpenQuery`, `RunMacro`, `OutputTo`
-- **DLookup/DCount/DSum**: resolve tên bảng/query được tham chiếu
+- **DLookup/DCount/DSum**: resolve name of tables/queries referenced
 - **Cross-form calls**: `Form_X.Proc()`, `[Forms]![FormName]`
-- **Module procedure calls**: `Module.Procedure()` từ standard modules
+- **Module procedure calls**: `Module.Procedure()` from standard modules
 - **CallSub / Application.Run**: explicit sub calls
 
-Kết quả được ghi vào `data/graphs/` và seeded vào collection `dependency_graph`.
+Results are written to `data/graphs/` and seeded into the `dependency_graph` collection.
 
 ---
 
 ## 🏗️ Layer 2 — AI Design Specification
 
-**Entry point**: `src/backend/workflow/layer2/runners/main.py`  
+**Entry Point**: `src/backend/workflow/layer2/runners/main.py`  
 **Orchestration**: LangGraph `StateGraph` (BD node → DD node → END)  
 **State**: `PipelineState` TypedDict
 
 #### BD Flow (Business Design) — Forms & Reports only
 
 ```
-s1_extract  →  s2_map  →  s3_logic  →  s4_final
+bd1_extract  →  bd2_map  →  bd3_logic  →  bd4_final
    │              │             │            │
    ▼              ▼             ▼            ▼
  Extract       Map VBA      Analyze      Produce
@@ -312,13 +312,13 @@ s1_extract  →  s2_map  →  s3_logic  →  s4_final
  controls    UI elements    logic       (persist)
 ```
 
-Kết quả: `layer2/output/bd_flow/s4_bd_final/<name>.json`  
-*Skip hoàn toàn cho type = `module` / `macro`*
+Result: `layer2/output/bd_flow/bd4_bd_final/<name>.json`  
+*Completely skipped for type = `module` / `macro`*
 
 #### DD Flow (Detailed Design) — All types
 
 ```
-d1_skeleton  →  d2_sql_map  →  d3_llm_enrich  →  d4_final
+dd1_skeleton  →  dd2_sql_map  →  dd3_llm_enrich  →  dd4_final
     │               │                │                │
     ▼               ▼                ▼                ▼
  Build DD       Map SQL          LLM fills         Produce
@@ -326,14 +326,14 @@ d1_skeleton  →  d2_sql_map  →  d3_llm_enrich  →  d4_final
  from BD        sheet4/5         pseudo-code       (persist)
 ```
 
-Kết quả:
-- `layer2/output/dd_flow/screen/d4_dd_final/<name>.json`
-- `layer2/output/dd_flow/macro/d4_dd_final/<name>.json`
-- `layer2/output/dd_flow/common/d4_dd_final/<name>.json`
+Result:
+- `layer2/output/dd_flow/screen/dd4_dd_final/<name>.json`
+- `layer2/output/dd_flow/macro/dd4_dd_final/<name>.json`
+- `layer2/output/dd_flow/common/dd4_dd_final/<name>.json`
 
 #### Cost Tracking
 
-Mỗi lần chạy LLM call đều được ghi vào singleton `CostTracker`:
+Each LLM call execution is recorded in the `CostTracker` singleton:
 
 ```python
 # Token pricing (per 1M tokens, USD)
@@ -342,7 +342,7 @@ qwen-plus:  $0.56 input / $1.68 output
 gpt-4o:     $2.50 input / $10.0 output
 ```
 
-Report được save sau mỗi run:
+The report is saved after each run:
 - `layer2/output/token_reports/<name>_<timestamp>.json`
 - `excel_outputs/<name>_cost.xlsx`
 
@@ -351,26 +351,26 @@ Report được save sau mỗi run:
 ```bash
 cd src/backend/workflow/layer2/runners
 
-# Xử lý 1 item cụ thể
+# Process a specific item
 python main.py --item F_Login --type form --stage dev
 
-# Xử lý tất cả forms
+# Process all forms
 python main.py --all-forms --stage dev
 
-# Xử lý tất cả (forms + reports + modules)
+# Process all (forms + reports + modules)
 python main.py --all --stage production
 
-# Dry run — liệt kê items không chạy LLM
+# Dry run — list items without running LLM
 python main.py --all --dry-run
 ```
 
-**Stage** quyết định model nào được dùng:
+**Stage** determines which model is used:
 
-| Stage | Model (mặc định) | Dùng khi |
+| Stage | Model (default) | Used for |
 |-------|-----------------|---------|
-| `dev` | `qwen-max` | Development, test nhanh |
-| `pilot` | `qwen-max` | UAT, review chất lượng |
-| `production` | `qwen3-coder-480b` (critical/high) / `qwen-max` (medium) / `qwen3-coder-next` (low) | Sinh full docs |
+| `dev` | `qwen-max` | Development, quick testing |
+| `pilot` | `qwen-max` | UAT, quality review |
+| `production` | `qwen3-coder-480b` (critical/high) / `qwen-max` (medium) / `qwen3-coder-next` (low) | Generating full docs |
 
 ---
 
@@ -381,11 +381,11 @@ python main.py --all --dry-run
 
 #### Modules
 
-| File | Chức năng |
+| File | Function |
 |------|----------|
-| `table_converter.py` | Chuyển Access data types → PostgreSQL DDL |
-| `postgres_migrator.py` | LLM-assisted runner: đọc từng table → sinh CREATE TABLE → execute |
-| `seed_queries_v2.py` | Seed queries (với cả `raw_sql` và `sql` field) vào MongoDB |
+| `table_converter.py` | Convert Access data types → PostgreSQL DDL |
+| `postgres_migrator.py` | LLM-assisted runner: read each table → generate CREATE TABLE → execute |
+| `seed_queries_v2.py` | Seed queries (with both `raw_sql` and `sql` fields) into MongoDB |
 | `router.py` | API endpoints: list/get/update/convert query, convert table schema, get stats |
 
 #### Workflow
@@ -395,20 +395,20 @@ MongoDB (queries_v2 / tables)
          │
          ▼
   table_converter.py        → Access DDL → PostgreSQL DDL
-  postgres_migrator.py      → Execute DDL trên PostgreSQL target
-  router.py::convert_query  → LLM dịch Access SQL → target SQL dialect
+  postgres_migrator.py      → Execute DDL on target PostgreSQL
+  router.py::convert_query  → LLM translates Access SQL → target SQL dialect
 ```
 
 ---
 
 ## 📊 Layer 4 — Excel Specification Export
 
-**Input**: BD/DD JSON (từ `layer2/output/` hoặc MongoDB `bds`/`dds`)  
-**Output**: `.xlsx` files tại `src/excel_outputs/`
+**Input**: BD/DD JSON (from `layer2/output/` or MongoDB `bds`/`dds`)  
+**Output**: `.xlsx` files at `src/excel_outputs/`
 
 #### Template Types
 
-| Template | File | Dùng cho |
+| Template | File | Used for |
 |---------|------|---------|
 | BD Screen | `BD_Screen/bd_template.xlsx` | Forms — Business Design |
 | BD Report | `BD_Report/bd_report_template.xlsx` | Reports — Business Design |
@@ -419,10 +419,10 @@ MongoDB (queries_v2 / tables)
 
 #### Translation Engine (`excel_translator.py`)
 
-Khi `config.json → localization.target_language = "en"`:
-- Dịch tất cả cell values từ Japanese → English theo dictionary `JP_EN_MAPPING`
-- Dịch tên sheet (e.g. `変更履歴` → `Change History`)
-- Sau export có thể khôi phục tên sheet JP bằng `restore_japanese_sheet_names()`
+When `config.json → localization.target_language = "en"`:
+- Translate all cell values from Japanese → English using the `JP_EN_MAPPING` dictionary
+- Translate sheet names (e.g. `変更履歴` → `Change History`)
+- After export, Japanese sheet names can be restored using `restore_japanese_sheet_names()`
 
 ---
 
@@ -433,7 +433,7 @@ Khi `config.json → localization.target_language = "en"`:
 
 #### Generated File Types
 
-| Agent | Output | Đặt vào WPF project |
+| Agent | Output | Place into WPF project |
 |-------|--------|---------------------|
 | `ui` (View) | `Views/F_Login.axaml` | `vba_brain.UI.Avalonia/Views/` |
 | `ui` (ViewModel) | `ViewModels/F_LoginViewModel.cs` | `vba_brain.UI.Avalonia/ViewModels/` |
@@ -459,16 +459,16 @@ L5_ROUTING = {
 
 #### Build Verify Loop
 
-`build_verify.py` thực hiện:
+`build_verify.py` performs:
 1. `dotnet build` → parse compiler errors
-2. Nếu có error → gửi errors + source code → LLM → nhận patch → apply
-3. Lặp tối đa **3 lần** (`MAX_RETRIES = 3`)
+2. If there are errors → send errors + source code → LLM → receive patch → apply
+3. Loop up to 3 times (`MAX_RETRIES = 3`)
 
 ---
 
 ## 🗄️ MongoDB Collections
 
-| Collection | Layer | Nội dung |
+| Collection | Layer | Content |
 |-----------|-------|---------|
 | `forms` | L1 | Form metadata, controls, VBA procedures, references |
 | `reports` | L1 | Report metadata, sections, fields |
@@ -490,32 +490,32 @@ L5_ROUTING = {
 
 ### Layer1Service
 
-| Method | Request | Mô tả |
+| Method | Request | Description |
 |--------|---------|--------|
-| `ListForms` | `EmptyRequest` | Danh sách tất cả forms từ MongoDB |
-| `ListQueries` | `EmptyRequest` | Danh sách queries |
+| `ListForms` | `EmptyRequest` | List of all forms from MongoDB |
+| `ListQueries` | `EmptyRequest` | List of queries |
 | `ListAllItems` | `EmptyRequest` | Forms + Reports + Modules + Macros |
-| `GetDbQuery` | `screen_name, item_type, deep` | Lấy raw JSON cho 1 item |
+| `GetDbQuery` | `screen_name, item_type, deep` | Get raw JSON for 1 item |
 
 ### Layer2Service
 
-| Method | Request | Mô tả |
+| Method | Request | Description |
 |--------|---------|--------|
 | `GetConfig` | `EmptyRequest` | LLM providers + available models |
-| `GetModelsHealth` | `EmptyRequest` | Ping test tất cả models (parallel) |
-| `GetBdStatus` | `screen_name` | Kiểm tra BD/DD đã sinh chưa |
-| `RunBdFlowFull` | `screen_name, model, force` | Chạy BD full flow (s1→s4) |
-| `RunBdFlowExtract` | `screen_name` | Chỉ chạy s1_extract |
+| `GetModelsHealth` | `EmptyRequest` | Ping test all models (parallel) |
+| `GetBdStatus` | `screen_name` | Check if BD/DD has been generated |
+| `RunBdFlowFull` | `screen_name, model, force` | Run BD full flow (bd1→bd4) |
+| `RunBdFlowExtract` | `screen_name` | Only run bd1_extract |
 | `RunBdFlowAnalysis` | `screen_name, model, force` | Extract + Analysis phases |
-| `RunDdFlowFull` | `screen_name, model, force` | Chạy DD full flow (d1→d4) |
-| `GetTokenReport` | `EmptyRequest` | Lấy token usage report hiện tại |
+| `RunDdFlowFull` | `screen_name, model, force` | Run DD full flow (dd1→dd4) |
+| `GetTokenReport` | `EmptyRequest` | Get current token usage report |
 
 ### Layer3Service (Excel Gen)
 
-| Method | Request | Mô tả |
+| Method | Request | Description |
 |--------|---------|--------|
-| `ListItems` | `EmptyRequest` | Tất cả items có thể generate Excel |
-| `ListOutputs` | `EmptyRequest` | Danh sách file Excel đã generate |
+| `ListItems` | `EmptyRequest` | All items that can generate Excel |
+| `ListOutputs` | `EmptyRequest` | List of generated Excel files |
 | `GenBd` | `screen_name, type` | Generate BD Excel |
 | `GenDd` | `screen_name, type` | Generate DD Excel |
 | `GenAll` | `screen_name, type` | Generate BD + DD Excel |
@@ -523,16 +523,16 @@ L5_ROUTING = {
 
 ### Layer4Service (SQL Migration)
 
-| Method | Request | Mô tả |
+| Method | Request | Description |
 |--------|---------|--------|
-| `ListMigrationQueries` | `EmptyRequest` | Tất cả Access queries cần migrate |
-| `GetMigrationQuery` | `name` | Chi tiết 1 query (SQL + target_sql) |
-| `UpdateMigrationQuery` | `name, target_sql, status, ...` | Lưu kết quả review |
+| `ListMigrationQueries` | `EmptyRequest` | All Access queries that need migration |
+| `GetMigrationQuery` | `name` | Details of 1 query (SQL + target_sql) |
+| `UpdateMigrationQuery` | `name, target_sql, status, ...` | Save review result |
 | `ConvertQuery` | `name, model` | LLM convert 1 query → target dialect |
-| `SeedQueries` | `EmptyRequest` | Seed queries từ MongoDB |
-| `ListMigrationTables` | `EmptyRequest` | Tất cả tables cần migrate |
-| `ConvertTableSchema` | `table_name, target_db` | Chuyển DDL cho 1 table |
-| `GetStats` | `EmptyRequest` | Thống kê migration progress |
+| `SeedQueries` | `EmptyRequest` | Seed queries from MongoDB |
+| `ListMigrationTables` | `EmptyRequest` | All tables that need migration |
+| `ConvertTableSchema` | `table_name, target_db` | Convert DDL for 1 table |
+| `GetStats` | `EmptyRequest` | Migration progress statistics |
 
 ---
 
@@ -553,7 +553,7 @@ L5_ROUTING = {
 ### Model Override (Runtime)
 
 ```bash
-# Override model cho 1 layer cụ thể
+# Override model for a specific layer
 export MODEL_OVERRIDE_QWEN_MAX=qwen3-coder-480b-a35b-instruct
 
 # Override model stage
@@ -562,7 +562,7 @@ export L2_STAGE=production
 
 ### Available Models
 
-| Model ID | Provider | Context | Dùng cho |
+| Model ID | Provider | Context | Used for |
 |----------|---------|---------|---------|
 | `qwen3-coder-480b-a35b-instruct` | Alibaba | 262K | L5 Service/Repository, L2 production complex |
 | `qwen3-235b-a22b-instruct-2507` | Alibaba | 262K | L2 production medium |
@@ -574,19 +574,19 @@ export L2_STAGE=production
 
 ---
 
-## ⚡ Cài Đặt & Setup
+## ⚡ Installation & Setup
 
 ### Prerequisites
 
-| Tool | Version | Ghi chú |
+| Tool | Version | Notes |
 |------|---------|---------|
-| Python | ≥ 3.9 | Khuyến nghị 3.11+ |
-| Node.js | ≥ 18 | Cần cho Frontend |
+| Python | ≥ 3.9 | Recommended 3.11+ |
+| Node.js | ≥ 18 | Required for Frontend |
 | Yarn | 1.x | `npm install -g yarn` |
-| Docker Desktop | latest | Cho MongoDB + Qdrant + PostgreSQL |
-| .NET SDK | 10 | Chỉ cần nếu dùng Layer 5 / WPF |
+| Docker Desktop | latest | For MongoDB + Qdrant + PostgreSQL |
+| .NET SDK | 10 | Only required if using Layer 5 / WPF |
 
-### Bước 1: Clone & Dependencies
+### Step 1: Clone & Dependencies
 
 ```bash
 git clone <repo-url>
@@ -601,24 +601,24 @@ yarn install
 cd ../..
 ```
 
-### Bước 2: Config
+### Step 2: Config
 
 ```bash
 # Copy template
 cp config.example.json config.json
 
-# Mở và điền thông tin thực
-nano config.json  # hoặc editor của bạn
+# Open and fill in real values
+nano config.json  # or your preferred editor
 ```
 
-Các trường bắt buộc:
+Required fields:
 - `llm_providers.alibaba.api_key` — Alibaba Cloud API key
 - `mongodb.uri` — MongoDB connection string
 - `postgres_db.connection_string` — PostgreSQL connection string
 
-> ⚠️ **KHÔNG bao giờ commit `config.json`**. File này đã trong `.gitignore`.
+> ⚠️ **NEVER commit `config.json`**. This file is already in `.gitignore`.
 
-### Bước 3: Khởi động Infrastructure
+### Step 3: Start Infrastructure
 
 ```bash
 cd infa
@@ -626,10 +626,10 @@ cd infa
 # Start MongoDB + Qdrant + PostgreSQL (background)
 docker compose up -d
 
-# Chỉ start MongoDB (tối thiểu)
+# Only start MongoDB (minimal)
 docker compose up -d mongo
 
-# Kiểm tra
+# Check
 docker compose ps
 ```
 
@@ -641,38 +641,38 @@ docker compose ps
 
 ---
 
-## 🚀 Chạy Hệ Thống
+## 🚀 Running the System
 
 ### Web Console (Frontend + Backend)
 
 ```bash
-# Chạy cả FE (port 3000) + BE gRPC (port 50051)
+# Run both FE (port 3000) + BE gRPC (port 50051)
 python start.py
 
-# Chỉ Frontend
+# Frontend only
 python start.py --fe-only
 
-# Chỉ Backend gRPC
+# Backend gRPC only
 python start.py --be-only
 
-# Clean Next.js cache (khi gặp lỗi Turbopack/memory)
+# Clean Next.js cache (when encountering Turbopack/memory errors)
 python start.py --clean
 ```
 
-Truy cập: **http://localhost:3000**
+Access: **http://localhost:3000**
 
 ### Pipeline Batch CLI
 
 ```bash
 cd src/backend/workflow/layer1
 
-# Full pipeline: parse → seed → Layer2 BD/DD → Layer3 PostgreSQL migrate
+# Full pipeline: parse → seed → Layer 2 BD/DD → Layer 3 PostgreSQL migrate
 python run_all.py
 ```
 
-**Thứ tự thực thi** (theo `SCRIPTS` trong `run_all.py`):
+**Execution Order** (defined by `SCRIPTS` in `run_all.py`):
 
-| # | Script | Mô tả |
+| # | Script | Description |
 |---|--------|--------|
 | 1 | `parser/frm_parser.py` | Parse Forms |
 | 2 | `parser/frm_parser.py --reports` | Parse Reports |
@@ -689,13 +689,13 @@ python run_all.py
 ```bash
 cd src/backend/workflow/layer2/runners
 
-# 1 form cụ thể
+# 1 specific form
 python main.py --item F_Login --type form --stage dev
 
-# Tất cả forms với model mạnh hơn
+# All forms with a stronger model
 python main.py --all-forms --stage production
 
-# Xem sẽ xử lý những item nào (không chạy LLM)
+# Check which items will be processed (no LLM run)
 python main.py --all --dry-run
 ```
 
@@ -705,10 +705,10 @@ python main.py --all --dry-run
 # Build Debug + Run
 python start_wpf.py
 
-# Chỉ Build (không run)
+# Build only (do not run)
 python start_wpf.py --build-only
 
-# Run bằng build cũ
+# Run using old build
 python start_wpf.py --run-only
 
 # Build Release mode
@@ -722,10 +722,10 @@ python start_wpf.py --clean
 
 ## 📊 Web Console Dashboard
 
-| Page | Path | Mô tả |
+| Page | Path | Description |
 |------|------|--------|
 | Landing | `/` | Pipeline overview + animations |
-| Layer 1 | `/layer1` | Browse forms/reports/queries đã parse |
+| Layer 1 | `/layer1` | Browse parsed forms/reports/queries |
 | Layer 2 | `/layer2` | Run BD/DD agents, view JSON output, token stats |
 | Layer 3 | `/layer3` | Review & convert SQL queries (Access → PostgreSQL) |
 | Layer 4 | `/layer4` | Generate & download Excel BD/DD specification files |
@@ -737,10 +737,10 @@ python start_wpf.py --clean
 
 ## 📦 Output & Artifacts
 
-| Artifact | Đường dẫn | Format | Ghi chú |
+| Artifact | Path | Format | Notes |
 |---------|-----------|--------|---------|
-| BD JSON | `layer2/output/bd_flow/s4_bd_final/<name>.json` | JSON | Business Design |
-| DD JSON | `layer2/output/dd_flow/{screen\|macro\|common}/d4_dd_final/<name>.json` | JSON | Detailed Design |
+| BD JSON | `layer2/output/bd_flow/bd4_bd_final/<name>.json` | JSON | Business Design |
+| DD JSON | `layer2/output/dd_flow/{screen\|macro\|common}/dd4_dd_final/<name>.json` | JSON | Detailed Design |
 | BD Excel | `src/excel_outputs/BD/<name>.xlsx` | XLSX | BD specification |
 | DD Excel | `src/excel_outputs/DD/<name>.xlsx` | XLSX | DD specification |
 | Token Report JSON | `layer2/output/token_reports/<name>_<ts>.json` | JSON | Cost per run |
@@ -752,47 +752,47 @@ python start_wpf.py --clean
 
 ## 🌐 Environment Variables
 
-Các biến có thể set trong `.env` hoặc shell environment, sẽ override `config.json`:
+Variables that can be set in `.env` or shell environment, overriding config.json:
 
-| Variable | Mô tả | Default |
+| Variable | Description | Default |
 |----------|--------|---------|
 | `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` |
 | `MONGO_DB` | MongoDB database name | `vba_brain_core` |
-| `ALIBABA_API_KEY` | Alibaba Cloud API key | từ `config.json` |
-| `OPENAI_API_KEY` | OpenAI API key | từ `config.json` |
-| `ANTHROPIC_API_KEY` | Anthropic API key | từ `config.json` |
-| `GROQ_API_KEY` | Groq API key | từ `config.json` |
+| `ALIBABA_API_KEY` | Alibaba Cloud API key | from `config.json` |
+| `OPENAI_API_KEY` | OpenAI API key | from `config.json` |
+| `ANTHROPIC_API_KEY` | Anthropic API key | from `config.json` |
+| `GROQ_API_KEY` | Groq API key | from `config.json` |
 | `L2_STAGE` | Layer 2 model stage | `dev` |
-| `POSTGRES_CONN` | PostgreSQL ADO.NET connection string | từ `config.json` |
+| `POSTGRES_CONN` | PostgreSQL ADO.NET connection string | from `config.json` |
 | `POSTGRES_HOST` | PostgreSQL host | `localhost` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
 | `POSTGRES_DB` | PostgreSQL database name | `vba_brain` |
 | `POSTGRES_USER` | PostgreSQL username | `vba_brain` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | từ `config.json` |
-| `LAYER5_SERVICE_MODEL` | Override L5 service model | từ `config.json` |
-| `LAYER5_REPOSITORY_MODEL` | Override L5 repo model | từ `config.json` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | from `config.json` |
+| `LAYER5_SERVICE_MODEL` | Override L5 service model | from `config.json` |
+| `LAYER5_REPOSITORY_MODEL` | Override L5 repo model | from `config.json` |
 | `SOURCE_LANGUAGE` | Source language code | `ja` |
 | `TARGET_LANGUAGE` | Target language code | `en` |
 | `L2_HUMAN_REVIEW` | Enable interactive review | `0` |
 
 ---
 
-## 🔒 Bảo Mật
+## 🔒 Security
 
-> **Quan trọng**: Project này xử lý credentials và secrets. Tuân thủ nghiêm ngặt các quy tắc sau:
+> **Important**: This project handles credentials and secrets. Strictly comply with the following rules:
 
-- ✅ `config.example.json` — file template placeholder, **commit bình thường**
-- ❌ `config.json` — chứa API keys thật, **KHÔNG BAO GIỜ commit** (đã trong `.gitignore`)
-- ❌ `.env`, `.env.*` — **KHÔNG BAO GIỜ commit**
-- ❌ `appsettings.json` — cấu hình .NET với DB password, **KHÔNG BAO GIỜ commit**
+- ✅ `config.example.json` — placeholder template file, **commit normally**
+- ❌ `config.json` — contains real API keys, **NEVER commit** (already in `.gitignore`)
+- ❌ `.env`, `.env.*` — **NEVER commit**
+- ❌ `appsettings.json` — .NET configuration with DB password, **NEVER commit**
 
-**Nếu key bị lộ**:
-1. Rotate key ngay trên Alibaba Cloud Console / OpenAI / Anthropic
-2. Kiểm tra git history: `git log --all -S "sk-"` để tìm commit có key
-3. Nếu đã push lên remote: dùng `git-filter-repo` để xoá khỏi history
+**If a key is leaked**:
+1. Rotate the key immediately on Alibaba Cloud Console / OpenAI / Anthropic
+2. Check git history: `git log --all -S "sk-"` to find the commit containing the key
+3. If pushed to remote: use `git-filter-repo` to erase it from history
 
 ---
 
 ## 📄 License
 
-MIT License — xem file [LICENSE](LICENSE).
+MIT License — see [LICENSE](LICENSE) file.
