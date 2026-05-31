@@ -15,7 +15,7 @@
 | G1 | README mô tả Oracle XE + Qdrant nhưng `infa/docker-compose.yml` chỉ có **MongoDB 7 + PostgreSQL 16 + Mongo-Express** | `docker-compose.yml` | 🟡 |
 | G2 | Tên layer gRPC **ngược** với README: `Layer3Service`=Excel, `Layer4Service`=SQL Migration | `grpc_server.py` | 🔴 |
 | G3 | Frontend thực tế **Next.js 16.2.4 / React 19 / Tailwind 4**, README ghi Next 15 / Yarn | `frontend/package.json` | 🟡 |
-| G4 | Tồn tại **2 UI song song**: `vba_brain.UI.WPF` và `vba_brain.UI.Avalonia` — chưa rõ cái nào là chính | `src/wpf/` | 🟡 |
+| G4 | ~~Tồn tại **2 UI song song**~~ — ĐÃ CHỐT **Avalonia** làm UI chính; Layer 5 codegen + deploy đã trỏ về `vba_brain.UI.Avalonia`. `vba_brain.UI.WPF` là folder trống (không có `.csproj`, không nằm trong `vba_brain.slnx`) → nên xóa | `src/wpf/` | ✅ |
 | G5 | gRPC dùng `add_insecure_port` — **không auth/TLS** | `grpc_server.py:595` | 🔴 |
 | G6 | docker-compose bind `0.0.0.0` cho Mongo/Postgres/Mongo-Express → phơi network | `docker-compose.yml` | 🔴 |
 | G7 | **Gần như không có test**; không CI/CD; dependency không pin (`>=`) | toàn repo | 🔴 |
@@ -69,7 +69,7 @@ Mục tiêu: thay đổi không sợ vỡ, có lưới an toàn.
 ### 2.3 CI/CD
 - [ ] Thêm `.github/workflows/ci.yml`: lint + pytest (backend) + `next build`/eslint (frontend) chạy trên PR.
 - [ ] Cache pip & yarn để CI nhanh.
-- [ ] (Tùy chọn) Job `dotnet build` cho WPF/Avalonia nếu chạm Layer 5 output.
+- [ ] (Tùy chọn) Job `dotnet build vba_brain.slnx` (Avalonia) nếu chạm Layer 5 output.
 
 ### 2.4 Logging & quan sát
 - [ ] Chuẩn hóa **structured logging** (JSON) thay cho `print`/`*.log` rải rác.
@@ -86,11 +86,13 @@ Mục tiêu: README phản ánh đúng code; giảm nợ kỹ thuật.
 - [ ] Cập nhật Infra table: bỏ Oracle XE/Qdrant nếu không dùng, ghi đúng **PostgreSQL 16-alpine**.
 - [ ] Sửa **bảng gRPC**: làm rõ `Layer3Service`=Excel, `Layer4Service`=SQL (hoặc đổi tên service cho khớp ý nghĩa — xem 3.3).
 - [ ] Cập nhật Tech Stack frontend: **Next 16 / React 19 / Tailwind 4**.
-- [ ] Làm rõ chiến lược UI: WPF hay Avalonia là target chính (G4).
+- [x] Làm rõ chiến lược UI: **Avalonia** là target chính (G4 — đã chốt).
 
-### 3.2 Quyết định 1 UI target
-- [ ] Chốt **Avalonia** (đa nền tảng) hoặc **WPF** làm chính; cái còn lại đưa vào `legacy/` hoặc xóa.
-- [ ] Cập nhật `start_wpf.py` + `deploy_to_source.py` trỏ đúng project đã chốt.
+### 3.2 Quyết định 1 UI target — ✅ ĐÃ CHỐT: Avalonia
+- [x] Chốt **Avalonia** (đa nền tảng, .NET 10) làm UI chính.
+- [x] Layer 5 codegen sinh AXAML/Avalonia (namespace `vba_brain.UI.Avalonia`); `deploy_to_source.py`, `file_writer.py`, frontend `run-agent`/`run-logic` đã trỏ về `src/wpf/vba_brain.UI.Avalonia`.
+- [x] `start_wpf.py` build/run `vba_brain.UI.Avalonia` (qua `vba_brain.slnx`).
+- [ ] Xóa folder trống `vba_brain.UI.WPF` (không còn dùng).
 
 ### 3.3 Đổi tên service gRPC cho nhất quán (nếu chọn)
 - [ ] Cân nhắc đổi `Layer3Service`→`ExcelService`, `Layer4Service`→`SqlMigrationService` trong `.proto`, regenerate stub, cập nhật FE. (Breaking — làm có chủ đích, kèm test.)

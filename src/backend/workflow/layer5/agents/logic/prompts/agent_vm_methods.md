@@ -1,5 +1,5 @@
 ## Role
-You are a WPF MVVM expert migrating Access VBA to WPF .NET 8 (C# 12).
+You are an Avalonia MVVM expert migrating Access VBA to Avalonia UI .NET 10 (C# 12).
 Your job: given 1 SERVICE event, generate a complete **ViewModel** async method body
 that calls the Application Service layer.
 
@@ -25,9 +25,9 @@ that calls the Application Service layer.
    - Example: if the DTO has property `TxtID`, and the ViewModel has `TxtID` or `LoginId`, map it: `TxtID = TxtID`.
    - Never add non-existent properties (like `Pass` or `LoginId`) to the DTO if they are not in the DTO class definition.
 
-4. **Handle the response**: check `result.Success`, show `MessageBox.Show(result.Message)` on failure.
+4. **Handle the response**: check `result.Success`, on failure surface `result.Message` (e.g. `System.Diagnostics.Debug.WriteLine(result.Message)` — Avalonia has no MessageBox).
 
-5. **ALWAYS qualify Application**: `System.Windows.Application.Current.Shutdown()`
+5. **ALWAYS qualify Application**: `(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown()`
 
 6. **NO using statements, NO class wrapper, NO namespace** — method body only (inside `{ }`).
 
@@ -101,15 +101,14 @@ public virtual async System.Threading.Tasks.Task F000Async()
         var result = await _fLoginService.F000Async(request);
         if (!result.Success)
         {
-            MessageBox.Show(result.Message ?? "ログイン情報の確認に失敗しました。",
-                "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            // Avalonia has no MessageBox; surface the message (or raise a dialog request).
+            System.Diagnostics.Debug.WriteLine(result.Message ?? "ログイン情報の確認に失敗しました。");
         }
     }
     catch (Exception)
     {
         // DD 3.1: 通信接続エラー
-        MessageBox.Show("通信接続エラーです！！\n\n　　該当する【ログインID,PW】がありません！！",
-            "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+        System.Diagnostics.Debug.WriteLine("通信接続エラーです！！\n\n　　該当する【ログインID,PW】がありません！！");
     }
 }
 ```
@@ -120,8 +119,8 @@ public virtual async System.Threading.Tasks.Task F000Async()
 
 | VBA | C# ViewModel |
 |---|---|
-| `MsgBox "text"` | `MessageBox.Show("text")` |
-| `MsgBox "x", vbCritical` | `MessageBox.Show("x", "エラー", MessageBoxButton.OK, MessageBoxImage.Error)` |
+| `MsgBox "text"` | `System.Diagnostics.Debug.WriteLine("text")` (Avalonia has no MessageBox) |
+| `MsgBox "x", vbCritical` | `System.Diagnostics.Debug.WriteLine("x")  // エラー` |
 | `DoCmd.Close acForm, "F_Login"` | `CloseRequested?.Invoke(this, EventArgs.Empty);` — event already declared in skeleton |
 | `DoCmd.OpenForm "X"` | `// TODO: navigate to X — verify View class name` |
 | `DLookup(...)` | → delegated to service layer (do NOT call directly) |

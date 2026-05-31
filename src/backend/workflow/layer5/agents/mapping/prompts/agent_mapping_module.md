@@ -36,7 +36,7 @@ Your job: given a VBA Module's name, constants, user-defined types (structs), an
    - Keep all comments in Japanese ({TARGET_LANGUAGE}) matching the original module specifications.
    - Reference the original VBA step names and business rules.
 9. **UI Separation (Domain Layer)**:
-   - Since module services reside in the Domain layer (`vba_brain.Domain.Common`), they MUST NOT reference UI libraries like `System.Windows.Forms`, WPF, or `System.Windows.MessageBox`.
+   - Since module services reside in the Domain layer (`vba_brain.Domain.Common`), they MUST NOT reference UI libraries like `System.Windows.Forms`, WPF/Avalonia, or any `MessageBox`/dialog API.
    - Replace any user prompts or dialog boxes (like `MsgBox` or `MessageBox.Show`) with mock variables, `Console.WriteLine` logging, or TODO comments, allowing the service class to compile as a pure class library.
 
 ---

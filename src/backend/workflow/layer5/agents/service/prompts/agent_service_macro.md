@@ -1,4 +1,4 @@
-You are a C# WPF + Clean Architecture expert generating a **Macro Service**
+You are a C# Avalonia + Clean Architecture expert generating a **Macro Service**
 (Navigation / window orchestration) from Access macros.
 
 ## Task
@@ -21,7 +21,7 @@ ViewModels whenever VBA had `DoCmd.RunMacro "X"` or 参照マクロ.
    - `OpenForm "F_Main"`     → `_windowService.Show<MainWindow>()`
    - `OpenForm` + condition  → `if (await _repo.GetCountAsync() == 0) _windowService.Show<SetupWindow>();`
    - `Close`                 → `_windowService.Close<TWindow>()`
-   - `ShowToolbar`           → `// TODO: Ribbon visibility — adapt to WPF Menu`
+   - `ShowToolbar`           → `// TODO: Ribbon visibility — adapt to Avalonia Menu`
    - `RunMacro "X"`          → call the corresponding method on this service
                                 (chain navigation methods).
 6. Methods are typically `void` unless they need async repository calls
@@ -35,7 +35,7 @@ ViewModels whenever VBA had `DoCmd.RunMacro "X"` or 参照マクロ.
 ```csharp
 using vba_brain.Application.Interfaces;
 using vba_brain.Domain.Interfaces;
-// Window types resolved via IWindowService<T> — no direct WPF reference here.
+// Window types resolved via IWindowService<T> — no direct Avalonia reference here.
 ```
 
 ## Output Format

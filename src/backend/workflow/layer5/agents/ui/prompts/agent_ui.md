@@ -1,5 +1,5 @@
 ## Role
-You are a WPF XAML expert migrating Access forms to WPF MVVM.
+You are an Avalonia AXAML expert migrating Access forms to Avalonia MVVM.
 Output structured **JSONL** (one JSON object per line) describing the Window and all its controls.
 The agent will assemble the final XAML from your JSON — do NOT output raw XAML.
 
@@ -49,7 +49,7 @@ Each control on its own line. All fields are optional except `type`.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | string | WPF element: `Label`, `TextBox`, `PasswordBox`, `Button`, `ComboBox`, `CheckBox`, `Image`, `Border` |
+| `type` | string | Avalonia element: `Label`, `TextBox`, `PasswordBox`, `Button`, `ComboBox`, `CheckBox`, `Image`, `Border` |
 | `name` | string | `x:Name` attribute |
 | `margin_left` | int | from `format.left` (px) |
 | `margin_top` | int | from `format.top` (px) |
@@ -97,7 +97,7 @@ Each control on its own line. All fields are optional except `type`.
 ```
 
 ### Section (Container)
-Use to group controls into a named region (represented by a Grid/Canvas in WPF).
+Use to group controls into a named region (represented by a Grid/Canvas in Avalonia).
 ```json
 {"type":"Section","name":"Detail","margin_left":0,"margin_top":0,"width":333,"height":180,"background":"#E2F0D9"}
 ```

@@ -85,7 +85,7 @@
 ```
 workflow/
 ├── start.py                        # Launcher: FE (Next.js :3000) + BE (gRPC :50051)
-├── start_wpf.py                    # Launcher: Avalonia WPF app (dotnet build + run)
+├── start_wpf.py                    # Launcher: Avalonia desktop app (dotnet build + run)
 ├── config.json                     # ⚠ GITIGNORED — local secrets (API keys, passwords)
 ├── config.example.json             # ✅ Safe template to copy
 │
@@ -162,21 +162,21 @@ workflow/
 │   │       │
 │   │       └── layer5/             # ── Layer 5: Code Generation ────────────────
 │   │           ├── agents/
-│   │           │   ├── graphview/      # WPF mapping graph (Access→.NET name mapping)
+│   │           │   ├── graphview/      # Avalonia mapping graph (Access→.NET name mapping)
 │   │           │   ├── logic/          # Business logic analyzer from DD steps
-│   │           │   ├── mapping/        # Access form → WPF View/ViewModel name mapper
+│   │           │   ├── mapping/        # Access form → Avalonia View/ViewModel name mapper
 │   │           │   ├── repo/           # Repository pattern code generator
 │   │           │   ├── service/        # C# Service class generator
-│   │           │   └── ui/             # XAML View + ViewModel generator
+│   │           │   └── ui/             # AXAML View + ViewModel generator
 │   │           ├── codegen/
 │   │           │   ├── jinja_engine.py     # Jinja2 template renderer
-│   │           │   └── templates/          # C# / XAML Jinja2 templates
+│   │           │   └── templates/          # C# / AXAML Jinja2 templates
 │   │           ├── core/
 │   │           │   ├── config.py           # Layer5 config: model routing, paths, collections
 │   │           │   └── models.py           # Domain models for codegen
 │   │           └── pipeline/
 │   │               ├── orchestrator.py     # Full gen pipeline: analyze→gen→deploy→verify
-│   │               ├── deploy_to_source.py # Copy generated files → correct WPF project dirs
+│   │               ├── deploy_to_source.py # Copy generated files → correct Avalonia project dirs
 │   │               ├── build_verify.py     # dotnet build + AI auto-fix (max 3 iterations)
 │   │               └── file_writer.py      # Safe file write with backup
 │   │
@@ -185,7 +185,7 @@ workflow/
 │   │       ├── app/
 │   │       │   ├── api/
 │   │       │   │   ├── graph/              # VBA dependency graph builder (graphBuilder.ts)
-│   │       │   │   ├── graph-wpf/          # WPF graph: mapping, validation, source-review
+│   │       │   │   ├── graph-wpf/          # Avalonia graph: mapping, validation, source-review
 │   │       │   │   └── v1/layer5/          # Layer5 run-agent / run-logic API endpoints
 │   │       │   └── (pages)/                # Dashboard pages: layer1→5, graph, graph-wpf
 │   │       └── components/
@@ -196,7 +196,7 @@ workflow/
 │   ├── vba/
 │   │   └── vba_source/             # VBA source exports (Tables/AllColumns.csv, ...)
 │   │
-│   └── wpf/                        # Generated/target Avalonia WPF solution
+│   └── wpf/                        # Generated/target Avalonia solution (vba_brain.slnx)
 │       ├── vba_brain.Application/
 │       ├── vba_brain.Domain/
 │       ├── vba_brain.Infrastructure/
@@ -428,12 +428,12 @@ When `config.json → localization.target_language = "en"`:
 
 ## 💻 Layer 5 — Automated Code Generation
 
-**Input**: DD JSON + Access→WPF name mapping  
-**Output**: C# source files (Avalonia/WPF architecture)
+**Input**: DD JSON + Access→Avalonia name mapping  
+**Output**: C# source files (Avalonia MVVM architecture)
 
 #### Generated File Types
 
-| Agent | Output | Place into WPF project |
+| Agent | Output | Place into Avalonia project |
 |-------|--------|---------------------|
 | `ui` (View) | `Views/F_Login.axaml` | `vba_brain.UI.Avalonia/Views/` |
 | `ui` (ViewModel) | `ViewModels/F_LoginViewModel.cs` | `vba_brain.UI.Avalonia/ViewModels/` |
@@ -671,7 +671,7 @@ text, usage = client.call_with_fallback(DEV_MODEL, system_prompt, user_prompt)
 | Node.js | ≥ 18 | Required for Frontend |
 | Yarn | 1.x | `npm install -g yarn` |
 | Docker Desktop | latest | For MongoDB + Qdrant + PostgreSQL |
-| .NET SDK | 10 | Only required if using Layer 5 / WPF |
+| .NET SDK | 10 | Only required if using Layer 5 / Avalonia |
 
 ### Step 1: Clone & Dependencies
 
@@ -786,7 +786,7 @@ python main.py --all-forms --stage production
 python main.py --all --dry-run
 ```
 
-### WPF Application
+### Avalonia Application
 
 ```bash
 # Build Debug + Run
@@ -816,9 +816,9 @@ python start_wpf.py --clean
 | Layer 2 | `/layer2` | Run BD/DD agents, view JSON output, token stats |
 | Layer 3 | `/layer3` | Review & convert SQL queries (Access → PostgreSQL) |
 | Layer 4 | `/layer4` | Generate & download Excel BD/DD specification files |
-| Layer 5 | `/layer5` | Code gen: run agent, view generated files, WPF graph |
+| Layer 5 | `/layer5` | Code gen: run agent, view generated files, Avalonia graph |
 | VBA Graph | `/graph` | Interactive dependency graph (React Flow) |
-| WPF Graph | `/graph-wpf` | Access→WPF mapping graph + source review |
+| Avalonia Graph | `/graph-wpf` | Access→Avalonia mapping graph + source review |
 
 ---
 
@@ -832,7 +832,7 @@ python start_wpf.py --clean
 | DD Excel | `src/excel_outputs/DD/<name>.xlsx` | XLSX | DD specification |
 | Token Report JSON | `layer2/output/token_reports/<name>_<ts>.json` | JSON | Cost per run |
 | Token Report Excel | `src/excel_outputs/<name>_cost.xlsx` | XLSX | Cost per run |
-| Generated C# | `layer5/output/` | `.cs` / `.axaml` | WPF source |
+| Generated C# | `layer5/output/` | `.cs` / `.axaml` | Avalonia source |
 | Dependency Graph | `data/graphs/<name>.json` | JSON | Cross-reference graph |
 
 ---

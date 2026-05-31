@@ -130,7 +130,7 @@ Override via env vars: `LAYER5_SERVICE_MODEL`, `LAYER5_VIEWMODEL_MODEL`, `LAYER5
 
 ### `pipeline/file_writer.py` — `SolutionWriter`
 
-- Writes generated files to correct WPF project directories:
+- Writes generated files to correct Avalonia project directories:
   - `Views/` → `vba_brain.UI.Avalonia/Views/`
   - `ViewModels/` → `vba_brain.UI.Avalonia/ViewModels/`
   - `Application/` → `vba_brain.Application/`
@@ -146,7 +146,7 @@ Override via env vars: `LAYER5_SERVICE_MODEL`, `LAYER5_VIEWMODEL_MODEL`, `LAYER5
 
 ### `pipeline/deploy_to_source.py`
 
-- Copies generated files from agent `outputs/` into the WPF solution
+- Copies generated files from agent `outputs/` into the Avalonia solution
 - Used for manual re-deploy without re-running agents
 
 ### `pipeline/base_gen.py`

@@ -45,7 +45,7 @@ src/
 ├── components/
 │   ├── Header.tsx         # Top nav: per-layer accent tabs + theme toggle
 │   ├── Footer.tsx         # Status bar with live clock
-│   ├── GraphView.tsx      # Cytoscape dependency/WPF graph
+│   ├── GraphView.tsx      # Cytoscape dependency / Avalonia mapping graph
 │   └── nodes/             # React Flow custom nodes (Agent, DdAgent, L5Agent, …)
 └── lib/
     └── logging.ts         # Shared LogEntry / LogLevel / getLogColor / formatLogTime

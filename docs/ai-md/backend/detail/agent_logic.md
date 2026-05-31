@@ -52,12 +52,12 @@ outputs/<FormName>/ViewModels/<Name>ViewModel.cs
 ## LLM Prompt Rules (from `prompts/agent_logic.md`)
 
 **MVVM separation is mandatory:**
-- **ViewModel methods** (`FxxxAsync`): all business logic — MessageBox, navigation, service calls, state changes
+- **ViewModel methods** (`FxxxAsync`): all business logic — notifications, navigation, service calls, state changes
 - **Code-behind methods** (`Fxxx_Click` etc.): delegate only — `if (DataContext is ViewModels.XxxViewModel vm) await vm.FxxxAsync();`
 
 **Strict rules:**
-- `Application` must always be `System.Windows.Application` (namespace conflict with `vba_brain.Application`)
-- Never reference View class by name — use `// TODO: FormName画面を開く — Viewクラス名を確認`
+- `Application` is qualified as `global::Avalonia.Application` (namespace conflict with `vba_brain.Application`)
+- Never reference View class by name — use `// TODO: open FormName view — confirm View class name`
 - No `using` statements, no class wrapper, no namespace — method body only
 - Comments in `TARGET_LANGUAGE` only, max 3–5 lines per method
 - TODO is last resort — only when impossible to determine from spec
@@ -66,10 +66,10 @@ outputs/<FormName>/ViewModels/<Name>ViewModel.cs
 
 | VBA | C# |
 |-----|----|
-| `MsgBox "text"` | `MessageBox.Show("text")` |
-| `DoCmd.Quit acQuitPrompt` | confirm dialog + `System.Windows.Application.Current.Shutdown()` |
+| `MsgBox "text"` | `System.Diagnostics.Debug.WriteLine("text")` (Avalonia has no MessageBox) |
+| `DoCmd.Quit acQuitPrompt` | confirm dialog + Avalonia desktop lifetime `Shutdown()` |
 | `DoCmd.Close acForm, "X"` | `CloseRequested?.Invoke(this, EventArgs.Empty)` |
-| `DoCmd.OpenForm "X"` | `// TODO: X画面を開く — Viewクラス名を確認` |
+| `DoCmd.OpenForm "X"` | `// TODO: open X view — confirm View class name` |
 | `KeyCode = 0` | `e.Handled = true` in code-behind |
 | `Shell.Exec("taskkill /F /IM x.exe")` | `Process.Start(new ProcessStartInfo {...})` |
 
