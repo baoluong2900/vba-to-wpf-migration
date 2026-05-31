@@ -109,13 +109,13 @@ export default function Layer1Parser() {
         <div className="flex flex-col w-full max-w-5xl gap-8 relative z-10">
           
           {/* Header Description Title */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-200 dark:border-white/5 pb-6 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
-            <div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-neutral-200 dark:border-white/5 pb-8 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+            <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white flex items-center gap-3">
-                <DatabaseZap className="text-indigo-500" />
+                <DatabaseZap className="text-indigo-500 shrink-0" />
                 <span>Layer 1: <span className="ws-gradient-text">Data Ingestion & AST Parser</span></span>
               </h1>
-              <p className="text-sm text-neutral-500 dark:text-gray-400 mt-2 max-w-2xl leading-relaxed">
+              <p className="text-sm text-neutral-500 dark:text-gray-400 max-w-2xl leading-6">
                 Ingest legacy Access components (VBA scripts, UI forms, schemas) into MongoDB collections and automatically orchestrate the downstream modernization pipeline.
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function Layer1Parser() {
 
                     {/* Title details */}
                     <div className="flex-1 min-w-0 z-10">
-                      <div className="flex flex-col items-center gap-1.5">
+                      <div className="flex flex-col items-center gap-2">
                         <span 
                           className={`text-xs font-black tracking-tight transition-colors duration-300 whitespace-nowrap ${
                             isActive 
@@ -198,7 +198,7 @@ export default function Layer1Parser() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-neutral-500 dark:text-gray-400 mt-1 leading-normal max-w-[150px] mx-auto">
+                      <p className="text-[10px] text-neutral-500 dark:text-gray-400 mt-2 leading-4 max-w-[150px] mx-auto">
                         {step.desc}
                       </p>
                     </div>
@@ -209,7 +209,7 @@ export default function Layer1Parser() {
           </div>
 
           {/* Centered Minimalist Ingestion Run Button */}
-          <div className="flex flex-col items-center justify-center my-4 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+          <div className="flex flex-col items-center justify-center gap-4 my-2 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
             <button
               onClick={handleStartExtraction}
               disabled={isExtracting}
@@ -231,8 +231,8 @@ export default function Layer1Parser() {
                 </>
               )}
             </button>
-            <p className="text-[10px] text-neutral-500 dark:text-gray-500 mt-3 font-semibold uppercase tracking-wider select-none">
-              Source Location: <code className="font-mono bg-neutral-200/50 dark:bg-white/5 px-2 py-0.5 rounded text-neutral-600 dark:text-gray-400">{dbPath}</code>
+            <p className="text-[11px] text-neutral-500 dark:text-gray-500 font-semibold uppercase tracking-wider select-none">
+              Source: <code className="font-mono bg-neutral-200/50 dark:bg-white/5 px-2 py-0.5 rounded text-neutral-600 dark:text-gray-400 ml-1">{dbPath}</code>
             </p>
           </div>
 
@@ -277,7 +277,7 @@ export default function Layer1Parser() {
                   <div className="italic text-xs font-semibold uppercase tracking-wider">System Idle. Waiting for ingestion run.</div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1">
                   {filteredLogs.map((log, idx) => {
                     let levelStyles = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
                     if (log.level === 'ERROR') levelStyles = "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
@@ -285,21 +285,21 @@ export default function Layer1Parser() {
                     if (log.level === 'WARN') levelStyles = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
                     
                     return (
-                      <div key={idx} className="flex items-start gap-3 border-b border-neutral-200/40 dark:border-white/[0.02] pb-2 last:border-0 hover:bg-white/40 dark:hover:bg-white/[0.01] px-2 py-1.5 rounded-lg transition-colors duration-200 group">
-                        <span className="text-neutral-400 dark:text-gray-600 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-2 py-0.5 rounded-md text-[10px] font-mono shadow-sm group-hover:text-neutral-600 dark:group-hover:text-gray-400 transition-colors">
+                      <div key={idx} className="flex items-start gap-3 border-b border-neutral-200/40 dark:border-white/[0.02] py-2 last:border-0 hover:bg-white/40 dark:hover:bg-white/[0.01] px-2 rounded-lg transition-colors duration-200 group">
+                        <span className="text-neutral-400 dark:text-gray-600 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-2 py-0.5 rounded-md text-[10px] font-mono shadow-sm group-hover:text-neutral-600 dark:group-hover:text-gray-400 transition-colors shrink-0">
                           {log.time}
                         </span>
-                        <span className={`px-2 py-0.5 rounded-md border text-[10px] font-black tracking-widest uppercase shadow-sm ${levelStyles}`}>
+                        <span className={`px-2 py-0.5 rounded-md border text-[10px] font-black tracking-widest uppercase shadow-sm shrink-0 ${levelStyles}`}>
                           {log.level}
                         </span>
-                        <span className="text-neutral-700 dark:text-slate-200 break-all select-text font-mono flex-1 whitespace-pre-wrap leading-relaxed font-semibold">
+                        <span className="text-neutral-700 dark:text-slate-200 break-all select-text font-mono flex-1 whitespace-pre-wrap leading-5 font-semibold text-[11px]">
                           {log.message}
                         </span>
                       </div>
                     );
                   })}
                   <div ref={logsEndRef} className="h-4" />
-                </div>
+                  </div>
               )}
             </div>
           </div>
