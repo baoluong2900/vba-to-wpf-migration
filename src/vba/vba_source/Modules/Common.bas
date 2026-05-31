@@ -42,6 +42,6 @@ Public Sub StatusBar_True()
     Debug.Print "StatusBar_True executed"
 End Sub
 
-Public Sub タイマーを開く()
-    Debug.Print "タイマーを開く executed"
+Public Sub OpenTimer()
+    Debug.Print "OpenTimer executed"
 End Sub

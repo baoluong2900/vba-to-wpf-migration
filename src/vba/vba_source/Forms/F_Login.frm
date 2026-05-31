@@ -43,8 +43,8 @@ Begin Form
         Begin Label
             Name ="lblMenuTrigger"
             Caption =" "
-            OnClick ="macro.A_メニューバーを表示"
-            OnDblClick ="macro.M300_Splash(M)を開く"
+            OnClick ="macro.A_ShowMenuBar"
+            OnDblClick ="macro.M300_OpenSplash"
         End
         Begin Label
             Name ="lblAutoRetrieve"
@@ -66,7 +66,7 @@ Begin Form
         End
         Begin TextBox
             Name ="txtReleasedDate"
-            ControlSource ="=DLookUp(\"コメント\",\"Access配信日\")"
+            ControlSource ="=DLookUp(""Comment"",""AccessReleaseDate"")"
         End
     End
 End
@@ -92,10 +92,10 @@ Private Sub Form_Load()
     sLvlCmnt = Me.lblVersion.Caption
     sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, "/") + 1, 5)
     
-    sCmnt = Replace(Replace(DLookup("コメント", "Access配信日"), "最新版は", ""), "ver", "")
+    sCmnt = Replace(Replace(DLookup("Comment", "AccessReleaseDate"), "Latest version is ", ""), "ver", "")
     
     If sLvlCmnt <> sCmnt Then
-        MsgBox "最新版ではありません！" & Chr(13) & "インストールします。", vbOKOnly + vbExclamation
+        MsgBox "This is not the latest version!" & Chr(13) & "Installing update.", vbOKOnly + vbExclamation
         Call Judge_Inst
     End If
 End Sub
@@ -112,7 +112,7 @@ Private Sub Form_Open(Cancel As Integer)
     For i = 1 To 3
     Next i
     
-    On Error GoTo Err_Shori
+    On Error GoTo Err_Handler
     
     SetAccWinStyle
     MoveWindow Application.hWndAccessApp, 0, 0, 800, 400, True
@@ -168,18 +168,18 @@ Private Sub Form_Open(Cancel As Integer)
         End If
     End With
 
-Err_Shori:
-    MsgBox "通信接続エラーです！！" & vbCrLf & vbCrLf & _
-           "　　該当する【ログインID,PW】がありません！！" & vbCrLf & vbCrLf & _
-           "　　設定が必要な為、本社施工管理担当者まで" & vbCrLf & vbCrLf & _
-           "　　連絡してください！！　TEL 0766-20-2211", vbOKOnly + vbCritical
+Err_Handler:
+    MsgBox "Connection error!!" & vbCrLf & vbCrLf & _
+           "    The specified [Login ID / Password] was not found!!" & vbCrLf & vbCrLf & _
+           "    Please contact the HQ Construction Management team" & vbCrLf & vbCrLf & _
+           "    for configuration.    TEL 0766-20-2211", vbOKOnly + vbCritical
 End Sub
 
 Private Sub txtPass_AfterUpdate()
     Dim res
     Dim res1
     Dim isDevMode As Boolean
-    On Error GoTo Err_Shori
+    On Error GoTo Err_Handler
     
     DoCmd.SelectObject acForm, , True
     DoCmd.Minimize
@@ -189,32 +189,32 @@ Private Sub txtPass_AfterUpdate()
     
     If Not isDevMode Then
         If IsNull(Me.txtID) Then
-            MsgBox "IDを入力してください"
+            MsgBox "Please enter your ID."
             Me.txtID.SetFocus
             Exit Sub
         End If
         
         If IsNull(Me.txtPass) Then
-            MsgBox "パスワードを入力してください"
+            MsgBox "Please enter your password."
             Me.txtPass.SetFocus
             Exit Sub
         End If
     End If
     
     DoCmd.SetWarnings False
-    res1 = DLookup("管理者FLG", "T_ID_Pass", "ID='" & Replace(Me.txtID, "'", "''") & "'")
+    res1 = DLookup("AdminFlag", "T_ID_Pass", "ID='" & Replace(Me.txtID, "'", "''") & "'")
     
     If res1 = 0 And Not isDevMode Then
-        MsgBox "　　施工管理ではありませんのでログインできません！！" & vbCrLf & vbCrLf & _
-               "　　設定が必要な方は、本社施工管理担当者まで" & vbCrLf & vbCrLf & _
-               "　　依頼してください！！　TEL 0766-20-2211"
+        MsgBox "    You are not authorized as a Construction Manager and cannot log in!!" & vbCrLf & vbCrLf & _
+               "    Please contact the HQ Construction Management team" & vbCrLf & vbCrLf & _
+               "    for access setup.    TEL 0766-20-2211"
         Exit Sub
     Else
         res = DLookup("Pass", "T_ID_Pass", "ID='" & Replace(Me.txtID, "'", "''") & "'")
         If IsNull(res) And Not isDevMode Then
-            MsgBox "　　該当するID,PWがありません！！" & vbCrLf & vbCrLf & _
-                   "　　設定が必要な為、本社施工管理担当者まで" & vbCrLf & vbCrLf & _
-                   "　　連絡してください！！　TEL 0766-20-2211"
+            MsgBox "    The specified ID / Password was not found!!" & vbCrLf & vbCrLf & _
+                   "    Please contact the HQ Construction Management team" & vbCrLf & vbCrLf & _
+                   "    for configuration.    TEL 0766-20-2211"
             Me.txtID.SetFocus
             Exit Sub
         End If
@@ -226,34 +226,34 @@ Private Sub txtPass_AfterUpdate()
         End If
         DoCmd.Close acForm, "F_Login"
         Dim RCount As Long
-        RCount = DCount("*", "T023_地区CD設定")
+        RCount = DCount("*", "T023_DistrictCdSetting")
         If RCount = 0 Then
             DoCmd.RunMacro "AutoExec_Restart"
             Exit Sub
         Else
-            Call タイマーを開く
+            Call OpenTimer
             DoCmd.RunMacro "AutoExec_A"
             Exit Sub
         End If
     Else
-        MsgBox "　　パスワードが異なります！！" & vbCrLf & vbCrLf & _
-               "　　わからない場合は、本社施工管理担当者まで" & vbCrLf & vbCrLf & _
-               "　　連絡してください！！　TEL 0766-20-2211"
+        MsgBox "    Incorrect password!!" & vbCrLf & vbCrLf & _
+               "    If you have forgotten your password, please contact" & vbCrLf & vbCrLf & _
+               "    the HQ Construction Management team.    TEL 0766-20-2211"
         Me.txtPass.SetFocus
     End If
     Exit Sub
 
-Err_Shori:
-    MsgBox "通信接続エラーです！！" & vbCrLf & vbCrLf & _
-           "　　該当する【ログインID,PW】がありません！！" & vbCrLf & vbCrLf & _
-           "　　設定が必要な為、本社施工管理担当者まで" & vbCrLf & vbCrLf & _
-           "　　連絡してください！！　TEL 0766-20-2211", vbOKOnly + vbCritical
+Err_Handler:
+    MsgBox "Connection error!!" & vbCrLf & vbCrLf & _
+           "    The specified [Login ID / Password] was not found!!" & vbCrLf & vbCrLf & _
+           "    Please contact the HQ Construction Management team" & vbCrLf & vbCrLf & _
+           "    for configuration.    TEL 0766-20-2211", vbOKOnly + vbCritical
 End Sub
 
 Private Sub lblOpenPasswordTable_DblClick(Cancel As Integer)
     DoCmd.Close acForm, "F_Login"
-    DoCmd.Close acForm, "F_ユーザー追加", acSaveNo
-    DoCmd.Close acForm, "F_ユーザー追加_A", acSaveNo
+    DoCmd.Close acForm, "F_UserAdd", acSaveNo
+    DoCmd.Close acForm, "F_UserAdd_A", acSaveNo
     DoCmd.SetWarnings False
     MenuBarTrue
     DoCmd.SelectObject acForm, "", True
@@ -296,10 +296,10 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     Select Case KeyCode
         Case vbKeyF11
             KeyCode = 0
-            MsgBox "ファンクション【F11】キーは無効に設定されてます！！"
+            MsgBox "Function key [F11] has been disabled!!"
         Case vbKeyF12
             KeyCode = 0
-            MsgBox "ファンクション【F12】キーは無効に設定されてます！！"
+            MsgBox "Function key [F12] has been disabled!!"
         Case Else
     End Select
 End Sub
