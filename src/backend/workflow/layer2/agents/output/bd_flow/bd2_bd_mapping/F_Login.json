@@ -1,0 +1,361 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_Login",
+  "screen_name": "F_Login",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "",
+    "timing": "",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [
+      {
+        "query_name": "Access配信日",
+        "query_display": "F000_SelQuery01"
+      }
+    ],
+    "process_overview": [
+      {
+        "summary_line": ""
+      },
+      {
+        "summary_line": ""
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open"
+      },
+      {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Load",
+        "event_content": "",
+        "module_id": "F001",
+        "notes": "Form_Load"
+      },
+      {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Key Down",
+        "event_content": "",
+        "module_id": "F002",
+        "notes": "Form_KeyDown"
+      },
+      {
+        "event_id": "E003",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtPass",
+        "physical_name": "txtPass",
+        "event_trigger": "After Update",
+        "event_content": "",
+        "module_id": "F003",
+        "notes": "txtPass_AfterUpdate"
+      },
+      {
+        "event_id": "E004",
+        "title": "Login",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F004",
+        "notes": "cmdLogin_Click"
+      },
+      {
+        "event_id": "E005",
+        "title": "Close",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdClose",
+        "physical_name": "cmdClose",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F005",
+        "notes": "cmdClose_Click"
+      },
+      {
+        "event_id": "E006",
+        "title": "New After Sales DB",
+        "type": "Label",
+        "logical_name": "TODO_lblStoreInfo",
+        "physical_name": "lblStoreInfo",
+        "event_trigger": "On Double Click",
+        "event_content": "",
+        "module_id": "F006",
+        "notes": "lblStoreInfo_DblClick"
+      },
+      {
+        "event_id": "E007",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F007",
+        "notes": "macro.A_メニューバーを表示"
+      },
+      {
+        "event_id": "E008",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Double Click",
+        "event_content": "",
+        "module_id": "F008",
+        "notes": "macro.M300_Splash(M)を開く"
+      },
+      {
+        "event_id": "E009",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblOpenPasswordTable",
+        "physical_name": "lblOpenPasswordTable",
+        "event_trigger": "On Double Click",
+        "event_content": "",
+        "module_id": "F009",
+        "notes": "lblOpenPasswordTable_DblClick"
+      },
+      {
+        "event_id": "E010",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblEndProcess",
+        "physical_name": "lblEndProcess",
+        "event_trigger": "On Double Click",
+        "event_content": "",
+        "module_id": "F010",
+        "notes": "lblEndProcess_DblClick"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "I",
+        "logical_name": "TODO_txtID",
+        "physical_name": "txtID",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 2,
+        "io": "O",
+        "logical_name": "TODO_lblLoginID",
+        "physical_name": "lblLoginID",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "Login ID:",
+        "notes": ""
+      },
+      {
+        "item_no": 3,
+        "io": "I",
+        "logical_name": "TODO_txtPass",
+        "physical_name": "txtPass",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "入力マスク: Password",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E003"
+      },
+      {
+        "item_no": 4,
+        "io": "O",
+        "logical_name": "TODO_lblPassword",
+        "physical_name": "lblPassword",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "Password:",
+        "notes": ""
+      },
+      {
+        "item_no": 5,
+        "io": "",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E004"
+      },
+      {
+        "item_no": 6,
+        "io": "",
+        "logical_name": "TODO_cmdClose",
+        "physical_name": "cmdClose",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E005"
+      },
+      {
+        "item_no": 7,
+        "io": "O",
+        "logical_name": "TODO_lblStoreInfo",
+        "physical_name": "lblStoreInfo",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "New After Sales DB",
+        "notes": "E006"
+      },
+      {
+        "item_no": 8,
+        "io": "",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E007,E008"
+      },
+      {
+        "item_no": 9,
+        "io": "O",
+        "logical_name": "TODO_lblAutoRetrieve",
+        "physical_name": "lblAutoRetrieve",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "*Auto-retrieved from PC",
+        "notes": ""
+      },
+      {
+        "item_no": 10,
+        "io": "",
+        "logical_name": "TODO_lblOpenPasswordTable",
+        "physical_name": "lblOpenPasswordTable",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E009"
+      },
+      {
+        "item_no": 11,
+        "io": "",
+        "logical_name": "TODO_lblEndProcess",
+        "physical_name": "lblEndProcess",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E010"
+      },
+      {
+        "item_no": 12,
+        "io": "O",
+        "logical_name": "TODO_lblVersion",
+        "physical_name": "lblVersion",
+        "item_attribute": "Label",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "Ver 2025/06/30",
+        "notes": ""
+      },
+      {
+        "item_no": 13,
+        "io": "I/O",
+        "logical_name": "TODO_txtReleasedDate",
+        "physical_name": "txtReleasedDate",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "[Access配信日]",
+        "source_field_or_fixed_value": "コメント",
+        "notes": ""
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": []
+}

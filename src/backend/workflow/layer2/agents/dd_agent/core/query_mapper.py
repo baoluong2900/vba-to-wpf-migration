@@ -519,7 +519,9 @@ def parse_update_clause(update_clause: str) -> tuple[str, list[dict[str, str]]]:
     target_table = target_part.split()[-1] if target_part else ""
     return target_table, parse_joins(update_clause)
 
-def parse_select_columns(select_clause: str, default_table: str = "", param_list: list = [], table_resolver: Optional[TableResolver] = None, alias_map: dict = None) -> list[dict[str, str]]:
+def parse_select_columns(select_clause: str, default_table: str = "", param_list: list = None, table_resolver: Optional[TableResolver] = None, alias_map: dict = None) -> list[dict[str, str]]:
+    if param_list is None:
+        param_list = []
     if not select_clause or select_clause == "なし": return []
     select_clause = re.sub(r'(?i)\s+INTO\s+.*$', '', select_clause)
     parts, curr, p_cnt, in_q = [], "", 0, False

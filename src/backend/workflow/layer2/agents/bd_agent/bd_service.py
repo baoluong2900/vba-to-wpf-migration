@@ -37,7 +37,7 @@ class BDService:
         
         if not vba_items and not macro_results:
             logger.warning(f"No logic items found for {screen_name}")
-            return [], Path(), Path()
+            return [], out_dir / f"input_{screen_name}.jsonl", out_dir / f"result_{screen_name}.json"
 
         # Files for persistence
         jsonl_path = out_dir / f"input_{screen_name}.jsonl"
@@ -303,31 +303,6 @@ class BDService:
         """Legacy helper for bd3 phase, now consolidated into run_logic_analysis."""
         vba_items, macro_results = self._get_vba_logic_items(mapped_data, bd_code_json, repo)
         return vba_items, macro_results, "", ""
-
-        if vba_logic_items:
-            logger.info(f"Running logic analysis on {len(vba_logic_items)} VBA items...")
-            llm_results = self.run_logic_analysis(
-                screen_name, {"logic_items": vba_logic_items},
-                model_id=model_id,
-                out_dir=bd3_dir,
-            )[0]  # run_logic_analysis returns (results, jsonl_path, result_path)
-
-        # ── Merge: LLM results + synthetic macro/module results ──────────────
-        all_results = llm_results + macro_module_results
-
-        if not all_results:
-            logger.info(f"No logic items found for {screen_name}, skipping logic analysis.")
-            return [], [], str(jsonl_path), ""
-
-        result_path = bd3_dir / f"logic_{screen_name}_result.json"
-        with open(result_path, "w", encoding="utf-8") as f:
-            json.dump(all_results, f, ensure_ascii=False, indent=2)
-
-        all_items = vba_logic_items + [{"module_id": r["module_id"], "title": r.get("event_content", ""), "code": "", "queries": []} for r in macro_module_results]
-        return all_results, all_items, str(jsonl_path), str(result_path)
-
-
-
 
     def _process_bd3_ui_formulas(self, mapped_data: dict, bd3_dir: Path, screen_name: str, model_id: str) -> list[dict]:
         logger.info(f"Extracting UI formulas for {screen_name}...")

@@ -373,7 +373,30 @@ class DDService:
                     "// This event runs Access macro",
                     "' No logic found",
                     "' Original VBA code not found",
-                             # Apply skip for screen, report, common (module), and macro.
+                )
+
+                # Macro is considered empty if it contains only basic headers/structures.
+                _macro_xml_is_empty = False
+                if category == "macro":
+                    macro_raw = item.get("macro_raw", "")
+                    _macro_xml_is_empty = (
+                        not macro_raw
+                        or not macro_raw.strip()
+                        or "<Action" not in macro_raw
+                    )
+
+                # Also respect explicit flag set by fill_dd_form_report stub builder
+                _flagged_no_code = li.get("_no_real_code", False) or item.get("_no_real_code", False)
+
+                _code_is_missing = (
+                    not code
+                    or not code.strip()
+                    or any(code.strip().startswith(m) for m in _NO_CODE_MARKERS)
+                    or _macro_xml_is_empty
+                    or _flagged_no_code
+                )
+
+                # Apply skip for screen, report, common (module), and macro.
                 # (Previously only "screen" was covered.)
                 _categories_with_skip = ("screen", "report", "common", "macro")
                 if _code_is_missing and category in _categories_with_skip:

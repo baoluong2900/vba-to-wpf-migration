@@ -8,7 +8,7 @@ from functools import lru_cache
 from pymongo import MongoClient
 from pymongo.database import Database
 
-from config import MONGO_DB, MONGO_URI
+from common.config import MONGO_DB, MONGO_URI
 
 
 @lru_cache(maxsize=1)

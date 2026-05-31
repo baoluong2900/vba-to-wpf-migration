@@ -411,9 +411,9 @@ class BDScreenSummaryGraph:
                         
             recurse_items(mapped_data)
             
+            table_groups = {}
             if raw_items:
                 # Group by source_table for the LLM prompt
-                table_groups = {}
                 for r_item in raw_items:
                     tbl = r_item["source_table"].strip() if r_item.get("source_table") else "Unspecified Table"
                     tbl = tbl.replace("\n", ", ")
