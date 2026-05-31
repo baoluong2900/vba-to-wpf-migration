@@ -1,0 +1,94 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_TestForm",
+  "screen_name": "F_TestForm",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_overview": {
+    "sheet_name": "Overview Spec",
+    "description": "This screen is used to set the default username for the user session and confirm the action by opening a success form.",
+    "grouping_sorting_pagebreak": {
+      "sort_fields": [],
+      "group_fields": []
+    },
+    "special_notes": "",
+    "parameter_info": []
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "Detailed Spec_F000",
+      "module_id": "F000",
+      "module_name": "-",
+      "event_trigger": "On Open",
+      "event_content": "Sets the default username for the user session.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Set the default username for the user session.\n2.1.1. Assign the value 'DefaultUser' to the control named 'txtUserName' on the current form."
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F001",
+      "module_id": "F001",
+      "module_name": "-",
+      "event_trigger": "After Update",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F002",
+      "module_id": "F002",
+      "module_name": "-",
+      "event_trigger": "On Click",
+      "event_content": "Opens the success form to indicate a completed action.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen [refer: F_Success]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    }
+  ],
+  "type": "form",
+  "name": "F_TestForm"
+}

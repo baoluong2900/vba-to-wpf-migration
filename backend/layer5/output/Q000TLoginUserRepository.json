@@ -1,0 +1,21 @@
+{
+    "repository_name": "Q000TLoginUserRepository",
+    "table_name": "Q000_T_LoginUser",
+    "function": [
+        {
+            "function_name": "GetUserInfoAsync",
+            "query_name": "Q000_T_LoginUser",
+            "sheet_query_name": "F000_SelQuery01",
+            "description": "",
+            "input": [],
+            "output": []
+        }
+    ],
+    "dto": [],
+    "entity": [
+        {
+            "entity_name": "Q000TLoginUserEntity",
+            "fields": []
+        }
+    ]
+}

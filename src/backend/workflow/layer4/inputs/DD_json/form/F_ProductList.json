@@ -1,0 +1,141 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_ProductList",
+  "screen_name": "F_ProductList",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_overview": {
+    "sheet_name": "Overview Spec",
+    "description": "The F_ProductList screen is used to display and manage a list of products, allowing users to view, filter, and access detailed information about each product.",
+    "grouping_sorting_pagebreak": {
+      "sort_fields": [],
+      "group_fields": []
+    },
+    "special_notes": "",
+    "parameter_info": []
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "Detailed Spec_F000",
+      "module_id": "F000",
+      "module_name": "-",
+      "event_trigger": "On Open",
+      "event_content": "画面の初期表示の処理",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "1.1. データを取得する\n[F000_SelQuery01]\n"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 画面を開く時、アクティブな製品情報を表示する\n"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F000_SelQuery01",
+          "logic_query_name": "Q_GetActiveProducts",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F001",
+      "module_id": "F001",
+      "module_name": "-",
+      "event_trigger": "After Update",
+      "event_content": "Refreshes the product grid to show the latest data.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. subProductGridのデータを最新のものに更新する"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F002",
+      "module_id": "F002",
+      "module_name": "-",
+      "event_trigger": "After Update",
+      "event_content": "Filters the product grid based on the selected category.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 取得したlstCategoryの値を使用して、subProductGridのフィルタ条件を設定する\n2.2. subProductGridに対してフィルタを適用し、選択されたカテゴリに基づいて商品グリッドをフィルタリングする"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F003",
+      "module_id": "F003",
+      "module_name": "-",
+      "event_trigger": "On Click",
+      "event_content": "Opens the detailed product form for the selected product, prompting the user if no product is chosen.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Check if the ProductID in the subProductGrid form is null\n2.2. If the ProductID is null, display a message to the user indicating that a product must be selected and exit the process\n2.3. If the ProductID is not null, open the F_ProductDetail form with the filter set to the selected ProductID [refer: F_ProductDetail]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    }
+  ],
+  "sheet_4_sel_query_templates": [
+    {
+      "sheet_name_pattern": "F000_SelQuery01",
+      "query_purpose": "",
+      "query_name": "Q_GetActiveProducts",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\nTBL_Products.ProductID\n, TBL_Products.ProductName\n, TBL_Products.ProductStatus\n, TBL_Products.CategoryID\nFROM\nTBL_Products\nWHERE\n(((TBL_Products.ProductStatus)=1) AND ((TBL_Products.Discontinued)=False))"
+    }
+  ],
+  "type": "form",
+  "name": "F_ProductList"
+}

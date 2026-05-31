@@ -1,0 +1,165 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_ProductList",
+  "screen_name": "F_ProductList",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "The F_ProductList screen is used to display and manage a list of products, allowing users to view, filter, and access detailed information about each product.",
+    "timing": "This screen is used whenever the user needs to view or manage the list of products, such as during inventory management or product selection.",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [
+      {
+        "query_name": "Q_GetActiveProducts"
+      }
+    ],
+    "process_overview": [
+      {
+        "summary_line": "The product grid is refreshed to show the latest data, ensuring that the user has the most up-to-date information."
+      },
+      {
+        "summary_line": "Users can filter the product grid by selecting a category, narrowing down the list to specific types of products."
+      },
+      {
+        "summary_line": "Users can open a detailed product form for a selected product to view more information. If no product is selected, the user is prompted to choose one."
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open"
+      },
+      {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtSearch",
+        "physical_name": "txtSearch",
+        "event_trigger": "After Update",
+        "event_content": "Refreshes the product grid to show the latest data.",
+        "module_id": "F001",
+        "notes": "txtSearch_AfterUpdate",
+        "action_type": "READ"
+      },
+      {
+        "event_id": "E002",
+        "title": "-",
+        "type": "List Box",
+        "logical_name": "TODO_lstCategory",
+        "physical_name": "lstCategory",
+        "event_trigger": "After Update",
+        "event_content": "Filters the product grid based on the selected category.",
+        "module_id": "F002",
+        "notes": "lstCategory_AfterUpdate",
+        "action_type": "READ"
+      },
+      {
+        "event_id": "E003",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnOpenDetail",
+        "physical_name": "cmdbtnOpenDetail",
+        "event_trigger": "On Click",
+        "event_content": "Opens the detailed product form for the selected product, prompting the user if no product is chosen.",
+        "module_id": "F003",
+        "notes": "btnOpenDetail_Click",
+        "action_type": "NAV"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "I",
+        "logical_name": "TODO_txtSearch",
+        "physical_name": "txtSearch",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E001"
+      },
+      {
+        "item_no": 2,
+        "io": "",
+        "logical_name": "TODO_lstCategory",
+        "physical_name": "lstCategory",
+        "item_attribute": "List Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E002"
+      },
+      {
+        "item_no": 3,
+        "io": "",
+        "logical_name": "TODO_subProductGrid",
+        "physical_name": "subProductGrid",
+        "item_attribute": "Subform",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "詳細は「Table.TBL_Products」を参照"
+      },
+      {
+        "item_no": 4,
+        "io": "",
+        "logical_name": "TODO_btnOpenDetail",
+        "physical_name": "cmdbtnOpenDetail",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E003"
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": [],
+  "type": "form",
+  "name": "F_ProductList"
+}

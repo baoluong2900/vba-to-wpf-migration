@@ -1,0 +1,116 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_Menu",
+  "screen_name": "F_Menu",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_overview": {
+    "sheet_name": "Overview Spec",
+    "description": "The F_Menu screen serves as the main navigation hub, allowing users to access different functionalities such as viewing the product list and entering new orders.",
+    "grouping_sorting_pagebreak": {
+      "sort_fields": [],
+      "group_fields": []
+    },
+    "special_notes": "",
+    "parameter_info": []
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "Detailed Spec_F000",
+      "module_id": "F000",
+      "module_name": "-",
+      "event_trigger": "On Open",
+      "event_content": "Welcome message is displayed to the user.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. ユーザーにウェルカムメッセージを表示する\n2.1.1. メッセージ内容: 'Chào mừng đến với Hệ thống quản lý kho!'\n2.1.2. メッセージタイプ: 情報"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F001",
+      "module_id": "F001",
+      "module_name": "Danh sách sản phẩm",
+      "event_trigger": "On Click",
+      "event_content": "Opens the product list form for viewing.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen for viewing [refer: F_ProductList]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F002",
+      "module_id": "F002",
+      "module_name": "Nhập đơn hàng",
+      "event_trigger": "On Click",
+      "event_content": "Opens the order entry form to input new orders.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen\n[F_OrderEntry] [refer: F_OrderEntry]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F003",
+      "module_id": "F003",
+      "module_name": "Thoát hệ thống",
+      "event_trigger": "On Click",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    }
+  ],
+  "type": "form",
+  "name": "F_Menu"
+}

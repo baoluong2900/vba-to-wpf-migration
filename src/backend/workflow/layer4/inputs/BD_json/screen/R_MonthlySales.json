@@ -1,0 +1,51 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "",
+  "screen_name": "",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "The R_MonthlySales screen is designed to display and summarize monthly sales data, providing users with an overview of the sales performance over a specific period.",
+    "timing": "This screen is used when the user needs to review and analyze monthly sales data, typically at the end of a month or for periodic business reviews.",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [],
+    "process_overview": [
+      {
+        "summary_line": "The user accesses the R_MonthlySales screen to view the summarized monthly sales data."
+      },
+      {
+        "summary_line": "The screen presents the sales data in a readable format, allowing the user to identify trends and insights."
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": []
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": [],
+  "type": "report",
+  "name": "R_MonthlySales"
+}

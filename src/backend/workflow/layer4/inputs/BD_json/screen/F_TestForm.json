@@ -1,0 +1,118 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_TestForm",
+  "screen_name": "F_TestForm",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "This screen is used to set the default username for the user session and confirm the action by opening a success form.",
+    "timing": "This screen is used at the beginning of a user session, typically when the user logs in or starts a new session.",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [],
+    "process_overview": [
+      {
+        "summary_line": "The user enters their username into the provided text box."
+      },
+      {
+        "summary_line": "The user submits the username, which sets it as the default for the session and opens a success form to confirm the action."
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "Sets the default username for the user session.",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "action_type": "UI"
+      },
+      {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtUserName",
+        "physical_name": "txtUserName",
+        "event_trigger": "After Update",
+        "event_content": "",
+        "module_id": "F001",
+        "notes": "txtUserName_AfterUpdate"
+      },
+      {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnSubmit",
+        "physical_name": "cmdbtnSubmit",
+        "event_trigger": "On Click",
+        "event_content": "Opens the success form to indicate a completed action.",
+        "module_id": "F002",
+        "notes": "btnSubmit_Click",
+        "action_type": "NAV"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "I",
+        "logical_name": "TODO_txtUserName",
+        "physical_name": "txtUserName",
+        "item_attribute": "Text Box",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "UserName",
+        "notes": "E001"
+      },
+      {
+        "item_no": 2,
+        "io": "",
+        "logical_name": "TODO_btnSubmit",
+        "physical_name": "cmdbtnSubmit",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E002"
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": [],
+  "type": "form",
+  "name": "F_TestForm"
+}

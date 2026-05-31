@@ -33,13 +33,13 @@ function resolveDestination(generatedRelPath: string): string | null {
   const p = generatedRelPath.replace(/\\/g, "/");
 
   if (p.startsWith("Views/"))
-    return path.join(SOURCE_DIR, "vba_brain.UI.WPF", p);
+    return path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", p);
 
   if (p.startsWith("Reports/") || p.endsWith(".rdlc"))
-    return path.join(SOURCE_DIR, "vba_brain.UI.WPF", "Views", "Reports", path.basename(p));
+    return path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", "Reports", path.basename(p));
 
   if (p.startsWith("ViewModels/"))
-    return path.join(SOURCE_DIR, "vba_brain.UI.WPF", p);
+    return path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", p);
 
   if (p.startsWith("Domain/Entities/"))
     return path.join(SOURCE_DIR, "vba_brain.Domain", p.replace("Domain/", ""));
@@ -111,17 +111,17 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
         fname.startsWith(enVmName);
 
       if (fname.endsWith(".xaml.cs"))
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "Views", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", fname);
       else if (fname.endsWith(".xaml"))
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "Views", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", fname);
       else if (fname.endsWith(".rdlc"))
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "Views", "Reports", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", "Reports", fname);
       else if (fname.endsWith("ViewModel.cs") && belongsToForm)
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "ViewModels", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "ViewModels", fname);
       else if (fname === `${formName}.cs` && agent !== "logic")
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "ViewModels", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "ViewModels", fname);
       else if (fname === `${enVmName}.cs` && agent !== "logic")
-        destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "ViewModels", fname);
+        destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "ViewModels", fname);
       else if (fname.endsWith("Entity.cs"))
         destPath = path.join(SOURCE_DIR, "vba_brain.Domain", "Entities", fname);
       else if (fname.startsWith("I") && fname.endsWith("Repository.cs"))
@@ -215,7 +215,7 @@ function listMappingOutputs(formName: string = "ALL"): { path: string; size: num
         let destPath = "";
         if (fname.endsWith("Workflow.cs")) {
           // Macro Workflow
-          destPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "Services", fname);
+          destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Services", fname);
         } else if (fname.endsWith("Service.cs")) {
           // Module Service
           destPath = path.join(SOURCE_DIR, "vba_brain.Domain", "Common", fname);
@@ -539,7 +539,7 @@ export async function POST(req: NextRequest) {
       // Automatically copy ViewModel outputs to WPF source just to make sure they are synced
       const filesCopied = copyOutputsToSource("logic", form_name);
 
-      const vmPath = path.join(SOURCE_DIR, "vba_brain.UI.WPF", "ViewModels", vmFileName);
+      const vmPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "ViewModels", vmFileName);
       const vmExists = fs.existsSync(vmPath);
       const files = vmExists ? [{
         path: `ViewModels/${vmFileName}`,

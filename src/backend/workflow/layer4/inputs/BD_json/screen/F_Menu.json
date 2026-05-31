@@ -1,0 +1,147 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_Menu",
+  "screen_name": "F_Menu",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_layout": {
+    "sheet_name": "Screen Spec (Layout)",
+    "description": "The F_Menu screen serves as the main navigation hub, allowing users to access different functionalities such as viewing the product list and entering new orders.",
+    "timing": "This screen is used immediately after the user logs in or whenever they need to switch between different tasks.",
+    "constraints": "",
+    "screen_image": "",
+    "record_sources": [],
+    "process_overview": [
+      {
+        "summary_line": "The user is greeted with a welcome message upon entering the menu."
+      },
+      {
+        "summary_line": "The user can choose to view the product list by clicking on the 'Product List' button, which opens the product list form."
+      },
+      {
+        "summary_line": "Alternatively, the user can start a new order by clicking on the 'Order Entry' button, which opens the order entry form."
+      }
+    ],
+    "events": [
+      {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "Welcome message is displayed to the user.",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "action_type": "UI"
+      },
+      {
+        "event_id": "E001",
+        "title": "Danh sách sản phẩm",
+        "type": "Command Button",
+        "logical_name": "TODO_btnProductList",
+        "physical_name": "cmdbtnProductList",
+        "event_trigger": "On Click",
+        "event_content": "Opens the product list form for viewing.",
+        "module_id": "F001",
+        "notes": "btnProductList_Click",
+        "action_type": "READ"
+      },
+      {
+        "event_id": "E002",
+        "title": "Nhập đơn hàng",
+        "type": "Command Button",
+        "logical_name": "TODO_btnOrderEntry",
+        "physical_name": "cmdbtnOrderEntry",
+        "event_trigger": "On Click",
+        "event_content": "Opens the order entry form to input new orders.",
+        "module_id": "F002",
+        "notes": "btnOrderEntry_Click",
+        "action_type": "CREATE"
+      },
+      {
+        "event_id": "E003",
+        "title": "Thoát hệ thống",
+        "type": "Command Button",
+        "logical_name": "TODO_btnExit",
+        "physical_name": "cmdbtnExit",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F003",
+        "notes": "Macro.M_CloseSystem"
+      }
+    ]
+  },
+  "sheet_3_screen_edit": {
+    "sheet_name": "Screen Spec (Edit)",
+    "items": [
+      {
+        "item_no": "I",
+        "io": "",
+        "logical_name": "TODO_section",
+        "physical_name": "",
+        "item_attribute": "",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": ""
+      },
+      {
+        "item_no": 1,
+        "io": "",
+        "logical_name": "TODO_btnProductList",
+        "physical_name": "cmdbtnProductList",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E001"
+      },
+      {
+        "item_no": 2,
+        "io": "",
+        "logical_name": "TODO_btnOrderEntry",
+        "physical_name": "cmdbtnOrderEntry",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E002"
+      },
+      {
+        "item_no": 3,
+        "io": "",
+        "logical_name": "TODO_btnExit",
+        "physical_name": "cmdbtnExit",
+        "item_attribute": "Command Button",
+        "attribute_digits": "",
+        "required": "",
+        "format": "",
+        "other_input_checks": "",
+        "source_table": "",
+        "source_field_or_fixed_value": "",
+        "notes": "E003"
+      }
+    ]
+  },
+  "sheet_4_table_update": [],
+  "sheet_5_file_spec": [],
+  "type": "form",
+  "name": "F_Menu"
+}

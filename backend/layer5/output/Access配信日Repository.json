@@ -1,0 +1,27 @@
+{
+    "repository_name": "Access配信日Repository",
+    "table_name": "Access配信日",
+    "function": [
+        {
+            "function_name": "GetCommentAsync",
+            "query_name": "Access配信日",
+            "sheet_query_name": "F001_SelQuery01",
+            "description": "",
+            "input": [],
+            "output": []
+        }
+    ],
+    "dto": [],
+    "entity": [
+        {
+            "entity_name": "Access配信日Entity",
+            "fields": [
+                {
+                    "name": "DistributionDateComment",
+                    "type": "object",
+                    "description": "配信日コメント"
+                }
+            ]
+        }
+    ]
+}

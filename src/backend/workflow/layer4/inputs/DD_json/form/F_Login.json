@@ -1,0 +1,386 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_Login",
+  "screen_name": "F_Login",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_overview": {
+    "sheet_name": "Overview Spec",
+    "description": "The F_Login screen is designed to provide a secure and user-friendly login experience, allowing users to enter their credentials and access the system.",
+    "grouping_sorting_pagebreak": {
+      "sort_fields": [],
+      "group_fields": []
+    },
+    "special_notes": "The user must have valid credentials to proceed. The application version must be up-to-date, and certain function keys are disabled to prevent unauthorized actions.",
+    "parameter_info": []
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "Detailed Spec_F000",
+      "module_id": "F000",
+      "module_name": "-",
+      "event_trigger": "On Open",
+      "event_content": "Prepares the user interface for a clean and focused login experience.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "1.1. シフトキーの状態を有効にする\n1.2. フォーム上のすべてのコントロールを無効にする [refer: SetEnabledState]\n1.3. アプリケーションウィンドウを非表示にする\n1.4. リボンツールバーを非表示にする\n1.5. ステータスバーを非表示にする\n1.6. 画面の位置とサイズを調整する\n1.7. クリップボードを空にする"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. ネットワークオブジェクトを作成してユーザー名を取得する\n2.2. 取得したユーザー名をフォームのtxtIDフィールドに設定する\n2.3. txtIDフィールドから次のフィールドへタブキーで移動する\n2.4. データオブジェクトを作成し、txtIDの内容をクリップボードにコピーする\n2.5. 特定のユーザー名を持つ場合、以下の処理を行う\n2.5.1. クリップボードの内容をペーストする\n2.5.2. Enterキーをシミュレートしてログイン情報を送信する\n2.5.3. クエリを実行してログイン情報を更新する\n[F000_SelQuery01]\n2.5.4. Enterキーをシミュレートして確認する\n2.6. 特定のユーザー名を持たない場合、以下の処理を行う\n2.6.1. クエリを実行してログイン情報を更新する\n[F000_SelQuery01]\n2.6.2. Enterキーをシミュレートして確認する"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "3.1. エラーが発生した場合、通信接続エラーメッセージを表示する"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F000_SelQuery01",
+          "logic_query_name": "Q000_T_LoginUser",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F001",
+      "module_id": "F001",
+      "module_name": "-",
+      "event_trigger": "On Load",
+      "event_content": "Checks if the current version is up-to-date and prompts for an update if necessary.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. フォームのラベル 'lblVersion' のキャプションから、バージョン情報の一部（'/' 以降の5文字）を抽出する\n2.2. 最新バージョン情報を取得するため、クエリを実行する\n[F001_SelQuery01]\n2.3. 取得した最新バージョン情報と抽出した文字列を比較する\n2.4. 比較結果に基づいて、以下の条件分岐を行う\n2.4.1. 抽出したバージョン情報が最新バージョン情報と異なる場合\n2.4.1.1. メッセージ '最新版ではありません！インストールします。' を表示する\n2.4.1.2. モジュール 'Judge_Inst' を呼び出す [refer: Common.Judge_Inst]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F001_SelQuery01",
+          "logic_query_name": "Access配信日",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F002",
+      "module_id": "F002",
+      "module_name": "-",
+      "event_trigger": "On Key Down",
+      "event_content": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. キー入力のKeyCodeを取得する\n2.2. KeyCodeがF11の場合、以下の処理を行う\n2.2.1. キー入力を無効にする\n2.2.2. メッセージを表示する: 'ファンクション【F11】キーは無効に設定されてます！！'\n2.3. KeyCodeがF12の場合、以下の処理を行う\n2.3.1. キー入力を無効にする\n2.3.2. メッセージを表示する: 'ファンクション【F12】キーは無効に設定されてます！！'\n2.4. KeyCodeがF11またはF12以外の場合、何もしない"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F003",
+      "module_id": "F003",
+      "module_name": "-",
+      "event_trigger": "After Update",
+      "event_content": "Verifies user credentials and grants access to the system if valid.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 開発者モードの有効性を確認する\n2.2. 開発者モードが無効の場合、ユーザーIDとパスワードの入力を確認する\n2.2.1. ユーザーIDが未入力の場合、メッセージを表示し、ユーザーIDフィールドにフォーカスを移す\n2.2.2. パスワードが未入力の場合、メッセージを表示し、パスワードフィールドにフォーカスを移す\n2.3. 管理者フラグを確認するため、クエリを実行する\n[F003_SelQuery01]\n2.4. 管理者フラグが0で開発者モードが無効の場合、メッセージを表示して終了する\n2.5. ユーザーIDとパスワードの組み合わせが存在するか確認するため、クエリを実行する\n[F003_SelQuery01]\n2.6. 該当するIDとPWが見つからない場合、メッセージを表示し、ユーザーIDフィールドにフォーカスを移す\n2.7. 開発者モードまたはパスワードが一致する場合、ログイン処理を行う\n2.7.1. 開発者モードの場合、デバッグログを追加する [refer: AppendDevLoginLog]\n2.7.2. ログイン画面を閉じる\n2.7.3. 地区コード設定テーブルのレコード数を確認する\n2.7.4. レコード数が0の場合、マクロを実行してアプリケーションを再起動する [refer: AutoExec_Restart]\n2.7.5. レコード数が0以外の場合、タイマーを開く [refer: タイマーを開く] およびマクロを実行する [refer: AutoExec_A]\n2.8. パスワードが一致しない場合、メッセージを表示し、パスワードフィールドにフォーカスを移す"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F003_SelQuery01",
+          "logic_query_name": "T_ID_Pass",
+          "type": "SELECT",
+          "parameters": []
+        },
+        {
+          "sheet_name": "F003_SelQuery02",
+          "logic_query_name": "T023_地区CD設定",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F004",
+      "module_id": "F004",
+      "module_name": "Login",
+      "event_trigger": "On Click",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F005",
+      "module_id": "F005",
+      "module_name": "Close",
+      "event_trigger": "On Click",
+      "event_content": "Prompts the user to confirm before closing the application.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. ユーザーにアプリケーションを終了するかどうかの確認メッセージを表示する\n2.2. ユーザーが確認メッセージで終了を選択した場合、現在のアプリケーションを終了させる"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F006",
+      "module_id": "F006",
+      "module_name": "New After Sales DB",
+      "event_trigger": "On Double Click",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F007",
+      "module_id": "F007",
+      "module_name": "-",
+      "event_trigger": "On Click",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F008",
+      "module_id": "F008",
+      "module_name": "-",
+      "event_trigger": "On Double Click",
+      "event_content": "",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F009",
+      "module_id": "F009",
+      "module_name": "-",
+      "event_trigger": "On Double Click",
+      "event_content": "Closes multiple forms, sets up the user interface, and opens a specific query for viewing.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. Close the form F_Login\n2.2. Close the form F_ユーザー追加 without saving changes\n2.3. Close the form F_ユーザー追加_A without saving changes\n2.4. Disable system warnings\n2.5. Enable the menu bar [refer: MenuBarTrue]\n2.6. Select the forms object type for further operations\n2.7. Determine the application version\n2.8. If the application version is 11, call the module to enable or disable the menu bar based on a condition [refer: MenuBarTrueFalse]\n2.9. If the application version is not 11, show the ribbon toolbar\n2.10. Disable system warnings again\n2.11. Enable the status bar [refer: StatusBar_True]\n2.12. Open the query for viewing\n[F009_SelQuery01]\n2.13. Maximize the current window\n2.14. Run the command to maximize the application window\n2.15. Maximize the current window again"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F009_SelQuery01",
+          "logic_query_name": "Q000_T_ID_PASS",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F010",
+      "module_id": "F010",
+      "module_name": "-",
+      "event_trigger": "On Double Click",
+      "event_content": "Terminates the Windows Media Player process if it is running.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. システムシェルオブジェクトを作成する\n2.2. 作成したシステムシェルオブジェクトを使用して、タスクキルコマンドを実行し、Windows Media Playerプロセス（wmplayer.exe）を強制終了させる"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    }
+  ],
+  "sheet_4_sel_query_templates": [
+    {
+      "sheet_name_pattern": "F001_SelQuery01",
+      "query_purpose": "",
+      "query_name": "Access配信日",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\n*"
+    },
+    {
+      "sheet_name_pattern": "F000_SelQuery01",
+      "query_purpose": "",
+      "query_name": "Q000_T_LoginUser",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\nTBL_Users.Username\n, TBL_Users.LoginTime\nFROM\nTBL_Users"
+    },
+    {
+      "sheet_name_pattern": "F003_SelQuery01",
+      "query_purpose": "",
+      "query_name": "T_ID_Pass",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\n*"
+    },
+    {
+      "sheet_name_pattern": "F003_SelQuery02",
+      "query_purpose": "",
+      "query_name": "T023_地区CD設定",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\n*"
+    },
+    {
+      "sheet_name_pattern": "F009_SelQuery01",
+      "query_purpose": "",
+      "query_name": "Q000_T_ID_PASS",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": "SELECT\nT_ID_Pass.ID\n, T_ID_Pass.Pass\n, T_ID_Pass.管理者FLG\nFROM\nT_ID_Pass"
+    }
+  ],
+  "type": "form",
+  "name": "F_Login"
+}

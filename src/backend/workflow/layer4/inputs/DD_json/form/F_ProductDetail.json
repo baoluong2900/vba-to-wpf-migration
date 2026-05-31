@@ -1,0 +1,137 @@
+{
+  "system_name": "",
+  "subsystem_name": "",
+  "screen_id": "F_ProductDetail",
+  "screen_name": "F_ProductDetail",
+  "author": "",
+  "created_date": "",
+  "updated_by": "",
+  "updated_date": "",
+  "sheet_1_change_history": {
+    "sheet_name": "Change History",
+    "data": []
+  },
+  "sheet_2_overview": {
+    "sheet_name": "Overview Spec",
+    "description": "This screen is used to view and edit detailed information about a specific product, including its name, supplier, and status.",
+    "grouping_sorting_pagebreak": {
+      "sort_fields": [],
+      "group_fields": []
+    },
+    "special_notes": "The product name must be provided before any changes can be saved.",
+    "parameter_info": []
+  },
+  "sheet_3_detail_specs": [
+    {
+      "sheet_name_pattern": "Detailed Spec_F000",
+      "module_id": "F000",
+      "module_name": "-",
+      "event_trigger": "On Open",
+      "event_content": "画面の初期表示の処理",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "1.1. 画面を開く際の初期データを取得するため、クエリを実行する\n[F000_SelQuery01]\n"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 取得したデータを使用して画面を初期表示する"
+        }
+      ],
+      "query_mappings": [
+        {
+          "sheet_name": "F000_SelQuery01",
+          "logic_query_name": "TBL_Products",
+          "type": "SELECT",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F001",
+      "module_id": "F001",
+      "module_name": "-",
+      "event_trigger": "Before Update",
+      "event_content": "Prevents the user from proceeding if the product name is empty.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 検証するため、フォームのtxtProductNameコントロールの値を取得する\n2.2. txtProductNameコントロールの値が空または未設定の場合、以下の処理を行う\n2.2.1. ユーザーに'Product name cannot be empty!'という警告メッセージを表示する\n2.2.2. 更新処理をキャンセルし、フォームの編集状態を維持する"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F002",
+      "module_id": "F002",
+      "module_name": "-",
+      "event_trigger": "On Click",
+      "event_content": "Saves the current record and closes the form with a success message.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. 現在のレコードを保存する\n2.2. 成功メッセージ 'Lưu thành công!' を表示する\n2.3. フォーム 'F_ProductDetail' を閉じる [refer: F_ProductDetail]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    },
+    {
+      "sheet_name_pattern": "Detailed Spec_F003",
+      "module_id": "F003",
+      "module_name": "-",
+      "event_trigger": "On Click",
+      "event_content": "Prompts the user for confirmation before deleting the selected product and closing the form.",
+      "steps": [
+        {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        {
+          "step": "2. 主処理",
+          "detail": "2.1. ユーザーに確認メッセージを表示する\n2.2. ユーザーが確認メッセージで「はい」を選択した場合、以下の処理を行う\n2.2.1. TBL_ProductsテーブルからtxtProductIDの値を持つレコードを削除する\n2.2.2. F_ProductDetailフォームを閉じる [refer: F_ProductDetail]"
+        },
+        {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      ],
+      "query_mappings": []
+    }
+  ],
+  "sheet_4_sel_query_templates": [
+    {
+      "sheet_name_pattern": "F000_SelQuery01",
+      "query_purpose": "",
+      "query_name": "TBL_Products",
+      "parameters": "",
+      "sql": {
+        "select": "",
+        "from": "",
+        "join": [],
+        "where": [],
+        "group_by": "なし",
+        "order_by": "なし"
+      },
+      "columns": [],
+      "raw_sql": ""
+    }
+  ],
+  "type": "form",
+  "name": "F_ProductDetail"
+}
