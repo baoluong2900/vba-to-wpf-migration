@@ -20,7 +20,7 @@ DD_MODULE_TEMPLATE = TEMPLATE_DIR / "DD_Screen" / "dd_template_module.xlsx"
 def get_bd_data(screen_name: str) -> dict | None:
     """Read BD JSON from layer2 output or MongoDB."""
     l2_base = Path(__file__).resolve().parent.parent / "layer2"
-    path = l2_base / "output" / "bd_flow" / "s4_bd_final" / f"{screen_name}.json"
+    path = l2_base / "output" / "bd_flow" / "bd4_bd_final" / f"{screen_name}.json"
     if path.exists():
         try:
             return json.loads(path.read_text(encoding="utf-8"))
@@ -43,7 +43,7 @@ def get_dd_data(screen_name: str) -> dict | None:
     """Read DD JSON from layer2 output or MongoDB."""
     l2_base = Path(__file__).resolve().parent.parent / "layer2"
     for cat in ("screen", "report", "macro", "common"):
-        path = l2_base / "output" / "dd_flow" / cat / "d4_dd_final" / f"{screen_name}.json"
+        path = l2_base / "output" / "dd_flow" / cat / "dd4_dd_final" / f"{screen_name}.json"
         if path.exists():
             try:
                 return json.loads(path.read_text(encoding="utf-8"))
@@ -239,8 +239,12 @@ class MockFileResponse:
         self.media_type = media_type
 
 def download_file(doc_kind, doc_type, filename):
-    file_path = OUTPUT_DIR / doc_kind / doc_type / filename
-    
+    # Confine the resolved path to OUTPUT_DIR to prevent path traversal (e.g. "../../etc/passwd")
+    base = OUTPUT_DIR.resolve()
+    file_path = (base / doc_kind / doc_type / filename).resolve()
+    if base not in file_path.parents:
+        raise ValueError("Invalid download path")
+
     suffix = Path(filename).suffix.lower()
     if suffix == ".docx":
         media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

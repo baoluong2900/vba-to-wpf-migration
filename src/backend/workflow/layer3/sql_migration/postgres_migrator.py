@@ -75,6 +75,13 @@ def migrate_to_postgres():
         table_name = table.get("table_name")
         if not table_name:
             continue
+
+        # Guard against SQL injection: table_name is interpolated into psql -c commands
+        # (both the CREATE/DROP below and the Japanese-name DROP branch). Allow only
+        # alphanumerics, underscore and Japanese characters — block quotes/semicolons/etc.
+        if not re.fullmatch(r'[A-Za-z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+', table_name):
+            print(f"[POSTGRES MIGRATOR] Skipping table with unsafe name '{table_name}'.")
+            continue
             
         # Check if table name contains Japanese characters and skip/drop
         if JP_REGEX.search(table_name):
