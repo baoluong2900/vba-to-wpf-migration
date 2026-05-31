@@ -17,10 +17,10 @@ BASE_DIR = Path(__file__).parent
 INPUTS_DIR = BASE_DIR / "inputs"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
-# WPF source vba_brain.UI.WPF folder
+# Avalonia source vba_brain.UI.Avalonia folder
 WPF_PROJECT_DIR = (
-    BASE_DIR.parent.parent.parent.parent  # → workflow/
-    / "source" / "vba_brain.UI.WPF"
+    BASE_DIR.parent.parent.parent.parent.parent  # → src/
+    / "wpf" / "vba_brain.UI.Avalonia"
 )
 
 # ──────────────────────────────────────────
@@ -1306,6 +1306,13 @@ def save_outputs(form_name: str, files: list[GeneratedFile]) -> None:
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     
     for gf in files:
+        # Convert generated C# from WPF → Avalonia (namespaces, usings, MessageBox)
+        if gf.path.endswith(".cs"):
+            try:
+                from pipeline.avalonia_cs import to_avalonia_cs
+                gf.content = to_avalonia_cs(gf.content)
+            except Exception:
+                pass
         # 1. Save locally flatly under outputs/{form_name}/
         local_filename = Path(gf.path).name
         local_path = OUTPUTS_DIR / form_name / local_filename

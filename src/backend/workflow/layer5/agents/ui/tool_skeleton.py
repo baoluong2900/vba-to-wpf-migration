@@ -40,10 +40,10 @@ _MACRO_JP_TO_EN_PATH = (
     / "graphview" / "outputs" / "macros" / "listMacroJpToEn.json"
 )
 
-# WPF Services folder: agents/ui → agents → layer5 → backend → workflow → source
+# Avalonia Services folder: agents/ui → agents → layer5 → workflow → backend → src
 _WPF_SERVICES_DIR = (
-    Path(__file__).resolve().parent.parent.parent.parent.parent  # → workflow/
-    / "source" / "vba_brain.UI.WPF" / "Services"
+    Path(__file__).resolve().parent.parent.parent.parent.parent  # → src/
+    / "wpf" / "vba_brain.UI.Avalonia" / "Services"
 )
 
 

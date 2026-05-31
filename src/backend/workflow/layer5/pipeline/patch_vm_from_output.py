@@ -42,7 +42,7 @@ def patch_from_output(form_name: str, dry_run: bool = False):
     candidates = [
         LAYER5_DIR / "agents" / "ui" / "outputs" / form_name / "ViewModels" / vm_filename,
         LAYER5_DIR / "agents" / "logic" / "outputs" / form_name / "ViewModels" / vm_filename,
-        LAYER5_DIR.parent.parent / "source" / "vba_brain.UI.WPF" / "ViewModels" / vm_filename,
+        LAYER5_DIR.parent.parent.parent / "wpf" / "vba_brain.UI.Avalonia" / "ViewModels" / vm_filename,
     ]
     vm_file = next((p for p in candidates if p.exists()), None)
     if vm_file is None:
