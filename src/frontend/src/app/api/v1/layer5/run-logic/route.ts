@@ -16,7 +16,7 @@ import path from "path";
 import fs from "fs";
 
 const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "workflow", "layer5");
-const VIEWS_DIR  = path.resolve(process.cwd(), "..", "source", "vba_brain.UI.WPF", "Views");
+const VIEWS_DIR  = path.resolve(process.cwd(), "..", "wpf", "vba_brain.UI.Avalonia", "Views");
 
 function sseMsg(data: object): string {
   return `data: ${JSON.stringify(data)}\n\n`;
@@ -141,7 +141,7 @@ function getPythonExecutable(): string {
 
         // ── Read updated ViewModel from source or outputs ──────────────────
         let csContent: string | null = null;
-        let csPath = path.join(LAYER5_DIR, "..", "source", "vba_brain.UI.WPF", "ViewModels", vmFileName);
+        let csPath = path.resolve(process.cwd(), "..", "wpf", "vba_brain.UI.Avalonia", "ViewModels", vmFileName);
         if (!fs.existsSync(csPath)) {
           csPath = path.join(LAYER5_DIR, "agents", "logic", "outputs", form_name, "ViewModels", vmFileName);
         }

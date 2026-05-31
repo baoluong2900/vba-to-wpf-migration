@@ -110,9 +110,9 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
         fname.startsWith(enViewName) ||
         fname.startsWith(enVmName);
 
-      if (fname.endsWith(".xaml.cs"))
+      if (fname.endsWith(".axaml.cs") || fname.endsWith(".xaml.cs"))
         destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", fname);
-      else if (fname.endsWith(".xaml"))
+      else if (fname.endsWith(".axaml") || fname.endsWith(".xaml"))
         destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", fname);
       else if (fname.endsWith(".rdlc"))
         destPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "Views", "Reports", fname);
