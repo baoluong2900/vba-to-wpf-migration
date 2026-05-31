@@ -15,7 +15,7 @@ import { spawn, execSync } from "child_process";
 import path from "path";
 import fs from "fs";
 
-const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "layer5");
+const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "workflow", "layer5");
 const VIEWS_DIR  = path.resolve(process.cwd(), "..", "source", "vba_brain.UI.WPF", "Views");
 
 function sseMsg(data: object): string {

@@ -14,13 +14,8 @@ import { AgentNode } from "../../components/nodes/AgentNode";
 import { DdAgentNode } from "../../components/nodes/DdAgentNode";
 import { OutputNode } from "../../components/nodes/OutputNode";
 import { GraphView } from "../../components/GraphView";
+import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
 
-
-interface LogEntry {
-  time: string;
-  level: string;
-  message: string;
-}
 
 export default function Layer2Workflow() {
   const [dbScreens, setDbScreens] = useState<{key: string, name: string, type?: string}[]>([]);
@@ -62,7 +57,7 @@ export default function Layer2Workflow() {
   const isResizing = useRef(false);
 
   const addLog = (level: string, message: string) => {
-    const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+    const time = formatLogTime();
     setSystemLogs(prev => [...prev, { time, level, message }]);
   };
 
@@ -580,17 +575,8 @@ export default function Layer2Workflow() {
     }
   };
 
-  const getLogColor = (level: string) => {
-    if (level === 'ERROR') return 'var(--danger)';
-    if (level === 'SUCCESS') return 'var(--success)';
-    if (level === 'WARN') return 'var(--warning)';
-    return 'var(--info)'; // INFO
-  };
-
   return (
     <>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      
       <Header />
       
       <main className="layout-content">
@@ -801,7 +787,7 @@ export default function Layer2Workflow() {
 
           {/* Node View (React Flow) */}
           {centerView === 'node' && (
-            <div style={{ flex: 1, position: 'relative' }}>
+            <div className="ws-panel-in" style={{ flex: 1, position: 'relative' }}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -821,7 +807,7 @@ export default function Layer2Workflow() {
 
           {/* Graph View VBA / WPF (Cytoscape) */}
           {(centerView === 'graph' || centerView === 'graphWpf') && (
-            <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div key={centerView} className="ws-panel-in" style={{ flex: 1, overflow: 'hidden' }}>
               {screenName ? (
                 (() => {
                   const s = filteredSidebarScreens.find(i => i.name === screenName);
@@ -856,34 +842,36 @@ export default function Layer2Workflow() {
         <div className="terminal-sidebar" style={{ width: terminalCollapsed ? 40 : sidebarWidth, overflow: "hidden", transition: "width 0.22s" }}>
           {!terminalCollapsed && <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />}
           
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tab-bar)' }}>
+          <div className="ws-tabbar">
             <button 
               onClick={() => setTerminalCollapsed(v => !v)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 12px', display: 'flex', alignItems: 'center', height: 42, flexShrink: 0 }}
+              className="ws-tab-toggle"
             >
               {terminalCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
             </button>
-            <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'logs' ? 'var(--success)' : "var(--text-muted)", borderBottom: activeTab === 'logs' ? '2px solid var(--success)' : '2px solid transparent' }}
+            <button 
+              className={`ws-tab ${activeTab === 'logs' ? 'active' : ''}`}
+              style={{ ['--ws-accent' as any]: 'var(--success)' }}
               onClick={() => setActiveTab('logs')}
             >
               <Terminal size={13} /> System Log
-            </div>
-            <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'preview' ? 'var(--warning)' : "var(--text-muted)", borderBottom: activeTab === 'preview' ? '2px solid var(--warning)' : '2px solid transparent' }}
+            </button>
+            <button 
+              className={`ws-tab ${activeTab === 'preview' ? 'active' : ''}`}
+              style={{ ['--ws-accent' as any]: 'var(--warning)' }}
               onClick={() => setActiveTab('preview')}
             >
               <DatabaseZap size={13} /> DB Preview
-            </div>
-            <div 
-              style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: activeTab === 'tokens' ? 'var(--accent)' : "var(--text-muted)", borderBottom: activeTab === 'tokens' ? '2px solid var(--accent)' : '2px solid transparent', position: 'relative' }}
+            </button>
+            <button 
+              className={`ws-tab ${activeTab === 'tokens' ? 'active' : ''}`}
               onClick={() => setActiveTab('tokens')}
             >
               <BarChart2 size={13} /> Token Stats
               {(tokenStats || ddTokenStats) && (
                 <span style={{ position: 'absolute', top: 6, right: 4, width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />
               )}
-            </div>
+            </button>
           </div>
 
           {activeTab === "logs" && (
@@ -907,7 +895,7 @@ export default function Layer2Workflow() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: 13 }}>📊 Token Usage Report</span>
                 <a
-                  href="/api/v1/layer5/download-token-report"
+                  href="/api/v1/layer2/download-token-report"
                   download
                   style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
                 >

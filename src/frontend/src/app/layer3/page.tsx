@@ -47,54 +47,72 @@ const highlightSql = (text: string): string => {
   return html;
 };
 
-const getOraSuggestion = (errMsg: string): { vn: string; jp: string } | null => {
+const getPgSuggestion = (errMsg: string): { vn: string; jp: string } | null => {
   const errUpper = errMsg.toUpperCase();
-  if (errUpper.includes("ORA-00942") || errUpper.includes("TABLE OR VIEW DOES NOT EXIST")) {
+  
+  // 1. Table or view does not exist
+  if (errUpper.includes("RELATION") && errUpper.includes("DOES NOT EXIST")) {
     return {
-      vn: "Bảng hoặc View không tồn tại trên Oracle. Hãy kiểm tra xem bảng đã được migrate/import sang database test (cổng 1523) chưa.",
-      jp: "テーブルまたはビューが存在しません。移行先のテスト環境DB（ポート1523）に対象テーブルがインポートされているか確認してください。"
+      vn: "Bảng hoặc View không tồn tại trên PostgreSQL. Hãy kiểm tra xem bảng đã được migrate/import sang PostgreSQL test database chưa.",
+      jp: "テーブルまたはビューがPostgreSQLに存在しません。移行先のテスト環境DBに対象テーブルがインポートされているか確認してください。"
     };
   }
-  if (errUpper.includes("ORA-00904") || errUpper.includes("INVALID IDENTIFIER")) {
+  
+  // 2. Column does not exist
+  if (errUpper.includes("COLUMN") && errUpper.includes("DOES NOT EXIST")) {
     return {
-      vn: "Tên cột/trường không tồn tại hoặc sai chính tả. Vui lòng kiểm tra lại cấu trúc bảng trong Access vs Oracle, hoặc xem lại ánh xạ logical_to_physical.",
-      jp: "無効な識別子です。カラム名が正しいか、またはlogical_to_physicalによる物理名マッピングに誤りがないか確認してください。"
+      vn: "Tên cột/trường không tồn tại hoặc sai chính tả. Vui lòng kiểm tra lại cấu trúc bảng trong Access vs PostgreSQL.",
+      jp: "カラム名が存在しないか誤りがあります。AccessとPostgreSQL củaテーブル定義を確認してください。"
     };
   }
-  if (errUpper.includes("ORA-00923") || errUpper.includes("FROM KEYWORD NOT FOUND")) {
+  
+  // 3. Ambiguous column definition
+  if (errUpper.includes("IS AMBIGUOUS")) {
     return {
-      vn: "Lỗi cú pháp: Thiếu từ khóa FROM ở đúng vị trí (thường do thừa/thiếu dấu phẩy phân tách các trường trong câu lệnh SELECT).",
-      jp: "FROMキーワードが見つかりません。SELECT句内のカラム句区切りカンマの過不足や構文エラーを確認してください。"
-    };
-  }
-  if (errUpper.includes("ORA-00918") || errUpper.includes("COLUMN AMBIGUOUSLY DEFINED")) {
-    return {
-      vn: "Tên cột bị trùng lặp giữa các bảng tham gia JOIN. Cần thêm alias (tên viết tắt của bảng) trước tên cột để làm rõ nguồn.",
+      vn: "Tên cột bị trùng lặp giữa các bảng tham gia JOIN. Cần thêm alias (tên viết tắt của bảng) trước tên cột để phân biệt.",
       jp: "列の定義が曖昧です。JOIN結合する各テーブル間で列名が重複しているため、テーブル接頭辞（エイリアス）を指定してください。"
     };
   }
-  if (errUpper.includes("ORA-00936") || errUpper.includes("MISSING EXPRESSION")) {
+  
+  // 4. Syntax errors
+  if (errUpper.includes("SYNTAX ERROR")) {
+    if (errUpper.includes("FROM")) {
+      return {
+        vn: "Lỗi cú pháp gần từ khóa FROM (thường do thừa/thiếu dấu phẩy phân tách các trường trong SELECT).",
+        jp: "FROMキーワード付近に構文エラーがあります。SELECT句内のカラムの区切りカンマなどを確認してください。"
+      };
+    }
     return {
-      vn: "Lỗi cú pháp: Thiếu biểu thức (thường do dư thừa dấu phẩy ở cuối SELECT, hoặc viết sai các toán tử).",
-      jp: "式が欠落しています。カンマが余分にあるか、演算子やカッコの閉じ忘れがないか確認してください。"
+      vn: "Lỗi cú pháp SQL: Vui lòng kiểm tra kỹ các từ khóa, dấu đóng mở ngoặc hoặc dấu phẩy trong câu lệnh.",
+      jp: "SQL構文エラーです。キーワード、カンマ、カッコの対応などを確認してください。"
     };
   }
-  if (errUpper.includes("ORA-00933") || errUpper.includes("SQL COMMAND NOT PROPERLY ENDED")) {
+  
+  // 5. Data type casting error
+  if (errUpper.includes("INVALID INPUT SYNTAX") || errUpper.includes("COULD NOT INTEGER")) {
+    if (errUpper.includes("TIMESTAMP") || errUpper.includes("DATE")) {
+      return {
+        vn: "Lỗi định dạng ngày tháng (Date/Timestamp): Giá trị ngày tháng truyền vào không đúng định dạng PostgreSQL yêu cầu.",
+        jp: "日付リテラルの書式エラーです。日付型の変換フォーマットを確認してください。"
+      };
+    }
     return {
-      vn: "Câu lệnh kết thúc không hợp lệ (ví dụ: dùng dấu chấm phẩy `;` ở cuối, hoặc viết sai thứ tự mệnh đề GROUP BY, ORDER BY, JOIN).",
-      jp: "SQLコマンドが正しく終了されていません。セミコロン「;」の混入や、GROUP BY、ORDER BY等の記述順序を確認してください。"
+      vn: "Lỗi chuyển đổi kiểu dữ liệu: Cố gắng so sánh hoặc nạp một chuỗi phi số vào trường kiểu số (Numeric/Integer).",
+      jp: "無効な数値入力またはデータ型変換エラーです。カラムのデータ型と入力値を確認してください。"
     };
   }
-  if (errUpper.includes("ORA-01722") || errUpper.includes("INVALID NUMBER")) {
+
+  // Fallback to ORA codes
+  if (errUpper.includes("ORA-00942")) {
     return {
-      vn: "Lỗi chuyển đổi kiểu dữ liệu: Cố gắng chuyển đổi hoặc so sánh một chuỗi phi số với một trường kiểu số (Number).",
-      jp: "数値が無効です。数値型カラムに対して非数値文字列の比較や代入を行っていないか確認してください。"
+      vn: "Bảng hoặc View không tồn tại trên PostgreSQL.",
+      jp: "テーブルまたはビューが存在しません。"
     };
   }
-  if (errUpper.includes("ORA-01861") || errUpper.includes("LITERAL DOES NOT MATCH FORMAT STRING")) {
+  if (errUpper.includes("ORA-00904")) {
     return {
-      vn: "Lỗi định dạng ngày tháng (Date/Timestamp): Giá trị ngày tháng truyền vào không đúng định dạng Oracle yêu cầu. Sử dụng TO_DATE(value, format).",
-      jp: "リテラルが書式文字列と一致しません。日付型の変換時（TO_DATEなど）のフォーマットマスクが正しいか確認してください。"
+      vn: "Tên cột/trường không tồn tại hoặc sai chính tả.",
+      jp: "列名が無効です。"
     };
   }
   return null;
@@ -150,23 +168,23 @@ function StatsBar({ stats }: { stats: Stats }) {
     { label: "Error",     value: stats.error,     color: "var(--danger)" },
   ];
   return (
-    <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
       {items.map(({ label, value, color }) => (
-        <div key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color, fontWeight: 700, fontSize: 18 }}>{value}</span>
-          <span style={{ color: "var(--text-muted)", fontSize: 11 }}>{label}</span>
+        <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 9999, background: "var(--bg-tab-bar)", border: "1px solid var(--border-color)" }}>
+          <span style={{ color, fontWeight: 800, fontSize: 16 }}>{value}</span>
+          <span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 600 }}>{label}</span>
         </div>
       ))}
       {/* Progress bar */}
-      <div style={{ flex: 1, height: 6, background: "var(--border-color)", borderRadius: 4, overflow: "hidden", maxWidth: 200 }}>
+      <div style={{ flex: 1, height: 7, background: "var(--border-color)", borderRadius: 9999, overflow: "hidden", maxWidth: 200 }}>
         <div style={{
-          height: "100%", borderRadius: 4,
+          height: "100%", borderRadius: 9999,
           background: "linear-gradient(90deg, var(--success), var(--warning))",
           width: `${stats.total > 0 ? Math.round((stats.converted / stats.total) * 100) : 0}%`,
           transition: "width 0.4s ease",
         }} />
       </div>
-      <span style={{ color: "var(--text-muted)", fontSize: 11 }}>
+      <span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 600 }}>
         {stats.total > 0 ? Math.round((stats.converted / stats.total) * 100) : 0}% done
       </span>
     </div>
@@ -535,7 +553,7 @@ function TableViewer({
           </select>
           <button 
             onClick={onConvert} disabled={converting}
-            style={{ padding: "8px 16px", borderRadius: 6, background: "var(--accent)", color: "#fff", border: "none", cursor: converting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, opacity: converting ? 0.7 : 1 }}
+            style={{ padding: "8px 16px", borderRadius: 8, background: "var(--brand-gradient)", color: "#fff", border: "none", cursor: converting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, opacity: converting ? 0.7 : 1, boxShadow: "var(--shadow-glow)" }}
           >
             {converting ? <RefreshCw size={14} className="spin" /> : <Play size={14} />}
             {converting ? "Converting..." : "Convert Schema (Rule-based)"}
@@ -603,7 +621,7 @@ export default function Layer3Page() {
   const [editedOracle, setEditedOracle] = useState("");
   const [models, setModels]             = useState(["deepseek-v4-pro", "qwen3-vl-235b-a22b-thinking", "qwen-vl-plus-latest", "qwen-max", "qvq-max-2025-03-25"]);
   const [selectedModel, setSelectedModel] = useState("deepseek-v4-pro");
-  const [selectedDialect, setSelectedDialect] = useState("Oracle SQL");
+  const [selectedDialect, setSelectedDialect] = useState("PostgreSQL");
   const [toast, setToast]               = useState<{ msg: string; ok: boolean } | null>(null);
   const [runningTest, setRunningTest]   = useState(false);
   const [testResult, setTestResult]         = useState<any>(null);
@@ -940,16 +958,16 @@ export default function Layer3Page() {
       <Header />
 
       <main className="layout-content" style={{ flexDirection: "column" }}>
-        <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", background: "var(--bg-panel)", padding: "0 16px", flexShrink: 0 }}>
-          <div onClick={() => setActiveTab("queries")} style={{ padding: "12px 16px", cursor: "pointer", borderBottom: activeTab === "queries" ? "2px solid var(--accent)" : "2px solid transparent", color: activeTab === "queries" ? "var(--text-main)" : "var(--text-muted)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+        <div className="ws-tabbar" style={{ padding: "0 16px" }}>
+          <button onClick={() => setActiveTab("queries")} className={`ws-tab ${activeTab === "queries" ? "active" : ""}`} style={{ padding: "12px 16px" }}>
             <DatabaseZap size={16} /> Queries Migration
-          </div>
-          <div onClick={() => setActiveTab("tables")} style={{ padding: "12px 16px", cursor: "pointer", borderBottom: activeTab === "tables" ? "2px solid var(--accent)" : "2px solid transparent", color: activeTab === "tables" ? "var(--text-main)" : "var(--text-muted)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+          </button>
+          <button onClick={() => setActiveTab("tables")} className={`ws-tab ${activeTab === "tables" ? "active" : ""}`} style={{ padding: "12px 16px" }}>
             <Table size={16} /> Table Explorer
-          </div>
+          </button>
         </div>
 
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <div key={activeTab} className="ws-panel-in" style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {activeTab === "queries" ? (
           <>
             <QueryList
@@ -983,13 +1001,13 @@ export default function Layer3Page() {
                 {/* Dialect selector */}
                 <select value={selectedDialect} onChange={e => setSelectedDialect(e.target.value)}
                   style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", color: "var(--text-muted)", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
-                  <option value="Oracle SQL">Oracle SQL</option>
                   <option value="PostgreSQL">PostgreSQL</option>
+                  <option value="Oracle SQL">Oracle SQL</option>
                   <option value="SQL Server">SQL Server</option>
                   <option value="MySQL">MySQL</option>
                 </select>
 
-                 <button onClick={handleRunTest} disabled={runningTest || !editedOracle || selectedDialect !== "Oracle SQL"}
+                 <button onClick={handleRunTest} disabled={runningTest || !editedOracle || selectedDialect !== "PostgreSQL"}
                   style={{
                     background: "color-mix(in srgb, var(--success) 10%, transparent)",
                     border: "1px solid var(--success)",
@@ -998,11 +1016,11 @@ export default function Layer3Page() {
                     padding: "6px 12px",
                     fontSize: 12,
                     fontWeight: 600,
-                    cursor: (runningTest || !editedOracle || selectedDialect !== "Oracle SQL") ? "not-allowed" : "pointer",
+                    cursor: (runningTest || !editedOracle || selectedDialect !== "PostgreSQL") ? "not-allowed" : "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    opacity: (runningTest || !editedOracle || selectedDialect !== "Oracle SQL") ? 0.7 : 1
+                    opacity: (runningTest || !editedOracle || selectedDialect !== "PostgreSQL") ? 0.7 : 1
                   }}>
                   {runningTest ? (
                     <div className="loader" style={{ width: 12, height: 12 }} />
@@ -1073,7 +1091,7 @@ export default function Layer3Page() {
                     </button>
                     {/* Convert & Auto-Test (green) */}
                     <button onClick={handleConvertAndTest} disabled={converting || convertingAndTesting}
-                      title="Convert & Auto-Test: Đổi SQL rồi tự động test trên Oracle DB, LLM tự fix nếu lỗi"
+                      title="Convert & Auto-Test: Đổi SQL rồi tự động test trên PostgreSQL DB, LLM tự fix nếu lỗi"
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
                         background: (converting || convertingAndTesting) ? "var(--border-color)" : "var(--success)",
@@ -1098,7 +1116,7 @@ export default function Layer3Page() {
                   sql={oracleSql}
                   editable
                   onChange={setEditedOracle}
-                  badge={hasDiff ? "Modified" : "Oracle"}
+                  badge={hasDiff ? "Modified" : "PostgreSQL"}
                   badgeColor={hasDiff ? "var(--warning)" : "var(--success)"}
                 />
               </div>
@@ -1128,7 +1146,7 @@ export default function Layer3Page() {
                         {testResult.success ? "SUCCESS" : "ERROR"}
                       </span>
                       <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
-                        Oracle Test Result
+                        PostgreSQL Test Result
                         {testHistory.length > 1 && (
                           <span style={{ marginLeft: 6, fontSize: 10, color: "var(--info)", fontWeight: 400 }}>
                             ({testHistory.length} attempt{testHistory.length > 1 ? "s" : ""}, {fixNotes.length} LLM fix{fixNotes.length !== 1 ? "es" : ""})
@@ -1246,7 +1264,7 @@ export default function Layer3Page() {
                             </tbody>
                           </table>
                           {testResult.rows && testResult.rows.length > 0 && (
-                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>* Showing first {testResult.rows.length} row(s) from oracle_test</div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8 }}>* Showing first {testResult.rows.length} row(s) from postgres_test</div>
                           )}
                         </div>
                       )}
@@ -1261,7 +1279,7 @@ export default function Layer3Page() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
                       <div style={{ padding: "12px", borderRadius: 6, background: "color-mix(in srgb, var(--danger) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--danger) 20%, transparent)", display: "flex", flexDirection: "column", gap: 6 }}>
                         {(testResult.error_code) && (
-                          <div style={{ color: "var(--danger)", fontWeight: 700 }}>Oracle Error: {testResult.error_code}</div>
+                          <div style={{ color: "var(--danger)", fontWeight: 700 }}>PostgreSQL Error: {testResult.error_code}</div>
                         )}
                         <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all", color: "var(--danger)", fontFamily: "monospace", fontSize: 11 }}>
                           {testResult.error_message}
@@ -1269,8 +1287,7 @@ export default function Layer3Page() {
                       </div>
 
                       {(() => {
-                        const matchedOra = testResult.error_message?.match(/ORA-\d+/)?.[0] || (testResult.error_code ? `ORA-${testResult.error_code}` : "");
-                        const suggestions = getOraSuggestion(matchedOra || testResult.error_message || "");
+                        const suggestions = getPgSuggestion(testResult.error_message || testResult.error_code || "");
                         if (!suggestions) return null;
                         return (
                           <div style={{
@@ -1342,7 +1359,8 @@ export default function Layer3Page() {
           top: 0,
           right: 0,
           width: 500,
-          height: "100vh",
+          maxWidth: "100vw",
+          height: "100dvh",
           background: "var(--bg-dark)",
           borderLeft: "1px solid var(--border-color)",
           boxShadow: "-10px 0 30px rgba(0,0,0,0.5)",
@@ -1362,7 +1380,7 @@ export default function Layer3Page() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <AlertCircle size={18} color="var(--danger)" />
-              <span style={{ fontWeight: 700, color: "var(--text-main)", fontSize: 14 }}>Lịch sử lỗi Migration (Oracle DB)</span>
+              <span style={{ fontWeight: 700, color: "var(--text-main)", fontSize: 14 }}>Lịch sử lỗi Migration (PostgreSQL DB)</span>
             </div>
             <button
               onClick={() => setShowErrorLogs(false)}
@@ -1394,8 +1412,8 @@ export default function Layer3Page() {
             ) : (
               errorLogs.map((log: any, idx: number) => {
                 const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : "";
-                const matchedOra = log.error_message?.match(/ORA-\d+/)?.[0] || (log.error_code ? `ORA-${log.error_code}` : "");
-                const suggestions = getOraSuggestion(matchedOra || log.error_message || "");
+                const suggestions = getPgSuggestion(log.error_message || log.error_code || "");
+                const errCode = log.error_code || log.error_message?.match(/ORA-\d+|[A-Z0-9]{5}/)?.[0] || "";
                 
                 return (
                   <div key={idx} style={{
@@ -1423,7 +1441,7 @@ export default function Layer3Page() {
                       color: "var(--danger)"
                     }}>
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                        {matchedOra ? matchedOra : "Error Detail"} {log.source_operation && `(${log.source_operation})`}
+                        {errCode ? errCode : "Error Detail"} {log.source_operation && `(${log.source_operation})`}
                       </div>
                       <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all", fontFamily: "monospace", fontSize: 10 }}>
                         {log.error_message}

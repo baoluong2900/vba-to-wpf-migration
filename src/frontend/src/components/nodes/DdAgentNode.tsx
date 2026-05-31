@@ -111,9 +111,9 @@ export const DdAgentNode = ({ data }: any) => {
             style={{
               marginBottom: 12,
               fontSize: '11px',
-              background: 'rgba(0,0,0,0.2)',
+              background: 'var(--bg-dark)',
               padding: '8px',
-              borderRadius: '4px',
+              borderRadius: '6px',
               border: `1px solid ${DD_COLOR_BORDER}`,
             }}
           >

@@ -28,7 +28,7 @@ function L3ExcelNodeInner({ data }: { data: any }) {
       borderRadius: 12,
       width: 280,
       border: `1px solid ${status === "success" ? color : status === "running" ? "var(--brand-primary)" : "var(--border-color)"}`,
-      boxShadow: isRunning ? `0 0 24px ${color}33` : "0 4px 16px rgba(0,0,0,0.25)",
+      boxShadow: isRunning ? `0 0 24px ${color}33` : "var(--shadow-md)",
       transition: "all 0.3s",
       overflow: "hidden",
     }}>

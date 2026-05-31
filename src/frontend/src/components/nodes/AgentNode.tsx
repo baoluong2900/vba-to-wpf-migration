@@ -37,12 +37,14 @@ export const AgentNode = ({ data }: any) => {
             })}
           </select>
 
-          API: platform.beeknoee.com
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', opacity: 0.8 }}>
+            API: platform.beeknoee.com
+          </div>
         </div>
 
         {/* Steps Tracker */}
         {(data.agentStatus === "running" || data.agentStatus === "success") && (
-          <div style={{ marginTop: 12, marginBottom: 12, fontSize: '11px', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px' }}>
+          <div style={{ marginTop: 12, marginBottom: 12, fontSize: '11px', background: 'var(--bg-dark)', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: data.agentStep === 's1' ? '#3b82f6' : (data.agentStep === 'done' || data.agentStep === 's2' || data.agentStep === 's3' || data.agentStep === 's4' ? '#10b981' : "var(--text-muted)"), marginBottom: '4px' }}>
               {data.agentStep === 's1' ? <div className="loader" style={{width: 10, height: 10}}></div> : <CheckCircle2 size={12} />} 
               <span>S1: DB Raw Data</span>

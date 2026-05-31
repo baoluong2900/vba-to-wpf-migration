@@ -28,7 +28,7 @@ export const DbQueryNode = ({ data }: any) => {
         </div>
         <button 
           className="run-btn nodrag" 
-          style={{ background: '#f59e0b', color: "var(--bg-dark)" }}
+          style={{ background: '#f59e0b', color: '#1a1205' }}
           onClick={(e) => { e.stopPropagation(); data.handleQueryDB(); }}
           disabled={data.queryStatus === "running"}
         >
@@ -38,7 +38,7 @@ export const DbQueryNode = ({ data }: any) => {
         {data.queryStatus === "success" && Boolean(data.dbData) && (
           <button 
             className="nodrag nopan"
-            style={{ marginTop: '8px', background: '#291c0a', border: '1px solid #f59e0b', color: '#f59e0b', width: '100%', padding: '8px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', pointerEvents: 'all' }}
+            style={{ marginTop: '8px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid #f59e0b', color: '#f59e0b', width: '100%', padding: '8px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', pointerEvents: 'all' }}
             onMouseDownCapture={(e) => e.stopPropagation()}
             onClickCapture={(e) => { e.stopPropagation(); data.setActiveTab("preview"); }}
           >

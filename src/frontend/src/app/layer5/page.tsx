@@ -8,11 +8,11 @@ import Footer from "../../components/Footer";
 import { ReactFlow, Controls, Background, Node, Edge, useNodesState, useEdgesState, BackgroundVariant } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { L5AgentNode } from "../../components/nodes/L5AgentNode";
+import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
 
 // ── Types ─────────────────────────────────────
 interface AgentDef { key: string; label: string; icon: string; color: string; description: string; inputs: string[]; outputs: string[]; defaultModel: string; }
 interface AgentRunStatus { status: "idle" | "running" | "success" | "error"; message?: string; files?: { path: string; size?: number }[]; duration?: number; }
-interface LogEntry { time: string; level: string; message: string; agent?: string; }
 interface ModelOption { id: string; label: string; provider: string; }
 
 // Logic Console types
@@ -172,7 +172,7 @@ export default function Layer5Page() {
   }, []);
 
   const addLog = useCallback((level: string, message: string, agent?: string) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+    const time = formatLogTime();
     setLogs(prev => [...prev, { time, level, message, agent }]);
   }, []);
 
@@ -210,7 +210,7 @@ export default function Layer5Page() {
           if (!line) continue;
           try {
             const ev = JSON.parse(line);
-            const t = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+            const t = formatLogTime();
             if (ev.type === "log") {
               setLogicLogs(prev => [...prev, { ts: ev.ts ?? t, level: ev.level ?? "INFO", message: ev.message }]);
             } else if (ev.type === "done") {
@@ -228,7 +228,7 @@ export default function Layer5Page() {
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
-        const t = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+        const t = formatLogTime();
         setLogicLogs(prev => [...prev, { ts: t, level: "ERROR", message: err.message }]);
       }
     } finally {
@@ -639,7 +639,6 @@ export default function Layer5Page() {
     return { done, total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
   }, [agentStatuses]);
 
-  const getLogColor = (level: string) => level === "ERROR" ? "var(--danger)" : level === "SUCCESS" ? "var(--success)" : level === "WARN" ? "var(--warning)" : "var(--info)";
   const getAgentColor = (agent?: string) => agent ? AGENTS.find(a => a.key === agent)?.color : undefined;
   const testSummary = useMemo(() => {
     const cases = testResult?.cases || [];
@@ -652,8 +651,6 @@ export default function Layer5Page() {
 
   return (
     <>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
       <Header />
 
       <main className="layout-content">
@@ -720,8 +717,8 @@ export default function Layer5Page() {
                   <span style={{ color: "var(--text-muted)" }}>Progress: {pipelineProgress.done}/{pipelineProgress.total}</span>
                   <span style={{ color: "var(--accent)", fontWeight: 600 }}>{pipelineProgress.pct}%</span>
                 </div>
-                <div style={{ width: "100%", height: 6, background: "var(--bg-dark)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ height: "100%", borderRadius: 4, background: "var(--brand-gradient)", width: `${pipelineProgress.pct}%`, transition: "width 0.4s" }} />
+                <div style={{ width: "100%", height: 6, background: "var(--bg-dark)", borderRadius: 9999, overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 9999, background: "var(--brand-gradient)", width: `${pipelineProgress.pct}%`, transition: "width 0.4s" }} />
                 </div>
               </div>
 
@@ -823,30 +820,30 @@ export default function Layer5Page() {
         {/* ── Right Sidebar: Logs + Preview ── */}
         <div className="terminal-sidebar" style={{ width: terminalCollapsed ? 40 : sidebarWidth, overflow: "hidden", transition: "width 0.22s" }}>
           {!terminalCollapsed && <div className="sidebar-resizer" onMouseDown={() => { isResizing.current = true; }} />}
-          <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "var(--bg-tab-bar)" }}>
+          <div className="ws-tabbar">
             <button 
               onClick={() => setTerminalCollapsed(v => !v)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 12px', display: 'flex', alignItems: 'center', height: 42, flexShrink: 0 }}
+              className="ws-tab-toggle"
             >
               {terminalCollapsed ? <ChevronRight size={16} /> : <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />}
             </button>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "var(--success)" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid var(--success)" : "2px solid transparent" }}
+            <button className={`ws-tab ${rightTab === "logs" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--success)' }}
               onClick={() => setRightTab("logs")}>
               <Settings2 size={13} /> Pipeline Log
-            </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "preview" ? "var(--warning)" : "var(--text-muted)", borderBottom: rightTab === "preview" ? "2px solid var(--warning)" : "2px solid transparent" }}
+            </button>
+            <button className={`ws-tab ${rightTab === "preview" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--warning)' }}
               onClick={() => setRightTab("preview")}>
               <Eye size={13} /> Preview
-            </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tests" ? "var(--success)" : "var(--text-muted)", borderBottom: rightTab === "tests" ? "2px solid var(--success)" : "2px solid transparent" }}
+            </button>
+            <button className={`ws-tab ${rightTab === "tests" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--success)' }}
               onClick={() => setRightTab("tests")}>
               <BarChart3 size={13} /> Tests
-            </div>
-            <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "tokens" ? "var(--accent)" : "var(--text-muted)", borderBottom: rightTab === "tokens" ? "2px solid var(--accent)" : "2px solid transparent" }}
+            </button>
+            <button className={`ws-tab ${rightTab === "tokens" ? "active" : ""}`}
               onClick={() => setRightTab("tokens")}>
               <BarChart3 size={13} /> Tokens
-            </div>
-            <div style={{ padding: "10px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: rightTab === "logic" ? "var(--accent)" : "var(--text-muted)", borderBottom: rightTab === "logic" ? "2px solid var(--accent)" : "2px solid transparent" }}
+            </button>
+            <button className={`ws-tab ${rightTab === "logic" ? "active" : ""}`} style={{ padding: "10px 12px", gap: 5 }}
               onClick={() => setRightTab("logic")}>
               <Brain size={13} /> Logic
               {logicRunning && <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />}
@@ -855,11 +852,11 @@ export default function Layer5Page() {
                   {logicSummary.compile_ok ? "🟢" : "🟡"}
                 </span>
               )}
-            </div>
+            </button>
           </div>
 
           {rightTab === "logs" && (
-            <div className="terminal-content" style={{ overflowY: "auto", flex: 1, padding: 0 }}>
+            <div className="terminal-content ws-panel-in" style={{ overflowY: "auto", flex: 1, padding: 0 }}>
               <div style={{ padding: 16 }}>
                 {logs.map((log, i) => (
                   <div key={i} className="log-line">
@@ -874,7 +871,7 @@ export default function Layer5Page() {
             </div>
           )}
           {rightTab === "preview" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflow: "hidden" }}>
+            <div className="ws-panel-in" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflow: "hidden" }}>
               {previewContent ? (
                 <>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "var(--warning)", marginBottom: 8 }}>{previewContent.title}</div>
@@ -891,7 +888,7 @@ export default function Layer5Page() {
           )}
 
           {rightTab === "tests" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflow: "hidden", gap: 12 }}>
+            <div className="ws-panel-in" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflow: "hidden", gap: 12 }}>
               {testResult ? (
                 <>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -995,12 +992,12 @@ export default function Layer5Page() {
           )}
 
           {rightTab === "tokens" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflowY: "auto" }}>
+            <div className="ws-panel-in" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <h3 style={{ margin: 0, fontSize: 14, color: "var(--accent)", display: "flex", alignItems: "center", gap: 8 }}>
                   <BarChart3 size={16} /> AI Token Consumption
                 </h3>
-                <button onClick={() => window.open("/api/layer5/download-token-report")}
+                <button onClick={() => window.open("/api/v1/layer5/download-token-report")}
                   style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg-dark)", border: "1px solid var(--border-color)", color: "var(--text-muted)", padding: "4px 10px", borderRadius: 4, fontSize: 11, cursor: "pointer" }}>
                   <Download size={12} /> Excel
                 </button>
@@ -1058,7 +1055,7 @@ export default function Layer5Page() {
 
           {/* ── Logic Console Tab ── */}
           {rightTab === "logic" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div className="ws-panel-in" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
               {/* Phase selector — chỉ để xem/chọn, Run thực hiện từ node */}
               <div style={{ padding: "6px 12px", borderBottom: "1px solid var(--border-color)", background: "var(--bg-tab-bar)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700 }}>PHASE</span>

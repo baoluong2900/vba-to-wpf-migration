@@ -8,6 +8,7 @@ import Footer from "../../components/Footer";
 import { ReactFlow, Controls, Background, Node, Edge, useNodesState, useEdgesState, BackgroundVariant } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { L3ExcelNode } from "../../components/nodes/L3ExcelNode";
+import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface L3Item { name: string; has_bd: boolean; has_dd: boolean; type: string; }
@@ -17,7 +18,6 @@ interface NodeStatus {
   downloadUrl?: string;
 }
 interface OutputFile { filename: string; doc_kind: string; doc_type: string; size_kb: number; download_url: string; }
-interface LogEntry { time: string; level: string; message: string; }
 
 // ── Node positions ─────────────────────────────────────────────────────────────
 const BD_NODE_POS = { x: 80, y: 60 };
@@ -39,7 +39,7 @@ export default function Layer4Page() {
   const nodeTypes = useMemo(() => ({ l3ExcelNode: L3ExcelNode }), []);
 
   const addLog = useCallback((level: string, msg: string) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+    const time = formatLogTime();
     setLogs(prev => [...prev, { time, level, message: msg }]);
   }, []);
 
@@ -292,15 +292,10 @@ export default function Layer4Page() {
 
   useEffect(() => { setEdges(rfEdges); }, [rfEdges, setEdges]);
 
-  const getLogColor = (level: string) =>
-    level === "ERROR" ? "var(--danger)" : level === "SUCCESS" ? "var(--success)" : level === "WARN" ? "var(--warning)" : "var(--info)";
-
   const toggleGroup = (g: string) => setCollapsedGroups(prev => ({ ...prev, [g]: !prev[g as keyof typeof prev] }));
 
   return (
     <>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
       <Header />
 
       <main className="layout-content">
@@ -397,17 +392,17 @@ export default function Layer4Page() {
 
         {/* ── Right Sidebar: Logs + Files ── */}
         <div className="terminal-sidebar" style={{ width: 360 }}>
-          <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", backgroundColor: "var(--bg-tab-bar)" }}>
-            <div onClick={() => setRightTab("logs")} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "logs" ? "var(--success)" : "var(--text-muted)", borderBottom: rightTab === "logs" ? "2px solid var(--success)" : "2px solid transparent" }}>
+          <div className="ws-tabbar">
+            <button onClick={() => setRightTab("logs")} className={`ws-tab ${rightTab === "logs" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--success)' }}>
               <Settings2 size={13} /> Logs
-            </div>
-            <div onClick={() => { setRightTab("files"); refreshOutputs(); }} style={{ padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: rightTab === "files" ? "var(--warning)" : "var(--text-muted)", borderBottom: rightTab === "files" ? "2px solid var(--warning)" : "2px solid transparent" }}>
+            </button>
+            <button onClick={() => { setRightTab("files"); refreshOutputs(); }} className={`ws-tab ${rightTab === "files" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--warning)' }}>
               <Eye size={13} /> Files ({outputFiles.length})
-            </div>
+            </button>
           </div>
 
           {rightTab === "logs" && (
-            <div className="terminal-content" style={{ overflowY: "auto", flex: 1, padding: 16 }}>
+            <div className="terminal-content ws-panel-in" style={{ overflowY: "auto", flex: 1, padding: 16 }}>
               {logs.map((log, i) => (
                 <div key={i} className="log-line">
                   <span className="log-time">[{log.time}]</span>
@@ -420,21 +415,24 @@ export default function Layer4Page() {
           )}
 
           {rightTab === "files" && (
-            <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
+            <div className="ws-panel-in" style={{ flex: 1, overflowY: "auto", padding: 12 }}>
               {outputFiles.length === 0 ? (
                 <div style={{ color: "var(--text-muted)", fontSize: 12, textAlign: "center", marginTop: 32 }}>
                   <FileSpreadsheet size={28} style={{ margin: "0 auto 8px", display: "block", opacity: 0.4 }} /><br />
                   No Excel files generated yet.<br />Select an item and click Generate.
                 </div>
               ) : outputFiles.map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderBottom: "1px solid var(--border-color)", borderRadius: 4 }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px", marginBottom: 4, border: "1px solid var(--border-color)", borderRadius: 8, background: "var(--bg-panel)", transition: "border-color 0.2s, transform 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-color)"; e.currentTarget.style.transform = "translateY(0)"; }}>
                   <span style={{ fontSize: 16 }}>{f.doc_kind === "BD" ? "📊" : "📄"}</span>
                   <div style={{ flex: 1, overflow: "hidden" }}>
                     <div style={{ fontSize: 11, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.filename}>{f.filename}</div>
                     <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{f.doc_kind} {f.doc_type} — {f.size_kb} KB</div>
                   </div>
                   <button onClick={() => handleDownload(f.download_url, f.filename)}
-                    style={{ background: "none", border: "1px solid var(--border-color)", color: "var(--accent)", borderRadius: 4, padding: "3px 6px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                    title={`Download ${f.filename}`}
+                    style={{ background: "var(--accent-subtle)", border: "1px solid var(--border-color)", color: "var(--accent)", borderRadius: 6, padding: "5px 7px", cursor: "pointer", display: "flex", alignItems: "center" }}>
                     <Download size={12} />
                   </button>
                 </div>

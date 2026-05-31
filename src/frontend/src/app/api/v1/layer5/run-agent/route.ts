@@ -8,10 +8,10 @@ import { buildWpfMappingFromVbaGraph } from "../../../graph-wpf/wpfGraphTransfor
 import { parseActualSourceGraph } from "../../../graph-wpf/source-review/sourceGraphParser";
 
 const execAsync = promisify(exec);
-const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "layer5");
-const SOURCE_DIR = path.resolve(process.cwd(), "..", "source");   // WPF solution root
-const GRAPHVIEW_SOURCE_DIR = path.resolve(process.cwd(), "..", "source");
-const SLN_PATH = path.join(SOURCE_DIR, "vba_brain.sln");
+const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "workflow", "layer5");
+const SOURCE_DIR = path.resolve(process.cwd(), "..", "wpf");   // Avalonia solution root (src/wpf)
+const GRAPHVIEW_SOURCE_DIR = path.resolve(process.cwd(), "..", "wpf");
+const SLN_PATH = path.join(SOURCE_DIR, "vba_brain.slnx");
 const TEST_PROJECT_PATH = path.join(GRAPHVIEW_SOURCE_DIR, "vba_brain.Tests", "vba_brain.Tests.csproj");
 const GRAPHVIEW_INPUTS_DIR = path.join(LAYER5_DIR, "agents", "graphview", "inputs");
 const GRAPHVIEW_OUTPUTS_DIR = path.join(LAYER5_DIR, "agents", "graphview", "outputs");
@@ -267,7 +267,12 @@ async function saveGraphviewJsonToMongo(formName: string): Promise<{ file_name: 
   const saved = [];
   for (const item of files) {
     if (!fs.existsSync(item.file_path)) continue;
-    const content = JSON.parse(fs.readFileSync(item.file_path, "utf-8"));
+    let content: any;
+    try {
+      content = JSON.parse(fs.readFileSync(item.file_path, "utf-8"));
+    } catch {
+      continue;
+    }
     const result = await collection.updateOne(
       { file_name: item.file_name },
       {
@@ -486,6 +491,12 @@ export async function POST(req: NextRequest) {
     const validAgents = ["ui", "logic", "service", "repo", "report", "graphview", "test", "mapping"];
     if (!validAgents.includes(agent)) {
       return NextResponse.json({ success: false, error: `Invalid agent: ${agent}` }, { status: 400 });
+    }
+
+    // Reject shell metacharacters — form_name/model are interpolated into shell command strings below.
+    const SAFE = /^[A-Za-z0-9._\-]+$/;
+    if (!SAFE.test(form_name) || (model && !SAFE.test(model))) {
+      return NextResponse.json({ success: false, error: "Invalid form_name or model" }, { status: 400 });
     }
 
     // ── Step 1: Run Agent (generate files) ──────────────────────────────

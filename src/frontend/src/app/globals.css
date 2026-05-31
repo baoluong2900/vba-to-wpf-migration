@@ -11,27 +11,29 @@
 
 /* ── Light Mode (Default) ── */
 :root {
+  color-scheme: light;
   /* Surfaces */
-  --bg-dark: #f8fafc;
+  --bg-dark: #f6f7fb;
   --bg-panel: #ffffff;
-  --bg-sidebar: #f1f5f9;
+  --bg-sidebar: #f1f3f9;
   --bg-terminal: #0b0c10;
   --bg-code: #0d1117;
-  --bg-tab-bar: #f1f5f9;
+  --bg-tab-bar: #eef1f7;
 
   /* Accents */
   --brand-primary: #6366f1;        /* indigo-500 */
-  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
   --brand-glow: rgba(99, 102, 241, 0.4);
 
   --accent: #6366f1;        /* indigo-500 */
   --accent-hover: #4f46e5;  /* indigo-600 */
   --accent-glow: rgba(99, 102, 241, 0.3);
   --accent-subtle: rgba(99, 102, 241, 0.08);
+  --accent-ring: rgba(99, 102, 241, 0.35);
 
   /* Borders */
-  --border-color: #e2e8f0;
-  --border-subtle: #f1f5f9;
+  --border-color: #e3e8f0;
+  --border-subtle: #eef1f6;
 
   /* Status */
   --success: #10b981;
@@ -42,32 +44,47 @@
   --text-main: #0f172a;
   --text-muted: #64748b;
   --node-bg: #ffffff;
+  --bg-main: var(--bg-dark);  /* alias used by layer3 table view */
+
+  /* Elevation system */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.13), 0 4px 10px rgba(15, 23, 42, 0.06);
+  --shadow-glow: 0 8px 24px var(--accent-glow);
 }
 
 /* ── Dark Mode ── */
 .dark {
-  --bg-dark: #0a0b10;       /* unified dark bg */
+  color-scheme: dark;
+  --bg-dark: #08090e;       /* unified dark bg */
   --bg-panel: #12141c;
-  --bg-sidebar: #0f1118;
-  --bg-terminal: #090a0f;
+  --bg-sidebar: #0e1017;
+  --bg-terminal: #07080c;
   --bg-code: #0b0c10;
-  --bg-tab-bar: #151822;
+  --bg-tab-bar: #141722;
 
-  --border-color: #1e2030;
-  --border-subtle: #181a24;
+  --border-color: #232636;
+  --border-subtle: #181b27;
 
   --brand-primary: #818cf8;        /* indigo-400 */
-  --brand-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  --brand-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #e879f9 100%);
   --brand-glow: rgba(129, 140, 248, 0.4);
 
   --accent: #818cf8;        /* indigo-400 */
   --accent-hover: #6366f1;
-  --accent-glow: rgba(129, 140, 248, 0.25);
-  --accent-subtle: rgba(129, 140, 248, 0.08);
+  --accent-glow: rgba(129, 140, 248, 0.28);
+  --accent-subtle: rgba(129, 140, 248, 0.1);
+  --accent-ring: rgba(129, 140, 248, 0.4);
 
   --text-main: #f3f4f6;
   --text-muted: #9ca3af;
   --node-bg: #1e212b;
+
+  /* Elevation system */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55), 0 6px 14px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 8px 28px var(--accent-glow);
 }
 
 * {
@@ -79,15 +96,43 @@
 body {
   background-color: var(--bg-dark);
   color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth theme transition for surfaces & text */
+body,
+.layout-header,
+.layout-content,
+.task-sidebar,
+.terminal-sidebar,
+.ws-tabbar,
+.node {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--accent-subtle);
+  color: var(--text-main);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
 }
 
 .layout-header {
   height: 60px;
-  background-color: var(--bg-panel);
+  background-color: color-mix(in srgb, var(--bg-panel) 80%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -95,12 +140,14 @@ body {
   font-weight: 600;
   font-size: 16px;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   position: relative;
+  z-index: 30;
 }
 
 .layout-content {
   flex: 1;
+  min-height: 0;
   display: flex;
   position: relative;
   overflow: hidden;
@@ -129,22 +176,23 @@ body {
 .node {
   background: var(--node-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   width: 270px; /* Nhỏ gọn hơn để không bị khổng lồ */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s;
   z-index: 2;
   position: relative;
 }
 
 .node:hover {
-  border-color: #4b5563;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .node.active {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 1px var(--brand-primary), 0 12px 32px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px var(--accent-ring), var(--shadow-lg);
 }
 
 .node-header {
@@ -197,22 +245,24 @@ body {
   background: var(--bg-dark);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  border-radius: 6px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 9px 12px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .input-field:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .run-btn {
   background: var(--brand-gradient);
+  background-size: 150% 150%;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -221,11 +271,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: background-position 0.4s ease, transform 0.12s, box-shadow 0.2s;
+  box-shadow: var(--shadow-glow);
 }
 
 .run-btn:hover {
-  opacity: 0.9;
+  background-position: right center;
+  transform: translateY(-1px);
 }
 
 .run-btn:active {
@@ -233,22 +285,25 @@ body {
 }
 
 .run-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
-  background: #374151;
+  background: var(--border-color);
+  color: var(--text-muted);
+  box-shadow: none;
 }
 
 .json-display {
   background: var(--bg-code);
   border: 1px solid var(--border-color);
   color: var(--accent);
-  border-radius: 6px;
-  padding: 12px;
-  font-family: monospace;
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--font-mono), monospace;
   font-size: 12px;
   height: 200px;
   overflow-y: auto;
   white-space: pre-wrap;
+  line-height: 1.6;
 }
 
 .json-display.empty {
@@ -269,7 +324,7 @@ body {
   font-weight: 500;
   padding: 4px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--accent-subtle);
 }
 
 .status-badge.running {
@@ -300,6 +355,17 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Shared animation utilities (replaces per-page <style> injections) */
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(15px);
+}
+@keyframes fade-in-up {
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -307,18 +373,25 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark); 
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #374151; 
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563; 
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+  background-clip: padding-box;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 35%, transparent) transparent;
 }
 /* Terminal Sidebar */
 .terminal-sidebar {
@@ -372,7 +445,7 @@ body {
 }
 
 .log-time {
-  color: #6b7280;
+  color: var(--text-muted);
   margin-right: 8px;
 }
 
@@ -382,11 +455,10 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.25);
+  background: transparent;
   padding: 4px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
   z-index: 20;
 }
 
@@ -431,7 +503,7 @@ body {
 
 .header-tab:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--accent-subtle);
 }
 
 .header-tab.active {
@@ -502,7 +574,8 @@ body {
 }
 
 .task-search-input:focus {
-  border-color: var(--brand-primary);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .task-item {
@@ -519,14 +592,14 @@ body {
 }
 
 .task-item:hover {
-  background-color: var(--border-color);
+  background-color: var(--accent-subtle);
   color: var(--text-main);
 }
 
 .task-item.active {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--brand-primary);
-  border-left-color: var(--brand-primary);
+  background-color: var(--accent-subtle);
+  color: var(--accent);
+  border-left-color: var(--accent);
   font-weight: 600;
 }
 
@@ -536,7 +609,7 @@ body {
 
 .task-item.active .task-icon {
   opacity: 1;
-  color: var(--brand-primary);
+  color: var(--accent);
 }
 
 /* React Flow Override */
@@ -545,8 +618,8 @@ body {
 }
 
 .react-flow__controls {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-  border-radius: 6px !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: 10px !important;
   overflow: hidden;
   border: 1px solid var(--border-color) !important;
   background-color: var(--bg-panel) !important;
@@ -612,9 +685,10 @@ body {
 
 .action-btn {
   background: var(--brand-gradient);
+  background-size: 150% 150%;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -623,17 +697,18 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px var(--accent-glow);
+  transition: background-position 0.4s ease, transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
+  box-shadow: var(--shadow-glow);
 }
 
 .action-btn:hover {
-  opacity: 0.9;
+  background-position: right center;
   transform: translateY(-1px);
+  box-shadow: 0 10px 28px var(--accent-glow);
 }
 
 .action-btn:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .action-btn:disabled {
@@ -658,4 +733,302 @@ body {
 
 .status-dot.inactive {
   background: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   UNIFIED WORKSPACE THEME — synchronizes Layer 1–5 chrome
+   ════════════════════════════════════════════════════════════════ */
+
+/* Shared keyframes (pulse was referenced by .status-dot but undefined) */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes ws-fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ws-fade-in {
+  animation: ws-fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Reusable animated mesh background (matches Layer 1 polish) */
+.ws-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--mesh-dot, rgba(99, 102, 241, 0.06)) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .ws-mesh {
+  --mesh-dot: rgba(255, 255, 255, 0.018);
+}
+
+/* Reusable glow orbs */
+.ws-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  animation: pulse 8s ease-in-out infinite;
+}
+.ws-glow-tl {
+  top: 10%; left: 15%;
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+  filter: blur(80px);
+  animation-duration: 8000ms;
+}
+.ws-glow-br {
+  bottom: 10%; right: 15%;
+  width: 550px; height: 550px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.10) 0%, transparent 70%);
+  filter: blur(100px);
+  animation-duration: 12000ms;
+}
+.dark .ws-glow-tl { background: radial-gradient(circle, rgba(99, 102, 241, 0.07) 0%, transparent 70%); }
+.dark .ws-glow-br { background: radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%); }
+
+/* Unified tab bar — used by right sidebars (L2/L4/L5) and top bars (L3) */
+.ws-tabbar {
+  display: flex;
+  align-items: stretch;
+  background-color: var(--bg-tab-bar);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.ws-tab {
+  --ws-accent: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  white-space: nowrap;
+  position: relative;
+}
+
+.ws-tab:hover {
+  color: var(--text-main);
+  background: var(--accent-subtle);
+}
+
+.ws-tab.active {
+  color: var(--ws-accent);
+  border-bottom-color: var(--ws-accent);
+}
+
+.ws-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 2px;
+  background: var(--ws-accent);
+  box-shadow: 0 0 10px var(--ws-accent);
+  border-radius: 9999px;
+}
+
+/* Collapse toggle living inside a .ws-tabbar */
+.ws-tab-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+.ws-tab-toggle:hover {
+  color: var(--text-main);
+}
+
+/* Premium touches to shared workspace surfaces */
+.task-item {
+  border-radius: 0 6px 6px 0;
+}
+.terminal-sidebar,
+.task-sidebar {
+  backdrop-filter: blur(2px);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PREMIUM UTILITIES — reusable building blocks for Layer 1–5
+   ════════════════════════════════════════════════════════════════ */
+
+/* Gradient brand text */
+.ws-gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Glassmorphic surface card */
+.ws-card {
+  background: color-mix(in srgb, var(--bg-panel) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s, border-color 0.25s;
+}
+.ws-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+}
+
+/* Gradient hairline divider */
+.ws-divider {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+}
+
+/* Subtle status badge variants (token-driven) */
+.ws-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+}
+.ws-badge-accent  { color: var(--accent);  background: var(--accent-subtle);                       border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.ws-badge-success { color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); border-color: color-mix(in srgb, var(--success) 28%, transparent); }
+.ws-badge-danger  { color: var(--danger);  background: color-mix(in srgb, var(--danger) 12%, transparent);  border-color: color-mix(in srgb, var(--danger) 28%, transparent); }
+.ws-badge-warning { color: var(--warning); background: color-mix(in srgb, var(--warning) 14%, transparent); border-color: color-mix(in srgb, var(--warning) 30%, transparent); }
+
+/* Secondary / ghost button to complement .action-btn */
+.ws-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-main);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.ws-btn-ghost:hover {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.ws-btn-ghost:active { transform: translateY(0) scale(0.98); }
+
+/* Animation helpers */
+@keyframes ws-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.ws-shimmer {
+  background-image: linear-gradient(90deg,
+    color-mix(in srgb, var(--text-muted) 12%, transparent) 25%,
+    color-mix(in srgb, var(--text-muted) 22%, transparent) 37%,
+    color-mix(in srgb, var(--text-muted) 12%, transparent) 63%);
+  background-size: 200% 100%;
+  animation: ws-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes ws-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.ws-float { animation: ws-float 6s ease-in-out infinite; }
+
+/* Staggered fade-in (apply inline animation-delay) */
+.ws-stagger { animation: ws-fade-in-up 0.55s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ws-glow { animation: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PROFESSIONAL POLISH — app-wide finishing touches
+   ════════════════════════════════════════════════════════════════ */
+
+/* Subtle brand accent hairline under the sticky header */
+.layout-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Sidebars: crisper edge + faint depth */
+.task-sidebar { box-shadow: inset -1px 0 0 var(--border-subtle); }
+.terminal-sidebar { box-shadow: inset 1px 0 0 var(--border-subtle); }
+
+/* Task items: gentle slide-in affordance on hover */
+.task-item { transition: background-color 0.18s ease, color 0.18s ease, padding-left 0.18s ease, border-color 0.18s ease; }
+.task-item:hover { padding-left: 18px; }
+.task-item.active:hover { padding-left: 32px; }
+
+/* Native selects inherit the theme cleanly */
+select.input-field,
+select.task-search-input { cursor: pointer; }
+
+/* Scrollbar corner blends with surface */
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* Code/terminal areas use a calmer mono selection */
+.json-display ::selection,
+.terminal-content ::selection,
+pre ::selection,
+code ::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Disabled controls feel consistent everywhere */
+button:disabled { cursor: not-allowed; }
+
+/* Smooth enter for swapped content panels (view/tab switches) */
+@keyframes ws-panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ws-panel-in {
+  animation: ws-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  min-height: 0;
 }

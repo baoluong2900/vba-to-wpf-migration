@@ -25,6 +25,7 @@ export default function Header() {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
+    document.documentElement.style.colorScheme = newTheme;
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
@@ -34,10 +35,10 @@ export default function Header() {
 
   const tabs = [
     { href: "/layer1", label: "L1 Parser", icon: DatabaseZap, color: "#6366f1" },
-    { href: "/layer2", label: "L2 Workflow", icon: Bot, color: "#6366f1" },
-    { href: "/layer3", label: "L3 SQL", icon: Database, color: "#6366f1" },
-    { href: "/layer4", label: "L4 Specs", icon: FileSpreadsheet, color: "#6366f1" },
-    { href: "/layer5", label: "L5 Agents", icon: Cpu, color: "#6366f1" },
+    { href: "/layer2", label: "L2 Workflow", icon: Bot, color: "#8b5cf6" },
+    { href: "/layer3", label: "L3 SQL", icon: Database, color: "#0ea5e9" },
+    { href: "/layer4", label: "L4 Specs", icon: FileSpreadsheet, color: "#10b981" },
+    { href: "/layer5", label: "L5 Agents", icon: Cpu, color: "#d946ef" },
   ];
 
   const isHomePage = pathname === "/";
@@ -46,12 +47,13 @@ export default function Header() {
     <header className={`flex items-center justify-between px-6 relative w-full select-none transition-all duration-300 ${
       isHomePage 
         ? "h-[60px] bg-transparent border-b-0 shadow-none" 
-        : "layout-header bg-white dark:bg-[#0a0b10]/95 border-b border-neutral-200 dark:border-neutral-900"
+        : "layout-header"
     }`}>
       <div className="flex items-center gap-5">
         <Link href="/" className="flex items-center gap-4 cursor-pointer group no-underline">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm group-hover:scale-105 transition-all duration-300">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 group-hover:shadow-indigo-500/50 transition-all duration-300">
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
+            <Sparkles className="w-4 h-4 text-white relative z-10" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-neutral-900 dark:text-white/95">
             vba_brain{!isHomePage && <span className="text-indigo-600 dark:text-indigo-400 text-base tracking-[0.15em] uppercase ml-1 opacity-80 font-semibold hidden sm:inline">Studio</span>}
@@ -76,14 +78,14 @@ export default function Header() {
                   gap: "6px",
                   borderRadius: "7px",
                   color: isActive ? "#fff" : (theme === "dark" ? "#94a3b8" : "#4b5563"),
-                  background: isActive 
-                    ? (theme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(99, 102, 241, 0.9)") 
+                  background: isActive
+                    ? `linear-gradient(135deg, ${tab.color} 0%, ${tab.color}cc 100%)`
                     : "transparent",
-                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.2)" : "none",
+                  boxShadow: isActive ? `0 2px 10px ${tab.color}66` : "none",
                   border: "1px solid transparent",
                 }}
               >
-                <Icon size={14} style={{ color: isActive ? "#fff" : tab.color, opacity: isActive ? 1 : 0.7 }} />
+                <Icon size={14} style={{ color: isActive ? "#fff" : tab.color, opacity: isActive ? 1 : 0.75 }} />
                 <span className="tab-label hidden md:inline">{tab.label}</span>
               </Link>
             );
@@ -101,10 +103,10 @@ export default function Header() {
       <div className="flex items-center gap-4">
         <button 
           onClick={toggleTheme} 
-          className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0c0d12] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer shrink-0"
+          className="w-9 h-9 rounded-full flex items-center justify-center border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#0c0d12] text-neutral-600 dark:text-neutral-300 hover:border-indigo-400 dark:hover:border-indigo-500/60 hover:text-indigo-600 dark:hover:text-indigo-400 hover:rotate-12 transition-all duration-300 cursor-pointer shrink-0"
           aria-label="Toggle Theme"
         >
-          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
         </button>
       </div>
     </header>

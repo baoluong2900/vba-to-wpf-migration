@@ -8,7 +8,7 @@ export async function GET(
   try {
     const resolvedParams = await params;
     const response = await promisifyGrpcCall<any, any>(
-      layer4Client.DownloadDoc.bind(layer4Client),
+      layer4Client.DownloadExcel.bind(layer4Client),
       {
         doc_kind: resolvedParams.doc_kind,
         doc_type: resolvedParams.doc_type,

@@ -7,7 +7,11 @@ let _config: any = null;
 function getConfig() {
   if (_config) return _config;
   const cfgPath = path.resolve(process.cwd(), '../../config.json');
-  _config = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+  try {
+    _config = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+  } catch (e) {
+    throw new Error(`Failed to load config.json at ${cfgPath}: ${e}`);
+  }
   return _config;
 }
 

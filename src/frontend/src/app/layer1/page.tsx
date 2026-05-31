@@ -8,12 +8,7 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-
-interface LogEntry {
-  time: string;
-  level: 'INFO' | 'WARN' | 'ERROR' | 'SUCCESS' | 'RUNNING';
-  message: string;
-}
+import { LogEntry, formatLogTime } from "../../lib/logging";
 
 const STEPS = [
   { id: 1, title: 'Initialize Workspace', desc: 'Verify paths & DB connections' },
@@ -34,7 +29,7 @@ export default function Layer1Parser() {
 
   // Add a log to the terminal console
   const addLog = (level: LogEntry['level'], message: string) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+    const time = formatLogTime();
     setLogs(prev => [...prev, { time, level, message }]);
     console.log(`[${level}] ${message}`);
   };
@@ -105,11 +100,11 @@ export default function Layer1Parser() {
     <>
       <Header />
 
-      <main className="flex-1 flex justify-center items-start overflow-y-auto bg-[var(--bg-dark)] py-12 px-6 relative min-h-[calc(100vh-120px)] w-full">
+      <main className="flex-1 flex justify-center items-start overflow-y-auto bg-[var(--bg-dark)] py-12 px-4 sm:px-8 relative w-full min-h-0">
         {/* Animated Background Mesh & Glow Orbs */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.015)_1.5px,transparent_1.5px)] [background-size:24px_24px] pointer-events-none" />
-        <div className="absolute top-[10%] left-[15%] w-[450px] h-[450px] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[100px] pointer-events-none -z-10 animate-pulse duration-[8000ms]" />
-        <div className="absolute bottom-[10%] right-[15%] w-[550px] h-[550px] rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-[120px] pointer-events-none -z-10 animate-pulse duration-[12000ms]" />
+        <div className="ws-mesh" />
+        <div className="ws-glow ws-glow-tl" />
+        <div className="ws-glow ws-glow-br" />
 
         <div className="flex flex-col w-full max-w-5xl gap-8 relative z-10">
           
@@ -118,7 +113,7 @@ export default function Layer1Parser() {
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white flex items-center gap-3">
                 <DatabaseZap className="text-indigo-500" />
-                Layer 1: Data Ingestion & AST Parser
+                <span>Layer 1: <span className="ws-gradient-text">Data Ingestion & AST Parser</span></span>
               </h1>
               <p className="text-sm text-neutral-500 dark:text-gray-400 mt-2 max-w-2xl leading-relaxed">
                 Ingest legacy Access components (VBA scripts, UI forms, schemas) into MongoDB collections and automatically orchestrate the downstream modernization pipeline.
@@ -132,210 +127,113 @@ export default function Layer1Parser() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Execution Steps pipeline */}
+          <div className="w-full animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <h3 className="text-xs font-black text-neutral-600 dark:text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-3 px-2">
+              <Cpu size={14} className="text-indigo-500" />
+              Orchestrator Execution Pipeline
+            </h3>
             
-            {/* Left Config Panel */}
-            <div className="lg:col-span-2 flex flex-col gap-8">
-              
-              {/* Dashboard Ingestion Card */}
-              <div className="relative overflow-hidden bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 opacity-80" />
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-4 relative">
+              {STEPS.map((step, index) => {
+                const isCompleted = activeStep > step.id || activeStep === 5;
+                const isActive = activeStep === step.id && activeStep !== 5;
                 
-                <div className="flex items-center gap-4.5 mb-6">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                    <FolderOpen size={20} className="text-white drop-shadow-md" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-extrabold text-neutral-900 dark:text-white tracking-tight">Source Directory Path</h2>
-                    <p className="text-xs text-neutral-500 dark:text-gray-400 mt-1">Select the folder holding your legacy VBA and SQL files.</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-stretch">
-                  <div className="flex-1 relative flex items-center">
-                    <FolderOpen size={16} className="absolute left-4.5 text-neutral-400 dark:text-gray-500" />
-                    <input 
-                      type="text" 
-                      value={dbPath}
-                      onChange={e => setDbPath(e.target.value)}
-                      placeholder="Specify workspace folder path..."
-                      className="w-full bg-white dark:bg-[var(--bg-terminal)] border border-neutral-200 dark:border-neutral-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 rounded-2xl py-3 pl-12 pr-4 text-neutral-900 dark:text-white text-sm outline-none transition-all duration-300 placeholder-neutral-400 font-mono shadow-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={handleStartExtraction}
-                    disabled={isExtracting}
-                    className={`px-8 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 flex items-center justify-center gap-3.5 select-none active:scale-[0.97] cursor-pointer ${
-                      isExtracting 
-                        ? 'bg-gradient-to-r from-indigo-600/50 to-purple-600/50 text-white/70 border border-indigo-500/20 cursor-not-allowed shadow-inner animate-pulse'
-                        : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 border border-indigo-400/25'
+                return (
+                  <div 
+                    key={step.id} 
+                    className={`flex flex-col items-center text-center gap-4 transition-all duration-300 p-5 md:p-6 rounded-3xl relative border shadow-sm ${
+                      isActive 
+                        ? 'bg-indigo-500/10 border-indigo-500/30 ring-4 ring-indigo-500/5 z-10' 
+                        : isCompleted 
+                          ? 'bg-emerald-500/10 border-emerald-500/30 shadow-sm shadow-emerald-500/5 z-10' 
+                          : 'bg-white/40 dark:bg-slate-900/10 border-neutral-200/50 dark:border-white/5 opacity-60'
                     }`}
                   >
-                    {isExtracting ? (
-                      <>
-                        <Clock size={16} className="animate-spin text-white" />
-                        <span>INGESTING...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play size={16} className="fill-current drop-shadow-md" />
-                        <span>START INGESTION</span>
-                      </>
+                    {/* Connecting line between steps on desktop */}
+                    {index < STEPS.length - 1 && (
+                      <div className={`hidden md:block absolute top-[40px] left-[calc(50%+20px)] right-[calc(-50%+20px)] h-[2.5px] z-0 transition-all duration-500 ${
+                        isCompleted ? 'bg-gradient-to-r from-emerald-500 to-emerald-500' : 
+                        activeStep === step.id ? 'bg-gradient-to-r from-indigo-500 to-neutral-200 dark:to-slate-800' :
+                        'bg-neutral-200 dark:bg-slate-800'
+                      }`} />
                     )}
-                  </button>
-                </div>
-              </div>
 
-              {/* Execution Steps pipeline */}
-              <div className="bg-white/50 dark:bg-slate-900/20 backdrop-blur-lg border-t border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <h3 className="text-xs font-black text-neutral-600 dark:text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-3">
-                  <Cpu size={14} className="text-indigo-500" />
-                  Orchestrator Execution Pipeline
-                </h3>
-                
-                <div className="flex flex-col gap-6">
-                  {STEPS.map((step, index) => {
-                    const isCompleted = activeStep > step.id || activeStep === 5;
-                    const isActive = activeStep === step.id && activeStep !== 5;
-                    
-                    return (
-                      <div 
-                        key={step.id} 
-                        className={`flex items-start gap-4 transition-all duration-300 p-3 rounded-2xl ${
-                          isActive 
-                            ? 'bg-indigo-500/5 border border-indigo-500/15' 
-                            : isCompleted 
-                              ? 'bg-emerald-500/5 border border-emerald-500/5' 
-                              : 'opacity-50'
-                        }`}
-                      >
-                        {/* Status Circle */}
-                        <div 
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300 flex-shrink-0 font-mono text-sm font-black ${
-                            isCompleted 
-                              ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-500'
-                              : isActive 
-                                ? 'bg-indigo-500/10 border-indigo-500/35 text-indigo-500 animate-pulse'
-                                : 'bg-neutral-100 dark:bg-slate-800/80 border-neutral-200 dark:border-white/5 text-neutral-400 dark:text-gray-500'
+                    {/* Status Circle */}
+                    <div 
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-300 flex-shrink-0 font-mono text-sm font-black z-10 relative ${
+                        isCompleted 
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-500 shadow-sm shadow-emerald-500/10'
+                          : isActive 
+                            ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-500 shadow-lg shadow-indigo-500/15 animate-pulse'
+                            : 'bg-neutral-100 dark:bg-slate-800/80 border-neutral-200 dark:border-white/5 text-neutral-400 dark:text-gray-500'
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check size={16} className="stroke-[3]" />
+                      ) : isActive ? (
+                        <Clock size={16} className="animate-spin" />
+                      ) : (
+                        <span>{step.id}</span>
+                      )}
+                    </div>
+
+                    {/* Title details */}
+                    <div className="flex-1 min-w-0 z-10">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span 
+                          className={`text-xs font-black tracking-tight transition-colors duration-300 whitespace-nowrap ${
+                            isActive 
+                              ? 'text-indigo-600 dark:text-white font-extrabold' 
+                              : isCompleted 
+                                ? 'text-neutral-800 dark:text-slate-200 font-semibold' 
+                                : 'text-neutral-400 dark:text-gray-500'
                           }`}
                         >
-                          {isCompleted ? (
-                            <Check size={16} className="stroke-[3]" />
-                          ) : isActive ? (
-                            <Clock size={16} className="animate-spin" />
-                          ) : (
-                            <span>{step.id}</span>
-                          )}
-                        </div>
-
-                        {/* Title details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span 
-                              className={`text-sm font-extrabold tracking-tight transition-colors duration-300 ${
-                                isActive 
-                                  ? 'text-indigo-600 dark:text-white' 
-                                  : isCompleted 
-                                    ? 'text-neutral-800 dark:text-slate-200 font-semibold' 
-                                    : 'text-neutral-400 dark:text-gray-500'
-                              }`}
-                            >
-                              {step.title}
-                            </span>
-                            {isActive && (
-                              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-md animate-pulse">
-                                Executing
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-neutral-500 dark:text-gray-400 mt-1 leading-relaxed">
-                            {step.desc}
-                          </p>
-                        </div>
+                          {step.title}
+                        </span>
+                        {isActive && (
+                          <span className="text-[8px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-md animate-pulse">
+                            Executing
+                          </span>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-
+                      <p className="text-[10px] text-neutral-500 dark:text-gray-400 mt-1 leading-normal max-w-[150px] mx-auto">
+                        {step.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          </div>
 
-            {/* Right Detected Files Stats Card */}
-            <div className="flex flex-col gap-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-              <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 opacity-80" />
-                
-                <h3 className="text-xs font-black text-neutral-600 dark:text-gray-400 uppercase tracking-widest mb-5 flex items-center gap-3">
-                  <FileCode size={14} className="text-indigo-500" />
-                  Source Files Detected
-                </h3>
-
-                <div className="flex flex-col gap-4">
-                  {/* Forms count */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-100/50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center flex-shrink-0 font-bold">
-                        F
-                      </div>
-                      <span className="text-sm font-extrabold text-neutral-800 dark:text-slate-300">UI Forms</span>
-                    </div>
-                    <span className="font-mono text-sm font-black text-neutral-900 dark:text-white bg-neutral-200/50 dark:bg-white/5 px-2.5 py-1 rounded-md">5</span>
-                  </div>
-
-                  {/* Queries count */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-100/50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-500 flex items-center justify-center flex-shrink-0 font-bold">
-                        Q
-                      </div>
-                      <span className="text-sm font-extrabold text-neutral-800 dark:text-slate-300">SQL Queries</span>
-                    </div>
-                    <span className="font-mono text-sm font-black text-neutral-900 dark:text-white bg-neutral-200/50 dark:bg-white/5 px-2.5 py-1 rounded-md">5</span>
-                  </div>
-
-                  {/* Modules count */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-100/50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0 font-bold">
-                        M
-                      </div>
-                      <span className="text-sm font-extrabold text-neutral-800 dark:text-slate-300">VBA Modules</span>
-                    </div>
-                    <span className="font-mono text-sm font-black text-neutral-900 dark:text-white bg-neutral-200/50 dark:bg-white/5 px-2.5 py-1 rounded-md">3</span>
-                  </div>
-
-                  {/* Macros count */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-100/50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center flex-shrink-0 font-bold">
-                        C
-                      </div>
-                      <span className="text-sm font-extrabold text-neutral-800 dark:text-slate-300">Macros</span>
-                    </div>
-                    <span className="font-mono text-sm font-black text-neutral-900 dark:text-white bg-neutral-200/50 dark:bg-white/5 px-2.5 py-1 rounded-md">2</span>
-                  </div>
-
-                  {/* Tables count */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-100/50 dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0 font-bold">
-                        T
-                      </div>
-                      <span className="text-sm font-extrabold text-neutral-800 dark:text-slate-300">Schema Tables</span>
-                    </div>
-                    <span className="font-mono text-xs font-black text-neutral-900 dark:text-white bg-neutral-200/50 dark:bg-white/5 px-2.5 py-1 rounded-md">1 CSV</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5 bg-neutral-100 dark:bg-white/5 p-3.5 rounded-2xl border border-neutral-200 dark:border-white/5 mt-5">
-                  <Info size={16} className="text-indigo-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-neutral-500 dark:text-gray-400 leading-normal">
-                    Workspace components are loaded statically from the `src/vba/vba_source` folder inside your project.
-                  </p>
-                </div>
-              </div>
-            </div>
-
+          {/* Centered Minimalist Ingestion Run Button */}
+          <div className="flex flex-col items-center justify-center my-4 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+            <button
+              onClick={handleStartExtraction}
+              disabled={isExtracting}
+              className={`px-12 py-4.5 rounded-2xl font-black text-base transition-all duration-300 flex items-center justify-center gap-4 select-none active:scale-[0.97] cursor-pointer shadow-lg hover:shadow-xl ${
+                isExtracting 
+                  ? 'bg-gradient-to-r from-indigo-600/50 to-purple-600/50 text-white/70 border border-indigo-500/20 cursor-not-allowed shadow-inner animate-pulse'
+                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border border-indigo-400/25 shadow-indigo-500/20 hover:shadow-indigo-500/35'
+              }`}
+            >
+              {isExtracting ? (
+                <>
+                  <Clock size={20} className="animate-spin text-white" />
+                  <span>INGESTING WORKSPACE...</span>
+                </>
+              ) : (
+                <>
+                  <Play size={20} className="fill-current drop-shadow-md" />
+                  <span>START PIPELINE INGESTION</span>
+                </>
+              )}
+            </button>
+            <p className="text-[10px] text-neutral-500 dark:text-gray-500 mt-3 font-semibold uppercase tracking-wider select-none">
+              Source Location: <code className="font-mono bg-neutral-200/50 dark:bg-white/5 px-2 py-0.5 rounded text-neutral-600 dark:text-gray-400">{dbPath}</code>
+            </p>
           </div>
 
           {/* Premium Glassmorphic Log Console */}
@@ -408,25 +306,6 @@ export default function Layer1Parser() {
         </div>
       </main>
       <Footer />
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          opacity: 0;
-          transform: translateY(15px);
-        }
-        @keyframes fade-in-up {
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}} />
     </>
   );
 }
