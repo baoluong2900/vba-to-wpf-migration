@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using vba_brain.UI.Avalonia.ViewModels;
+// using vba_brain.UI.Avalonia.ViewModels;
 
 namespace vba_brain.UI.Avalonia;
 
@@ -32,6 +32,8 @@ public class ViewLocator : IDataTemplate
 
     public bool Match(object? data)
     {
-        return data is ViewModelBase;
+        // TODO: Regenerate ViewModels
+        // return data is ViewModelBase;
+        return false;
     }
 }

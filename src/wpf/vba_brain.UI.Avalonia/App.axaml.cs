@@ -5,12 +5,12 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using vba_brain.Domain.Common;
-using vba_brain.Domain.Interfaces;
+// using vba_brain.Domain.Interfaces;
 using vba_brain.Infrastructure.Persistence;
-using vba_brain.Infrastructure.Persistence.Repositories;
-using vba_brain.Application.Services;
-using vba_brain.UI.Avalonia.ViewModels;
-using vba_brain.UI.Avalonia.Views;
+// using vba_brain.Infrastructure.Persistence.Repositories;
+// using vba_brain.Application.Services;
+// using vba_brain.UI.Avalonia.ViewModels;
+// using vba_brain.UI.Avalonia.Views;
 using vba_brain.UI.Avalonia.Services;
 
 namespace vba_brain.UI.Avalonia;
@@ -26,6 +26,8 @@ public partial class App : global::Avalonia.Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // TODO: Regenerate ViewModels, Services, Repositories
+        /*
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
@@ -46,10 +48,14 @@ public partial class App : global::Avalonia.Application
         }
 
         base.OnFrameworkInitializationCompleted();
+        */
+        base.OnFrameworkInitializationCompleted();
     }
 
     private void ConfigureServices(IServiceCollection services)
     {
+        // TODO: Regenerate Services, Repositories, ViewModels
+        /*
         // 1. Build Configuration
         var config = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -94,5 +100,6 @@ public partial class App : global::Avalonia.Application
         services.AddTransient<EditViewModel>();
         services.AddTransient<PrintSettingsViewModel>();
         services.AddTransient<AnalyticsViewModel>();
+        */
     }
 }

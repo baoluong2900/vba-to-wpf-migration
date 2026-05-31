@@ -1,17 +1,18 @@
 using System;
-using vba_brain.UI.Avalonia.ViewModels;
+// using vba_brain.UI.Avalonia.ViewModels;
 
 namespace vba_brain.UI.Avalonia.Services;
 
 public interface INavigationService
 {
-    void Setup(MainWindowViewModel mainViewModel);
-    void NavigateTo<TViewModel>() where TViewModel : ViewModelBase;
-    void NavigateTo(ViewModelBase viewModel);
+    // void Setup(MainWindowViewModel mainViewModel);
+    // void NavigateTo<TViewModel>() where TViewModel : ViewModelBase;
+    // void NavigateTo(ViewModelBase viewModel);
 }
 
 public class NavigationService : INavigationService
 {
+    /*
     private readonly Func<Type, ViewModelBase> _viewModelFactory;
     private MainWindowViewModel? _mainViewModel;
 
@@ -41,4 +42,5 @@ public class NavigationService : INavigationService
         
         _mainViewModel.CurrentPage = viewModel;
     }
+    */
 }
