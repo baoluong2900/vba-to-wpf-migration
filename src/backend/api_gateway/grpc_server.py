@@ -219,11 +219,11 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
     def GetBdStatus(self, request, context):
         try:
             output_base = BACKEND_DIR / "workflow" / "layer2" / "output"
-            s4_file = output_base / "bd_flow" / "s4_bd_final" / f"{request.screen_name}.json"
+            s4_file = output_base / "bd_flow" / "bd4_bd_final" / f"{request.screen_name}.json"
 
             d4_file = None
             for cat in ("screen", "common", "macro"):
-                candidate = output_base / "dd_flow" / cat / "d4_dd_final" / f"{request.screen_name}.json"
+                candidate = output_base / "dd_flow" / cat / "dd4_dd_final" / f"{request.screen_name}.json"
                 if candidate.exists():
                     d4_file = candidate
                     break

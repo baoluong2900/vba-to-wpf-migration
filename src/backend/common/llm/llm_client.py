@@ -114,16 +114,18 @@ class LLMClient:
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
-        # Execute registered callbacks and auto-tracking
+        # Execute registered callbacks (e.g. L5LLMClient.layer5_callback)
         meta = {"system": system, "user": user}
+        has_callbacks = bool(self._usage_callbacks)
         for cb in self._usage_callbacks:
             try:
                 cb(model_cfg, usage, meta)
             except Exception as e:
                 logger.debug("Usage callback error: %s", e)
 
-        # Dynamic cross-layer trackers integration
-        self._auto_track_usage(model_cfg, usage)
+        # Auto-track only when no specific callback handled it (avoids duplicate records)
+        if not has_callbacks:
+            self._auto_track_usage(model_cfg, usage)
 
         return text, usage
 
@@ -262,6 +264,11 @@ class LLMClient:
     # ──────────────────────────────────────────────────────────────────────
     # Alibaba Cloud (DashScope)
     # ──────────────────────────────────────────────────────────────────────
+    # qwen3 open-source models require enable_thinking=False
+    _QWEN3_THINKING_MODELS = {
+        "qwen3-32b", "qwen3-30b-a3b", "qwen3-14b", "qwen3-8b", "qwen3-4b", "qwen3-1.7b", "qwen3-0.6b",
+    }
+
     @retry(max_attempts=3, initial_delay=2.0)
     def _call_alibaba_with_usage(self, cfg: ModelConfig, system: str, user: str) -> tuple[str, dict]:
         from openai import OpenAI  # type: ignore[import]
@@ -270,6 +277,7 @@ class LLMClient:
             api_key=api_key,
             base_url="https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
         )
+        extra = {"enable_thinking": False} if cfg.model_id in self._QWEN3_THINKING_MODELS else {}
         resp = client.chat.completions.create(
             model=cfg.model_id,
             max_tokens=cfg.max_tokens,
@@ -278,6 +286,7 @@ class LLMClient:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
+            **({"extra_body": extra} if extra else {}),
         )
         return resp.choices[0].message.content or "", self._get_usage(resp, system, user)
 
