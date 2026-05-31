@@ -1,0 +1,33 @@
+{
+  "form_name": "F_ProductDetail",
+  "feature": "ProductDetail",
+  "service_class": "ProductDetailService",
+  "iface_class": "IProductDetailService",
+  "service_field": "_productDetailService",
+  "namespace": "vba_brain.Application.Services",
+  "methods": {
+    "F000": {
+      "method_name": "OnF000Async",
+      "return_type": "Task<F000Response>",
+      "request_class": "F000Request",
+      "response_class": "F000Response",
+      "request_props": [],
+      "response_props": [
+        {
+          "name": "Success",
+          "type": "bool"
+        },
+        {
+          "name": "Message",
+          "type": "string?"
+        }
+      ],
+      "repo_calls": [],
+      "method_code": "    /// <summary>\n    /// F000 On Open — 画面の初期表示の処理\n    /// </summary>\n    public async Task<F000Response> OnF000Async(F000Request request)\n    {\n        try\n        {\n            // TODO: Repository function not found for query 'TBL_Products' (sheet F000_SelQuery01). Add the mapping in Agent Repo output.\n\n            return new F000Response { Success = true };\n        }\n        catch (System.Exception ex)\n        {\n            return new F000Response { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "On Open",
+      "event_content": "画面の初期表示の処理",
+      "vm_method_name": "F000Async"
+    }
+  },
+  "repository": []
+}

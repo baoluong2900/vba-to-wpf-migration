@@ -1,0 +1,75 @@
+{
+  "form_name": "F_TestForm",
+  "input_type": "SERVICE",
+  "screen_description": "This screen is used to set the default username for the user session and submit the information, leading to a success confirmation.",
+  "description": "Events có xử lý data/query. Gen ViewModel + IService + Service method.",
+  "total_events": 1,
+  "cs_file": "F_TestForm.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnSubmit",
+        "physical_name": "cmdbtnSubmit",
+        "event_trigger": "On Click",
+        "event_content": "Opens the success form to indicate a completed action.",
+        "module_id": "F002",
+        "notes": "btnSubmit_Click",
+        "action_type": "NAV",
+        "event_description_mapping": "Opens the success form to indicate a completed action.",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub btnSubmit_Click()\nDoCmd.OpenForm \"F_Success\"\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_Success"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 2,
+          "io": "",
+          "logical_name": "TODO_btnSubmit",
+          "physical_name": "cmdbtnSubmit",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E002"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen [refer: F_Success]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event",
+        "module_id": "F002",
+        "vba_handler": "btnSubmit_Click"
+      }
+    }
+  ]
+}

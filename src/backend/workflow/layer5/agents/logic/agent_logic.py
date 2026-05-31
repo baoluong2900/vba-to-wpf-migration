@@ -56,10 +56,10 @@ AGENT_DIR   = Path(__file__).parent
 INPUTS_DIR  = AGENT_DIR / "inputs"
 OUTPUTS_DIR = AGENT_DIR / "outputs"
 
-# WPF source ViewModels folder
+# Avalonia source ViewModels folder
 WPF_VIEWMODELS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent  # → workflow/
-    / "source" / "vba_brain.UI.WPF" / "ViewModels"
+    AGENT_DIR.parent.parent.parent.parent.parent  # → src/
+    / "wpf" / "vba_brain.UI.Avalonia" / "ViewModels"
 )
 
 
@@ -361,8 +361,8 @@ class LogicAgent(BaseAgent):
                 "using vba_brain.UI.WPF.Utils;",
                 "using vba_brain.UI.WPF.Services;",
                 "using vba_brain.Application.Interfaces;",
-                "using vba_brain.Application.DTOs.Requests;",
-                "using vba_brain.Application.DTOs.Responses;",
+                f"using vba_brain.Application.DTOs.Requests.{form_name};",
+                f"using vba_brain.Application.DTOs.Responses.{form_name};",
             ]
             for ru in required_usings:
                 if ru not in vm_text:
@@ -440,12 +440,14 @@ class LogicAgent(BaseAgent):
 
             logger.info("[Agent Logic] Patched %d/%d methods into %s", patched_count, len(method_outputs), vm_filename)
 
-            # Ghi lại cả hai nơi: ui/outputs/ và WPF source
+            # Ghi lại cả hai nơi: ui/outputs/ và Avalonia source
+            from pipeline.avalonia_cs import to_avalonia_cs
+            vm_text = to_avalonia_cs(vm_text)
             _ui_vm.parent.mkdir(parents=True, exist_ok=True)
             _ui_vm.write_text(vm_text, encoding="utf-8")
             if _src_vm.parent.exists():
                 _src_vm.write_text(vm_text, encoding="utf-8")
-                logger.info("[Agent Logic] Updated WPF source: %s", _src_vm.name)
+                logger.info("[Agent Logic] Updated Avalonia source: %s", _src_vm.name)
 
             gen_file = GeneratedFile(
                 path=f"ViewModels/{vm_filename}",

@@ -1,0 +1,99 @@
+{
+  "window": {
+    "class": "vba_brain.UI.WPF.Views.F_ProductDetail",
+    "title": "Chi tiết sản phẩm",
+    "width": null,
+    "height": null,
+    "background": "#FFFFFF",
+    "window_style": "SingleBorderWindow",
+    "resize_mode": "CanResize",
+    "show_in_taskbar": false,
+    "topmost": true,
+    "allows_transparency": true,
+    "startup_location": "CenterScreen"
+  },
+  "controls": [
+    {
+      "type": "Section",
+      "name": "section",
+      "margin_left": 0,
+      "margin_top": 0,
+      "width": 333,
+      "height": 180,
+      "background": "Transparent",
+      "controls": [
+        {
+          "type": "TextBox",
+          "name": "txtProductID",
+          "binding": "TxtProductID",
+          "is_readonly": true
+        },
+        {
+          "type": "TextBox",
+          "name": "txtProductName",
+          "binding": "TxtProductName"
+        },
+        {
+          "type": "ComboBox",
+          "name": "cboSupplier",
+          "binding": "CboSupplier"
+        },
+        {
+          "type": "TextBlock",
+          "name": "optStatus",
+          "binding": "OptStatus"
+        },
+        {
+          "type": "RadioButton",
+          "name": "optActive",
+          "binding": "OptActive",
+          "margin_left": 0,
+          "margin_top": 0,
+          "width": 100,
+          "height": 20,
+          "content": "Active"
+        },
+        {
+          "type": "RadioButton",
+          "name": "optInactive",
+          "binding": "OptInactive",
+          "margin_left": 0,
+          "margin_top": 25,
+          "width": 100,
+          "height": 20,
+          "content": "Inactive"
+        },
+        {
+          "type": "CheckBox",
+          "name": "chkDiscontinued",
+          "binding": "ChkDiscontinued",
+          "margin_left": 0,
+          "margin_top": 50,
+          "width": 150,
+          "height": 20,
+          "content": "Discontinued"
+        },
+        {
+          "type": "Button",
+          "name": "btnSave",
+          "command": "F001Command",
+          "margin_left": 0,
+          "margin_top": 75,
+          "width": 75,
+          "height": 25,
+          "content": "Save"
+        },
+        {
+          "type": "Button",
+          "name": "btnDelete",
+          "command": "F002Command",
+          "margin_left": 80,
+          "margin_top": 75,
+          "width": 75,
+          "height": 25,
+          "content": "Delete"
+        }
+      ]
+    }
+  ]
+}

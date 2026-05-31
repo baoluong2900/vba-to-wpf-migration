@@ -189,7 +189,7 @@ def load_service_contract(form_name: str) -> dict:
 
     Returns the contract dict, or {} if not found.
     """
-    _db_dir = Path(__file__).resolve().parent.parent.parent.parent.parent / "data/database_json" / "agent_service"
+    _db_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent / "data/database_json" / "agent_service"
     _svc_dir = _SERVICE_OUTPUTS_DIR / form_name
 
     # Priority order: new name first, then legacy
@@ -773,9 +773,11 @@ class SkeletonTool:
             )
             if vm_method and vm_method in _generated_vm_methods:
                 if is_keydown:
-                    # KeyDown event: pass KeyEventArgs as parameter to ViewModel
+                    # KeyDown event: the generated method signature is parameterless
+                    # (KeyEventArgs is Avalonia-specific and the body reads key state via
+                    # the VM); call without forwarding the arg to keep signatures aligned.
                     cmd_init_lines.append(
-                        f"        {c} = Cmd(async p => await {vm_method}(p as System.Windows.Input.KeyEventArgs));"
+                        f"        {c} = Cmd(async _ => await {vm_method}());"
                     )
                 elif has_custom_sig:
                     # Method có param từ vm_signature → forward param từ Command
@@ -976,8 +978,8 @@ class SkeletonTool:
             extra_usings_list.append("using vba_brain.UI.WPF.Services;")
         if svc_iface:
             extra_usings_list.append("using vba_brain.Application.Interfaces;")
-            extra_usings_list.append("using vba_brain.Application.DTOs.Requests;")
-            extra_usings_list.append("using vba_brain.Application.DTOs.Responses;")
+            extra_usings_list.append(f"using vba_brain.Application.DTOs.Requests.{form_name};")
+            extra_usings_list.append(f"using vba_brain.Application.DTOs.Responses.{form_name};")
 
         extra_usings = ""
         if extra_usings_list:
@@ -1095,9 +1097,12 @@ public class {vm_class} : ViewModelBase
                     )
         ctor_wiring = ("\n" + "\n".join(ctor_wiring_lines)) if ctor_wiring_lines else ""
 
-        # PasswordBox handler — WPF limitation, bắt buộc ở code-behind
+        # PasswordBox handler — not needed in Avalonia.
+        # Avalonia has no PasswordBox; the converter renders it as a TextBox with
+        # PasswordChar and a Text binding, so the password syncs via the ViewModel
+        # property directly (no code-behind handler required).
         password_handler = ""
-        if has_pw:
+        if False and has_pw:
             pw_module_id = ""
             for h in event_handlers:
                 if h.get("event") == "afterupdate" and h.get("control", "").startswith("txt"):

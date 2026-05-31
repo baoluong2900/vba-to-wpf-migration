@@ -1,0 +1,46 @@
+<Window x:Class="vba_brain.UI.WPF.Views.F_Menu"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        Title="Hệ thống quản lý kho - Menu chính"
+        Background="#FFFFFF"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        AllowsTransparency="False"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <!-- Section: section -->
+        <Grid x:Name="sec_section" Width="333" Height="0" Background="Transparent" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Button x:Name="btnProductList"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Top"
+                    Width="75"
+                    Height="23"
+                    Content="Danh sách sản phẩm"
+                    Padding="0"
+                    Command="{Binding F001Command}" />
+            <Button x:Name="btnOrderEntry"
+                    HorizontalAlignment="Left"
+                    Margin="0,23,0,0"
+                    VerticalAlignment="Top"
+                    Width="75"
+                    Height="23"
+                    Content="Nhập đơn hàng"
+                    Padding="0"
+                    Command="{Binding F002Command}" />
+            <Button x:Name="btnExit"
+                    HorizontalAlignment="Left"
+                    Margin="0,46,0,0"
+                    VerticalAlignment="Top"
+                    Width="75"
+                    Height="23"
+                    Content="Thoát hệ thống"
+                    Padding="0"
+                    Command="{Binding F003Command}" />
+        </Grid>
+    </Grid>
+</Window>

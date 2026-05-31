@@ -1,6 +1,4 @@
 using vba_brain.Domain.Entities;
-using vba_brain.Domain.DTOs;
-using vba_brain.Domain.DTOs.Auth;
 
 namespace vba_brain.Domain.Interfaces;
 
@@ -10,15 +8,7 @@ namespace vba_brain.Domain.Interfaces;
 public interface IAuthRepository
 {
     /// <summary>
-    /// Q000_T_LoginUser
-    /// T_ID_PASSテーブルから指定されたIDのユーザー情報を抽出し、担当者名を姓と名に分割してT_LoginUserテーブルを作成する
-    /// </summary>
-    /// <param name="ID"></param>
-    /// <returns></returns>
-    Task<IEnumerable<GetUserInfoDto>> GetUserInfoAsync(string ID);
-
-    /// <summary>
-    /// T_ID_pass
+    /// T_ID_Pass
     /// </summary>
     /// <returns></returns>
     Task<IEnumerable<AuthEntity>> IdPassAsync();

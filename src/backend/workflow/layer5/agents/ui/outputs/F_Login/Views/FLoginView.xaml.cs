@@ -17,8 +17,8 @@ public partial class FLoginView : Window
         this.viewModel = viewModel;
         DataContext = viewModel;
         Loaded += (_, _) => viewModel.F000Command.Execute(null);
-        PreviewKeyDown += (_, e) => viewModel.F001Command.Execute(e);
         ContentRendered += (_, _) => viewModel.F002Command.Execute(null);
+        PreviewKeyDown += (_, e) => viewModel.F001Command.Execute(e);
     }
 
     // ── PasswordBox: WPF không support binding Password → sync thủ công ──

@@ -1,0 +1,101 @@
+{
+  "form_name": "F_ProductList",
+  "phase": 1,
+  "node_mapping": [
+    {
+      "vba_id": "form:F_ProductList",
+      "wpf_id": "view:F_ProductList",
+      "wpf_file": "Views/F_ProductList.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "query:Q_GetActiveProducts",
+      "wpf_id": "repository:Q_GetActiveProducts",
+      "wpf_file": "Infrastructure/Persistence/Repositories/QGetActiveProductsRepository.cs",
+      "wpf_kind": "repository",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_ProductList::txtSearch_AfterUpdate",
+      "wpf_id": "handler:F_ProductList|TxtSearchAfterUpdate",
+      "wpf_file": "ViewModels/F_ProductListViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_ProductList::lstCategory_AfterUpdate",
+      "wpf_id": "handler:F_ProductList|LstCategoryAfterUpdate",
+      "wpf_file": "ViewModels/F_ProductListViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "event:F_ProductList::btnOpenDetail_Click",
+      "wpf_id": "handler:F_ProductList|BtnOpenDetailClick",
+      "wpf_file": "ViewModels/F_ProductListViewModel.cs",
+      "wpf_kind": "handler",
+      "mapping_status": "mapped"
+    },
+    {
+      "vba_id": "form:F_ProductDetail",
+      "wpf_id": "view:F_ProductDetail",
+      "wpf_file": "Views/F_ProductDetail.xaml",
+      "wpf_kind": "view",
+      "mapping_status": "unmapped"
+    }
+  ],
+  "edge_mapping": [
+    {
+      "vba_edge": "form:F_ProductList__query:Q_GetActiveProducts",
+      "wpf_edge": "view:F_ProductList->repository:Q_GetActiveProducts",
+      "wpf_label": "record source",
+      "expected_flow": [
+        "view:F_ProductList",
+        "viewmodel:F_ProductList",
+        "service:ProductList",
+        "repository:Q_GetActiveProducts"
+      ]
+    },
+    {
+      "vba_edge": "form:F_ProductList__event:F_ProductList::txtSearch_AfterUpdate",
+      "wpf_edge": "view:F_ProductList->handler:F_ProductList|TxtSearchAfterUpdate",
+      "wpf_label": "event",
+      "expected_flow": [
+        "view:F_ProductList",
+        "viewmodel:F_ProductList",
+        "handler:F_ProductList|TxtSearchAfterUpdate"
+      ]
+    },
+    {
+      "vba_edge": "form:F_ProductList__event:F_ProductList::lstCategory_AfterUpdate",
+      "wpf_edge": "view:F_ProductList->handler:F_ProductList|LstCategoryAfterUpdate",
+      "wpf_label": "event",
+      "expected_flow": [
+        "view:F_ProductList",
+        "viewmodel:F_ProductList",
+        "handler:F_ProductList|LstCategoryAfterUpdate"
+      ]
+    },
+    {
+      "vba_edge": "form:F_ProductList__event:F_ProductList::btnOpenDetail_Click",
+      "wpf_edge": "view:F_ProductList->handler:F_ProductList|BtnOpenDetailClick",
+      "wpf_label": "event",
+      "expected_flow": [
+        "view:F_ProductList",
+        "viewmodel:F_ProductList",
+        "handler:F_ProductList|BtnOpenDetailClick"
+      ]
+    },
+    {
+      "vba_edge": "event:F_ProductList::btnOpenDetail_Click__form:F_ProductDetail",
+      "wpf_edge": "handler:F_ProductList|BtnOpenDetailClick->view:F_ProductDetail",
+      "wpf_label": "opens form",
+      "expected_flow": [
+        "handler:F_ProductList|BtnOpenDetailClick",
+        "view:F_ProductDetail"
+      ]
+    }
+  ],
+  "name_mapping": []
+}

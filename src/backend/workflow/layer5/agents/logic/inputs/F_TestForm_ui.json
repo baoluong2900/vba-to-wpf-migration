@@ -1,0 +1,120 @@
+{
+  "form_name": "F_TestForm",
+  "input_type": "UI",
+  "screen_description": "This screen is used to set the default username for the user session and submit the information, leading to a success confirmation.",
+  "description": "Events chỉ xử lý UI/navigation/validation. Gen C# method body cho WPF code-behind.",
+  "total_events": 2,
+  "cs_file": "F_TestForm.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "Sets the default username for the user session.",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "action_type": "UI",
+        "event_description_mapping": "Sets the default username for the user session.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_Open(Cancel As Integer)\nMe.txtUserName = \"DefaultUser\"\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Set the default username for the user session\n2.1.1. Assign the value 'DefaultUser' to the text box named txtUserName on Form_Open"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event",
+        "module_id": "F000",
+        "vba_handler": "Form_Open"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtUserName",
+        "physical_name": "txtUserName",
+        "event_trigger": "After Update",
+        "event_content": "",
+        "module_id": "F001",
+        "notes": "txtUserName_AfterUpdate",
+        "event_description_mapping": "",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 1,
+          "io": "I",
+          "logical_name": "TODO_txtUserName",
+          "physical_name": "txtUserName",
+          "item_attribute": "Text Box",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "UserName",
+          "notes": "E001"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event",
+        "module_id": "F001",
+        "vba_handler": "txtUserName_AfterUpdate"
+      }
+    }
+  ]
+}

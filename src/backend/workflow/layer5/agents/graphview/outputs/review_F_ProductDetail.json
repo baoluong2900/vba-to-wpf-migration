@@ -1,0 +1,897 @@
+{
+  "formName": "F_ProductDetail",
+  "phase": 1,
+  "status": "FAIL",
+  "summary": {
+    "ok": 5,
+    "missing": 15,
+    "mismatch": 0,
+    "extra": 30
+  },
+  "nodeStatus": {
+    "view:F_ProductDetail": {
+      "status": "ok",
+      "source": "form:F_ProductDetail",
+      "target": "view:F_ProductDetail",
+      "expected": {
+        "id": "view:F_ProductDetail",
+        "kind": "view",
+        "file": "Views/F_ProductDetail.xaml"
+      },
+      "actual": {
+        "id": "view:F_ProductDetail",
+        "label": "F_ProductDetail",
+        "type": "view",
+        "badge": "vba_brain.UI.WPF/Views/F_ProductDetail.xaml",
+        "vbaLabel": "F_ProductDetail",
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:TBL_Products": {
+      "status": "missing",
+      "source": "query:TBL_Products",
+      "target": "repository:TBL_Products",
+      "expected": {
+        "id": "repository:TBL_Products",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/TBL_ProductsRepository.cs"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|Form_BeforeUpdate": {
+      "status": "missing",
+      "source": "event:F_ProductDetail::Form_BeforeUpdate",
+      "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+      "expected": {
+        "id": "handler:F_ProductDetail|Form_BeforeUpdate",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnSave_Click": {
+      "status": "missing",
+      "source": "event:F_ProductDetail::btnSave_Click",
+      "target": "handler:F_ProductDetail|BtnSave_Click",
+      "expected": {
+        "id": "handler:F_ProductDetail|BtnSave_Click",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnDelete_Click": {
+      "status": "missing",
+      "source": "event:F_ProductDetail::btnDelete_Click",
+      "target": "handler:F_ProductDetail|BtnDelete_Click",
+      "expected": {
+        "id": "handler:F_ProductDetail|BtnDelete_Click",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    "viewmodel:F_ProductDetail": {
+      "status": "extra",
+      "source": null,
+      "target": "viewmodel:F_ProductDetail",
+      "expected": null,
+      "actual": {
+        "id": "viewmodel:F_ProductDetail",
+        "label": "F_ProductDetailViewModel",
+        "type": "viewmodel",
+        "badge": "ViewModels/F_ProductDetailViewModel.cs",
+        "vbaLabel": "F_ProductDetail",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_ProductDetail|F000Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_ProductDetail|F000Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_ProductDetail|F000Command",
+        "label": "F000Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_ProductDetail::F000Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_ProductDetail|ICommand": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_ProductDetail|ICommand",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_ProductDetail|ICommand",
+        "label": "ICommand",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_ProductDetail::ICommand",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_ProductDetail|F001Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_ProductDetail|F001Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_ProductDetail|F001Command",
+        "label": "F001Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_ProductDetail::F001Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_ProductDetail|F002Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_ProductDetail|F002Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_ProductDetail|F002Command",
+        "label": "F002Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_ProductDetail::F002Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:ProductDetailService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:ProductDetailService",
+      "expected": null,
+      "actual": {
+        "id": "service:ProductDetailService",
+        "label": "ProductDetailService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:productDetailService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:productDetailService",
+      "expected": null,
+      "actual": {
+        "id": "service:productDetailService",
+        "label": "productDetailService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:_productDetailService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:_productDetailService",
+      "expected": null,
+      "actual": {
+        "id": "service:_productDetailService",
+        "label": "_productDetailService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:navigation": {
+      "status": "extra",
+      "source": null,
+      "target": "service:navigation",
+      "expected": null,
+      "actual": {
+        "id": "service:navigation",
+        "label": "NavigationService",
+        "type": "navigation",
+        "badge": "Application/Navigation",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:FLoginService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:FLoginService",
+      "expected": null,
+      "actual": {
+        "id": "service:FLoginService",
+        "label": "FLoginService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/FLoginService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:Access配信日Repository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:Access配信日Repository",
+      "expected": null,
+      "actual": {
+        "id": "repository:Access配信日Repository",
+        "label": "Access配信日Repository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:q000TLoginUserRepository",
+        "label": "q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:T023地区CD設定Repository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:T023地区CD設定Repository",
+      "expected": null,
+      "actual": {
+        "id": "repository:T023地区CD設定Repository",
+        "label": "T023地区CD設定Repository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:Q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:Q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:Q000TLoginUserRepository",
+        "label": "Q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_q000TLoginUserRepository",
+        "label": "_q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:authRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:authRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:authRepository",
+        "label": "authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AuthRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AuthRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AuthRepository",
+        "label": "AuthRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_authRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_authRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_authRepository",
+        "label": "_authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:AfterMainService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:AfterMainService",
+      "expected": null,
+      "actual": {
+        "id": "service:AfterMainService",
+        "label": "AfterMainService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/AfterMainService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:PaymentRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:PaymentRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:PaymentRepository",
+        "label": "PaymentRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AfterMainRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AfterMainRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AfterMainRepository",
+        "label": "AfterMainRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:PaymentService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:PaymentService",
+      "expected": null,
+      "actual": {
+        "id": "service:PaymentService",
+        "label": "PaymentService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/PaymentService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:ProductListService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:ProductListService",
+      "expected": null,
+      "actual": {
+        "id": "service:ProductListService",
+        "label": "ProductListService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/ProductListService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:QGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:QGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:QGetActiveProductsRepository",
+        "label": "QGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_qGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_qGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_qGetActiveProductsRepository",
+        "label": "_qGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:qGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:qGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:qGetActiveProductsRepository",
+        "label": "qGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:AnalyticsService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:AnalyticsService",
+      "expected": null,
+      "actual": {
+        "id": "service:AnalyticsService",
+        "label": "AnalyticsService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/AnalyticsService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AnalyticsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AnalyticsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AnalyticsRepository",
+        "label": "AnalyticsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:PrintService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:PrintService",
+      "expected": null,
+      "actual": {
+        "id": "service:PrintService",
+        "label": "PrintService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/PrintService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:PrintRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:PrintRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:PrintRepository",
+        "label": "PrintRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    }
+  },
+  "edgeStatus": {
+    "view:F_ProductDetail->viewmodel:F_ProductDetail#0:0": {
+      "status": "ok",
+      "source": "view:F_ProductDetail",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "record source",
+        "vba_edge": "form:F_ProductDetail__query:TBL_Products"
+      },
+      "actual": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail"
+      }
+    },
+    "viewmodel:F_ProductDetail->service:F_ProductDetail#0:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "service:F_ProductDetail",
+        "label": "record source",
+        "vba_edge": "form:F_ProductDetail__query:TBL_Products"
+      },
+      "actual": null
+    },
+    "service:F_ProductDetail->repository:TBL_Products#0:2": {
+      "status": "missing",
+      "source": "service:F_ProductDetail",
+      "target": "repository:TBL_Products",
+      "expected": {
+        "source": "service:F_ProductDetail",
+        "target": "repository:TBL_Products",
+        "label": "record source",
+        "vba_edge": "form:F_ProductDetail__query:TBL_Products"
+      },
+      "actual": null
+    },
+    "view:F_ProductDetail->viewmodel:F_ProductDetail#1:0": {
+      "status": "ok",
+      "source": "view:F_ProductDetail",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::Form_BeforeUpdate"
+      },
+      "actual": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail"
+      }
+    },
+    "viewmodel:F_ProductDetail->handler:F_ProductDetail|Form_BeforeUpdate#1:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::Form_BeforeUpdate"
+      },
+      "actual": null
+    },
+    "view:F_ProductDetail->viewmodel:F_ProductDetail#2:0": {
+      "status": "ok",
+      "source": "view:F_ProductDetail",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnSave_Click"
+      },
+      "actual": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail"
+      }
+    },
+    "viewmodel:F_ProductDetail->handler:F_ProductDetail|BtnSave_Click#2:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|BtnSave_Click",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|BtnSave_Click",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnSave_Click"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnSave_Click->service:F_ProductDetail#2:2": {
+      "status": "missing",
+      "source": "handler:F_ProductDetail|BtnSave_Click",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnSave_Click",
+        "target": "service:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnSave_Click"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnSave_Click->viewmodel:F_ProductDetail#3:0": {
+      "status": "missing",
+      "source": "handler:F_ProductDetail|BtnSave_Click",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnSave_Click",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnSave_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    "viewmodel:F_ProductDetail->view:F_ProductDetail#3:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "view:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "view:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnSave_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    "view:F_ProductDetail->viewmodel:F_ProductDetail#4:0": {
+      "status": "ok",
+      "source": "view:F_ProductDetail",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnDelete_Click"
+      },
+      "actual": {
+        "source": "view:F_ProductDetail",
+        "target": "viewmodel:F_ProductDetail"
+      }
+    },
+    "viewmodel:F_ProductDetail->handler:F_ProductDetail|BtnDelete_Click#4:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|BtnDelete_Click",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|BtnDelete_Click",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnDelete_Click"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnDelete_Click->service:F_ProductDetail#4:2": {
+      "status": "missing",
+      "source": "handler:F_ProductDetail|BtnDelete_Click",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnDelete_Click",
+        "target": "service:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnDelete_Click"
+      },
+      "actual": null
+    },
+    "handler:F_ProductDetail|BtnDelete_Click->viewmodel:F_ProductDetail#5:0": {
+      "status": "missing",
+      "source": "handler:F_ProductDetail|BtnDelete_Click",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnDelete_Click",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnDelete_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    "viewmodel:F_ProductDetail->view:F_ProductDetail#5:1": {
+      "status": "missing",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "view:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "view:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnDelete_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    }
+  },
+  "issues": [
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: repository:TBL_Products",
+      "source": "query:TBL_Products",
+      "target": "repository:TBL_Products",
+      "expected": {
+        "id": "repository:TBL_Products",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/TBL_ProductsRepository.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_ProductDetail|Form_BeforeUpdate",
+      "source": "event:F_ProductDetail::Form_BeforeUpdate",
+      "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+      "expected": {
+        "id": "handler:F_ProductDetail|Form_BeforeUpdate",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_ProductDetail|BtnSave_Click",
+      "source": "event:F_ProductDetail::btnSave_Click",
+      "target": "handler:F_ProductDetail|BtnSave_Click",
+      "expected": {
+        "id": "handler:F_ProductDetail|BtnSave_Click",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_ProductDetail|BtnDelete_Click",
+      "source": "event:F_ProductDetail::btnDelete_Click",
+      "target": "handler:F_ProductDetail|BtnDelete_Click",
+      "expected": {
+        "id": "handler:F_ProductDetail|BtnDelete_Click",
+        "kind": "handler",
+        "file": "ViewModels/F_ProductDetailViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> service:F_ProductDetail",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "service:F_ProductDetail",
+        "label": "record source",
+        "vba_edge": "form:F_ProductDetail__query:TBL_Products"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: service:F_ProductDetail -> repository:TBL_Products",
+      "source": "service:F_ProductDetail",
+      "target": "repository:TBL_Products",
+      "expected": {
+        "source": "service:F_ProductDetail",
+        "target": "repository:TBL_Products",
+        "label": "record source",
+        "vba_edge": "form:F_ProductDetail__query:TBL_Products"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> handler:F_ProductDetail|Form_BeforeUpdate",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|Form_BeforeUpdate",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::Form_BeforeUpdate"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> handler:F_ProductDetail|BtnSave_Click",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|BtnSave_Click",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|BtnSave_Click",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnSave_Click"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_ProductDetail|BtnSave_Click -> service:F_ProductDetail",
+      "source": "handler:F_ProductDetail|BtnSave_Click",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnSave_Click",
+        "target": "service:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnSave_Click"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_ProductDetail|BtnSave_Click -> viewmodel:F_ProductDetail",
+      "source": "handler:F_ProductDetail|BtnSave_Click",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnSave_Click",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnSave_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> view:F_ProductDetail",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "view:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "view:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnSave_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> handler:F_ProductDetail|BtnDelete_Click",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "handler:F_ProductDetail|BtnDelete_Click",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "handler:F_ProductDetail|BtnDelete_Click",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnDelete_Click"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_ProductDetail|BtnDelete_Click -> service:F_ProductDetail",
+      "source": "handler:F_ProductDetail|BtnDelete_Click",
+      "target": "service:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnDelete_Click",
+        "target": "service:F_ProductDetail",
+        "label": "event",
+        "vba_edge": "form:F_ProductDetail__event:F_ProductDetail::btnDelete_Click"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_ProductDetail|BtnDelete_Click -> viewmodel:F_ProductDetail",
+      "source": "handler:F_ProductDetail|BtnDelete_Click",
+      "target": "viewmodel:F_ProductDetail",
+      "expected": {
+        "source": "handler:F_ProductDetail|BtnDelete_Click",
+        "target": "viewmodel:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnDelete_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_ProductDetail -> view:F_ProductDetail",
+      "source": "viewmodel:F_ProductDetail",
+      "target": "view:F_ProductDetail",
+      "expected": {
+        "source": "viewmodel:F_ProductDetail",
+        "target": "view:F_ProductDetail",
+        "label": "closes form",
+        "vba_edge": "event:F_ProductDetail::btnDelete_Click__form:F_ProductDetail"
+      },
+      "actual": null
+    }
+  ]
+}

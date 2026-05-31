@@ -11,43 +11,6 @@
       "return_type": "Task<F000Response>",
       "request_class": "F000Request",
       "response_class": "F000Response",
-      "request_props": [
-        {
-          "name": "TxtID",
-          "type": "string"
-        }
-      ],
-      "response_props": [
-        {
-          "name": "Success",
-          "type": "bool"
-        },
-        {
-          "name": "Message",
-          "type": "string?"
-        },
-        {
-          "name": "Data",
-          "type": "IEnumerable<GetUserInfoDto>?"
-        }
-      ],
-      "repo_calls": [
-        {
-          "repository": "AuthRepository",
-          "function": "GetUserInfoAsync",
-          "query": "Q000_T_LoginUser"
-        }
-      ],
-      "method_code": "    /// <summary>\n    /// F000 画面を開く時 — ユーザーのログイン情報を確認し、適切な権限を持つユーザーのみがシステムにアクセスできるようにします。\n    /// </summary>\n    public async Task<F000Response> F000Async(F000Request request)\n    {\n        try\n        {\n            // Args: txtID → request.TxtID\n            // F000 → AuthRepository.GetUserInfoAsync (query: Q000_T_LoginUser)\n            var userInfo = await _authRepository.GetUserInfoAsync(request.TxtID);\n\n            // VBA reference: Form_Open (Sub) — see original Access form for business rules.\n\n            // DD 2.3: ユーザー情報をResponseに設定\n            return new F000Response {\n                Success = true,\n                Data = userInfo,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F000Response { Success = false, Message = ex.Message };\n        }\n    }",
-      "event_trigger": "画面を開く時",
-      "event_content": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーのみがシステムにアクセスできるようにします。",
-      "vm_method_name": "F000Async"
-    },
-    "F002": {
-      "method_name": "F002Async",
-      "return_type": "Task<F002Response>",
-      "request_class": "F002Request",
-      "response_class": "F002Response",
       "request_props": [],
       "response_props": [
         {
@@ -59,37 +22,60 @@
           "type": "string?"
         },
         {
-          "name": "VersionComment",
-          "type": "string?"
+          "name": "Data",
+          "type": "IEnumerable<Q000TLoginUserEntity>?"
         }
       ],
       "repo_calls": [
         {
-          "repository": "BuildingAfterCollectionRepository",
+          "repository": "Q000TLoginUserRepository",
+          "function": "GetUserInfoAsync",
+          "query": "Q000_T_LoginUser"
+        }
+      ],
+      "method_code": "    /// <summary>\n    /// F000 On Open — Prepares the user interface for a clean and focused login experience.\n    /// </summary>\n    public async Task<F000Response> F000Async(F000Request request)\n    {\n        try\n        {\n            // F000 → Q000TLoginUserRepository.GetUserInfoAsync (query: Q000_T_LoginUser)\n            var userInfo = await _q000TLoginUserRepository.GetUserInfoAsync();\n\n            // DD 2.3: ユーザー情報をResponseに設定\n            return new F000Response {\n                Success = true,\n                Data = userInfo,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F000Response { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "On Open",
+      "event_content": "Prepares the user interface for a clean and focused login experience.",
+      "vm_method_name": "F000Async"
+    },
+    "F001": {
+      "method_name": "F001Async",
+      "return_type": "Task<F001Response>",
+      "request_class": "F001Request",
+      "response_class": "F001Response",
+      "request_props": [],
+      "response_props": [
+        {
+          "name": "Success",
+          "type": "bool"
+        },
+        {
+          "name": "Message",
+          "type": "string?"
+        },
+        {
+          "name": "Data",
+          "type": "IEnumerable<Access配信日Entity>?"
+        }
+      ],
+      "repo_calls": [
+        {
+          "repository": "Access配信日Repository",
           "function": "GetCommentAsync",
           "query": "Access配信日"
         }
       ],
-      "method_code": "    /// <summary>\n    /// F002 フォーム読み込み後 — 現在のバージョンが最新かどうかを確認し、必要に応じて新しいバージョンをインストールします。\n    /// </summary>\n    public async Task<F002Response> F002Async(F002Request request)\n    {\n        try\n        {\n            // F002 → BuildingAfterCollectionRepository.GetCommentAsync (query: Access配信日)\n            var comment = await _buildingAfterCollectionRepository.GetCommentAsync();\n\n            // VBA reference: Form_Load (Sub) — see original Access form for business rules.\n\n            // DD 2.2: DBから最新バージョン情報を取得\n            var latestComment = comment?.FirstOrDefault() ?? string.Empty;\n            // DD 2.3-2.4: バージョン不一致の場合はVersionCommentで通知 (ViewModelが比較)\n            return new F002Response {\n                Success = true,\n                VersionComment = latestComment,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F002Response { Success = false, Message = ex.Message };\n        }\n    }",
-      "event_trigger": "フォーム読み込み後",
-      "event_content": "現在のバージョンが最新かどうかを確認し、必要に応じて新しいバージョンをインストールします。",
-      "vm_method_name": "F002Async"
+      "method_code": "    /// <summary>\n    /// F001 On Load — Checks if the current version is up-to-date and prompts for an update if necessary.\n    /// </summary>\n    public async Task<F001Response> F001Async(F001Request request)\n    {\n        try\n        {\n            // F001 → Access配信日Repository.GetCommentAsync (query: Access配信日)\n            var comment = await _access配信日Repository.GetCommentAsync();\n\n            // DD 2.2: DBから最新バージョン情報を取得\n            // DD 2.3-2.4: バージョン不一致の場合はViewModelが比較\n            return new F001Response {\n                Success = true,\n                Data = comment,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F001Response { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "On Load",
+      "event_content": "Checks if the current version is up-to-date and prompts for an update if necessary.",
+      "vm_method_name": "F001Async"
     },
     "F003": {
       "method_name": "F003Async",
       "return_type": "Task<F003Response>",
       "request_class": "F003Request",
       "response_class": "F003Response",
-      "request_props": [
-        {
-          "name": "TxtID",
-          "type": "string"
-        },
-        {
-          "name": "TxtPass",
-          "type": "string"
-        }
-      ],
+      "request_props": [],
       "response_props": [
         {
           "name": "Success",
@@ -104,32 +90,32 @@
           "type": "IEnumerable<AuthEntity>?"
         },
         {
-          "name": "T022PrefectureEntity",
-          "type": "IEnumerable<T022PrefectureEntity>?"
+          "name": "T023地区CD設定Entity",
+          "type": "IEnumerable<T023地区CD設定Entity>?"
         }
       ],
       "repo_calls": [
         {
           "repository": "AuthRepository",
           "function": "IdPassAsync",
-          "query": "T_ID_pass"
+          "query": "T_ID_Pass"
         },
         {
-          "repository": "T022PrefectureRepository",
-          "function": "GetRegionCdAsync",
-          "query": "Q023_地区CD設定"
+          "repository": "T023地区CD設定Repository",
+          "function": "SetAreaCdAsync",
+          "query": "T023_地区CD設定"
         }
       ],
-      "method_code": "    /// <summary>\n    /// F003 更新後処理 — ユーザーが正しいIDとパスワードを入力した場合にのみ、システムへのアクセスを許可します。\n    /// </summary>\n    public async Task<F003Response> F003Async(F003Request request)\n    {\n        try\n        {\n            // F003 → AuthRepository.IdPassAsync (query: T_ID_pass)\n            var idPass = await _authRepository.IdPassAsync();\n\n            // F003 → T022PrefectureRepository.GetRegionCdAsync (query: Q023_地区CD設定)\n            var regionCd = await _t022PrefectureRepository.GetRegionCdAsync();\n\n            // VBA reference: txtPass_AfterUpdate (Sub) — see original Access form for business rules.\n\n            // DD 2.3: 認証データをResponseに設定\n            return new F003Response {\n                Success = true,\n                AuthEntity = idPass,\n                T022PrefectureEntity = regionCd,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F003Response { Success = false, Message = ex.Message };\n        }\n    }",
-      "event_trigger": "更新後処理",
-      "event_content": "ユーザーが正しいIDとパスワードを入力した場合にのみ、システムへのアクセスを許可します。",
+      "method_code": "    /// <summary>\n    /// F003 After Update — Verifies user credentials and grants access to the system if valid.\n    /// </summary>\n    public async Task<F003Response> F003Async(F003Request request)\n    {\n        try\n        {\n            // F003 → AuthRepository.IdPassAsync (query: T_ID_Pass)\n            var idPass = await _authRepository.IdPassAsync();\n\n            // F003 → T023地区CD設定Repository.SetAreaCdAsync (query: T023_地区CD設定)\n            var setAreaCd = await _t023地区CD設定Repository.SetAreaCdAsync();\n\n            // DD 2.3: 認証データをResponseに設定\n            return new F003Response {\n                Success = true,\n                AuthEntity = idPass,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F003Response { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "After Update",
+      "event_content": "Verifies user credentials and grants access to the system if valid.",
       "vm_method_name": "F003Async"
     },
-    "F008": {
-      "method_name": "F008Async",
-      "return_type": "Task<F008Response>",
-      "request_class": "F008Request",
-      "response_class": "F008Response",
+    "F009": {
+      "method_name": "F009Async",
+      "return_type": "Task<F009Response>",
+      "request_class": "F009Request",
+      "response_class": "F009Response",
       "request_props": [],
       "response_props": [
         {
@@ -152,27 +138,47 @@
           "query": "Q000_T_ID_PASS"
         }
       ],
-      "method_code": "    /// <summary>\n    /// F008 ダブルクリック時 — ログインフォームとユーザー追加フォームを閉じ、メニューバーとステータスバーを有効にし、特定のクエリを開いて最大化します。\n    /// </summary>\n    public async Task<F008Response> F008Async(F008Request request)\n    {\n        try\n        {\n            // F008 → AuthRepository.QIdPassAsync (query: Q000_T_ID_PASS)\n            var qIdPass = await _authRepository.QIdPassAsync();\n\n            return new F008Response {\n                Success = true,\n                Data = qIdPass,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F008Response { Success = false, Message = ex.Message };\n        }\n    }",
-      "event_trigger": "ダブルクリック時",
-      "event_content": "ログインフォームとユーザー追加フォームを閉じ、メニューバーとステータスバーを有効にし、特定のクエリを開いて最大化します。",
-      "vm_method_name": "F008Async"
+      "method_code": "    /// <summary>\n    /// F009 On Double Click — Closes multiple forms, sets up the user interface, and opens a specific query for viewing.\n    /// </summary>\n    public async Task<F009Response> F009Async(F009Request request)\n    {\n        try\n        {\n            // F009 → AuthRepository.QIdPassAsync (query: Q000_T_ID_PASS)\n            var qIdPass = await _authRepository.QIdPassAsync();\n\n            return new F009Response {\n                Success = true,\n                Data = qIdPass,\n            };\n        }\n        catch (System.Exception ex)\n        {\n            return new F009Response { Success = false, Message = ex.Message };\n        }\n    }",
+      "event_trigger": "On Double Click",
+      "event_content": "Closes multiple forms, sets up the user interface, and opens a specific query for viewing.",
+      "vm_method_name": "F009Async"
     }
   },
   "repository": [
     {
-      "repository_name": "BuildingAfterCollectionRepository",
-      "table_name": "TBLビルアフター回収",
+      "repository_name": "Access配信日Repository",
+      "table_name": "Access配信日",
       "function": [
         {
           "function_name": "GetCommentAsync",
           "query_name": "Access配信日",
-          "sheet_query_name": "F002_SelQuery01",
-          "description": "登録番号が'900-79-00136-000'であるレコードのコメントを取得する",
+          "sheet_query_name": "F001_SelQuery01",
+          "description": "",
           "input": [],
           "output": [
             {
-              "name": "",
-              "type": "string",
+              "name": "Access配信日Entity",
+              "type": "entity",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repository_name": "Q000TLoginUserRepository",
+      "table_name": "Q000_T_LoginUser",
+      "function": [
+        {
+          "function_name": "GetUserInfoAsync",
+          "query_name": "Q000_T_LoginUser",
+          "sheet_query_name": "F000_SelQuery01",
+          "description": "",
+          "input": [],
+          "output": [
+            {
+              "name": "Q000TLoginUserEntity",
+              "type": "entity",
               "description": ""
             }
           ]
@@ -184,28 +190,8 @@
       "table_name": "T101_ID_PASS",
       "function": [
         {
-          "function_name": "GetUserInfoAsync",
-          "query_name": "Q000_T_LoginUser",
-          "sheet_query_name": "F000_SelQuery01",
-          "description": "T_ID_PASSテーブルから指定されたIDのユーザー情報を抽出し、担当者名を姓と名に分割してT_LoginUserテーブルを作成する",
-          "input": [
-            {
-              "name": "ID",
-              "type": "string",
-              "description": "ID"
-            }
-          ],
-          "output": [
-            {
-              "name": "GetUserInfoDto",
-              "type": "dto",
-              "description": ""
-            }
-          ]
-        },
-        {
           "function_name": "IdPassAsync",
-          "query_name": "T_ID_pass",
+          "query_name": "T_ID_Pass",
           "sheet_query_name": "F003_SelQuery01",
           "description": "",
           "input": [],
@@ -220,7 +206,7 @@
         {
           "function_name": "QIdPassAsync",
           "query_name": "Q000_T_ID_PASS",
-          "sheet_query_name": "F008_SelQuery01",
+          "sheet_query_name": "F009_SelQuery01",
           "description": "",
           "input": [],
           "output": [
@@ -234,18 +220,18 @@
       ]
     },
     {
-      "repository_name": "T022PrefectureRepository",
-      "table_name": "T022_都道府県抽出用",
+      "repository_name": "T023地区CD設定Repository",
+      "table_name": "T023_地区CD設定",
       "function": [
         {
-          "function_name": "GetRegionCdAsync",
-          "query_name": "Q023_地区CD設定",
+          "function_name": "SetAreaCdAsync",
+          "query_name": "T023_地区CD設定",
           "sheet_query_name": "F003_SelQuery02",
-          "description": "選択がYesのレコードから地区CDと地区CD頭2文字を抽出し、新しいテーブルT023_地区CD設定を作成する",
+          "description": "",
           "input": [],
           "output": [
             {
-              "name": "T022PrefectureEntity",
+              "name": "T023地区CD設定Entity",
               "type": "entity",
               "description": ""
             }

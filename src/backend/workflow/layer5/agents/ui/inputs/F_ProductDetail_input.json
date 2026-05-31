@@ -1,0 +1,277 @@
+{
+  "form_name": "F_ProductDetail",
+  "form_properties": {
+    "caption": "Chi tiết sản phẩm",
+    "width": null,
+    "height": null,
+    "inner_width": 333,
+    "inner_height": 180,
+    "left": 0,
+    "top": 0,
+    "popup": false,
+    "modal": false,
+    "autocenter": false,
+    "border_style": 3,
+    "maxbutton": true,
+    "minbutton": true,
+    "closebutton": true,
+    "controlbox": true,
+    "scrollbars": 0,
+    "borderstyle": 1,
+    "moveable": 1,
+    "fittoscreen": 0,
+    "events": {
+      "beforeupdate": "Form_BeforeUpdate"
+    }
+  },
+  "sections": [
+    {
+      "section_name": "section",
+      "section_type": "section",
+      "section_format": {
+        "width": 333
+      },
+      "controls": [
+        {
+          "name": "txtProductID",
+          "access_type": "TextBox",
+          "wpf_type": "TextBox",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "is_readonly": true,
+            "control_source": "ProductID",
+            "controlsource": "ProductID",
+            "locked": true
+          },
+          "other": {
+            "name": "txtProductID"
+          }
+        },
+        {
+          "name": "txtProductName",
+          "access_type": "TextBox",
+          "wpf_type": "TextBox",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "control_source": "ProductName",
+            "controlsource": "ProductName"
+          },
+          "other": {
+            "name": "txtProductName",
+            "required": true
+          }
+        },
+        {
+          "name": "cboSupplier",
+          "access_type": "ComboBox",
+          "wpf_type": "ComboBox",
+          "nodekey": "section",
+          "format": {
+            "columncount": 2
+          },
+          "data": {
+            "control_source": "SupplierID",
+            "controlsource": "SupplierID",
+            "rowsource": "SELECT SupplierID, SupplierName FROM TBL_Suppliers;",
+            "boundcolumn": 1
+          },
+          "other": {
+            "name": "cboSupplier"
+          }
+        },
+        {
+          "name": "optStatus",
+          "access_type": "OptionGroup",
+          "wpf_type": "TextBlock",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "control_source": "ProductStatus",
+            "controlsource": "ProductStatus"
+          },
+          "other": {
+            "name": "optStatus"
+          }
+        },
+        {
+          "name": "optActive",
+          "access_type": "OptionButton",
+          "wpf_type": "RadioButton",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "optionvalue": 1
+          },
+          "other": {
+            "name": "optActive",
+            "optiongroupname": "optStatus"
+          }
+        },
+        {
+          "name": "optInactive",
+          "access_type": "OptionButton",
+          "wpf_type": "RadioButton",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "optionvalue": 2
+          },
+          "other": {
+            "name": "optInactive",
+            "optiongroupname": "optStatus"
+          }
+        },
+        {
+          "name": "chkDiscontinued",
+          "access_type": "CheckBox",
+          "wpf_type": "CheckBox",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "control_source": "Discontinued",
+            "controlsource": "Discontinued"
+          },
+          "other": {
+            "name": "chkDiscontinued"
+          }
+        },
+        {
+          "name": "btnSave",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {},
+          "other": {
+            "name": "btnSave"
+          },
+          "events": {
+            "onclick": "btnSave_Click"
+          }
+        },
+        {
+          "name": "btnDelete",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {},
+          "other": {
+            "name": "btnDelete"
+          },
+          "events": {
+            "onclick": "btnDelete_Click"
+          }
+        }
+      ]
+    }
+  ],
+  "viewmodel_bindings": {
+    "properties": [
+      "txtProductID",
+      "txtProductName",
+      "optStatus"
+    ],
+    "commands": [
+      "F001Command",
+      "F002Command"
+    ],
+    "event_handlers": [
+      {
+        "method": "Form_BeforeUpdate",
+        "event": "beforeupdate",
+        "wpf_event": "beforeupdate",
+        "control": "__form__",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnSave_Click",
+        "event": "onclick",
+        "control": "btnSave",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnDelete_Click",
+        "event": "onclick",
+        "control": "btnDelete",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      }
+    ],
+    "query_stubs": {
+      "txtProductID": {
+        "control_name": "txtProductID",
+        "wpf_type": "TextBox",
+        "control_source": "ProductID",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "ProductID",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "txtProductID",
+        "suggested_method": "",
+        "status": "pending"
+      },
+      "txtProductName": {
+        "control_name": "txtProductName",
+        "wpf_type": "TextBox",
+        "control_source": "ProductName",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "ProductName",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "txtProductName",
+        "suggested_method": "",
+        "status": "pending"
+      },
+      "cboSupplier": {
+        "control_name": "cboSupplier",
+        "wpf_type": "ComboBox",
+        "control_source": "SupplierID",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "SupplierID",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "cboSupplier",
+        "suggested_method": "",
+        "status": "pending"
+      },
+      "optStatus": {
+        "control_name": "optStatus",
+        "wpf_type": "TextBlock",
+        "control_source": "ProductStatus",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "ProductStatus",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "optStatus",
+        "suggested_method": "",
+        "status": "pending"
+      },
+      "chkDiscontinued": {
+        "control_name": "chkDiscontinued",
+        "wpf_type": "CheckBox",
+        "control_source": "Discontinued",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "Discontinued",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "chkDiscontinued",
+        "suggested_method": "",
+        "status": "pending"
+      }
+    },
+    "fid_cmd_map": {
+      "btnSaveCommand": "F001Command",
+      "btnDeleteCommand": "F002Command"
+    }
+  }
+}

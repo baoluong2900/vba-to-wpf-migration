@@ -1,0 +1,264 @@
+{
+  "form_name": "F_ProductList",
+  "screen_description": "The F_ProductList screen displays a list of products, allowing users to view, filter, and select specific products for further details.",
+  "total_events": 4,
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "event_description_mapping": "画面の初期表示の処理"
+      },
+      "logic_detail": {
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F000_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. 画面を開く時、必要なデータを取得するためのクエリを実行する\n[F000_SelQuery01]\n"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. 取得したデータを使用して画面を初期表示する"
+        }
+      },
+      "cs_stub": null,
+      "service_context": {
+        "interface_method": "Task<F000Response> OnF000Async(F000Request request);",
+        "request": {
+          "class": "F000Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F000Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "Data",
+              "type": "IEnumerable<QGetActiveProductsEntity>?",
+              "nullable": true
+            }
+          ]
+        },
+        "vm_method": "F000Async",
+        "service_field_hint": "_productListService",
+        "iface_class": "IProductListService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtSearch",
+        "physical_name": "txtSearch",
+        "event_trigger": "After Update",
+        "event_content": "Refreshes the product grid to show the latest data.",
+        "module_id": "F001",
+        "notes": "txtSearch_AfterUpdate",
+        "action_type": "READ",
+        "event_description_mapping": "Refreshes the product grid to show the latest data."
+      },
+      "logic_detail": {
+        "code": "Private Sub txtSearch_AfterUpdate()\nMe.subProductGrid.Requery\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 1,
+          "io": "I",
+          "logical_name": "TODO_txtSearch",
+          "physical_name": "txtSearch",
+          "item_attribute": "Text Box",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E001"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. subProductGridのデータを最新の状態に更新する"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event",
+        "module_id": "F000",
+        "vba_handler": "txtSearch_AfterUpdate"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "List Box",
+        "logical_name": "TODO_lstCategory",
+        "physical_name": "lstCategory",
+        "event_trigger": "After Update",
+        "event_content": "Filters the product grid based on the selected category.",
+        "module_id": "F002",
+        "notes": "lstCategory_AfterUpdate",
+        "action_type": "READ",
+        "event_description_mapping": "Filters the product grid based on the selected category."
+      },
+      "logic_detail": {
+        "code": "Private Sub lstCategory_AfterUpdate()\nMe.subProductGrid.Form.Filter = \"CategoryID = \" & Me.lstCategory\n Me.subProductGrid.Form.FilterOn = True\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 2,
+          "io": "",
+          "logical_name": "TODO_lstCategory",
+          "physical_name": "lstCategory",
+          "item_attribute": "List Box",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E002"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Set the filter for the subProductGrid to 'CategoryID = ' followed by the value of lstCategory\n2.2. Apply the filter to the subProductGrid"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event",
+        "module_id": "F001",
+        "vba_handler": "lstCategory_AfterUpdate"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E003",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnOpenDetail",
+        "physical_name": "cmdbtnOpenDetail",
+        "event_trigger": "On Click",
+        "event_content": "Opens the detailed product form for the selected product, prompting the user if no product is chosen.",
+        "module_id": "F003",
+        "notes": "btnOpenDetail_Click",
+        "action_type": "NAV",
+        "event_description_mapping": "Opens the detailed product form for the selected product, prompting the user if no product is chosen."
+      },
+      "logic_detail": {
+        "code": "Private Sub btnOpenDetail_Click()\nIf IsNull(Me.subProductGrid.Form!ProductID) Then\n MsgBox \"Hãy chọn một sản phẩm!\", vbExclamation\n Exit Sub\n End If\n DoCmd.OpenForm \"F_ProductDetail\", acNormal, , \"ProductID = \" & Me.subProductGrid.Form!ProductID\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_ProductDetail"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 4,
+          "io": "",
+          "logical_name": "TODO_btnOpenDetail",
+          "physical_name": "cmdbtnOpenDetail",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E003"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Check if the ProductID in the subProductGrid form is null\n2.2. If the ProductID is null, display a message to the user indicating that a product must be selected\n2.3. If the ProductID is not null, open the F_ProductDetail form with the filter set to the selected ProductID [refer: F_ProductDetail]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event",
+        "module_id": "F002",
+        "vba_handler": "btnOpenDetail_Click"
+      }
+    }
+  ]
+}

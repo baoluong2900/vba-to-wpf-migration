@@ -12,6 +12,101 @@
       "suggested_property": "Comment1",
       "suggested_method": "LoadComment1Async",
       "status": "pending"
+    },
+    "txtReleasedDate": {
+      "control_name": "txtReleasedDate",
+      "wpf_type": "TextBox",
+      "control_source": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")",
+      "source_type": "DLookUp",
+      "table": "Access配信日",
+      "field": "コメント",
+      "field_en": "Comment1",
+      "criteria": "",
+      "suggested_property": "Comment1",
+      "suggested_method": "LoadComment1Async",
+      "status": "pending"
+    }
+  },
+  "F_TestForm": {
+    "txtUserName": {
+      "control_name": "txtUserName",
+      "wpf_type": "TextBox",
+      "control_source": "UserName",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "UserName",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "txtUserName",
+      "suggested_method": "",
+      "status": "pending"
+    }
+  },
+  "F_ProductDetail": {
+    "txtProductID": {
+      "control_name": "txtProductID",
+      "wpf_type": "TextBox",
+      "control_source": "ProductID",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "ProductID",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "txtProductID",
+      "suggested_method": "",
+      "status": "pending"
+    },
+    "txtProductName": {
+      "control_name": "txtProductName",
+      "wpf_type": "TextBox",
+      "control_source": "ProductName",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "ProductName",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "txtProductName",
+      "suggested_method": "",
+      "status": "pending"
+    },
+    "cboSupplier": {
+      "control_name": "cboSupplier",
+      "wpf_type": "ComboBox",
+      "control_source": "SupplierID",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "SupplierID",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "cboSupplier",
+      "suggested_method": "",
+      "status": "pending"
+    },
+    "optStatus": {
+      "control_name": "optStatus",
+      "wpf_type": "TextBlock",
+      "control_source": "ProductStatus",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "ProductStatus",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "optStatus",
+      "suggested_method": "",
+      "status": "pending"
+    },
+    "chkDiscontinued": {
+      "control_name": "chkDiscontinued",
+      "wpf_type": "CheckBox",
+      "control_source": "Discontinued",
+      "source_type": "DirectField",
+      "table": "",
+      "field": "Discontinued",
+      "field_en": "",
+      "criteria": "",
+      "suggested_property": "chkDiscontinued",
+      "suggested_method": "",
+      "status": "pending"
     }
   }
 }

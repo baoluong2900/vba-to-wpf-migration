@@ -1,0 +1,134 @@
+{
+  "form_name": "F_ProductDetail",
+  "feature": "F_ProductDetail",
+  "viewmodel_name": "F_ProductDetailViewModel",
+  "view_name": "F_ProductDetailView",
+  "viewmodel_file": "F_ProductDetailViewModel.cs",
+  "codebehind_file": "F_ProductDetailView.xaml.cs",
+  "agent": "logic",
+  "summary": {
+    "total_events": 4,
+    "generated": 2,
+    "skipped": 2,
+    "sys_deterministic": 0
+  },
+  "methods": {
+    "F000": {
+      "order": 0,
+      "event_id": "E000",
+      "module_id": "F000",
+      "event_trigger": "On Open",
+      "event_content": "画面の初期表示の処理",
+      "vba_handler": "Form_Open",
+      "phase_type": "service",
+      "status": "success",
+      "cs_stub": null,
+      "vm_method": {
+        "name": "F000Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F000Async()",
+        "body": "// Command bound in XAML"
+      },
+      "service_call": {
+        "method": "Task<F000Response> OnF000Async(F000Request request);",
+        "request": "F000Request",
+        "response": "F000Response",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "System bound command"
+    },
+    "F001": {
+      "order": 1,
+      "event_id": "E001",
+      "module_id": "F001",
+      "event_trigger": "Before Update",
+      "event_content": "Prevents the user from proceeding if the product name is empty.",
+      "vba_handler": "Form_BeforeUpdate",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event"
+      },
+      "vm_method": {
+        "name": "F001Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F001Async()",
+        "body": "private async void F000_Event(object sender, RoutedEventArgs e)\n{\n    if (sender is FrameworkElement element && element.DataContext is ViewModels.F000ViewModel vm)\n    {\n        var productName = vm.TxtProductName;\n        if (string.IsNullOrEmpty(productName))\n        {\n            MessageBox.Show(\"Product name cannot be empty!\", \"警告\", MessageBoxButton.OK, MessageBoxImage.Warning);\n            e.Handled = true;\n        }\n    }\n}"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F002": {
+      "order": 2,
+      "event_id": "E002",
+      "module_id": "F002",
+      "event_trigger": "On Click",
+      "event_content": "Saves the current record and closes the form with a success message.",
+      "vba_handler": "btnSave_Click",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event"
+      },
+      "vm_method": {
+        "name": "F002Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F002Async()",
+        "body": "// Skipped"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F003": {
+      "order": 3,
+      "event_id": "E003",
+      "module_id": "F003",
+      "event_trigger": "On Click",
+      "event_content": "Prompts the user for confirmation before deleting the selected product and closing the form.",
+      "vba_handler": "btnDelete_Click",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event"
+      },
+      "vm_method": {
+        "name": "F003Async",
+        "signature": "",
+        "body": "// Skipped"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    }
+  }
+}

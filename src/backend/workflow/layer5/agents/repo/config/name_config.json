@@ -478,7 +478,9 @@
         "不具合時場所": "LocationDuringDefect",
         "勤務先TEL_編集画面": "WorkplaceTelEditScreen",
         "作業責任者_所属": "WorkResponsiblePersonDepartment",
-        "作業責任者_名前": "WorkResponsiblePersonName"
+        "作業責任者_名前": "WorkResponsiblePersonName",
+        "配信日コメント": "DistributionDateComment",
+        "地区コードID": "AreaCodeId"
     },
     "parameter_name": {
         "連番": "seqNo",
@@ -521,7 +523,10 @@
         "T_ID_pass": "IdPass",
         "Q000_T_ID_PASS": "QIdPass",
         "Q005_報告_施工用": "GenerateConstructionReport",
-        "Q005_アフターメンテナンス受付": "AfterMaintenanceReception"
+        "Q005_アフターメンテナンス受付": "AfterMaintenanceReception",
+        "T_ID_Pass": "IdPass",
+        "T023_地区CD設定": "SetAreaCd",
+        "Q_GetActiveProducts": "GetActiveProducts"
     },
     "cte_name": {
         "C000_MAINⅡ ALL": "MainAll",

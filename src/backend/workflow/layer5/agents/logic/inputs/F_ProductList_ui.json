@@ -1,0 +1,136 @@
+{
+  "form_name": "F_ProductList",
+  "input_type": "UI",
+  "screen_description": "The F_ProductList screen displays a list of products, allowing users to view, filter, and select specific products for further details.",
+  "description": "Events chỉ xử lý UI/navigation/validation. Gen C# method body cho WPF code-behind.",
+  "total_events": 2,
+  "cs_file": "F_ProductList.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtSearch",
+        "physical_name": "txtSearch",
+        "event_trigger": "After Update",
+        "event_content": "Refreshes the product grid to show the latest data.",
+        "module_id": "F001",
+        "notes": "txtSearch_AfterUpdate",
+        "action_type": "READ",
+        "event_description_mapping": "Refreshes the product grid to show the latest data.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub txtSearch_AfterUpdate()\nMe.subProductGrid.Requery\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 1,
+          "io": "I",
+          "logical_name": "TODO_txtSearch",
+          "physical_name": "txtSearch",
+          "item_attribute": "Text Box",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E001"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. subProductGridのデータを最新の状態に更新する"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event",
+        "module_id": "F000",
+        "vba_handler": "txtSearch_AfterUpdate"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "List Box",
+        "logical_name": "TODO_lstCategory",
+        "physical_name": "lstCategory",
+        "event_trigger": "After Update",
+        "event_content": "Filters the product grid based on the selected category.",
+        "module_id": "F002",
+        "notes": "lstCategory_AfterUpdate",
+        "action_type": "READ",
+        "event_description_mapping": "Filters the product grid based on the selected category.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub lstCategory_AfterUpdate()\nMe.subProductGrid.Form.Filter = \"CategoryID = \" & Me.lstCategory\n Me.subProductGrid.Form.FilterOn = True\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 2,
+          "io": "",
+          "logical_name": "TODO_lstCategory",
+          "physical_name": "lstCategory",
+          "item_attribute": "List Box",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E002"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Set the filter for the subProductGrid to 'CategoryID = ' followed by the value of lstCategory\n2.2. Apply the filter to the subProductGrid"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event",
+        "module_id": "F001",
+        "vba_handler": "lstCategory_AfterUpdate"
+      }
+    }
+  ]
+}

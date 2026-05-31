@@ -1,0 +1,341 @@
+{
+  "form_name": "F_Login",
+  "feature": "FLogin",
+  "viewmodel_name": "FLoginViewModel",
+  "view_name": "FLoginView",
+  "viewmodel_file": "FLoginViewModel.cs",
+  "codebehind_file": "FLoginView.xaml.cs",
+  "agent": "logic",
+  "summary": {
+    "total_events": 11,
+    "generated": 6,
+    "skipped": 2,
+    "sys_deterministic": 3
+  },
+  "methods": {
+    "F000": {
+      "order": 0,
+      "event_id": "E000",
+      "module_id": "F000",
+      "event_trigger": "On Open",
+      "event_content": "Prepares the user interface for a clean and focused login experience.",
+      "vba_handler": "Form_Open",
+      "phase_type": "service",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F000_Loaded(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Loaded"
+      },
+      "vm_method": {
+        "name": "F000Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F000Async()",
+        "body": "// Skipped"
+      },
+      "service_call": {
+        "method": "Task<F000Response> F000Async(F000Request request);",
+        "request": "F000Request",
+        "response": "F000Response",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F001": {
+      "order": 1,
+      "event_id": "E001",
+      "module_id": "F001",
+      "event_trigger": "On Load",
+      "event_content": "Checks if the current version is up-to-date and prompts for an update if necessary.",
+      "vba_handler": "Form_Load",
+      "phase_type": "service",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F002_ContentRendered(object? sender, EventArgs e)",
+        "cs_name": "F002_ContentRendered"
+      },
+      "vm_method": {
+        "name": "F001Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F001Async()",
+        "body": "public virtual async System.Threading.Tasks.Task F001Async()\n{\n    // 2.1 ラベルからバージョン情報を抽出\n    var currentVersionPart = LblVersion?.ToString().Split('/')?.LastOrDefault()?.Substring(0, 5);\n    \n    var request = new F001Request();\n    var response = await _fLoginService.F001Async(request);\n    \n    if (response.Success && !string.IsNullOrEmpty(response.Message))\n    {\n        // 2.3 最新バージョンと比較\n        if (!string.Equals(currentVersionPart, response.Message.Trim(), StringComparison.OrdinalIgnoreCase))\n        {\n            // 2.4.1.1 メッセージ表示\n            MessageBox.Show(\"最新版ではありません！インストールします。\",\n                \"確認\", MessageBoxButton.OK, MessageBoxImage.Exclamation);\n            // 2.4.1.2 Judge_Instモジュール呼び出し — 実装場所に依存するため要確認\n            // TODO: Common.Judge_Inst の呼び出しを実装 — 具体的手順を確認してください\n        }\n    }\n}"
+      },
+      "service_call": {
+        "method": "Task<F001Response> F001Async(F001Request request);",
+        "request": "F001Request",
+        "response": "F001Response",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F002": {
+      "order": 2,
+      "event_id": "E002",
+      "module_id": "F002",
+      "event_trigger": "On Key Down",
+      "event_content": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
+      "vba_handler": "Form_KeyDown",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F001_PreviewKeyDown(object sender, KeyEventArgs e)",
+        "cs_name": "F001_PreviewKeyDown"
+      },
+      "vm_method": {
+        "name": "F002Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F002Async()",
+        "body": "private async void F001_PreviewKeyDown(object sender, KeyEventArgs e)\n{\n    if (DataContext is ViewModels.FLoginViewModel vm)\n        await vm.F001Async(e.Key);\n    e.Handled = vm.LastKeyHandled;\n}"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F003": {
+      "order": 3,
+      "event_id": "E003",
+      "module_id": "F003",
+      "event_trigger": "After Update",
+      "event_content": "Verifies user credentials and grants access to the system if valid.",
+      "vba_handler": "txtPass_AfterUpdate",
+      "phase_type": "service",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F003_AfterUpdate(object sender, RoutedEventArgs e)",
+        "cs_name": "F003_AfterUpdate"
+      },
+      "vm_method": {
+        "name": "F003Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F003Async()",
+        "body": "public virtual async System.Threading.Tasks.Task F003Async()\n{\n    // DD 2.2: Validate user input\n    if (string.IsNullOrWhiteSpace(TxtID))\n    {\n        MessageBox.Show(\"ユーザーIDを入力してください。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    if (string.IsNullOrWhiteSpace(TxtPass))\n    {\n        MessageBox.Show(\"パスワードを入力してください。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    var request = new F003Request { TxtID = TxtID, TxtPass = TxtPass };\n    var response = await _fLoginService.F003Async(request);\n\n    if (!response.Success)\n    {\n        MessageBox.Show(response.Message ?? \"ユーザーIDまたはパスワードが正しくありません。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    // DD 2.7: Login successful — close login form and proceed\n    CloseRequested?.Invoke(this, EventArgs.Empty);\n\n    // DD 2.7.3: Check record count in T023地区CD設定\n    if (response.T023地区CD設定Entity == null || !response.T023地区CD設定Entity.Any())\n    {\n        // TODO: AutoExec_Restartマクロを実行してアプリケーションを再起動 — 具体的手順を確認\n    }\n    else\n    {\n        // TODO: タイマーを開く 及び AutoExec_Aマクロを実行 — Viewクラス名と処理内容を確認\n    }\n}"
+      },
+      "service_call": {
+        "method": "Task<F003Response> F003Async(F003Request request);",
+        "request": "F003Request",
+        "response": "F003Response",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F004": {
+      "order": 4,
+      "event_id": "E004",
+      "module_id": "F004",
+      "event_trigger": "On Click",
+      "event_content": "cmdLogin_Click",
+      "vba_handler": "cmdLogin_Click",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F010_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F010_Event"
+      },
+      "vm_method": {
+        "name": "F004Async",
+        "signature": "",
+        "body": "// Command bound in XAML"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "System bound command"
+    },
+    "F005": {
+      "order": 5,
+      "event_id": "E005",
+      "module_id": "F005",
+      "event_trigger": "On Click",
+      "event_content": "Prompts the user to confirm before closing the application.",
+      "vba_handler": "cmdClose_Click",
+      "phase_type": "sys_deterministic",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F011_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F011_Event"
+      },
+      "vm_method": {
+        "name": "F005Async",
+        "signature": "",
+        "body": "public virtual async System.Threading.Tasks.Task F005Async()\n{\n    var result = MessageBox.Show(\n        \"アプリケーションを終了しますか？\",\n        \"確認\", MessageBoxButton.YesNo, MessageBoxImage.Question);\n    if (result == MessageBoxResult.Yes)\n        System.Windows.Application.Current.Shutdown();\n    await System.Threading.Tasks.Task.CompletedTask;\n}"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F006": {
+      "order": 6,
+      "event_id": "E006",
+      "module_id": "F006",
+      "event_trigger": "On Double Click",
+      "event_content": "lblStoreInfo_DblClick",
+      "vba_handler": "lblStoreInfo_DblClick",
+      "phase_type": "sys_deterministic",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F012_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F012_Event"
+      },
+      "vm_method": {
+        "name": "F006Async",
+        "signature": "",
+        "body": "public virtual async System.Threading.Tasks.Task F006Async()\n{\n    // TODO: open TODO_lblStoreInfo form — verify View class name before instantiating\n    await System.Threading.Tasks.Task.CompletedTask;\n}"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F007": {
+      "order": 7,
+      "event_id": "E007",
+      "module_id": "F007",
+      "event_trigger": "On Click",
+      "event_content": "macro.A_メニューバーを表示",
+      "vba_handler": "macro.A_メニューバーを表示",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": null,
+      "vm_method": {
+        "name": "F007Async",
+        "signature": "",
+        "body": "// Command bound in XAML"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "System bound command"
+    },
+    "F008": {
+      "order": 8,
+      "event_id": "E008",
+      "module_id": "F008",
+      "event_trigger": "On Double Click",
+      "event_content": "macro.M300_Splash(M)を開く",
+      "vba_handler": "macro.M300_Splash(M)を開く",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": null,
+      "vm_method": {
+        "name": "F008Async",
+        "signature": "",
+        "body": "// Command bound in XAML"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "System bound command"
+    },
+    "F009": {
+      "order": 9,
+      "event_id": "E009",
+      "module_id": "F009",
+      "event_trigger": "On Double Click",
+      "event_content": "Closes multiple forms, sets up the user interface, and opens a specific query for viewing.",
+      "vba_handler": "lblOpenPasswordTable_DblClick",
+      "phase_type": "service",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F015_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F015_Event"
+      },
+      "vm_method": {
+        "name": "F009Async",
+        "signature": "",
+        "body": "// Skipped"
+      },
+      "service_call": {
+        "method": "Task<F009Response> F009Async(F009Request request);",
+        "request": "F009Request",
+        "response": "F009Response",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F010": {
+      "order": 10,
+      "event_id": "E010",
+      "module_id": "F010",
+      "event_trigger": "On Double Click",
+      "event_content": "Terminates the Windows Media Player process if it is running.",
+      "vba_handler": "lblEndProcess_DblClick",
+      "phase_type": "sys_deterministic",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F016_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F016_Event"
+      },
+      "vm_method": {
+        "name": "F010Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F010Async()",
+        "body": "public virtual async System.Threading.Tasks.Task F010Async()\n{\n    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo\n    {\n        FileName = \"taskkill.exe\",\n        Arguments = \"/F /IM wmplayer.exe\")\",\n        CreateNoWindow = true,\n        UseShellExecute = false\n    });\n    await System.Threading.Tasks.Task.CompletedTask;\n}"
+      },
+      "service_call": {
+        "method": "",
+        "request": "",
+        "response": "",
+        "request_props": []
+      },
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    }
+  }
+}

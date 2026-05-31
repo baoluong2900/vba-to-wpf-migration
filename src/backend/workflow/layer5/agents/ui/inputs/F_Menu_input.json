@@ -1,0 +1,131 @@
+{
+  "form_name": "F_Menu",
+  "form_properties": {
+    "caption": "Hệ thống quản lý kho - Menu chính",
+    "width": null,
+    "height": null,
+    "inner_width": 333,
+    "inner_height": 180,
+    "left": 0,
+    "top": 0,
+    "popup": false,
+    "modal": false,
+    "autocenter": false,
+    "border_style": 3,
+    "maxbutton": true,
+    "minbutton": true,
+    "closebutton": true,
+    "controlbox": true,
+    "scrollbars": 0,
+    "borderstyle": 1,
+    "moveable": 1,
+    "fittoscreen": 0,
+    "events": {
+      "onopen": "Form_Open"
+    }
+  },
+  "sections": [
+    {
+      "section_name": "section",
+      "section_type": "section",
+      "section_format": {
+        "width": 333
+      },
+      "controls": [
+        {
+          "name": "btnProductList",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {
+            "caption": "Danh sách sản phẩm"
+          },
+          "other": {
+            "name": "btnProductList"
+          },
+          "events": {
+            "onclick": "btnProductList_Click"
+          }
+        },
+        {
+          "name": "btnOrderEntry",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {
+            "caption": "Nhập đơn hàng"
+          },
+          "other": {
+            "name": "btnOrderEntry"
+          },
+          "events": {
+            "onclick": "btnOrderEntry_Click"
+          }
+        },
+        {
+          "name": "btnExit",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {
+            "caption": "Thoát hệ thống"
+          },
+          "other": {
+            "name": "btnExit"
+          },
+          "events": {
+            "onclick": "Macro.M_CloseSystem"
+          }
+        }
+      ]
+    }
+  ],
+  "viewmodel_bindings": {
+    "properties": [],
+    "commands": [
+      "F001Command",
+      "F002Command",
+      "F003Command"
+    ],
+    "event_handlers": [
+      {
+        "method": "Form_Open",
+        "event": "onopen",
+        "wpf_event": "Loaded",
+        "control": "__form__",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnProductList_Click",
+        "event": "onclick",
+        "control": "btnProductList",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnOrderEntry_Click",
+        "event": "onclick",
+        "control": "btnOrderEntry",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "Macro.M_CloseSystem",
+        "event": "onclick",
+        "control": "btnExit",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      }
+    ],
+    "query_stubs": {},
+    "fid_cmd_map": {
+      "btnProductListCommand": "F001Command",
+      "btnOrderEntryCommand": "F002Command",
+      "Macro.M_CloseSystemCommand": "F003Command"
+    }
+  }
+}

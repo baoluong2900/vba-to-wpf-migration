@@ -41,8 +41,8 @@ OUTPUTS_DIR = AGENT_DIR / "outputs"
 PROMPTS_DIR = AGENT_DIR / "prompts"
 
 WPF_VIEWS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent
-    / "source" / "vba_brain.UI.WPF" / "Views"
+    AGENT_DIR.parent.parent.parent.parent.parent
+    / "wpf" / "vba_brain.UI.Avalonia" / "Views"
 )
 
 logger = logging.getLogger(__name__)
@@ -147,10 +147,10 @@ def ensure_dependency_injection_using(cs_file: Path):
         modified = True
         logger.info("[Injector] ✅ Added using Microsoft.Extensions.DependencyInjection; to %s", cs_file.name)
         
-    if "using vba_brain.UI.WPF.Services;" not in content:
-        content = "using vba_brain.UI.WPF.Services;\n" + content
+    if "using vba_brain.UI.Avalonia.Services;" not in content:
+        content = "using vba_brain.UI.Avalonia.Services;\n" + content
         modified = True
-        logger.info("[Injector] ✅ Added using vba_brain.UI.WPF.Services; to %s", cs_file.name)
+        logger.info("[Injector] ✅ Added using vba_brain.UI.Avalonia.Services; to %s", cs_file.name)
         
     if modified:
         cs_file.write_text(content, encoding="utf-8")
@@ -568,7 +568,7 @@ def run_ui_agent(
         _name_map = _load_form_name_map()
         view_file_stem, _ = _resolve_wpf_names(form_name, _name_map)
 
-        db_dir = LAYER5_DIR.parent / "data/database_json" / "agent_logic"
+        db_dir = LAYER5_DIR.parent.parent.parent.parent / "data/database_json" / "agent_logic"
         cache_file = db_dir / f"{form_name}_codebehind.json"
 
         if cache_file.exists() and not dry_run and not no_cache:

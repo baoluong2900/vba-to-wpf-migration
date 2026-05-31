@@ -1,0 +1,73 @@
+[
+  {
+    "event_id": "E000",
+    "mapped_command": {
+      "event_id": "E000",
+      "module_id": "F000",
+      "vba_event": "Form_Open",
+      "cs_command": "",
+      "cs_method": "OnNavigatedTo",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Window loaded"
+    },
+    "cs_method": "OnNavigatedTo",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "service",
+    "note": "System bound command"
+  },
+  {
+    "event_id": "E001",
+    "mapped_command": {
+      "event_id": "E001",
+      "module_id": "F001",
+      "vba_event": "Form_BeforeUpdate",
+      "cs_command": "FormCommand",
+      "cs_method": "FormAsync",
+      "action_type": "VALID",
+      "is_main_logic": true,
+      "trigger": "After update / Enter key"
+    },
+    "cs_method": "FormAsync",
+    "code": "private async void F000_Event(object sender, RoutedEventArgs e)\n{\n    if (sender is FrameworkElement element && element.DataContext is ViewModels.F000ViewModel vm)\n    {\n        var productName = vm.TxtProductName;\n        if (string.IsNullOrEmpty(productName))\n        {\n            MessageBox.Show(\"Product name cannot be empty!\", \"警告\", MessageBoxButton.OK, MessageBoxImage.Warning);\n            e.Handled = true;\n        }\n    }\n}",
+    "status": "success",
+    "phase_type": "ui"
+  },
+  {
+    "event_id": "E002",
+    "mapped_command": {
+      "event_id": "E002",
+      "module_id": "F002",
+      "vba_event": "btnSave_Click",
+      "cs_command": "SaveCommand",
+      "cs_method": "Save",
+      "action_type": "CREATE",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "Save",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E003",
+    "mapped_command": {
+      "event_id": "E003",
+      "module_id": "F003",
+      "vba_event": "btnDelete_Click",
+      "cs_command": "DeleteCommand",
+      "cs_method": "Delete",
+      "action_type": "DELETE",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "Delete",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  }
+]

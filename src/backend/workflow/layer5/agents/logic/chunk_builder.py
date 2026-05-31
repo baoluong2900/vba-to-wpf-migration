@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 AGENT_DIR    = Path(__file__).parent
 INPUTS_DIR   = AGENT_DIR / "inputs"
 
-# WPF Views folder: agents/logic → agents → layer5 → backend → workflow → source
+# Avalonia Views folder: agents/logic → agents → layer5 → workflow → backend → src
 WPF_VIEWS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent  # → workflow/
-    / "source" / "vba_brain.UI.WPF" / "Views"
+    AGENT_DIR.parent.parent.parent.parent.parent  # → src/
+    / "wpf" / "vba_brain.UI.Avalonia" / "Views"
 )
 
 
@@ -761,7 +761,7 @@ class ChunkBuilder:
         _form = form_name
         if _form and module_id:
             try:
-                _workflow_root = Path(__file__).resolve().parent.parent.parent.parent.parent
+                _workflow_root = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
                 _db_dir   = _workflow_root / "data/database_json" / "agent_service"
                 _svc_dir  = Path(__file__).resolve().parent.parent / "service" / "outputs" / _form
 

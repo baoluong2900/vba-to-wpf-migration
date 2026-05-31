@@ -1,0 +1,79 @@
+{
+  "form_name": "F_ProductDetail",
+  "input_type": "SERVICE",
+  "screen_description": "This screen allows users to view and edit detailed information about a specific product, including its name, supplier, and status.",
+  "description": "Events có xử lý data/query. Gen ViewModel + IService + Service method.",
+  "total_events": 1,
+  "cs_file": "F_ProductDetail.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "event_description_mapping": "画面の初期表示の処理",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F000_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. 画面を開く際の初期データを取得する\n1.2. クエリを実行してデータを取得する\n[F000_SelQuery01]\n"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. 取得したデータを使用して画面を初期表示する\n"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": null,
+      "service_context": {
+        "interface_method": "Task<F000Response> OnF000Async(F000Request request);",
+        "request": {
+          "class": "F000Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F000Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            }
+          ]
+        },
+        "vm_method": "F000Async",
+        "service_field_hint": "_productDetailService",
+        "iface_class": "IProductDetailService"
+      }
+    }
+  ]
+}

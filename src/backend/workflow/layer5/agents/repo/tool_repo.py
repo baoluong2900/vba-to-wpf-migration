@@ -454,8 +454,7 @@ def gen_csharp_class(class_name: str, fields: list[dict], config: dict, base_cla
     jp_comment = f"/// <summary>\n/// {jp_table_name}\n/// </summary>\n" if jp_table_name else ""
     return (
         f"using System.ComponentModel.DataAnnotations;\n"
-        f"using System.ComponentModel.DataAnnotations.Schema;\n"
-        f"using vba_brain.Domain.Entities.Base;\n\n"
+        f"using System.ComponentModel.DataAnnotations.Schema;\n\n"
         f"namespace vba_brain.Domain.Entities;\n\n"
         f"{jp_comment}"
         f"public class {class_name}{base_decl}\n"

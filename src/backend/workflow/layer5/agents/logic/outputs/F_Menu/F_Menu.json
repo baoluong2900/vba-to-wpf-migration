@@ -1,0 +1,117 @@
+{
+  "form_name": "F_Menu",
+  "feature": "F_Menu",
+  "viewmodel_name": "F_MenuViewModel",
+  "view_name": "F_MenuView",
+  "viewmodel_file": "F_MenuViewModel.cs",
+  "codebehind_file": "F_MenuView.xaml.cs",
+  "agent": "logic",
+  "summary": {
+    "total_events": 4,
+    "generated": 1,
+    "skipped": 3,
+    "sys_deterministic": 0
+  },
+  "methods": {
+    "F000": {
+      "order": 0,
+      "event_id": "E000",
+      "module_id": "F000",
+      "event_trigger": "On Open",
+      "event_content": "Welcome message is displayed to the user.",
+      "vba_handler": "Form_Open",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event"
+      },
+      "vm_method": {
+        "name": "F000Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F000Async()",
+        "body": "// Skipped"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F001": {
+      "order": 1,
+      "event_id": "E001",
+      "module_id": "F001",
+      "event_trigger": "On Click",
+      "event_content": "Opens the product list form for viewing.",
+      "vba_handler": "btnProductList_Click",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event"
+      },
+      "vm_method": {
+        "name": "F001Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F001Async()",
+        "body": "// Skipped"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F002": {
+      "order": 2,
+      "event_id": "E002",
+      "module_id": "F002",
+      "event_trigger": "On Click",
+      "event_content": "Opens the order entry form to input new orders.",
+      "vba_handler": "btnOrderEntry_Click",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event"
+      },
+      "vm_method": {
+        "name": "F002Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F002Async()",
+        "body": "// Skipped"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F003": {
+      "order": 3,
+      "event_id": "E003",
+      "module_id": "F003",
+      "event_trigger": "On Click",
+      "event_content": "Macro.M_CloseSystem",
+      "vba_handler": "Macro.M_CloseSystem",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F003_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F003_Event"
+      },
+      "vm_method": {
+        "name": "F003Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F003Async()",
+        "body": "// Command bound in XAML"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "System bound command"
+    }
+  }
+}

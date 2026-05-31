@@ -1,0 +1,92 @@
+{
+  "form_name": "F_TestForm",
+  "feature": "F_TestForm",
+  "viewmodel_name": "F_TestFormViewModel",
+  "view_name": "F_TestFormView",
+  "viewmodel_file": "F_TestFormViewModel.cs",
+  "codebehind_file": "F_TestFormView.xaml.cs",
+  "agent": "logic",
+  "summary": {
+    "total_events": 3,
+    "generated": 1,
+    "skipped": 2,
+    "sys_deterministic": 0
+  },
+  "methods": {
+    "F000": {
+      "order": 0,
+      "event_id": "E000",
+      "module_id": "F000",
+      "event_trigger": "On Open",
+      "event_content": "Sets the default username for the user session.",
+      "vba_handler": "Form_Open",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event"
+      },
+      "vm_method": {
+        "name": "F000Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F000Async()",
+        "body": "// Skipped"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    },
+    "F001": {
+      "order": 1,
+      "event_id": "E001",
+      "module_id": "F001",
+      "event_trigger": "After Update",
+      "event_content": "txtUserName_AfterUpdate",
+      "vba_handler": "txtUserName_AfterUpdate",
+      "phase_type": "ui",
+      "status": "success",
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event"
+      },
+      "vm_method": {
+        "name": "F001Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F001Async()",
+        "body": "private async void F001_Event(object sender, RoutedEventArgs e)\n{\n    if (DataContext is ViewModels.FLoginViewModel vm)\n        await vm.F001Async();\n}"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": ""
+    },
+    "F002": {
+      "order": 2,
+      "event_id": "E002",
+      "module_id": "F002",
+      "event_trigger": "On Click",
+      "event_content": "Opens the success form to indicate a completed action.",
+      "vba_handler": "btnSubmit_Click",
+      "phase_type": "ui",
+      "status": "skipped",
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event"
+      },
+      "vm_method": {
+        "name": "F002Async",
+        "signature": "public virtual async System.Threading.Tasks.Task F002Async()",
+        "body": "// Skipped"
+      },
+      "service_call": null,
+      "references": {
+        "queries": [],
+        "macros": []
+      },
+      "note": "No logic required / Skipped"
+    }
+  }
+}

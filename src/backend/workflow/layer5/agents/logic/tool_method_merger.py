@@ -101,6 +101,14 @@ public class {vm_class} : ViewModelBase
         # Clean up excessive blank lines
         code = re.sub(r'\n{3,}', '\n\n', code)
 
+        # Convert the merged WPF ViewModel → Avalonia (namespaces, usings,
+        # MessageBox.Show → Debug.WriteLine, KeyEventArgs, event names).
+        try:
+            from pipeline.avalonia_cs import to_avalonia_cs
+            code = to_avalonia_cs(code)
+        except Exception:  # pragma: no cover - defensive
+            pass
+
         logger.info(
             "[MethodMerger] Merged %d methods + %d SYS stubs → %s (%d lines)",
             len(method_outputs), len(sys_methods or []),

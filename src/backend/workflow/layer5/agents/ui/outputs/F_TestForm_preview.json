@@ -1,0 +1,38 @@
+{
+  "window": {
+    "class": "vba_brain.UI.WPF.Views.F_TestForm",
+    "title": "",
+    "width": null,
+    "height": null,
+    "background": "#FFFFFF",
+    "window_style": "SingleBorderWindow",
+    "resize_mode": "CanResize",
+    "show_in_taskbar": false,
+    "topmost": true,
+    "allows_transparency": true,
+    "startup_location": "CenterScreen"
+  },
+  "controls": [
+    {
+      "type": "Section",
+      "name": "section",
+      "margin_left": 0,
+      "margin_top": 0,
+      "width": 333,
+      "height": 0,
+      "background": "Transparent",
+      "controls": [
+        {
+          "type": "TextBox",
+          "name": "txtUserName",
+          "binding": "TxtUserName"
+        },
+        {
+          "type": "Button",
+          "name": "btnSubmit",
+          "command": "F002Command"
+        }
+      ]
+    }
+  ]
+}

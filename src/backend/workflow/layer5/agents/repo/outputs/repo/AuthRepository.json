@@ -3,28 +3,8 @@
     "table_name": "T101_ID_PASS",
     "function": [
         {
-            "function_name": "GetUserInfoAsync",
-            "query_name": "Q000_T_LoginUser",
-            "sheet_query_name": "F000_SelQuery01",
-            "description": "T_ID_PASSテーブルから指定されたIDのユーザー情報を抽出し、担当者名を姓と名に分割してT_LoginUserテーブルを作成する",
-            "input": [
-                {
-                    "name": "ID",
-                    "type": "string",
-                    "description": "ID"
-                }
-            ],
-            "output": [
-                {
-                    "name": "GetUserInfoDto",
-                    "type": "dto",
-                    "description": ""
-                }
-            ]
-        },
-        {
             "function_name": "IdPassAsync",
-            "query_name": "T_ID_pass",
+            "query_name": "T_ID_Pass",
             "sheet_query_name": "F003_SelQuery01",
             "description": "",
             "input": [],
@@ -33,114 +13,17 @@
         {
             "function_name": "QIdPassAsync",
             "query_name": "Q000_T_ID_PASS",
-            "sheet_query_name": "F008_SelQuery01",
+            "sheet_query_name": "F009_SelQuery01",
             "description": "",
             "input": [],
             "output": []
         }
     ],
-    "dto": [
-        {
-            "dto_name": "GetUserInfoDto",
-            "fields": [
-                {
-                    "name": "LastName",
-                    "type": "string",
-                    "description": "氏"
-                },
-                {
-                    "name": "FirstName",
-                    "type": "string",
-                    "description": "名"
-                },
-                {
-                    "name": "ConstructionHandlerName",
-                    "type": "string",
-                    "description": "工事担当_担当者名"
-                },
-                {
-                    "name": "BranchName",
-                    "type": "string",
-                    "description": "支店名"
-                },
-                {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "description": "地区CD"
-                },
-                {
-                    "name": "RegionCdId",
-                    "type": "string",
-                    "description": "地区CD_ID"
-                },
-                {
-                    "name": "Id",
-                    "type": "string",
-                    "description": "ID"
-                },
-                {
-                    "name": "Pass",
-                    "type": "string",
-                    "description": "PASS"
-                },
-                {
-                    "name": "AdminFlag",
-                    "type": "string",
-                    "description": "管理者FLG"
-                },
-                {
-                    "name": "HandlerCdA",
-                    "type": "string",
-                    "description": "担当者CD_A"
-                }
-            ]
-        }
-    ],
+    "dto": [],
     "entity": [
         {
             "entity_name": "AuthEntity",
-            "fields": [
-                {
-                    "name": "RegionCdId",
-                    "type": "string",
-                    "description": "地区CD_ID"
-                },
-                {
-                    "name": "Id",
-                    "type": "string",
-                    "description": "ID"
-                },
-                {
-                    "name": "Pass",
-                    "type": "string",
-                    "description": "PASS"
-                },
-                {
-                    "name": "ConstructionHandlerName",
-                    "type": "string",
-                    "description": "工事担当_担当者名"
-                },
-                {
-                    "name": "HandlerCdA",
-                    "type": "string",
-                    "description": "担当者CD_A"
-                },
-                {
-                    "name": "BranchName",
-                    "type": "string",
-                    "description": "支店名"
-                },
-                {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "description": "地区CD"
-                },
-                {
-                    "name": "AdminFlag",
-                    "type": "string",
-                    "description": "管理者FLG"
-                }
-            ]
+            "fields": []
         }
     ]
 }

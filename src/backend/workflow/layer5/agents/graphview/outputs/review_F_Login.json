@@ -1,0 +1,3084 @@
+{
+  "formName": "F_Login",
+  "phase": 1,
+  "status": "FAIL",
+  "summary": {
+    "ok": 32,
+    "missing": 81,
+    "mismatch": 1,
+    "extra": 37
+  },
+  "nodeStatus": {
+    "view:F_Login": {
+      "status": "ok",
+      "source": "form:F_Login",
+      "target": "view:F_Login",
+      "expected": {
+        "id": "view:F_Login",
+        "kind": "view",
+        "file": "Views/FLoginView.xaml"
+      },
+      "actual": {
+        "id": "view:F_Login",
+        "label": "FLoginView",
+        "type": "view",
+        "badge": "Views/FLoginView.xaml",
+        "vbaLabel": "F_Login",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|Sleep": {
+      "status": "missing",
+      "source": "event:F_Login::Sleep Lib \"kernel32\"",
+      "target": "handler:F_Login|Sleep",
+      "expected": {
+        "id": "handler:F_Login|Sleep",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnLoaded": {
+      "status": "missing",
+      "source": "event:F_Login::Form_Load",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "id": "handler:F_Login|OnLoaded",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.Judge_Inst": {
+      "status": "missing",
+      "source": "module:Common.Judge_Inst",
+      "target": "service:module:Common.Judge_Inst",
+      "expected": {
+        "id": "service:module:Common.Judge_Inst",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened": {
+      "status": "missing",
+      "source": "event:F_Login::Form_Open",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "id": "handler:F_Login|OnOpened",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.SetEnabledState": {
+      "status": "missing",
+      "source": "module:Common.SetEnabledState",
+      "target": "service:module:Common.SetEnabledState",
+      "expected": {
+        "id": "service:module:Common.SetEnabledState",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.SetWindowTop": {
+      "status": "missing",
+      "source": "module:Common.SetWindowTop",
+      "target": "service:module:Common.SetWindowTop",
+      "expected": {
+        "id": "service:module:Common.SetWindowTop",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    "service:module:EmptyClipboard": {
+      "status": "missing",
+      "source": "module:EmptyClipboard",
+      "target": "service:module:EmptyClipboard",
+      "expected": {
+        "id": "service:module:EmptyClipboard",
+        "kind": "service",
+        "file": "Application/Services/ClipboardService.cs"
+      },
+      "actual": null
+    },
+    "service:module:CloseClipboard": {
+      "status": "missing",
+      "source": "module:CloseClipboard",
+      "target": "service:module:CloseClipboard",
+      "expected": {
+        "id": "service:module:CloseClipboard",
+        "kind": "service",
+        "file": "Application/Services/ClipboardService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.SwitchShiftKey": {
+      "status": "missing",
+      "source": "module:Common.SwitchShiftKey",
+      "target": "service:module:Common.SwitchShiftKey",
+      "expected": {
+        "id": "service:module:Common.SwitchShiftKey",
+        "kind": "service",
+        "file": "Application/Services/InputService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.SetAccWinStyle": {
+      "status": "missing",
+      "source": "module:Common.SetAccWinStyle",
+      "target": "service:module:Common.SetAccWinStyle",
+      "expected": {
+        "id": "service:module:Common.SetAccWinStyle",
+        "kind": "service",
+        "file": "Application/Services/WindowStyleService.cs"
+      },
+      "actual": null
+    },
+    "repository:Q000_T_LoginUser": {
+      "status": "missing",
+      "source": "query:Q000_T_LoginUser",
+      "target": "repository:Q000_T_LoginUser",
+      "expected": {
+        "id": "repository:Q000_T_LoginUser",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/Q000TLoginUserRepository.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand": {
+      "status": "missing",
+      "source": "event:F_Login::txtPass_AfterUpdate",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "id": "handler:F_Login|LoginCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "workflow:AutoExec_A": {
+      "status": "missing",
+      "source": "macro:AutoExec_A",
+      "target": "workflow:AutoExec_A",
+      "expected": {
+        "id": "workflow:AutoExec_A",
+        "kind": "workflow",
+        "file": "Application/Workflows/AutoExecAWorkflow.cs"
+      },
+      "actual": null
+    },
+    "workflow:AutoExec_Restart": {
+      "status": "missing",
+      "source": "macro:AutoExec_Restart",
+      "target": "workflow:AutoExec_Restart",
+      "expected": {
+        "id": "workflow:AutoExec_Restart",
+        "kind": "workflow",
+        "file": "Application/Workflows/AutoExecRestartWorkflow.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.AppendDevLoginLog": {
+      "status": "missing",
+      "source": "module:Common.AppendDevLoginLog",
+      "target": "service:module:Common.AppendDevLoginLog",
+      "expected": {
+        "id": "service:module:Common.AppendDevLoginLog",
+        "kind": "service",
+        "file": "Application/Services/LoggingService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.OpenTimer": {
+      "status": "missing",
+      "source": "module:Common.タイマーを開く",
+      "target": "service:module:Common.OpenTimer",
+      "expected": {
+        "id": "service:module:Common.OpenTimer",
+        "kind": "service",
+        "file": "Application/Services/TimerService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.IsLoginDevModeEnabled": {
+      "status": "missing",
+      "source": "module:Common.IsLoginDevModeEnabled",
+      "target": "service:module:Common.IsLoginDevModeEnabled",
+      "expected": {
+        "id": "service:module:Common.IsLoginDevModeEnabled",
+        "kind": "service",
+        "file": "Application/Services/AuthService.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand": {
+      "status": "missing",
+      "source": "event:F_Login::lblOpenPasswordTable_DblClick",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "id": "handler:F_Login|OpenPasswordTableCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.MenuBarTrueFalse": {
+      "status": "missing",
+      "source": "module:Common.MenuBarTrueFalse",
+      "target": "service:module:Common.MenuBarTrueFalse",
+      "expected": {
+        "id": "service:module:Common.MenuBarTrueFalse",
+        "kind": "service",
+        "file": "Application/Services/MenuService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.MenuBarTrue": {
+      "status": "missing",
+      "source": "module:Common.MenuBarTrue",
+      "target": "service:module:Common.MenuBarTrue",
+      "expected": {
+        "id": "service:module:Common.MenuBarTrue",
+        "kind": "service",
+        "file": "Application/Services/MenuService.cs"
+      },
+      "actual": null
+    },
+    "service:module:Common.StatusBar_True": {
+      "status": "missing",
+      "source": "module:Common.StatusBar_True",
+      "target": "service:module:Common.StatusBar_True",
+      "expected": {
+        "id": "service:module:Common.StatusBar_True",
+        "kind": "service",
+        "file": "Application/Services/StatusBarService.cs"
+      },
+      "actual": null
+    },
+    "repository:Q000_T_ID_PASS": {
+      "status": "missing",
+      "source": "query:Q000_T_ID_PASS",
+      "target": "repository:Q000_T_ID_PASS",
+      "expected": {
+        "id": "repository:Q000_T_ID_PASS",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/Q000TIdPassRepository.cs"
+      },
+      "actual": null
+    },
+    "view:F_UserAdd_A": {
+      "status": "missing",
+      "source": "form:F_ユーザー追加_A",
+      "target": "view:F_UserAdd_A",
+      "expected": {
+        "id": "view:F_UserAdd_A",
+        "kind": "view",
+        "file": "Views/FUserAddAView.xaml"
+      },
+      "actual": null
+    },
+    "view:F_UserAdd": {
+      "status": "missing",
+      "source": "form:F_ユーザー追加",
+      "target": "view:F_UserAdd",
+      "expected": {
+        "id": "view:F_UserAdd",
+        "kind": "view",
+        "file": "Views/FUserAddView.xaml"
+      },
+      "actual": null
+    },
+    "handler:F_Login|ExitApplicationCommand": {
+      "status": "missing",
+      "source": "event:F_Login::lblEndProcess_DblClick",
+      "target": "handler:F_Login|ExitApplicationCommand",
+      "expected": {
+        "id": "handler:F_Login|ExitApplicationCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|CloseCommand": {
+      "status": "missing",
+      "source": "event:F_Login::cmdClose_Click",
+      "target": "handler:F_Login|CloseCommand",
+      "expected": {
+        "id": "handler:F_Login|CloseCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|AppendLoginLog": {
+      "status": "missing",
+      "source": "event:F_Login::Login_Log_Append",
+      "target": "handler:F_Login|AppendLoginLog",
+      "expected": {
+        "id": "handler:F_Login|AppendLoginLog",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "handler:F_Login|HandleFormKeyDown": {
+      "status": "missing",
+      "source": "event:F_Login::Form_KeyDown",
+      "target": "handler:F_Login|HandleFormKeyDown",
+      "expected": {
+        "id": "handler:F_Login|HandleFormKeyDown",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    "viewmodel:F_Login": {
+      "status": "ok",
+      "source": "form:F_Login#viewmodel",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "id": "viewmodel:F_Login",
+        "kind": "viewmodel",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": {
+        "id": "viewmodel:F_Login",
+        "label": "FLoginViewModel",
+        "type": "viewmodel",
+        "badge": "ViewModels/FLoginViewModel.cs",
+        "vbaLabel": "F_Login",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F000Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F000Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F000Command",
+        "label": "F000Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F000Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F014Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F014Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F014Command",
+        "label": "F014Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F014Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F010Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F010Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F010Command",
+        "label": "F010Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F010Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F015Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F015Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F015Command",
+        "label": "F015Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F015Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F002Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F002Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F002Command",
+        "label": "F002Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F002Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F013Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F013Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F013Command",
+        "label": "F013Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F013Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F016Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F016Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F016Command",
+        "label": "F016Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F016Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F003Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F003Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F003Command",
+        "label": "F003Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F003Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|ICommand": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|ICommand",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|ICommand",
+        "label": "ICommand",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::ICommand",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F001Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F001Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F001Command",
+        "label": "F001Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F001Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F012Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F012Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F012Command",
+        "label": "F012Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F012Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "handler:F_Login|F011Command": {
+      "status": "extra",
+      "source": null,
+      "target": "handler:F_Login|F011Command",
+      "expected": null,
+      "actual": {
+        "id": "handler:F_Login|F011Command",
+        "label": "F011Command",
+        "type": "handler",
+        "badge": "ICommand",
+        "vbaLabel": "F_Login::F011Command",
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:FLoginService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:FLoginService",
+      "expected": null,
+      "actual": {
+        "id": "service:FLoginService",
+        "label": "FLoginService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:fLoginService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:fLoginService",
+      "expected": null,
+      "actual": {
+        "id": "service:fLoginService",
+        "label": "fLoginService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:_fLoginService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:_fLoginService",
+      "expected": null,
+      "actual": {
+        "id": "service:_fLoginService",
+        "label": "_fLoginService",
+        "type": "service",
+        "badge": "Application/Services",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:navigation": {
+      "status": "extra",
+      "source": null,
+      "target": "service:navigation",
+      "expected": null,
+      "actual": {
+        "id": "service:navigation",
+        "label": "NavigationService",
+        "type": "navigation",
+        "badge": "Application/Navigation",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:T023地区CD設定Repository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:T023地区CD設定Repository",
+      "expected": null,
+      "actual": {
+        "id": "repository:T023地区CD設定Repository",
+        "label": "T023地区CD設定Repository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:Access配信日Repository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:Access配信日Repository",
+      "expected": null,
+      "actual": {
+        "id": "repository:Access配信日Repository",
+        "label": "Access配信日Repository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:q000TLoginUserRepository",
+        "label": "q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:Q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:Q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:Q000TLoginUserRepository",
+        "label": "Q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_q000TLoginUserRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_q000TLoginUserRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_q000TLoginUserRepository",
+        "label": "_q000TLoginUserRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:authRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:authRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:authRepository",
+        "label": "authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AuthRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AuthRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AuthRepository",
+        "label": "AuthRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_authRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_authRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_authRepository",
+        "label": "_authRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:AfterMainService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:AfterMainService",
+      "expected": null,
+      "actual": {
+        "id": "service:AfterMainService",
+        "label": "AfterMainService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/AfterMainService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:PaymentRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:PaymentRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:PaymentRepository",
+        "label": "PaymentRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AfterMainRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AfterMainRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AfterMainRepository",
+        "label": "AfterMainRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:PaymentService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:PaymentService",
+      "expected": null,
+      "actual": {
+        "id": "service:PaymentService",
+        "label": "PaymentService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/PaymentService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:ProductDetailService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:ProductDetailService",
+      "expected": null,
+      "actual": {
+        "id": "service:ProductDetailService",
+        "label": "ProductDetailService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/ProductDetailService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:ProductListService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:ProductListService",
+      "expected": null,
+      "actual": {
+        "id": "service:ProductListService",
+        "label": "ProductListService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/ProductListService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:QGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:QGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:QGetActiveProductsRepository",
+        "label": "QGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:_qGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:_qGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:_qGetActiveProductsRepository",
+        "label": "_qGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:qGetActiveProductsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:qGetActiveProductsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:qGetActiveProductsRepository",
+        "label": "qGetActiveProductsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:AnalyticsService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:AnalyticsService",
+      "expected": null,
+      "actual": {
+        "id": "service:AnalyticsService",
+        "label": "AnalyticsService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/AnalyticsService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:AnalyticsRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:AnalyticsRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:AnalyticsRepository",
+        "label": "AnalyticsRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "service:PrintService": {
+      "status": "extra",
+      "source": null,
+      "target": "service:PrintService",
+      "expected": null,
+      "actual": {
+        "id": "service:PrintService",
+        "label": "PrintService",
+        "type": "service",
+        "badge": "vba_brain.Application/Services/PrintService.cs",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    },
+    "repository:PrintRepository": {
+      "status": "extra",
+      "source": null,
+      "target": "repository:PrintRepository",
+      "expected": null,
+      "actual": {
+        "id": "repository:PrintRepository",
+        "label": "PrintRepository",
+        "type": "repository",
+        "badge": "Infrastructure/Repositories",
+        "vbaLabel": null,
+        "mappingStatus": "mapped"
+      }
+    }
+  },
+  "edgeStatus": {
+    "view:F_Login->viewmodel:F_Login#0:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Sleep Lib \"kernel32\""
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|Sleep#0:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|Sleep",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|Sleep",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Sleep Lib \"kernel32\""
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#1:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Load"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnLoaded#1:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnLoaded",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Load"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#2:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnLoaded#2:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnLoaded",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnLoaded->service:module:Common.Judge_Inst#2:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnLoaded",
+      "target": "service:module:Common.Judge_Inst",
+      "expected": {
+        "source": "handler:F_Login|OnLoaded",
+        "target": "service:module:Common.Judge_Inst",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#3:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Open"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#3:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Open"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#4:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetEnabledState"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#4:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetEnabledState"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:Common.SetEnabledState#4:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetEnabledState",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetEnabledState",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetEnabledState"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#5:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetWindowTop"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#5:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetWindowTop"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:Common.SetWindowTop#5:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetWindowTop",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetWindowTop",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetWindowTop"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#6:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#6:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:EmptyClipboard#6:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:EmptyClipboard",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:EmptyClipboard",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#7:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#7:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:CloseClipboard#7:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:CloseClipboard",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:CloseClipboard",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#8:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SwitchShiftKey"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#8:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SwitchShiftKey"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:Common.SwitchShiftKey#8:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SwitchShiftKey",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SwitchShiftKey",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SwitchShiftKey"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#9:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetAccWinStyle"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#9:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetAccWinStyle"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:module:Common.SetAccWinStyle#9:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetAccWinStyle",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetAccWinStyle",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetAccWinStyle"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#10:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OnOpened#10:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OnOpened->service:F_Login#10:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    "service:F_Login->repository:Q000_T_LoginUser#10:3": {
+      "status": "missing",
+      "source": "service:F_Login",
+      "target": "repository:Q000_T_LoginUser",
+      "expected": {
+        "source": "service:F_Login",
+        "target": "repository:Q000_T_LoginUser",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#11:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::txtPass_AfterUpdate"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#11:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::txtPass_AfterUpdate"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#12:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#12:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->workflow:AutoExec_A#12:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "workflow:AutoExec_A",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "workflow:AutoExec_A",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#13:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#13:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->workflow:AutoExec_Restart#13:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "workflow:AutoExec_Restart",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "workflow:AutoExec_Restart",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#14:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.AppendDevLoginLog"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#14:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.AppendDevLoginLog"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->service:module:Common.AppendDevLoginLog#14:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.AppendDevLoginLog",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.AppendDevLoginLog",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.AppendDevLoginLog"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#15:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.タイマーを開く"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#15:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.タイマーを開く"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->service:module:Common.OpenTimer#15:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.OpenTimer",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.OpenTimer",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.タイマーを開く"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#16:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.IsLoginDevModeEnabled"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#16:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.IsLoginDevModeEnabled"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->service:module:Common.IsLoginDevModeEnabled#16:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.IsLoginDevModeEnabled",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.IsLoginDevModeEnabled",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.IsLoginDevModeEnabled"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#17:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|LoginCommand#17:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "closes",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login"
+      },
+      "actual": null
+    },
+    "handler:F_Login|LoginCommand->view:F_Login#17:2": {
+      "status": "missing",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "view:F_Login",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "view:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#18:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblOpenPasswordTable_DblClick"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#18:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblOpenPasswordTable_DblClick"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#19:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrueFalse"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#19:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrueFalse"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->service:module:Common.MenuBarTrueFalse#19:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.MenuBarTrueFalse",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.MenuBarTrueFalse",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrueFalse"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#20:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrue"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#20:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrue"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->service:module:Common.MenuBarTrue#20:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.MenuBarTrue",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.MenuBarTrue",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrue"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#21:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.StatusBar_True"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#21:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.StatusBar_True"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->service:module:Common.StatusBar_True#21:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.StatusBar_True",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.StatusBar_True",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.StatusBar_True"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#22:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#22:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->service:F_Login#22:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    "service:F_Login->repository:Q000_T_ID_PASS#22:3": {
+      "status": "missing",
+      "source": "service:F_Login",
+      "target": "repository:Q000_T_ID_PASS",
+      "expected": {
+        "source": "service:F_Login",
+        "target": "repository:Q000_T_ID_PASS",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#23:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加_A"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#23:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加_A"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->view:F_UserAdd_A#23:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_UserAdd_A",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_UserAdd_A",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加_A"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#24:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_Login"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#24:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "closes",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_Login"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->view:F_Login#24:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_Login"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#25:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|OpenPasswordTableCommand#25:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加"
+      },
+      "actual": null
+    },
+    "handler:F_Login|OpenPasswordTableCommand->view:F_UserAdd#25:2": {
+      "status": "missing",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_UserAdd",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_UserAdd",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#26:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblEndProcess_DblClick"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|ExitApplicationCommand#26:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|ExitApplicationCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|ExitApplicationCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblEndProcess_DblClick"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#27:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::cmdClose_Click"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|CloseCommand#27:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|CloseCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|CloseCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::cmdClose_Click"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#28:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Login_Log_Append"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|AppendLoginLog#28:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|AppendLoginLog",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|AppendLoginLog",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Login_Log_Append"
+      },
+      "actual": null
+    },
+    "view:F_Login->viewmodel:F_Login#29:0": {
+      "status": "ok",
+      "source": "view:F_Login",
+      "target": "viewmodel:F_Login",
+      "expected": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_KeyDown"
+      },
+      "actual": {
+        "source": "view:F_Login",
+        "target": "viewmodel:F_Login"
+      }
+    },
+    "viewmodel:F_Login->handler:F_Login|HandleFormKeyDown#29:1": {
+      "status": "missing",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|HandleFormKeyDown",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|HandleFormKeyDown",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_KeyDown"
+      },
+      "actual": null
+    }
+  },
+  "issues": [
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|Sleep",
+      "source": "event:F_Login::Sleep Lib \"kernel32\"",
+      "target": "handler:F_Login|Sleep",
+      "expected": {
+        "id": "handler:F_Login|Sleep",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|OnLoaded",
+      "source": "event:F_Login::Form_Load",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "id": "handler:F_Login|OnLoaded",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.Judge_Inst",
+      "source": "module:Common.Judge_Inst",
+      "target": "service:module:Common.Judge_Inst",
+      "expected": {
+        "id": "service:module:Common.Judge_Inst",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|OnOpened",
+      "source": "event:F_Login::Form_Open",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "id": "handler:F_Login|OnOpened",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.SetEnabledState",
+      "source": "module:Common.SetEnabledState",
+      "target": "service:module:Common.SetEnabledState",
+      "expected": {
+        "id": "service:module:Common.SetEnabledState",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.SetWindowTop",
+      "source": "module:Common.SetWindowTop",
+      "target": "service:module:Common.SetWindowTop",
+      "expected": {
+        "id": "service:module:Common.SetWindowTop",
+        "kind": "service",
+        "file": "Application/Services/CommonService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:EmptyClipboard",
+      "source": "module:EmptyClipboard",
+      "target": "service:module:EmptyClipboard",
+      "expected": {
+        "id": "service:module:EmptyClipboard",
+        "kind": "service",
+        "file": "Application/Services/ClipboardService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:CloseClipboard",
+      "source": "module:CloseClipboard",
+      "target": "service:module:CloseClipboard",
+      "expected": {
+        "id": "service:module:CloseClipboard",
+        "kind": "service",
+        "file": "Application/Services/ClipboardService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.SwitchShiftKey",
+      "source": "module:Common.SwitchShiftKey",
+      "target": "service:module:Common.SwitchShiftKey",
+      "expected": {
+        "id": "service:module:Common.SwitchShiftKey",
+        "kind": "service",
+        "file": "Application/Services/InputService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.SetAccWinStyle",
+      "source": "module:Common.SetAccWinStyle",
+      "target": "service:module:Common.SetAccWinStyle",
+      "expected": {
+        "id": "service:module:Common.SetAccWinStyle",
+        "kind": "service",
+        "file": "Application/Services/WindowStyleService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: repository:Q000_T_LoginUser",
+      "source": "query:Q000_T_LoginUser",
+      "target": "repository:Q000_T_LoginUser",
+      "expected": {
+        "id": "repository:Q000_T_LoginUser",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/Q000TLoginUserRepository.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|LoginCommand",
+      "source": "event:F_Login::txtPass_AfterUpdate",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "id": "handler:F_Login|LoginCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: workflow:AutoExec_A",
+      "source": "macro:AutoExec_A",
+      "target": "workflow:AutoExec_A",
+      "expected": {
+        "id": "workflow:AutoExec_A",
+        "kind": "workflow",
+        "file": "Application/Workflows/AutoExecAWorkflow.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: workflow:AutoExec_Restart",
+      "source": "macro:AutoExec_Restart",
+      "target": "workflow:AutoExec_Restart",
+      "expected": {
+        "id": "workflow:AutoExec_Restart",
+        "kind": "workflow",
+        "file": "Application/Workflows/AutoExecRestartWorkflow.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.AppendDevLoginLog",
+      "source": "module:Common.AppendDevLoginLog",
+      "target": "service:module:Common.AppendDevLoginLog",
+      "expected": {
+        "id": "service:module:Common.AppendDevLoginLog",
+        "kind": "service",
+        "file": "Application/Services/LoggingService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.OpenTimer",
+      "source": "module:Common.タイマーを開く",
+      "target": "service:module:Common.OpenTimer",
+      "expected": {
+        "id": "service:module:Common.OpenTimer",
+        "kind": "service",
+        "file": "Application/Services/TimerService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.IsLoginDevModeEnabled",
+      "source": "module:Common.IsLoginDevModeEnabled",
+      "target": "service:module:Common.IsLoginDevModeEnabled",
+      "expected": {
+        "id": "service:module:Common.IsLoginDevModeEnabled",
+        "kind": "service",
+        "file": "Application/Services/AuthService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|OpenPasswordTableCommand",
+      "source": "event:F_Login::lblOpenPasswordTable_DblClick",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "id": "handler:F_Login|OpenPasswordTableCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.MenuBarTrueFalse",
+      "source": "module:Common.MenuBarTrueFalse",
+      "target": "service:module:Common.MenuBarTrueFalse",
+      "expected": {
+        "id": "service:module:Common.MenuBarTrueFalse",
+        "kind": "service",
+        "file": "Application/Services/MenuService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.MenuBarTrue",
+      "source": "module:Common.MenuBarTrue",
+      "target": "service:module:Common.MenuBarTrue",
+      "expected": {
+        "id": "service:module:Common.MenuBarTrue",
+        "kind": "service",
+        "file": "Application/Services/MenuService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: service:module:Common.StatusBar_True",
+      "source": "module:Common.StatusBar_True",
+      "target": "service:module:Common.StatusBar_True",
+      "expected": {
+        "id": "service:module:Common.StatusBar_True",
+        "kind": "service",
+        "file": "Application/Services/StatusBarService.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: repository:Q000_T_ID_PASS",
+      "source": "query:Q000_T_ID_PASS",
+      "target": "repository:Q000_T_ID_PASS",
+      "expected": {
+        "id": "repository:Q000_T_ID_PASS",
+        "kind": "repository",
+        "file": "Infrastructure/Persistence/Repositories/Q000TIdPassRepository.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: view:F_UserAdd_A",
+      "source": "form:F_ユーザー追加_A",
+      "target": "view:F_UserAdd_A",
+      "expected": {
+        "id": "view:F_UserAdd_A",
+        "kind": "view",
+        "file": "Views/FUserAddAView.xaml"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: view:F_UserAdd",
+      "source": "form:F_ユーザー追加",
+      "target": "view:F_UserAdd",
+      "expected": {
+        "id": "view:F_UserAdd",
+        "kind": "view",
+        "file": "Views/FUserAddView.xaml"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|ExitApplicationCommand",
+      "source": "event:F_Login::lblEndProcess_DblClick",
+      "target": "handler:F_Login|ExitApplicationCommand",
+      "expected": {
+        "id": "handler:F_Login|ExitApplicationCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|CloseCommand",
+      "source": "event:F_Login::cmdClose_Click",
+      "target": "handler:F_Login|CloseCommand",
+      "expected": {
+        "id": "handler:F_Login|CloseCommand",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|AppendLoginLog",
+      "source": "event:F_Login::Login_Log_Append",
+      "target": "handler:F_Login|AppendLoginLog",
+      "expected": {
+        "id": "handler:F_Login|AppendLoginLog",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-node",
+      "status": "missing",
+      "message": "Missing expected node: handler:F_Login|HandleFormKeyDown",
+      "source": "event:F_Login::Form_KeyDown",
+      "target": "handler:F_Login|HandleFormKeyDown",
+      "expected": {
+        "id": "handler:F_Login|HandleFormKeyDown",
+        "kind": "handler",
+        "file": "ViewModels/FLoginViewModel.cs"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|Sleep",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|Sleep",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|Sleep",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Sleep Lib \"kernel32\""
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnLoaded",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnLoaded",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Load"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnLoaded",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnLoaded",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnLoaded",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnLoaded -> service:module:Common.Judge_Inst",
+      "source": "handler:F_Login|OnLoaded",
+      "target": "service:module:Common.Judge_Inst",
+      "expected": {
+        "source": "handler:F_Login|OnLoaded",
+        "target": "service:module:Common.Judge_Inst",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Load__module:Common.Judge_Inst"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_Open"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetEnabledState"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:Common.SetEnabledState",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetEnabledState",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetEnabledState",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetEnabledState"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetWindowTop"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:Common.SetWindowTop",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetWindowTop",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetWindowTop",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetWindowTop"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:EmptyClipboard",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:EmptyClipboard",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:EmptyClipboard",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:EmptyClipboard"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:CloseClipboard",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:CloseClipboard",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:CloseClipboard",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:CloseClipboard"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SwitchShiftKey"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:Common.SwitchShiftKey",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SwitchShiftKey",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SwitchShiftKey",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SwitchShiftKey"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetAccWinStyle"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:module:Common.SetAccWinStyle",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:module:Common.SetAccWinStyle",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:module:Common.SetAccWinStyle",
+        "label": "uses",
+        "vba_edge": "event:F_Login::Form_Open__module:Common.SetAccWinStyle"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OnOpened",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OnOpened",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OnOpened",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OnOpened -> service:F_Login",
+      "source": "handler:F_Login|OnOpened",
+      "target": "service:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OnOpened",
+        "target": "service:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: service:F_Login -> repository:Q000_T_LoginUser",
+      "source": "service:F_Login",
+      "target": "repository:Q000_T_LoginUser",
+      "expected": {
+        "source": "service:F_Login",
+        "target": "repository:Q000_T_LoginUser",
+        "label": "queries",
+        "vba_edge": "event:F_Login::Form_Open__query:Q000_T_LoginUser"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::txtPass_AfterUpdate"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> workflow:AutoExec_A",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "workflow:AutoExec_A",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "workflow:AutoExec_A",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_A"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> workflow:AutoExec_Restart",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "workflow:AutoExec_Restart",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "workflow:AutoExec_Restart",
+        "label": "triggers",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__macro:AutoExec_Restart"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.AppendDevLoginLog"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> service:module:Common.AppendDevLoginLog",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.AppendDevLoginLog",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.AppendDevLoginLog",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.AppendDevLoginLog"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.タイマーを開く"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> service:module:Common.OpenTimer",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.OpenTimer",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.OpenTimer",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.タイマーを開く"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.IsLoginDevModeEnabled"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> service:module:Common.IsLoginDevModeEnabled",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "service:module:Common.IsLoginDevModeEnabled",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "service:module:Common.IsLoginDevModeEnabled",
+        "label": "uses",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__module:Common.IsLoginDevModeEnabled"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|LoginCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|LoginCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|LoginCommand",
+        "label": "closes",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|LoginCommand -> view:F_Login",
+      "source": "handler:F_Login|LoginCommand",
+      "target": "view:F_Login",
+      "expected": {
+        "source": "handler:F_Login|LoginCommand",
+        "target": "view:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::txtPass_AfterUpdate__form:F_Login"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblOpenPasswordTable_DblClick"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrueFalse"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> service:module:Common.MenuBarTrueFalse",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.MenuBarTrueFalse",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.MenuBarTrueFalse",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrueFalse"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrue"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> service:module:Common.MenuBarTrue",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.MenuBarTrue",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.MenuBarTrue",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.MenuBarTrue"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.StatusBar_True"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> service:module:Common.StatusBar_True",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:module:Common.StatusBar_True",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:module:Common.StatusBar_True",
+        "label": "uses",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__module:Common.StatusBar_True"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> service:F_Login",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "service:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "service:F_Login",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: service:F_Login -> repository:Q000_T_ID_PASS",
+      "source": "service:F_Login",
+      "target": "repository:Q000_T_ID_PASS",
+      "expected": {
+        "source": "service:F_Login",
+        "target": "repository:Q000_T_ID_PASS",
+        "label": "queries",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__query:Q000_T_ID_PASS"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加_A"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> view:F_UserAdd_A",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_UserAdd_A",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_UserAdd_A",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加_A"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "closes",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_Login"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> view:F_Login",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_Login",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_Login",
+        "label": "closes",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_Login"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|OpenPasswordTableCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|OpenPasswordTableCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|OpenPasswordTableCommand",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: handler:F_Login|OpenPasswordTableCommand -> view:F_UserAdd",
+      "source": "handler:F_Login|OpenPasswordTableCommand",
+      "target": "view:F_UserAdd",
+      "expected": {
+        "source": "handler:F_Login|OpenPasswordTableCommand",
+        "target": "view:F_UserAdd",
+        "label": "opens",
+        "vba_edge": "event:F_Login::lblOpenPasswordTable_DblClick__form:F_ユーザー追加"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|ExitApplicationCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|ExitApplicationCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|ExitApplicationCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::lblEndProcess_DblClick"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|CloseCommand",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|CloseCommand",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|CloseCommand",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::cmdClose_Click"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|AppendLoginLog",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|AppendLoginLog",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|AppendLoginLog",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Login_Log_Append"
+      },
+      "actual": null
+    },
+    {
+      "rule": "missing-flow",
+      "status": "missing",
+      "message": "Missing expected flow: viewmodel:F_Login -> handler:F_Login|HandleFormKeyDown",
+      "source": "viewmodel:F_Login",
+      "target": "handler:F_Login|HandleFormKeyDown",
+      "expected": {
+        "source": "viewmodel:F_Login",
+        "target": "handler:F_Login|HandleFormKeyDown",
+        "label": "calls",
+        "vba_edge": "form:F_Login__event:F_Login::Form_KeyDown"
+      },
+      "actual": null
+    },
+    {
+      "rule": "viewmodel-repository-direct",
+      "status": "mismatch",
+      "message": "ViewModel must not call Repository directly",
+      "source": "viewmodel:F_Login",
+      "target": "repository:T023地区CD設定Repository",
+      "expected": "valid layer direction",
+      "actual": {
+        "sourceKind": "viewmodel",
+        "targetKind": "repository",
+        "label": "direct repository"
+      }
+    }
+  ]
+}

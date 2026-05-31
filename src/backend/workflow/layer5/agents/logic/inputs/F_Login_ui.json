@@ -1,24 +1,24 @@
 {
   "form_name": "F_Login",
   "input_type": "UI",
-  "screen_description": "この画面は、ユーザーがシステムにログインするために使用します。ログインIDとパスワードの入力を行い、適切な認証を通じてシステムへのアクセスを可能にします。",
+  "screen_description": "The F_Login screen is designed to provide a secure and user-friendly interface for users to log into the system, ensuring that only authorized individuals can access the application.",
   "description": "Events chỉ xử lý UI/navigation/validation. Gen C# method body cho WPF code-behind.",
-  "total_events": 6,
+  "total_events": 7,
   "cs_file": "FLoginView.xaml.cs",
   "events": [
     {
       "event_meta": {
-        "event_id": "E001",
+        "event_id": "E002",
         "title": "-",
-        "type": "フォーム",
+        "type": "Form",
         "logical_name": "-",
         "physical_name": "-",
-        "event_trigger": "キー押下時",
-        "event_content": "F11とF12キーの使用を無効化する。",
-        "module_id": "F001",
+        "event_trigger": "On Key Down",
+        "event_content": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
+        "module_id": "F002",
         "notes": "Form_KeyDown",
-        "action_type": "UI",
-        "event_description_mapping": "F11とF12キーの使用を無効化する。",
+        "action_type": "VALID",
+        "event_description_mapping": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
         "event_class": "UI"
       },
       "logic_detail": {
@@ -36,15 +36,15 @@
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": ""
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. キー押下時のキーコードを確認する\n2.2. 押されたキーがF11の場合、以下の処理を行う\n2.2.1. キー入力を無効にする\n2.2.2. メッセージ「ファンクション【F11】キーは無効に設定されてます！！」を表示する\n2.3. 押されたキーがF12の場合、以下の処理を行う\n2.3.1. キー入力を無効にする\n2.3.2. メッセージ「ファンクション【F12】キーは無効に設定されてます！！」を表示する"
+          "detail": "2.1. キー入力のコードを取得する\n2.2. 取得したキーがF11の場合、以下の処理を行う\n2.2.1. キー入力を無効にする\n2.2.2. メッセージを表示する: 'ファンクション【F11】キーは無効に設定されてます！！'\n2.3. 取得したキーがF12の場合、以下の処理を行う\n2.3.1. キー入力を無効にする\n2.3.2. メッセージを表示する: 'ファンクション【F12】キーは無効に設定されてます！！'\n2.4. それ以外のキーが押された場合、何もしない"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
       "cs_stub": {
@@ -57,20 +57,82 @@
     {
       "event_meta": {
         "event_id": "E004",
-        "title": "閉じる",
-        "type": "コマンドボタン",
-        "logical_name": "閉じる",
-        "physical_name": "cmdClose",
-        "event_trigger": "クリック時",
-        "event_content": "Accessアプリケーションを終了する。",
+        "title": "Login",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "event_trigger": "On Click",
+        "event_content": "",
         "module_id": "F004",
-        "notes": "閉じる_Click",
-        "action_type": "SYS",
-        "event_description_mapping": "Accessアプリケーションを終了する。",
+        "notes": "cmdLogin_Click",
+        "event_description_mapping": "",
         "event_class": "UI"
       },
       "logic_detail": {
-        "code": "Private Sub 閉じる_Click()\nDoCmd.Quit acQuitPrompt\nEnd Sub",
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 5,
+          "io": "",
+          "logical_name": "TODO_cmdLogin",
+          "physical_name": "cmdLogin",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E004"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F010_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F010_Event",
+        "module_id": "F010",
+        "vba_handler": "cmdLogin_Click"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E005",
+        "title": "Close",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdClose",
+        "physical_name": "cmdClose",
+        "event_trigger": "On Click",
+        "event_content": "Prompts the user to confirm before closing the application.",
+        "module_id": "F005",
+        "notes": "cmdClose_Click",
+        "action_type": "SYS",
+        "event_description_mapping": "Prompts the user to confirm before closing the application.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub cmdClose_Click()\nDoCmd.Quit acQuitPrompt\nEnd Sub",
         "references": {
           "forms": [],
           "reports": [],
@@ -84,50 +146,50 @@
         {
           "item_no": 6,
           "io": "",
-          "logical_name": "閉じる",
+          "logical_name": "TODO_cmdClose",
           "physical_name": "cmdClose",
-          "item_attribute": "コマンドボタン",
+          "item_attribute": "Command Button",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E004"
+          "notes": "E005"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": ""
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. アプリケーションの終了確認ダイアログを表示する\n2.2. ユーザーが終了を確認した場合、現在のアプリケーションを終了させる"
+          "detail": "2.1. ユーザーにアプリケーションを閉じる確認ダイアログを表示する\n2.2. ユーザーが確認ダイアログで「はい」を選択した場合、現在のアプリケーションを終了させる"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F004_Click(object sender, RoutedEventArgs e)",
-        "cs_name": "F004_Click",
-        "module_id": "F004",
-        "vba_handler": "閉じる_Click"
+        "signature": "private async void F011_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F011_Event",
+        "module_id": "F011",
+        "vba_handler": "cmdClose_Click"
       }
     },
     {
       "event_meta": {
-        "event_id": "E005",
-        "title": "新アフター管理DB",
-        "type": "ラベル",
-        "logical_name": "施工店情報",
-        "physical_name": "lblShopInfo",
-        "event_trigger": "ダブルクリック時",
+        "event_id": "E006",
+        "title": "New After Sales DB",
+        "type": "Label",
+        "logical_name": "TODO_lblStoreInfo",
+        "physical_name": "lblStoreInfo",
+        "event_trigger": "On Double Click",
         "event_content": "",
-        "module_id": "F005",
-        "notes": "施工店情報_DblClick",
+        "module_id": "F006",
+        "notes": "lblStoreInfo_DblClick",
         "event_description_mapping": "",
         "event_class": "UI"
       },
@@ -146,128 +208,60 @@
         {
           "item_no": 7,
           "io": "O",
-          "logical_name": "施工店情報",
-          "physical_name": "lblShopInfo",
-          "item_attribute": "ラベル",
+          "logical_name": "TODO_lblStoreInfo",
+          "physical_name": "lblStoreInfo",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
-          "source_field_or_fixed_value": "新アフター管理DB",
-          "notes": "E005"
+          "source_field_or_fixed_value": "New After Sales DB",
+          "notes": "E006"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 画面のダブルクリックイベントが発生したことを確認する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. ダブルクリックされた施工店情報の詳細を表示する\n2.2. 関連する施工店情報の詳細フォームを開く"
+          "detail": "なし"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. すべての処理が正常に完了したら、ユーザーに通知する"
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F005_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F005_DblClick",
-        "module_id": "F005",
-        "vba_handler": "施工店情報_DblClick"
-      }
-    },
-    {
-      "event_meta": {
-        "event_id": "E006",
-        "title": "-",
-        "type": "ラベル",
-        "logical_name": "ラベル142",
-        "physical_name": "lbl142",
-        "event_trigger": "クリック時",
-        "event_content": "",
-        "module_id": "F006",
-        "notes": "参照マクロ: A_メニューバーを表示.xlsx",
-        "action_type": "SYS",
-        "event_description_mapping": "",
-        "event_class": "UI"
-      },
-      "logic_detail": {
-        "code": "// This event runs Access macro: 「A_メニューバーを表示」\n// No VBA Sub — triggered directly via DoCmd.RunMacro or macro action.\n// WPF equivalent: implement the macro logic in the corresponding C# method.",
-        "references": {
-          "forms": [],
-          "reports": [],
-          "queries": [],
-          "macros": [
-            "A_メニューバーを表示"
-          ],
-          "modules": [],
-          "tables": []
-        }
-      },
-      "bd_items": [
-        {
-          "item_no": 8,
-          "io": "",
-          "logical_name": "ラベル142",
-          "physical_name": "lbl142",
-          "item_attribute": "ラベル",
-          "attribute_digits": "",
-          "required": "",
-          "format": "",
-          "other_input_checks": "",
-          "source_table": "",
-          "source_field_or_fixed_value": "",
-          "notes": "E006,E007"
-        }
-      ],
-      "dd_steps": {
-        "step_1": {
-          "step": "1. 初期処理",
-          "detail": "1.1. 必要な初期設定を行う\n1.2. イベント発生前の状態を確認する"
-        },
-        "step_2": {
-          "step": "2. 主処理",
-          "detail": "2.1. マクロ『A_メニューバーを表示』を実行してメニューバーを表示する [refer: A_メニューバーを表示]"
-        },
-        "step_3": {
-          "step": "3. 終了処理",
-          "detail": "3.1. すべての変更を保存し、必要なクリーンアップを行う"
-        }
-      },
-      "cs_stub": {
-        "signature": "private async void F006_Click(object sender, RoutedEventArgs e)",
-        "cs_name": "F006_Click",
-        "module_id": "F006",
-        "vba_handler": "lbl142_Click"
+        "signature": "private async void F012_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F012_Event",
+        "module_id": "F012",
+        "vba_handler": "lblStoreInfo_DblClick"
       }
     },
     {
       "event_meta": {
         "event_id": "E007",
         "title": "-",
-        "type": "ラベル",
-        "logical_name": "ラベル142",
-        "physical_name": "lbl142",
-        "event_trigger": "ダブルクリック時",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Click",
         "event_content": "",
         "module_id": "F007",
-        "notes": "参照マクロ: M300_Splash(M)を開く.xlsx",
-        "action_type": "SYS",
+        "notes": "macro.A_メニューバーを表示",
         "event_description_mapping": "",
         "event_class": "UI"
       },
       "logic_detail": {
-        "code": "// This event runs Access macro: 「M300_Splash(M)を開く」\n// No VBA Sub — triggered directly via DoCmd.RunMacro or macro action.\n// WPF equivalent: implement the macro logic in the corresponding C# method.",
+        "code": "// Original VBA code not found",
         "references": {
           "forms": [],
           "reports": [],
           "queries": [],
-          "macros": [
-            "M300_Splash(M)を開く"
-          ],
+          "macros": [],
           "modules": [],
           "tables": []
         }
@@ -276,56 +270,108 @@
         {
           "item_no": 8,
           "io": "",
-          "logical_name": "ラベル142",
-          "physical_name": "lbl142",
-          "item_attribute": "ラベル",
+          "logical_name": "TODO_lblMenuTrigger",
+          "physical_name": "lblMenuTrigger",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E006,E007"
+          "notes": "E007,E008"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 画面のダブルクリックイベントが発生したことを確認する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. マクロ『M300_Splash(M)を開く』を実行してスプラッシュ画面を表示する [refer: M300_Splash(M)を開く]"
+          "detail": "なし"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
-      "cs_stub": {
-        "signature": "private async void F007_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F007_DblClick",
-        "module_id": "F007",
-        "vba_handler": "lbl142_DblClick"
-      }
+      "cs_stub": null
     },
     {
       "event_meta": {
-        "event_id": "E009",
+        "event_id": "E008",
         "title": "-",
-        "type": "ラベル",
-        "logical_name": "プロセス終了",
-        "physical_name": "lblEndProcess",
-        "event_trigger": "ダブルクリック時",
-        "event_content": "Windows Media Playerを強制終了します。",
-        "module_id": "F009",
-        "notes": "プロセス終了_DblClick",
-        "action_type": "SYS",
-        "event_description_mapping": "Windows Media Playerを強制終了します。",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Double Click",
+        "event_content": "",
+        "module_id": "F008",
+        "notes": "macro.M300_Splash(M)を開く",
+        "event_description_mapping": "",
         "event_class": "UI"
       },
       "logic_detail": {
-        "code": "Private Sub プロセス終了_DblClick(Cancel As Integer)\n Dim objShell As Object\n Dim objExec As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n Set objExec = objShell.Exec(\"taskkill.exe /F /IM wmplayer.exe\")\nEnd Sub",
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 8,
+          "io": "",
+          "logical_name": "TODO_lblMenuTrigger",
+          "physical_name": "lblMenuTrigger",
+          "item_attribute": "Label",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E007,E008"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": null
+    },
+    {
+      "event_meta": {
+        "event_id": "E010",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblEndProcess",
+        "physical_name": "lblEndProcess",
+        "event_trigger": "On Double Click",
+        "event_content": "Terminates the Windows Media Player process if it is running.",
+        "module_id": "F010",
+        "notes": "lblEndProcess_DblClick",
+        "action_type": "SYS",
+        "event_description_mapping": "Terminates the Windows Media Player process if it is running.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub lblEndProcess_DblClick(Cancel As Integer)\nDim objShell As Object\n Dim objExec As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n Set objExec = objShell.Exec(\"taskkill.exe /F /IM wmplayer.exe\")\nEnd Sub",
         "references": {
           "forms": [],
           "reports": [],
@@ -339,37 +385,37 @@
         {
           "item_no": 11,
           "io": "",
-          "logical_name": "プロセス終了",
+          "logical_name": "TODO_lblEndProcess",
           "physical_name": "lblEndProcess",
-          "item_attribute": "ラベル",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E009"
+          "notes": "E010"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 必要なオブジェクトを準備する\n1.2. システムシェルオブジェクトを作成する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. システムシェルオブジェクトを使用して、タスクキルコマンドを実行する\n2.2. Windows Media Playerのプロセスを強制終了させる"
+          "detail": "2.1. システムシェルオブジェクトを作成する\n2.2. 作成したシステムシェルオブジェクトを使用して、タスクキルコマンドを実行し、Windows Media Playerプロセスを強制終了させる"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. 使用したオブジェクトを解放する"
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F009_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F009_DblClick",
-        "module_id": "F009",
-        "vba_handler": "プロセス終了_DblClick"
+        "signature": "private async void F016_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F016_Event",
+        "module_id": "F016",
+        "vba_handler": "lblEndProcess_DblClick"
       }
     }
   ]

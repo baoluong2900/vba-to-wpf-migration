@@ -817,8 +817,8 @@ class ServiceAgent(BaseAgent):
             service_name=service_name,
             methods=methods,
             usings=[
-                "vba_brain.Application.DTOs.Requests",
-                "vba_brain.Application.DTOs.Responses"
+                f"vba_brain.Application.DTOs.Requests.{form_name}",
+                f"vba_brain.Application.DTOs.Responses.{form_name}"
             ],
             form_name=form_name,
             purpose=f"Application service for {form_name}.",
@@ -1222,7 +1222,7 @@ class ServiceAgent(BaseAgent):
         # ── Backup to database_json/agent_service/ ──────────────────────────
         try:
             from pathlib import Path as _Path
-            _backup_dir = _Path(__file__).resolve().parent.parent.parent.parent.parent \
+            _backup_dir = _Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent \
                           / "data/database_json" / "agent_service"
             _backup_dir.mkdir(parents=True, exist_ok=True)
             _backup_file = _backup_dir / f"{form_name}.json"

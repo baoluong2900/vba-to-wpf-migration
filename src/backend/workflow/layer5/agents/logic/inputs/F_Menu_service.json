@@ -1,0 +1,140 @@
+{
+  "form_name": "F_Menu",
+  "input_type": "SERVICE",
+  "screen_description": "The F_Menu screen serves as the main navigation hub, allowing users to access different functionalities such as viewing the product list and entering new orders.",
+  "description": "Events có xử lý data/query. Gen ViewModel + IService + Service method.",
+  "total_events": 2,
+  "cs_file": "F_Menu.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E001",
+        "title": "Danh sách sản phẩm",
+        "type": "Command Button",
+        "logical_name": "TODO_btnProductList",
+        "physical_name": "cmdbtnProductList",
+        "event_trigger": "On Click",
+        "event_content": "Opens the product list form for viewing.",
+        "module_id": "F001",
+        "notes": "btnProductList_Click",
+        "action_type": "READ",
+        "event_description_mapping": "Opens the product list form for viewing.",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub btnProductList_Click()\nDoCmd.OpenForm \"F_ProductList\", acNormal\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_ProductList"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 1,
+          "io": "",
+          "logical_name": "TODO_btnProductList",
+          "physical_name": "cmdbtnProductList",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E001"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen for viewing [refer: F_ProductList]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event",
+        "module_id": "F001",
+        "vba_handler": "btnProductList_Click"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "Nhập đơn hàng",
+        "type": "Command Button",
+        "logical_name": "TODO_btnOrderEntry",
+        "physical_name": "cmdbtnOrderEntry",
+        "event_trigger": "On Click",
+        "event_content": "Opens the order entry form to input new orders.",
+        "module_id": "F002",
+        "notes": "btnOrderEntry_Click",
+        "action_type": "CREATE",
+        "event_description_mapping": "Opens the order entry form to input new orders.",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub btnOrderEntry_Click()\nDoCmd.OpenForm \"F_OrderEntry\", acNormal\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_OrderEntry"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 2,
+          "io": "",
+          "logical_name": "TODO_btnOrderEntry",
+          "physical_name": "cmdbtnOrderEntry",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E002"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Open the target screen\n[F_OrderEntry] [refer: F_OrderEntry]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event",
+        "module_id": "F002",
+        "vba_handler": "btnOrderEntry_Click"
+      }
+    }
+  ]
+}

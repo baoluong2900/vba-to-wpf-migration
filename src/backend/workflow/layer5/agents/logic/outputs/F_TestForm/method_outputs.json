@@ -1,0 +1,55 @@
+[
+  {
+    "event_id": "E000",
+    "mapped_command": {
+      "event_id": "E000",
+      "module_id": "F000",
+      "vba_event": "Form_Open",
+      "cs_command": "",
+      "cs_method": "OnNavigatedTo",
+      "action_type": "UI",
+      "is_main_logic": false,
+      "trigger": "Window loaded"
+    },
+    "cs_method": "OnNavigatedTo",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E001",
+    "mapped_command": {
+      "event_id": "E001",
+      "module_id": "F001",
+      "vba_event": "txtUserName_AfterUpdate",
+      "cs_command": "UserNameCommand",
+      "cs_method": "UserNameAsync",
+      "action_type": "VALID",
+      "is_main_logic": true,
+      "trigger": "After update / Enter key"
+    },
+    "cs_method": "UserNameAsync",
+    "code": "private async void F001_Event(object sender, RoutedEventArgs e)\n{\n    if (DataContext is ViewModels.FLoginViewModel vm)\n        await vm.F001Async();\n}",
+    "status": "success",
+    "phase_type": "ui"
+  },
+  {
+    "event_id": "E002",
+    "mapped_command": {
+      "event_id": "E002",
+      "module_id": "F002",
+      "vba_event": "btnSubmit_Click",
+      "cs_command": "SubmitCommand",
+      "cs_method": "Submit",
+      "action_type": "NAV",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "Submit",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  }
+]

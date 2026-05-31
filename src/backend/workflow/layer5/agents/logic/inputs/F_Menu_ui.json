@@ -1,0 +1,120 @@
+{
+  "form_name": "F_Menu",
+  "input_type": "UI",
+  "screen_description": "The F_Menu screen serves as the main navigation hub, allowing users to access different functionalities such as viewing the product list and entering new orders.",
+  "description": "Events chỉ xử lý UI/navigation/validation. Gen C# method body cho WPF code-behind.",
+  "total_events": 2,
+  "cs_file": "F_Menu.xaml.cs",
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "Welcome message is displayed to the user.",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "action_type": "UI",
+        "event_description_mapping": "Welcome message is displayed to the user.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_Open(Cancel As Integer)\nMsgBox \"Chào mừng đến với Hệ thống quản lý kho!\", vbInformation\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Display a welcome message to the user\n2.2. The message content is 'Chào mừng đến với Hệ thống quản lý kho!'\n2.3. The message type is informational"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event",
+        "module_id": "F000",
+        "vba_handler": "Form_Open"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E003",
+        "title": "Thoát hệ thống",
+        "type": "Command Button",
+        "logical_name": "TODO_btnExit",
+        "physical_name": "cmdbtnExit",
+        "event_trigger": "On Click",
+        "event_content": "",
+        "module_id": "F003",
+        "notes": "Macro.M_CloseSystem",
+        "event_description_mapping": "",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 3,
+          "io": "",
+          "logical_name": "TODO_btnExit",
+          "physical_name": "cmdbtnExit",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E003"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F003_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F003_Event",
+        "module_id": "F003",
+        "vba_handler": "Macro.M_CloseSystem"
+      }
+    }
+  ]
+}

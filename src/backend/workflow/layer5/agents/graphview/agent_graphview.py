@@ -700,10 +700,20 @@ def parse_actual_source_graph(source_root: Path, screen_name: str, upstream_file
 
     view_path = None
     vm_path = None
+    # Build alternate name: "F_Login" → "FLogin" (strip underscores, capitalize segments)
+    _alt_name = "".join(s.capitalize() for s in screen_name.split("_") if s)
     for p in all_paths:
-        if p.endswith(f"Views/{screen_name}.xaml") or p.endswith(f"Views/{screen_name}View.xaml") or p.endswith(f"/{screen_name}.xaml") or p.endswith(f"/{screen_name}View.xaml") or p == f"{screen_name}.xaml" or p == f"{screen_name}View.xaml":
+        if (p.endswith(f"Views/{screen_name}.xaml") or p.endswith(f"Views/{screen_name}View.xaml")
+                or p.endswith(f"/{screen_name}.xaml") or p.endswith(f"/{screen_name}View.xaml")
+                or p == f"{screen_name}.xaml" or p == f"{screen_name}View.xaml"
+                or p.endswith(f"Views/{_alt_name}.xaml") or p.endswith(f"Views/{_alt_name}View.xaml")
+                or p.endswith(f"/{_alt_name}.xaml") or p.endswith(f"/{_alt_name}View.xaml")):
             view_path = p
-        if p.endswith(f"ViewModels/{screen_name}.cs") or p.endswith(f"ViewModels/{screen_name}ViewModel.cs") or p.endswith(f"/{screen_name}ViewModel.cs") or p.endswith(f"/{screen_name}.cs") or p == f"{screen_name}ViewModel.cs" or p == f"{screen_name}.cs":
+        if (p.endswith(f"ViewModels/{screen_name}.cs") or p.endswith(f"ViewModels/{screen_name}ViewModel.cs")
+                or p.endswith(f"/{screen_name}ViewModel.cs") or p.endswith(f"/{screen_name}.cs")
+                or p == f"{screen_name}ViewModel.cs" or p == f"{screen_name}.cs"
+                or p.endswith(f"ViewModels/{_alt_name}.cs") or p.endswith(f"ViewModels/{_alt_name}ViewModel.cs")
+                or p.endswith(f"/{_alt_name}ViewModel.cs")):
             vm_path = p
 
     view_label = Path(view_path).stem if view_path else f"{screen_name}View"

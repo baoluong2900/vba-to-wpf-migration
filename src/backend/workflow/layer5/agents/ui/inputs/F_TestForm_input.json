@@ -1,0 +1,120 @@
+{
+  "form_name": "F_TestForm",
+  "form_properties": {
+    "caption": "",
+    "width": null,
+    "height": null,
+    "inner_width": 333,
+    "inner_height": 180,
+    "left": 0,
+    "top": 0,
+    "popup": false,
+    "modal": false,
+    "autocenter": false,
+    "border_style": 3,
+    "maxbutton": true,
+    "minbutton": true,
+    "closebutton": true,
+    "controlbox": true,
+    "scrollbars": 0,
+    "borderstyle": 1,
+    "moveable": 1,
+    "fittoscreen": 0,
+    "events": {
+      "onopen": "Form_Open"
+    }
+  },
+  "sections": [
+    {
+      "section_name": "section",
+      "section_type": "section",
+      "section_format": {
+        "width": 333
+      },
+      "controls": [
+        {
+          "name": "txtUserName",
+          "access_type": "TextBox",
+          "wpf_type": "TextBox",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "control_source": "UserName",
+            "controlsource": "UserName"
+          },
+          "other": {
+            "name": "txtUserName"
+          },
+          "events": {
+            "afterupdate": "txtUserName_AfterUpdate"
+          }
+        },
+        {
+          "name": "btnSubmit",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {},
+          "other": {
+            "name": "btnSubmit"
+          },
+          "events": {
+            "onclick": "btnSubmit_Click"
+          }
+        }
+      ]
+    }
+  ],
+  "viewmodel_bindings": {
+    "properties": [
+      "txtUserName"
+    ],
+    "commands": [
+      "F002Command"
+    ],
+    "event_handlers": [
+      {
+        "method": "Form_Open",
+        "event": "onopen",
+        "wpf_event": "Loaded",
+        "control": "__form__",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "txtUserName_AfterUpdate",
+        "event": "afterupdate",
+        "control": "txtUserName",
+        "wpf_type": "TextBox",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnSubmit_Click",
+        "event": "onclick",
+        "control": "btnSubmit",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      }
+    ],
+    "query_stubs": {
+      "txtUserName": {
+        "control_name": "txtUserName",
+        "wpf_type": "TextBox",
+        "control_source": "UserName",
+        "source_type": "DirectField",
+        "table": "",
+        "field": "UserName",
+        "field_en": "",
+        "criteria": "",
+        "suggested_property": "txtUserName",
+        "suggested_method": "",
+        "status": "pending"
+      }
+    },
+    "fid_cmd_map": {
+      "btnSubmitCommand": "F002Command"
+    }
+  }
+}

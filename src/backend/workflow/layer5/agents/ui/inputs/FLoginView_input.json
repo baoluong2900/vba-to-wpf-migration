@@ -1,41 +1,36 @@
 {
   "form_name": "F_Login",
   "form_properties": {
-    "caption": "ログイン",
+    "caption": "Login",
     "width": null,
     "height": null,
     "inner_width": 333,
-    "inner_height": 185,
-    "left": 397,
-    "top": 203,
-    "popup": true,
-    "modal": true,
-    "autocenter": true,
+    "inner_height": 180,
+    "left": 0,
+    "top": 0,
+    "popup": false,
+    "modal": false,
+    "autocenter": false,
     "border_style": 3,
-    "maxbutton": false,
-    "minbutton": false,
-    "closebutton": false,
-    "controlbox": false,
+    "maxbutton": true,
+    "minbutton": true,
+    "closebutton": true,
+    "controlbox": true,
     "scrollbars": 0,
-    "borderstyle": 3,
-    "moveable": 0,
-    "fittoscreen": 1,
+    "borderstyle": 1,
+    "moveable": 1,
+    "fittoscreen": 0,
     "events": {
       "onopen": "Form_Open",
-      "onkeydown": "Form_KeyDown",
-      "onload": "Form_Load"
+      "onload": "Form_Load",
+      "onkeydown": "Form_KeyDown"
     }
   },
   "sections": [
     {
-      "section_name": "詳細",
+      "section_name": "section",
       "section_type": "section",
       "section_format": {
-        "height": 185,
-        "background": "#E2F0D9",
-        "backthemecolorindex": 9,
-        "backtint": 20,
-        "backcolor": 14282978,
         "width": 333
       },
       "controls": [
@@ -44,73 +39,25 @@
           "access_type": "TextBox",
           "wpf_type": "TextBox",
           "nodekey": "section",
-          "format": {
-            "left": 146,
-            "top": 62,
-            "width": 113,
-            "height": 18,
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_charset": 128,
-            "border_color": "#C0C0C0",
-            "border_style": "None",
-            "text_align": "Center",
-            "overlapflags": 93,
-            "textfontcharset": 128,
-            "borderlinestyle": 0,
-            "fontsize": 11,
-            "bordercolor": 12632256,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 2,
-            "leftpadding": 0,
-            "toppadding": 0,
-            "rightpadding": 0,
-            "bottompadding": 0
-          },
+          "format": {},
           "data": {
             "is_readonly": true,
             "locked": true
           },
           "other": {
-            "label_name": "ログインID",
-            "tab_index": 1,
-            "felinebreak": true,
-            "labelx": -1701,
-            "asianlinebreak": 1,
-            "imemode": 3,
-            "tabindex": 1,
-            "name": "txtID",
-            "labelname": "ログインID"
+            "name": "txtID"
           }
         },
         {
-          "name": "ログインID",
+          "name": "lblLoginID",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 54,
-            "top": 62,
-            "width": 86,
-            "height": 18,
-            "caption": "ログインID:",
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_weight": "Bold",
-            "font_charset": 128,
-            "font_family_code": 50,
-            "text_align": "Right",
-            "overlapflags": 85,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 11,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 3,
-            "textfontfamily": 50,
-            "fontweight": 700
+            "caption": "Login ID:"
           },
           "other": {
-            "name": "ログインID"
+            "name": "lblLoginID"
           }
         },
         {
@@ -118,76 +65,28 @@
           "access_type": "TextBox",
           "wpf_type": "PasswordBox",
           "nodekey": "section",
-          "format": {
-            "left": 146,
-            "top": 102,
-            "width": 113,
-            "height": 18,
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_charset": 128,
-            "border_color": "#C0C0C0",
-            "border_style": "None",
-            "text_align": "Center",
-            "overlapflags": 85,
-            "textfontcharset": 128,
-            "borderlinestyle": 0,
-            "fontsize": 11,
-            "bordercolor": 12632256,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 2,
-            "leftpadding": 0,
-            "toppadding": 0,
-            "rightpadding": 0,
-            "bottompadding": 0
-          },
+          "format": {},
           "data": {
             "input_mask": "Password",
             "inputmask": "Password"
           },
           "other": {
-            "label_name": "パスワード",
-            "tab_index": 2,
-            "felinebreak": true,
-            "labelx": -1701,
-            "asianlinebreak": 1,
-            "imemode": 3,
-            "tabindex": 2,
-            "name": "txtPass",
-            "labelname": "パスワード"
+            "name": "txtPass"
           },
           "events": {
             "afterupdate": "txtPass_AfterUpdate"
           }
         },
         {
-          "name": "パスワード",
+          "name": "lblPassword",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 57,
-            "top": 102,
-            "width": 81,
-            "height": 18,
-            "caption": "パスワード:",
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_weight": "Bold",
-            "font_charset": 128,
-            "font_family_code": 50,
-            "text_align": "Right",
-            "overlapflags": 93,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 11,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 3,
-            "textfontfamily": 50,
-            "fontweight": 700
+            "caption": "Password:"
           },
           "other": {
-            "name": "パスワード"
+            "name": "lblPassword"
           }
         },
         {
@@ -196,164 +95,56 @@
           "wpf_type": "Button",
           "nodekey": "section",
           "format": {
-            "left": 147,
-            "top": 121,
-            "width": 113,
-            "height": 29,
-            "caption": "ログイン",
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_weight": "Bold",
-            "font_charset": 128,
-            "font_family_code": 50,
-            "foreground": "#FF000000",
-            "border_style": "None",
-            "visible": false,
-            "overlapflags": 85,
-            "textfontcharset": 128,
-            "fontsize": 11,
-            "fontweight": 700,
-            "forecolor": -2147483630,
-            "fontname": "ＭＳ Ｐゴシック",
-            "borderlinestyle": 0,
-            "textfontfamily": 50,
-            "webimagepaddingleft": 2,
-            "webimagepaddingtop": 2,
-            "webimagepaddingright": 1,
-            "webimagepaddingbottom": 1
+            "caption": "Login",
+            "visible": false
           },
           "other": {
-            "tab_index": 3,
-            "tabindex": 3,
-            "name": "cmdLogin",
-            "overlaps": 1
+            "name": "cmdLogin"
+          },
+          "events": {
+            "onclick": "cmdLogin_Click"
           }
         },
         {
-          "name": "閉じる",
+          "name": "cmdClose",
           "access_type": "CommandButton",
           "wpf_type": "Button",
           "nodekey": "section",
           "format": {
-            "left": 299,
-            "top": 4,
-            "width": 30,
-            "height": 30,
-            "caption": "閉じる",
-            "font_family": "MS PGothic",
-            "font_size": 11,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "foreground": "#FF000000",
-            "border_color": "#BFBFBF",
-            "border_style": "None",
-            "picture": "終了.bmp",
-            "borderthemecolorindex": 1,
-            "bordershade": 75,
-            "overlapflags": 85,
-            "textfontcharset": 128,
-            "fontsize": 11,
-            "fontweight": 400,
-            "forecolor": -2147483630,
-            "fontname": "ＭＳ Ｐゴシック",
-            "borderlinestyle": 0,
-            "textfontfamily": 50,
-            "usetheme": 1,
-            "bordercolor": 12566463,
-            "webimagepaddingleft": 2,
-            "webimagepaddingtop": 2,
-            "webimagepaddingright": 1,
-            "webimagepaddingbottom": 1
+            "caption": "Close"
           },
           "other": {
-            "name": "閉じる",
-            "objectpalette": "0x000301000000000000000000",
-            "bevel": 1
+            "name": "cmdClose"
           },
           "events": {
-            "onclick": "閉じる_Click"
+            "onclick": "cmdClose_Click"
           }
         },
         {
-          "name": "施工店情報",
+          "name": "lblStoreInfo",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 72,
-            "top": 10,
-            "width": 189,
-            "height": 23,
-            "caption": "新アフター管理DB",
-            "font_family": "Calibri",
-            "font_size": 12,
-            "font_weight": "Bold",
-            "font_charset": 177,
-            "font_family_code": 0,
-            "foreground": "#3F3F3F",
-            "border_color": "#FFFFFF",
-            "text_align": "Justify",
-            "padding_top": 19,
-            "margin_left": 2,
-            "margin_top": 4,
-            "backthemecolorindex": 1,
-            "gridlinecolor": 10921638,
-            "gridlinethemecolorindex": 1,
-            "gridlineshade": 65,
-            "borderthemecolorindex": 1,
-            "themefontindex": 1,
-            "overlapflags": 93,
-            "backstyle": 0,
-            "textfontcharset": 177,
-            "fontsize": 12,
-            "fontname": "Calibri",
-            "textalign": 4,
-            "textfontfamily": 0,
-            "fontweight": 700,
-            "leftmargin": 29,
-            "topmargin": 57,
-            "bordercolor": 16777215,
-            "forecolor": 4144959,
-            "toppadding": 285
+            "caption": "New After Sales DB"
           },
           "other": {
-            "name": "施工店情報"
+            "name": "lblStoreInfo"
           },
           "events": {
-            "ondblclick": "施工店情報_DblClick"
+            "ondblclick": "lblStoreInfo_DblClick"
           }
         },
         {
-          "name": "ラベル142",
+          "name": "lblMenuTrigger",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 158,
-            "top": 15,
-            "width": 25,
-            "height": 15,
-            "caption": " ",
-            "font_family": "MS PGothic",
-            "font_size": 9,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "foreground": "#C0C0C0",
-            "background": "Transparent",
-            "text_align": "Left",
-            "overlapflags": 215,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 9,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 1,
-            "textfontfamily": 50,
-            "backcolor": -2147483633,
-            "forecolor": 12632256
+            "caption": " "
           },
           "other": {
-            "tag": "DetachedLabel",
-            "name": "ラベル142"
+            "name": "lblMenuTrigger"
           },
           "events": {
             "onclick": "macro.A_メニューバーを表示",
@@ -361,185 +152,71 @@
           }
         },
         {
-          "name": "ラベル7",
+          "name": "lblAutoRetrieve",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 227,
-            "top": 80,
-            "width": 98,
-            "height": 13,
-            "caption": "※PCより自動取得",
-            "font_family": "MS PGothic",
-            "font_size": 8,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "text_align": "Right",
-            "margin_top": 2,
-            "overlapflags": 87,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 8,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 3,
-            "textfontfamily": 50,
-            "topmargin": 29
+            "caption": "*Auto-retrieved from PC"
           },
           "other": {
-            "name": "ラベル7"
+            "name": "lblAutoRetrieve"
           }
         },
         {
-          "name": "パスワードテーブルを開く",
+          "name": "lblOpenPasswordTable",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 57,
-            "top": 102,
-            "width": 26,
-            "height": 18,
-            "caption": " ",
-            "font_family": "MS PGothic",
-            "font_size": 9,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "foreground": "#C0C0C0",
-            "background": "Transparent",
-            "text_align": "Left",
-            "overlapflags": 215,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 9,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 1,
-            "textfontfamily": 50,
-            "backcolor": -2147483633,
-            "forecolor": 12632256
+            "caption": " "
           },
           "other": {
-            "tag": "DetachedLabel",
-            "name": "パスワードテーブルを開く"
+            "name": "lblOpenPasswordTable"
           },
           "events": {
-            "ondblclick": "パスワードテーブルを開く_DblClick"
+            "ondblclick": "lblOpenPasswordTable_DblClick"
           }
         },
         {
-          "name": "プロセス終了",
+          "name": "lblEndProcess",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 242,
-            "top": 14,
-            "width": 18,
-            "height": 14,
-            "font_family": "MS PGothic",
-            "font_size": 9,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "foreground": "#C0C0C0",
-            "background": "Transparent",
-            "text_align": "Left",
-            "overlapflags": 215,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 9,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 1,
-            "textfontfamily": 50,
-            "backcolor": -2147483633,
-            "forecolor": 12632256
+            "caption": " "
           },
           "other": {
-            "tag": "DetachedLabel",
-            "name": "プロセス終了"
+            "name": "lblEndProcess"
           },
           "events": {
-            "ondblclick": "プロセス終了_DblClick"
+            "ondblclick": "lblEndProcess_DblClick"
           }
         },
         {
-          "name": "ラベル400",
+          "name": "lblVersion",
           "access_type": "Label",
           "wpf_type": "Label",
           "nodekey": "section",
           "format": {
-            "left": 5,
-            "top": 151,
-            "width": 108,
-            "height": 23,
-            "caption": "2025/06/30公開Ver",
-            "font_family": "MS PGothic",
-            "font_size": 8,
-            "font_charset": 128,
-            "font_family_code": 50,
-            "background": "Transparent",
-            "text_align": "Left",
-            "gridlinecolor": 10921638,
-            "forethemecolorindex": 0,
-            "gridlinethemecolorindex": 1,
-            "gridlineshade": 65,
-            "overlapflags": 93,
-            "backstyle": 0,
-            "textfontcharset": 128,
-            "fontsize": 8,
-            "fontname": "ＭＳ Ｐゴシック",
-            "textalign": 1,
-            "textfontfamily": 50,
-            "backcolor": -2147483633
+            "caption": "Ver 2025/06/30"
           },
           "other": {
-            "name": "ラベル400"
+            "name": "lblVersion"
           }
         },
         {
-          "name": "最新版公開日",
+          "name": "txtReleasedDate",
           "access_type": "TextBox",
           "wpf_type": "TextBox",
           "nodekey": "section",
-          "format": {
-            "top": 161,
-            "width": 105,
-            "height": 14,
-            "font_family": "Calibri",
-            "font_size": 8,
-            "font_charset": 177,
-            "font_family_code": 0,
-            "foreground": "#ED1C24",
-            "border_color": "#A6A6A6",
-            "border_style": "None",
-            "backthemecolorindex": 1,
-            "gridlinecolor": 10921638,
-            "gridlinethemecolorindex": 1,
-            "gridlineshade": 65,
-            "borderthemecolorindex": 1,
-            "bordershade": 65,
-            "themefontindex": 1,
-            "overlapflags": 215,
-            "textfontcharset": 177,
-            "borderlinestyle": 0,
-            "fontsize": 8,
-            "bordercolor": 10921638,
-            "fontname": "Calibri",
-            "oldborderstyle": 0,
-            "textfontfamily": 0,
-            "backstyle": 0,
-            "forecolor": 2366701
-          },
+          "format": {},
           "data": {
             "control_source": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")",
             "controlsource": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")"
           },
           "other": {
-            "tab_index": 4,
-            "felinebreak": true,
-            "labelx": -1701,
-            "asianlinebreak": 1,
-            "tabindex": 4,
-            "name": "最新版公開日"
+            "name": "txtReleasedDate"
           }
         }
       ]
@@ -551,12 +228,13 @@
       "Comment1"
     ],
     "commands": [
-      "F004Command",
-      "F005Command",
-      "F006Command",
-      "F007Command",
-      "F008Command",
-      "F009Command"
+      "F010Command",
+      "F011Command",
+      "F012Command",
+      "F013Command",
+      "F014Command",
+      "F015Command",
+      "F016Command"
     ],
     "event_handlers": [
       {
@@ -568,19 +246,19 @@
         "todo": ""
       },
       {
-        "method": "Form_KeyDown",
-        "event": "onkeydown",
-        "wpf_event": "PreviewKeyDown",
-        "control": "__form__",
-        "args": "KeyEventArgs",
-        "todo": ""
-      },
-      {
         "method": "Form_Load",
         "event": "onload",
         "wpf_event": "ContentRendered",
         "control": "__form__",
         "args": "EventArgs",
+        "todo": ""
+      },
+      {
+        "method": "Form_KeyDown",
+        "event": "onkeydown",
+        "wpf_event": "PreviewKeyDown",
+        "control": "__form__",
+        "args": "KeyEventArgs",
         "todo": ""
       },
       {
@@ -592,57 +270,65 @@
         "todo": ""
       },
       {
-        "method": "閉じる_Click",
+        "method": "cmdLogin_Click",
         "event": "onclick",
-        "control": "閉じる",
+        "control": "cmdLogin",
         "wpf_type": "Button",
         "args": "RoutedEventArgs",
         "todo": ""
       },
       {
-        "method": "施工店情報_DblClick",
+        "method": "cmdClose_Click",
+        "event": "onclick",
+        "control": "cmdClose",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "lblStoreInfo_DblClick",
         "event": "ondblclick",
-        "control": "施工店情報",
+        "control": "lblStoreInfo",
         "wpf_type": "Label",
         "args": "MouseButtonEventArgs",
         "todo": ""
       },
       {
-        "method": "ラベル142_Click",
+        "method": "lblMenuTrigger_Click",
         "event": "onclick",
-        "control": "ラベル142",
+        "control": "lblMenuTrigger",
         "wpf_type": "Label",
         "args": "RoutedEventArgs",
         "todo": ""
       },
       {
-        "method": "ラベル142_Dblclick",
+        "method": "lblMenuTrigger_Dblclick",
         "event": "ondblclick",
-        "control": "ラベル142",
+        "control": "lblMenuTrigger",
         "wpf_type": "Label",
         "args": "MouseButtonEventArgs",
         "todo": ""
       },
       {
-        "method": "パスワードテーブルを開く_DblClick",
+        "method": "lblOpenPasswordTable_DblClick",
         "event": "ondblclick",
-        "control": "パスワードテーブルを開く",
+        "control": "lblOpenPasswordTable",
         "wpf_type": "Label",
         "args": "MouseButtonEventArgs",
         "todo": ""
       },
       {
-        "method": "プロセス終了_DblClick",
+        "method": "lblEndProcess_DblClick",
         "event": "ondblclick",
-        "control": "プロセス終了",
+        "control": "lblEndProcess",
         "wpf_type": "Label",
         "args": "MouseButtonEventArgs",
         "todo": ""
       }
     ],
     "query_stubs": {
-      "最新版公開日": {
-        "control_name": "最新版公開日",
+      "txtReleasedDate": {
+        "control_name": "txtReleasedDate",
         "wpf_type": "TextBox",
         "control_source": "=DLookUp(\\\"コメント\\\",\\\"Access配信日\\\")",
         "source_type": "DLookUp",
@@ -656,12 +342,13 @@
       }
     },
     "fid_cmd_map": {
-      "閉じるCommand": "F004Command",
-      "施工店情報Command": "F005Command",
-      "ラベル142Command": "F006Command",
-      "ラベル142clickCommand": "F007Command",
-      "パスワードテーブルを開くCommand": "F008Command",
-      "プロセス終了Command": "F009Command"
+      "LoginCommand": "F010Command",
+      "CloseCommand": "F011Command",
+      "lblStoreInfoCommand": "F012Command",
+      "lblMenuTriggerCommand": "F013Command",
+      "lblMenuTriggerclickCommand": "F014Command",
+      "lblOpenPasswordTableCommand": "F015Command",
+      "lblEndProcessCommand": "F016Command"
     }
   }
 }

@@ -1,0 +1,197 @@
+[
+  {
+    "event_id": "E000",
+    "mapped_command": {
+      "event_id": "E000",
+      "module_id": "F000",
+      "vba_event": "Form_Open",
+      "cs_command": "",
+      "cs_method": "OnNavigatedTo",
+      "action_type": "UI",
+      "is_main_logic": false,
+      "trigger": "Window loaded"
+    },
+    "cs_method": "OnNavigatedTo",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "service",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E001",
+    "mapped_command": {
+      "event_id": "E001",
+      "module_id": "F001",
+      "vba_event": "Form_Load",
+      "cs_command": "",
+      "cs_method": "Window_Loaded",
+      "action_type": "VALID",
+      "is_main_logic": true,
+      "trigger": "After controls ready"
+    },
+    "cs_method": "Window_Loaded",
+    "code": "public virtual async System.Threading.Tasks.Task F001Async()\n{\n    // 2.1 ラベルからバージョン情報を抽出\n    var currentVersionPart = LblVersion?.ToString().Split('/')?.LastOrDefault()?.Substring(0, 5);\n    \n    var request = new F001Request();\n    var response = await _fLoginService.F001Async(request);\n    \n    if (response.Success && !string.IsNullOrEmpty(response.Message))\n    {\n        // 2.3 最新バージョンと比較\n        if (!string.Equals(currentVersionPart, response.Message.Trim(), StringComparison.OrdinalIgnoreCase))\n        {\n            // 2.4.1.1 メッセージ表示\n            MessageBox.Show(\"最新版ではありません！インストールします。\",\n                \"確認\", MessageBoxButton.OK, MessageBoxImage.Exclamation);\n            // 2.4.1.2 Judge_Instモジュール呼び出し — 実装場所に依存するため要確認\n            // TODO: Common.Judge_Inst の呼び出しを実装 — 具体的手順を確認してください\n        }\n    }\n}",
+    "status": "success",
+    "phase_type": "service"
+  },
+  {
+    "event_id": "E002",
+    "mapped_command": {
+      "event_id": "E002",
+      "module_id": "F002",
+      "vba_event": "Form_KeyDown",
+      "cs_command": "",
+      "cs_method": "OnKeyDown",
+      "action_type": "VALID",
+      "is_main_logic": true,
+      "trigger": "Key pressed"
+    },
+    "cs_method": "OnKeyDown",
+    "code": "private async void F001_PreviewKeyDown(object sender, KeyEventArgs e)\n{\n    if (DataContext is ViewModels.FLoginViewModel vm)\n        await vm.F001Async(e.Key);\n    e.Handled = vm.LastKeyHandled;\n}",
+    "status": "success",
+    "phase_type": "ui"
+  },
+  {
+    "event_id": "E003",
+    "mapped_command": {
+      "event_id": "E003",
+      "module_id": "F003",
+      "vba_event": "txtPass_AfterUpdate",
+      "cs_command": "PassCommand",
+      "cs_method": "PassAsync",
+      "action_type": "VALID",
+      "is_main_logic": true,
+      "trigger": "After update / Enter key"
+    },
+    "cs_method": "PassAsync",
+    "code": "public virtual async System.Threading.Tasks.Task F003Async()\n{\n    // DD 2.2: Validate user input\n    if (string.IsNullOrWhiteSpace(TxtID))\n    {\n        MessageBox.Show(\"ユーザーIDを入力してください。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    if (string.IsNullOrWhiteSpace(TxtPass))\n    {\n        MessageBox.Show(\"パスワードを入力してください。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    var request = new F003Request { TxtID = TxtID, TxtPass = TxtPass };\n    var response = await _fLoginService.F003Async(request);\n\n    if (!response.Success)\n    {\n        MessageBox.Show(response.Message ?? \"ユーザーIDまたはパスワードが正しくありません。\", \"エラー\", MessageBoxButton.OK, MessageBoxImage.Error);\n        return;\n    }\n\n    // DD 2.7: Login successful — close login form and proceed\n    CloseRequested?.Invoke(this, EventArgs.Empty);\n\n    // DD 2.7.3: Check record count in T023地区CD設定\n    if (response.T023地区CD設定Entity == null || !response.T023地区CD設定Entity.Any())\n    {\n        // TODO: AutoExec_Restartマクロを実行してアプリケーションを再起動 — 具体的手順を確認\n    }\n    else\n    {\n        // TODO: タイマーを開く 及び AutoExec_Aマクロを実行 — Viewクラス名と処理内容を確認\n    }\n}",
+    "status": "success",
+    "phase_type": "service"
+  },
+  {
+    "event_id": "E004",
+    "mapped_command": {
+      "event_id": "E004",
+      "module_id": "F004",
+      "vba_event": "cmdLogin_Click",
+      "cs_command": "LoginCommand",
+      "cs_method": "Login",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "Login",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "ui",
+    "note": "System bound command"
+  },
+  {
+    "event_id": "E005",
+    "module_id": "F005",
+    "mapped_command": {
+      "event_id": "E005",
+      "module_id": "F005",
+      "vba_event": "cmdClose_Click",
+      "cs_command": "CloseCommand",
+      "cs_method": "Close",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "F005Async",
+    "code": "public virtual async System.Threading.Tasks.Task F005Async()\n{\n    var result = MessageBox.Show(\n        \"アプリケーションを終了しますか？\",\n        \"確認\", MessageBoxButton.YesNo, MessageBoxImage.Question);\n    if (result == MessageBoxResult.Yes)\n        System.Windows.Application.Current.Shutdown();\n    await System.Threading.Tasks.Task.CompletedTask;\n}",
+    "status": "success",
+    "phase_type": "sys_deterministic"
+  },
+  {
+    "event_id": "E006",
+    "module_id": "F006",
+    "mapped_command": {
+      "event_id": "E006",
+      "module_id": "F006",
+      "vba_event": "lblStoreInfo_DblClick",
+      "cs_command": "LblStoreInfoCommand",
+      "cs_method": "LblStoreInfo",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "F006Async",
+    "code": "public virtual async System.Threading.Tasks.Task F006Async()\n{\n    // TODO: open TODO_lblStoreInfo form — verify View class name before instantiating\n    await System.Threading.Tasks.Task.CompletedTask;\n}",
+    "status": "success",
+    "phase_type": "sys_deterministic"
+  },
+  {
+    "event_id": "E007",
+    "mapped_command": {
+      "event_id": "E007",
+      "module_id": "F007",
+      "vba_event": "macro.A_メニューバーを表示",
+      "cs_command": "",
+      "cs_method": "F007Async",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Unknown"
+    },
+    "cs_method": "F007Async",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "ui",
+    "note": "System bound command"
+  },
+  {
+    "event_id": "E008",
+    "mapped_command": {
+      "event_id": "E008",
+      "module_id": "F008",
+      "vba_event": "macro.M300_Splash(M)を開く",
+      "cs_command": "",
+      "cs_method": "F008Async",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Unknown"
+    },
+    "cs_method": "F008Async",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "ui",
+    "note": "System bound command"
+  },
+  {
+    "event_id": "E009",
+    "mapped_command": {
+      "event_id": "E009",
+      "module_id": "F009",
+      "vba_event": "lblOpenPasswordTable_DblClick",
+      "cs_command": "LblOpenPasswordTableCommand",
+      "cs_method": "LblOpenPasswordTable",
+      "action_type": "UI",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "LblOpenPasswordTable",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "service",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E010",
+    "module_id": "F010",
+    "mapped_command": {
+      "event_id": "E010",
+      "module_id": "F010",
+      "vba_event": "lblEndProcess_DblClick",
+      "cs_command": "LblEndProcessCommand",
+      "cs_method": "LblEndProcess",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "F010Async",
+    "code": "public virtual async System.Threading.Tasks.Task F010Async()\n{\n    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo\n    {\n        FileName = \"taskkill.exe\",\n        Arguments = \"/F /IM wmplayer.exe\")\",\n        CreateNoWindow = true,\n        UseShellExecute = false\n    });\n    await System.Threading.Tasks.Task.CompletedTask;\n}",
+    "status": "success",
+    "phase_type": "sys_deterministic"
+  }
+]

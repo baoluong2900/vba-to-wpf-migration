@@ -1,0 +1,74 @@
+[
+  {
+    "event_id": "E000",
+    "mapped_command": {
+      "event_id": "E000",
+      "module_id": "F000",
+      "vba_event": "Form_Open",
+      "cs_command": "",
+      "cs_method": "OnNavigatedTo",
+      "action_type": "UI",
+      "is_main_logic": false,
+      "trigger": "Window loaded"
+    },
+    "cs_method": "OnNavigatedTo",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E001",
+    "mapped_command": {
+      "event_id": "E001",
+      "module_id": "F001",
+      "vba_event": "btnProductList_Click",
+      "cs_command": "ProductListCommand",
+      "cs_method": "ProductList",
+      "action_type": "READ",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "ProductList",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E002",
+    "mapped_command": {
+      "event_id": "E002",
+      "module_id": "F002",
+      "vba_event": "btnOrderEntry_Click",
+      "cs_command": "OrderEntryCommand",
+      "cs_method": "OrderEntry",
+      "action_type": "CREATE",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "OrderEntry",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E003",
+    "mapped_command": {
+      "event_id": "E003",
+      "module_id": "F003",
+      "vba_event": "Macro.M_CloseSystem",
+      "cs_command": "",
+      "cs_method": "F003Async",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Unknown"
+    },
+    "cs_method": "F003Async",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "ui",
+    "note": "System bound command"
+  }
+]

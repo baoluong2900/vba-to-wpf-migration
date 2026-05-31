@@ -1,38 +1,37 @@
 {
   "form_name": "F_Login",
-  "screen_description": "この画面は、ユーザーがシステムにログインするために使用します。ログインIDとパスワードの入力を行い、適切な認証を通じてシステムへのアクセスを可能にします。",
-  "total_events": 10,
+  "screen_description": "The F_Login screen is designed to provide a secure and user-friendly interface for users to log into the system, ensuring that only authorized individuals can access the application.",
+  "total_events": 11,
   "events": [
     {
       "event_meta": {
         "event_id": "E000",
         "title": "-",
-        "type": "フォーム",
+        "type": "Form",
         "logical_name": "-",
         "physical_name": "-",
-        "event_trigger": "画面を開く時",
-        "event_content": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーをシステムにログインさせる。",
+        "event_trigger": "On Open",
+        "event_content": "Prepares the user interface for a clean and focused login experience.",
         "module_id": "F000",
         "notes": "Form_Open",
-        "action_type": "VALID",
-        "event_description_mapping": "ユーザーのログイン情報を確認し、適切な権限を持つユーザーをシステムにログインさせる。"
+        "action_type": "UI",
+        "event_description_mapping": "Prepares the user interface for a clean and focused login experience.",
+        "event_class": "SERVICE"
       },
       "logic_detail": {
-        "code": "Private Sub Form_Open(Cancel As Integer)\n SwitchShiftKey True\n Call SetEnabledState(False)\n DoCmd.SelectObject acForm, \"\", True\n DoCmd.RunCommand acCmdWindowHide\n DoCmd.ShowToolbar \"Ribbon\", acToolbarNo\n Application.CommandBars(\"Status Bar\").Visible = False\n Dim i As Long\n For i = 1 To 3\n Next i\nOn Error GoTo Err_Shori\n SetAccWinStyle\n MoveWindow Application.hWndAccessApp, 0, 0, 800, 400, True\nCall SetWindowTop(hWndAccessApp, True)\n DoCmd.RunCommand acCmdWindowHide\nCall SetWindowTop(hWndAccessApp, False)\n Const MOUSE_LEFTDOWN = 2\n Const MOUSE_LEFTUP = 4\n Const MOUSE_RIGHTDOWN = 8\n Const MOUSE_RIGHTUP = 16\n OpenClipboard (0&)\n EmptyClipboard\n CloseClipboard\n If OpenClipboard(ByVal 0&) Then\n Call EmptyClipboard\n Call CloseClipboard\n End If\n Dim WshNetworkObject As Object\n Set WshNetworkObject = CreateObject(\"WScript.Network\")\n Dim limit As Date, cnt_d As Double\nWith WshNetworkObject\n Dim UserName As String\n UserName = .UserName\n Me.txtID = UserName\n SendKeys \"{TAB}\"\n Dim myDO As DataObject\n Dim myStr As String\n myStr = Me.txtID\n Set myDO = New DataObject\n myDO.SetText myStr\n myDO.PutInClipboard\nWith WshNetworkObject\nIf (.UserName = \"00105687\") Or _\n (.UserName = \"00110772A\") Or _\n (.UserName = \"00109978A\") Or _\n (.UserName = \"00109212A\") Or _\n (.UserName = \"00106601A\") Or _\n (.UserName = \"00124937A\") _\n Then\n SendKeys \"^(v)\"\n SendKeys \"{ENTER}\"\n SendKeys \"^(v)\"\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n Else\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n End If\nEnd With\nEnd With\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
+        "code": "Private Sub Form_Open(Cancel As Integer)\nSwitchShiftKey True\n Call SetEnabledState(False)\n DoCmd.SelectObject acForm, \"\", True\n DoCmd.RunCommand acCmdWindowHide\n DoCmd.ShowToolbar \"Ribbon\", acToolbarNo\n Application.CommandBars(\"Status Bar\").Visible = False\n Dim i As Long\n For i = 1 To 3\n Next i\n On Error GoTo Err_Shori\n SetAccWinStyle\n MoveWindow Application.hWndAccessApp, 0, 0, 800, 400, True\n Call SetWindowTop(hWndAccessApp, True)\n DoCmd.RunCommand acCmdWindowHide\n Call SetWindowTop(hWndAccessApp, False)\n OpenClipboard (0&)\n EmptyClipboard\n CloseClipboard\n If OpenClipboard(ByVal 0&) Then\n Call EmptyClipboard\n Call CloseClipboard\n End If\n Dim WshNetworkObject As Object\n Set WshNetworkObject = CreateObject(\"WScript.Network\")\n Dim limit As Date, cnt_d As Double\n With WshNetworkObject\n Dim UserName As String\n UserName = .UserName\n Me.txtID = UserName\n SendKeys \"{TAB}\"\n Dim myDO As DataObject\n Dim myStr As String\n myStr = Me.txtID\n Set myDO = New DataObject\n myDO.SetText myStr\n myDO.PutInClipboard\n If (.UserName = \"00105687\") Or _\n (.UserName = \"00110772A\") Or _\n (.UserName = \"00109978A\") Or _\n (.UserName = \"00109212A\") Or _\n (.UserName = \"00106601A\") Or _\n (.UserName = \"00124937A\") _\n Then\n SendKeys \"^(v)\"\n SendKeys \"{ENTER}\"\n SendKeys \"^(v)\"\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n Else\n DoCmd.SetWarnings False\n DoCmd.OpenQuery \"Q000_T_LoginUser\", acViewNormal, acEdit\n SendKeys \"{ENTER}\"\n Exit Sub\n End If\n End With\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
         "references": {
           "forms": [],
           "reports": [],
-          "queries": [
-            "F000_SelQuery01"
-          ],
+          "queries": [],
           "macros": [],
           "modules": [
-            "Delete_Window.SetEnabledState",
-            "SetWindowPos.SetWindowTop",
+            "Common.SetEnabledState",
+            "Common.SetWindowTop",
             "EmptyClipboard",
             "CloseClipboard",
-            "EnableShiftKey.SwitchShiftKey",
-            "mdlSetAppStyle.SetAccWinStyle"
+            "Common.SwitchShiftKey",
+            "Common.SetAccWinStyle"
           ],
           "tables": []
         }
@@ -41,15 +40,15 @@
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. シフトキーの状態を切り替える [refer: SwitchShiftKey]\n1.2. 画面要素の有効化状態を設定する [refer: SetEnabledState]\n1.3. フォームを選択モードに変更する\n1.4. アプリケーションウィンドウを非表示にする\n1.5. リボンツールバーを非表示にする\n1.6. ステータスバーを非表示にする\n1.7. ウィンドウの位置とサイズを調整する\n1.8. ウィンドウを最前面に設定する [refer: SetWindowTop]\n1.9. クリップボードを初期化する"
+          "detail": "1.1. シフトキーの状態を設定する [refer: Common.SwitchShiftState]\n1.2. すべてのコントロールの有効状態を無効にする [refer: Common.SetEnabledState]\n1.3. フォームを選択モードに変更する\n1.4. アプリケーションウィンドウを非表示にする\n1.5. リボンツールバーを非表示にする\n1.6. ステータスバーを非表示にする\n1.7. ウィンドウスタイルを設定する [refer: Common.SetAccWinStyle]\n1.8. アプリケーションウィンドウの位置とサイズを調整する\n1.9. クリップボードをクリアする"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. ユーザー名を取得し、フォームのtxtIDフィールドに設定する\n2.2. txtIDフィールドの内容をクリップボードにコピーする\n2.3. 特定のユーザー名を持つ場合、以下の処理を行う\n2.3.1. クリップボードの内容をペーストする\n2.3.2. エンターキーを送信する\n2.3.3. クエリを実行してログイン情報を確認する\n[F000_SelQuery01]\n2.3.4. エンターキーを送信する\n2.4. 上記以外のユーザー名の場合、以下の処理を行う\n2.4.1. クエリを実行してログイン情報を確認する\n[F000_SelQuery01]\n2.4.2. エンターキーを送信する"
+          "detail": "2.1. ネットワークオブジェクトを作成する\n2.2. 現在のユーザー名を取得し、フォームのtxtIDフィールドに設定する\n2.3. txtIDフィールドからデータを取得し、クリップボードにコピーする\n2.4. 特定のユーザー名が一致する場合:\n2.4.1. クリップボードの内容をペーストする\n2.4.2. Enterキーをシミュレートしてログインを試行する\n2.4.3. 警告メッセージを非表示に設定する\n2.4.4. クエリを実行してログイン情報を確認する\n[Q000_T_LoginUser]\n2.4.5. Enterキーをシミュレートしてログインを確定する\n2.5. 特定のユーザー名が一致しない場合:\n2.5.1. 警告メッセージを非表示に設定する\n2.5.2. クエリを実行してログイン情報を確認する\n[Q000_T_LoginUser]\n2.5.3. Enterキーをシミュレートしてログインを確定する"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. エラーが発生した場合、エラーメッセージを表示する"
+          "detail": "3.1. エラーメッセージを表示する（通信接続エラーまたはログイン情報が存在しない場合）"
         }
       },
       "cs_stub": {
@@ -62,13 +61,7 @@
         "interface_method": "Task<F000Response> F000Async(F000Request request);",
         "request": {
           "class": "F000Request",
-          "properties": [
-            {
-              "name": "TxtID",
-              "type": "string",
-              "nullable": false
-            }
-          ]
+          "properties": []
         },
         "response": {
           "class": "F000Response",
@@ -85,63 +78,8 @@
             },
             {
               "name": "Data",
-              "type": "IEnumerable<GetUserInfoDto>?",
-              "nullable": true,
-              "entity_shape": {
-                "class": "GetUserInfoDto",
-                "fields": [
-                  {
-                    "name": "LastName",
-                    "type": "string",
-                    "column": "氏"
-                  },
-                  {
-                    "name": "FirstName",
-                    "type": "string",
-                    "column": "名"
-                  },
-                  {
-                    "name": "ConstructionHandlerName",
-                    "type": "string",
-                    "column": "工事担当_担当者名"
-                  },
-                  {
-                    "name": "BranchName",
-                    "type": "string",
-                    "column": "支店名"
-                  },
-                  {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "column": "地区CD"
-                  },
-                  {
-                    "name": "RegionCdId",
-                    "type": "string",
-                    "column": "地区CD_ID"
-                  },
-                  {
-                    "name": "Id",
-                    "type": "string",
-                    "column": "ID"
-                  },
-                  {
-                    "name": "Pass",
-                    "type": "string",
-                    "column": "PASS"
-                  },
-                  {
-                    "name": "AdminFlag",
-                    "type": "string",
-                    "column": "管理者FLG"
-                  },
-                  {
-                    "name": "HandlerCdA",
-                    "type": "string",
-                    "column": "担当者CD_A"
-                  }
-                ]
-              }
+              "type": "IEnumerable<Q000TLoginUserEntity>?",
+              "nullable": true
             }
           ]
         },
@@ -154,15 +92,110 @@
       "event_meta": {
         "event_id": "E001",
         "title": "-",
-        "type": "フォーム",
+        "type": "Form",
         "logical_name": "-",
         "physical_name": "-",
-        "event_trigger": "キー押下時",
-        "event_content": "F11とF12キーの使用を無効化する。",
+        "event_trigger": "On Load",
+        "event_content": "Checks if the current version is up-to-date and prompts for an update if necessary.",
         "module_id": "F001",
+        "notes": "Form_Load",
+        "action_type": "VALID",
+        "event_description_mapping": "Checks if the current version is up-to-date and prompts for an update if necessary.",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_Load()\nDim sLvlCmnt    As String\n Dim sCmnt       As String\n CloseWindow Application.hWndAccessApp\n Dim Ref As Reference\n For Each Ref In References\n If Ref.Name = \"Excel\" Then\n Application.References.Remove Ref\n End If\n Next Ref\n sLvlCmnt = Me.lblVersion.Caption\n sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, \"/\") + 1, 5)\n sCmnt = Replace(Replace(DLookup(\"コメント\", \"Access配信日\"), \"最新版は\", \"\"), \"ver\", \"\")\n If sLvlCmnt <> sCmnt Then\n MsgBox \"最新版ではありません！\" & Chr(13) & \"インストールします。\", vbOKOnly + vbExclamation\n Call Judge_Inst\n End If\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F001_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [
+            "Common.Judge_Inst"
+          ],
+          "tables": [
+            "Access配信日"
+          ]
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. フォームのラベル 'lblVersion' のキャプションから、バージョン情報の一部（'/' 以降の5文字）を抽出する\n2.2. 最新バージョン情報を取得するため、クエリを実行する\n[F001_SelQuery01]\n2.3. 取得した最新バージョン情報と抽出したバージョン情報を比較する\n2.4. 比較結果に基づいて、もしバージョンが異なる場合、ユーザーにメッセージを表示し、更新が必要であることを通知する\n2.5. 更新が必要な場合、モジュール 'Judge_Inst' を呼び出す [refer: Common.Judge_Inst]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_ContentRendered(object? sender, EventArgs e)",
+        "cs_name": "F002_ContentRendered",
+        "module_id": "F002",
+        "vba_handler": "Form_Load"
+      },
+      "service_context": {
+        "interface_method": "Task<F001Response> F001Async(F001Request request);",
+        "request": {
+          "class": "F001Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F001Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            },
+            {
+              "name": "Data",
+              "type": "IEnumerable<Access配信日Entity>?",
+              "nullable": true,
+              "entity_shape": {
+                "class": "Access配信日Entity",
+                "fields": [
+                  {
+                    "name": "DistributionDateComment",
+                    "type": "object",
+                    "column": "配信日コメント"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vm_method": "F001Async",
+        "service_field_hint": "_fLoginService",
+        "iface_class": "IFLoginService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Key Down",
+        "event_content": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
+        "module_id": "F002",
         "notes": "Form_KeyDown",
-        "action_type": "UI",
-        "event_description_mapping": "F11とF12キーの使用を無効化する。"
+        "action_type": "VALID",
+        "event_description_mapping": "Disables specific function keys (F11, F12) to prevent unauthorized actions.",
+        "event_class": "UI"
       },
       "logic_detail": {
         "code": "Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)\nSelect Case KeyCode\n Case vbKeyF11\n KeyCode = 0\n MsgBox \"ファンクション【F11】キーは無効に設定されてます！！\"\n Case vbKeyF12\n KeyCode = 0\n MsgBox \"ファンクション【F12】キーは無効に設定されてます！！\"\n Case Else\n End Select\nEnd Sub",
@@ -179,15 +212,15 @@
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": ""
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. キー押下時のキーコードを確認する\n2.2. 押されたキーがF11の場合、以下の処理を行う\n2.2.1. キー入力を無効にする\n2.2.2. メッセージ「ファンクション【F11】キーは無効に設定されてます！！」を表示する\n2.3. 押されたキーがF12の場合、以下の処理を行う\n2.3.1. キー入力を無効にする\n2.3.2. メッセージ「ファンクション【F12】キーは無効に設定されてます！！」を表示する"
+          "detail": "2.1. キー入力のコードを取得する\n2.2. 取得したキーがF11の場合、以下の処理を行う\n2.2.1. キー入力を無効にする\n2.2.2. メッセージを表示する: 'ファンクション【F11】キーは無効に設定されてます！！'\n2.3. 取得したキーがF12の場合、以下の処理を行う\n2.3.1. キー入力を無効にする\n2.3.2. メッセージを表示する: 'ファンクション【F12】キーは無効に設定されてます！！'\n2.4. それ以外のキーが押された場合、何もしない"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
       "cs_stub": {
@@ -199,107 +232,28 @@
     },
     {
       "event_meta": {
-        "event_id": "E002",
-        "title": "-",
-        "type": "フォーム",
-        "logical_name": "-",
-        "physical_name": "-",
-        "event_trigger": "フォーム読み込み後",
-        "event_content": "アプリケーションが最新版であるか確認し、必要に応じて更新を行う。",
-        "module_id": "F002",
-        "notes": "Form_Load",
-        "action_type": "FILE",
-        "event_description_mapping": "アプリケーションが最新版であるか確認し、必要に応じて更新を行う。"
-      },
-      "logic_detail": {
-        "code": "Private Sub Form_Load()\n Dim sLvlCmnt    As String\n Dim sCmnt       As String\n CloseWindow Application.hWndAccessApp\n Dim Ref As Reference\n For Each Ref In References\n If Ref.Name = \"Excel\" Then\n Application.References.Remove Ref\n End If\n Next Ref\n sLvlCmnt = Me.ラベル400.Caption\n sLvlCmnt = Mid(sLvlCmnt, InStr(sLvlCmnt, \"/\") + 1, 5)\n sCmnt = Replace(Replace(DLookup(\"コメント\", \"Access配信日\"), \"最新版は\", \"\"), \"ver\", \"\")\n If sLvlCmnt <> sCmnt Then\n MsgBox \"最新版ではありません！\" & Chr(13) & \"インストールします。\", vbOKOnly + vbExclamation\n Call Judge_Inst\n End If\nEnd Sub",
-        "references": {
-          "forms": [],
-          "reports": [],
-          "queries": [
-            "F002_SelQuery01"
-          ],
-          "macros": [],
-          "modules": [
-            "Common.Judge_Inst"
-          ],
-          "tables": []
-        }
-      },
-      "bd_items": [],
-      "dd_steps": {
-        "step_1": {
-          "step": "1. 初期処理",
-          "detail": "1.1. アプリケーションのウィンドウを閉じる"
-        },
-        "step_2": {
-          "step": "2. 主処理",
-          "detail": "2.1. フォームのラベル400のキャプションから、バージョン情報の一部（'/'以降の5文字）を抽出する\n2.2. クエリを実行して最新バージョン情報を取得する\n[F002_SelQuery01]\n2.3. 取得したバージョン情報と抽出した文字列を比較する\n2.4. 比較結果に基づいて、メッセージを表示する\n2.5. 最新版でない場合、インストールを行う [refer: Common.Judge_Inst]"
-        },
-        "step_3": {
-          "step": "3. 終了処理",
-          "detail": ""
-        }
-      },
-      "cs_stub": {
-        "signature": "private async void F002_ContentRendered(object? sender, EventArgs e)",
-        "cs_name": "F002_ContentRendered",
-        "module_id": "F002",
-        "vba_handler": "Form_Load"
-      },
-      "service_context": {
-        "interface_method": "Task<F002Response> F002Async(F002Request request);",
-        "request": {
-          "class": "F002Request",
-          "properties": []
-        },
-        "response": {
-          "class": "F002Response",
-          "properties": [
-            {
-              "name": "Success",
-              "type": "bool",
-              "nullable": false
-            },
-            {
-              "name": "Message",
-              "type": "string?",
-              "nullable": true
-            },
-            {
-              "name": "VersionComment",
-              "type": "string?",
-              "nullable": true
-            }
-          ]
-        },
-        "vm_method": "F002Async",
-        "service_field_hint": "_fLoginService",
-        "iface_class": "IFLoginService"
-      }
-    },
-    {
-      "event_meta": {
         "event_id": "E003",
-        "title": "パスワード：",
-        "type": "テキストボックス",
-        "logical_name": "パスワード",
+        "title": "-",
+        "type": "Text Box",
+        "logical_name": "TODO_txtPass",
         "physical_name": "txtPass",
-        "event_trigger": "更新後処理",
-        "event_content": "ユーザーIDとパスワードを検証し、認証されたユーザーのみがシステムにアクセスできるようにする。",
+        "event_trigger": "After Update",
+        "event_content": "Verifies user credentials and grants access to the system if valid.",
         "module_id": "F003",
         "notes": "txtPass_AfterUpdate",
         "action_type": "VALID",
-        "event_description_mapping": "ユーザーIDとパスワードを検証し、認証されたユーザーのみがシステムにアクセスできるようにする。"
+        "event_description_mapping": "Verifies user credentials and grants access to the system if valid.",
+        "event_class": "SERVICE"
       },
       "logic_detail": {
-        "code": "Private Sub txtPass_AfterUpdate()\nDim res\nDim res1\nOn Error GoTo Err_Shori\n DoCmd.SelectObject acForm, , True\n DoCmd.Minimize\n If IsNull(Me.txtID) Then\n MsgBox \"IDを入力してください\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n If IsNull(Me.txtPass) Then\n MsgBox \"パスワードを入力してください\"\n Me.txtPass.SetFocus\n Exit Sub\n End If\n DoCmd.SetWarnings False\n res1 = DLookup(\"管理者FLG\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"'\") & \"'\")\n If res1 = 0 Then\n MsgBox \"　　施工管理ではありませんのでログインできません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な方は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　依頼してください！！　TEL 0766-20-2211\"\n Exit Sub\n Else\n res = DLookup(\"Pass\", \"T_ID_pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"'\") & \"'\")\n If IsNull(res) Then\n MsgBox \"　　該当するID,PWがありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n End If\n If res = Me.txtPass Then\n DoCmd.Close acForm, \"F_Login\"\nDim RCount As Long\n RCount = DCount(\"*\", \"T023_地区CD設定\")\n If RCount = 0 Then\n DoCmd.RunMacro \"AutoExec_Restart\"\n Exit Sub\n Else\n Call タイマーを開く\n DoCmd.RunMacro \"AutoExec_A\"\n Exit Sub\n End If\n Exit Sub\n Else\n MsgBox \"　　パスワードが異なります！！\" & vbCrLf & vbCrLf & _\n \"　　わからない場合は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtPass.SetFocus\n End If\n Exit Sub\n Exit Sub\n MsgBox \"　　一般ユーザーは、【ログイン】できません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Exit Sub\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
+        "code": "Private Sub txtPass_AfterUpdate()\nDim res\n Dim res1\n Dim isDevMode As Boolean\n On Error GoTo Err_Shori\n DoCmd.SelectObject acForm, , True\n DoCmd.Minimize\n isDevMode = IsLoginDevModeEnabled()\n If Not isDevMode Then\n If IsNull(Me.txtID) Then\n MsgBox \"IDを入力してください\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n If IsNull(Me.txtPass) Then\n MsgBox \"パスワードを入力してください\"\n Me.txtPass.SetFocus\n Exit Sub\n End If\n End If\n DoCmd.SetWarnings False\n res1 = DLookup(\"管理者FLG\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"''\") & \"'\")\n If res1 = 0 And Not isDevMode Then\n MsgBox \"　　施工管理ではありませんのでログインできません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な方は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　依頼してください！！　TEL 0766-20-2211\"\n Exit Sub\n Else\n res = DLookup(\"Pass\", \"T_ID_Pass\", \"ID='\" & Replace(Me.txtID, \"'\", \"''\") & \"'\")\n If IsNull(res) And Not isDevMode Then\n MsgBox \"　　該当するID,PWがありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtID.SetFocus\n Exit Sub\n End If\n End If\n If isDevMode Or res = Me.txtPass Then\n If isDevMode Then\n Call AppendDevLoginLog(Me.txtID)\n End If\n DoCmd.Close acForm, \"F_Login\"\n Dim RCount As Long\n RCount = DCount(\"*\", \"T023_地区CD設定\")\n If RCount = 0 Then\n DoCmd.RunMacro \"AutoExec_Restart\"\n Exit Sub\n Else\n Call タイマーを開く\n DoCmd.RunMacro \"AutoExec_A\"\n Exit Sub\n End If\n Else\n MsgBox \"　　パスワードが異なります！！\" & vbCrLf & vbCrLf & _\n \"　　わからない場合は、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\"\n Me.txtPass.SetFocus\n End If\n Exit Sub\nErr_Shori:\n MsgBox \"通信接続エラーです！！\" & vbCrLf & vbCrLf & _\n \"　　該当する【ログインID,PW】がありません！！\" & vbCrLf & vbCrLf & _\n \"　　設定が必要な為、本社施工管理担当者まで\" & vbCrLf & vbCrLf & _\n \"　　連絡してください！！　TEL 0766-20-2211\", vbOKOnly + vbCritical\nEnd Sub",
         "references": {
           "forms": [
             "F_Login"
           ],
           "reports": [],
           "queries": [
+            "F003_SelQuery01",
             "F003_SelQuery02"
           ],
           "macros": [
@@ -307,7 +261,9 @@
             "AutoExec_A"
           ],
           "modules": [
-            "Module1.タイマーを開く"
+            "Common.AppendDevLoginLog",
+            "Common.タイマーを開く",
+            "Common.IsLoginDevModeEnabled"
           ],
           "tables": [
             "T_ID_Pass",
@@ -319,9 +275,9 @@
         {
           "item_no": 3,
           "io": "I",
-          "logical_name": "パスワード",
+          "logical_name": "TODO_txtPass",
           "physical_name": "txtPass",
-          "item_attribute": "テキストボックス",
+          "item_attribute": "Text Box",
           "attribute_digits": "",
           "required": "",
           "format": "",
@@ -334,15 +290,15 @@
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. クエリを実行してデータを取得する\n[F003_SelQuery02]\n"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. フォーム上のIDフィールドが空の場合、ユーザーにIDの入力を促すメッセージを表示し、IDフィールドにフォーカスを設定する\n2.2. フォーム上のパスワードフィールドが空の場合、ユーザーにパスワードの入力を促すメッセージを表示し、パスワードフィールドにフォーカスを設定する\n2.3. IDとパスワードが両方入力された場合、次の処理を行う\n2.4. T_ID_Passテーブルから管理者フラグを取得する\n2.5. 管理者フラグが0の場合、ユーザーにログインできない旨のメッセージを表示する\n2.6. 管理者フラグが1の場合、T_ID_Passテーブルから該当するパスワードを取得する\n2.7. 取得したパスワードがフォーム上のパスワードフィールドに入力されたパスワードと一致しない場合、ユーザーにパスワードが異なる旨のメッセージを表示し、パスワードフィールドにフォーカスを設定する\n2.8. 取得したパスワードがフォーム上のパスワードフィールドに入力されたパスワードと一致する場合、次の処理を行う\n2.9. F_Loginフォームを閉じる\n2.10. T023_地区CD設定テーブルのレコード数をカウントする\n2.11. レコード数が0の場合、マクロ『AutoExec_Restart』を実行する [refer: AutoExec_Restart]\n2.12. レコード数が0以外の場合、タイマーを開くモジュールを呼び出す [refer: Module1.タイマーを開く]\n2.13. マクロ『AutoExec_A』を実行する [refer: AutoExec_A]"
+          "detail": "2.1. 開発モードの有効性を確認する\n2.2. 開発モードが無効の場合、IDとパスワードの入力を確認する\n2.2.1. IDが未入力の場合、ユーザーにID入力を促すメッセージを表示し、IDフィールドにフォーカスを設定する\n2.2.2. パスワードが未入力の場合、ユーザーにパスワード入力を促すメッセージを表示し、パスワードフィールドにフォーカスを設定する\n2.3. IDに基づいて管理者フラグを取得する\\n[F003_SelQuery01]\\n\n2.4. 管理者フラグが0で開発モードが無効の場合、ユーザーにログインできない旨のメッセージを表示する\n2.5. IDに基づいてパスワードを取得する\\n[F003_SelQuery01]\\n\n2.6. 取得したパスワードが存在しない場合、ユーザーにIDまたはパスワードが存在しない旨のメッセージを表示し、IDフィールドにフォーカスを設定する\n2.7. 開発モードが有効または取得したパスワードが入力されたパスワードと一致する場合、以下の処理を行う\n2.7.1. 開発モードが有効の場合、開発ログインログを追加する [refer: AppendDevLoginLog]\n2.7.2. F_Loginフォームを閉じる\n2.7.3. 地区コード設定テーブルのレコード数を取得する\\n[F003_SelQuery02]\\n\n2.7.4. レコード数が0の場合、AutoExec_Restartマクロを実行する [refer: AutoExec_Restart]\n2.7.5. レコード数が0以外の場合、タイマーを開く [refer: タイマーを開く] および AutoExec_Aマクロを実行する [refer: AutoExec_A]\n2.8. 入力されたパスワードが取得したパスワードと一致しない場合、ユーザーにパスワードが異なる旨のメッセージを表示し、パスワードフィールドにフォーカスを設定する"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. 通信接続エラーが発生した場合、ユーザーにエラーメッセージを表示する"
+          "detail": "なし"
         }
       },
       "cs_stub": {
@@ -355,18 +311,7 @@
         "interface_method": "Task<F003Response> F003Async(F003Request request);",
         "request": {
           "class": "F003Request",
-          "properties": [
-            {
-              "name": "TxtID",
-              "type": "string",
-              "nullable": false
-            },
-            {
-              "name": "TxtPass",
-              "type": "string",
-              "nullable": false
-            }
-          ]
+          "properties": []
         },
         "response": {
           "class": "F003Response",
@@ -384,104 +329,19 @@
             {
               "name": "AuthEntity",
               "type": "IEnumerable<AuthEntity>?",
-              "nullable": true,
-              "entity_shape": {
-                "class": "AuthEntity",
-                "fields": [
-                  {
-                    "name": "RegionCdId",
-                    "type": "string",
-                    "column": "地区CD_ID"
-                  },
-                  {
-                    "name": "Id",
-                    "type": "string",
-                    "column": "ID"
-                  },
-                  {
-                    "name": "Pass",
-                    "type": "string",
-                    "column": "PASS"
-                  },
-                  {
-                    "name": "ConstructionHandlerName",
-                    "type": "string",
-                    "column": "工事担当_担当者名"
-                  },
-                  {
-                    "name": "HandlerCdA",
-                    "type": "string",
-                    "column": "担当者CD_A"
-                  },
-                  {
-                    "name": "BranchName",
-                    "type": "string",
-                    "column": "支店名"
-                  },
-                  {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "column": "地区CD"
-                  },
-                  {
-                    "name": "AdminFlag",
-                    "type": "string",
-                    "column": "管理者FLG"
-                  }
-                ]
-              }
+              "nullable": true
             },
             {
-              "name": "T022PrefectureEntity",
-              "type": "IEnumerable<T022PrefectureEntity>?",
+              "name": "T023地区CD設定Entity",
+              "type": "IEnumerable<T023地区CD設定Entity>?",
               "nullable": true,
               "entity_shape": {
-                "class": "T022PrefectureEntity",
+                "class": "T023地区CD設定Entity",
                 "fields": [
                   {
-                    "name": "PrefectureCd",
-                    "type": "decimal",
-                    "column": "都道府県CD"
-                  },
-                  {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "column": "地区CD"
-                  },
-                  {
-                    "name": "StoreName",
-                    "type": "string",
-                    "column": "店所名"
-                  },
-                  {
-                    "name": "BranchCd",
-                    "type": "string",
-                    "column": "支店CD"
-                  },
-                  {
-                    "name": "DistrictCd",
-                    "type": "decimal",
-                    "column": "地方CD"
-                  },
-                  {
-                    "name": "Selected",
-                    "type": "decimal",
-                    "column": "選択"
-                  },
-                  {
-                    "name": "CollectionBranch",
-                    "type": "string",
-                    "column": "回収店所"
-                  },
-                  {
-                    "name": "RegionCdFirstTwoChars",
-                    "type": "string",
-                    "column": "地区CD頭２文字"
-                  },
-                  {
-                    "name": "BranchName",
-                    "type": "string",
-                    "column": "支店名"
+                    "name": "AreaCodeId",
+                    "type": "object",
+                    "column": "地区コードID"
                   }
                 ]
               }
@@ -496,19 +356,82 @@
     {
       "event_meta": {
         "event_id": "E004",
-        "title": "閉じる",
-        "type": "コマンドボタン",
-        "logical_name": "閉じる",
-        "physical_name": "cmdClose",
-        "event_trigger": "クリック時",
-        "event_content": "Accessアプリケーションを終了する。",
+        "title": "Login",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdLogin",
+        "physical_name": "cmdLogin",
+        "event_trigger": "On Click",
+        "event_content": "",
         "module_id": "F004",
-        "notes": "閉じる_Click",
-        "action_type": "SYS",
-        "event_description_mapping": "Accessアプリケーションを終了する。"
+        "notes": "cmdLogin_Click",
+        "event_description_mapping": "",
+        "event_class": "UI"
       },
       "logic_detail": {
-        "code": "Private Sub 閉じる_Click()\nDoCmd.Quit acQuitPrompt\nEnd Sub",
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 5,
+          "io": "",
+          "logical_name": "TODO_cmdLogin",
+          "physical_name": "cmdLogin",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E004"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F010_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F010_Event",
+        "module_id": "F010",
+        "vba_handler": "cmdLogin_Click"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E005",
+        "title": "Close",
+        "type": "Command Button",
+        "logical_name": "TODO_cmdClose",
+        "physical_name": "cmdClose",
+        "event_trigger": "On Click",
+        "event_content": "Prompts the user to confirm before closing the application.",
+        "module_id": "F005",
+        "notes": "cmdClose_Click",
+        "action_type": "SYS",
+        "event_description_mapping": "Prompts the user to confirm before closing the application.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub cmdClose_Click()\nDoCmd.Quit acQuitPrompt\nEnd Sub",
         "references": {
           "forms": [],
           "reports": [],
@@ -522,51 +445,52 @@
         {
           "item_no": 6,
           "io": "",
-          "logical_name": "閉じる",
+          "logical_name": "TODO_cmdClose",
           "physical_name": "cmdClose",
-          "item_attribute": "コマンドボタン",
+          "item_attribute": "Command Button",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E004"
+          "notes": "E005"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": ""
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. アプリケーションの終了確認ダイアログを表示する\n2.2. ユーザーが終了を確認した場合、現在のアプリケーションを終了させる"
+          "detail": "2.1. ユーザーにアプリケーションを閉じる確認ダイアログを表示する\n2.2. ユーザーが確認ダイアログで「はい」を選択した場合、現在のアプリケーションを終了させる"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F004_Click(object sender, RoutedEventArgs e)",
-        "cs_name": "F004_Click",
-        "module_id": "F004",
-        "vba_handler": "閉じる_Click"
+        "signature": "private async void F011_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F011_Event",
+        "module_id": "F011",
+        "vba_handler": "cmdClose_Click"
       }
     },
     {
       "event_meta": {
-        "event_id": "E005",
-        "title": "新アフター管理DB",
-        "type": "ラベル",
-        "logical_name": "施工店情報",
-        "physical_name": "lblShopInfo",
-        "event_trigger": "ダブルクリック時",
+        "event_id": "E006",
+        "title": "New After Sales DB",
+        "type": "Label",
+        "logical_name": "TODO_lblStoreInfo",
+        "physical_name": "lblStoreInfo",
+        "event_trigger": "On Double Click",
         "event_content": "",
-        "module_id": "F005",
-        "notes": "施工店情報_DblClick",
-        "event_description_mapping": ""
+        "module_id": "F006",
+        "notes": "lblStoreInfo_DblClick",
+        "event_description_mapping": "",
+        "event_class": "UI"
       },
       "logic_detail": {
         "code": "// Original VBA code not found",
@@ -583,126 +507,60 @@
         {
           "item_no": 7,
           "io": "O",
-          "logical_name": "施工店情報",
-          "physical_name": "lblShopInfo",
-          "item_attribute": "ラベル",
+          "logical_name": "TODO_lblStoreInfo",
+          "physical_name": "lblStoreInfo",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
-          "source_field_or_fixed_value": "新アフター管理DB",
-          "notes": "E005"
+          "source_field_or_fixed_value": "New After Sales DB",
+          "notes": "E006"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 画面のダブルクリックイベントが発生したことを確認する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. ダブルクリックされた施工店情報の詳細を表示する\n2.2. 関連する施工店情報の詳細フォームを開く"
+          "detail": "なし"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. すべての処理が正常に完了したら、ユーザーに通知する"
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F005_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F005_DblClick",
-        "module_id": "F005",
-        "vba_handler": "施工店情報_DblClick"
-      }
-    },
-    {
-      "event_meta": {
-        "event_id": "E006",
-        "title": "-",
-        "type": "ラベル",
-        "logical_name": "ラベル142",
-        "physical_name": "lbl142",
-        "event_trigger": "クリック時",
-        "event_content": "",
-        "module_id": "F006",
-        "notes": "参照マクロ: A_メニューバーを表示.xlsx",
-        "action_type": "SYS",
-        "event_description_mapping": ""
-      },
-      "logic_detail": {
-        "code": "// This event runs Access macro: 「A_メニューバーを表示」\n// No VBA Sub — triggered directly via DoCmd.RunMacro or macro action.\n// WPF equivalent: implement the macro logic in the corresponding C# method.",
-        "references": {
-          "forms": [],
-          "reports": [],
-          "queries": [],
-          "macros": [
-            "A_メニューバーを表示"
-          ],
-          "modules": [],
-          "tables": []
-        }
-      },
-      "bd_items": [
-        {
-          "item_no": 8,
-          "io": "",
-          "logical_name": "ラベル142",
-          "physical_name": "lbl142",
-          "item_attribute": "ラベル",
-          "attribute_digits": "",
-          "required": "",
-          "format": "",
-          "other_input_checks": "",
-          "source_table": "",
-          "source_field_or_fixed_value": "",
-          "notes": "E006,E007"
-        }
-      ],
-      "dd_steps": {
-        "step_1": {
-          "step": "1. 初期処理",
-          "detail": "1.1. 必要な初期設定を行う\n1.2. イベント発生前の状態を確認する"
-        },
-        "step_2": {
-          "step": "2. 主処理",
-          "detail": "2.1. マクロ『A_メニューバーを表示』を実行してメニューバーを表示する [refer: A_メニューバーを表示]"
-        },
-        "step_3": {
-          "step": "3. 終了処理",
-          "detail": "3.1. すべての変更を保存し、必要なクリーンアップを行う"
-        }
-      },
-      "cs_stub": {
-        "signature": "private async void F006_Click(object sender, RoutedEventArgs e)",
-        "cs_name": "F006_Click",
-        "module_id": "F006",
-        "vba_handler": "lbl142_Click"
+        "signature": "private async void F012_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F012_Event",
+        "module_id": "F012",
+        "vba_handler": "lblStoreInfo_DblClick"
       }
     },
     {
       "event_meta": {
         "event_id": "E007",
         "title": "-",
-        "type": "ラベル",
-        "logical_name": "ラベル142",
-        "physical_name": "lbl142",
-        "event_trigger": "ダブルクリック時",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Click",
         "event_content": "",
         "module_id": "F007",
-        "notes": "参照マクロ: M300_Splash(M)を開く.xlsx",
-        "action_type": "SYS",
-        "event_description_mapping": ""
+        "notes": "macro.A_メニューバーを表示",
+        "event_description_mapping": "",
+        "event_class": "UI"
       },
       "logic_detail": {
-        "code": "// This event runs Access macro: 「M300_Splash(M)を開く」\n// No VBA Sub — triggered directly via DoCmd.RunMacro or macro action.\n// WPF equivalent: implement the macro logic in the corresponding C# method.",
+        "code": "// Original VBA code not found",
         "references": {
           "forms": [],
           "reports": [],
           "queries": [],
-          "macros": [
-            "M300_Splash(M)を開く"
-          ],
+          "macros": [],
           "modules": [],
           "tables": []
         }
@@ -711,55 +569,108 @@
         {
           "item_no": 8,
           "io": "",
-          "logical_name": "ラベル142",
-          "physical_name": "lbl142",
-          "item_attribute": "ラベル",
+          "logical_name": "TODO_lblMenuTrigger",
+          "physical_name": "lblMenuTrigger",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E006,E007"
+          "notes": "E007,E008"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 画面のダブルクリックイベントが発生したことを確認する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. マクロ『M300_Splash(M)を開く』を実行してスプラッシュ画面を表示する [refer: M300_Splash(M)を開く]"
+          "detail": "なし"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": ""
+          "detail": "なし"
         }
       },
-      "cs_stub": {
-        "signature": "private async void F007_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F007_DblClick",
-        "module_id": "F007",
-        "vba_handler": "lbl142_DblClick"
-      }
+      "cs_stub": null
     },
     {
       "event_meta": {
         "event_id": "E008",
         "title": "-",
-        "type": "ラベル",
-        "logical_name": "パスワードテーブルを開く",
-        "physical_name": "lblOpenPasswordTable",
-        "event_trigger": "ダブルクリック時",
-        "event_content": "ログインフォームとユーザー追加フォームを閉じ、システムの警告を無効にし、メニューバーとステータスバーを表示してから特定のクエリを開き、ウィンドウを最大化します。",
+        "type": "Label",
+        "logical_name": "TODO_lblMenuTrigger",
+        "physical_name": "lblMenuTrigger",
+        "event_trigger": "On Double Click",
+        "event_content": "",
         "module_id": "F008",
-        "notes": "パスワードテーブルを開く_DblClick",
-        "action_type": "UI",
-        "event_description_mapping": "ログインフォームとユーザー追加フォームを閉じ、システムの警告を無効にし、メニューバーとステータスバーを表示してから特定のクエリを開き、ウィンドウを最大化します。"
+        "notes": "macro.M300_Splash(M)を開く",
+        "event_description_mapping": "",
+        "event_class": "UI"
       },
       "logic_detail": {
-        "code": "Private Sub パスワードテーブルを開く_DblClick(Cancel As Integer)\nDoCmd.Close acForm, \"F_Login\"\n DoCmd.Close acForm, \"F_ユーザー追加\", acSaveNo\n DoCmd.Close acForm, \"F_ユーザー追加_A\", acSaveNo\n DoCmd.SetWarnings False\n MenuBarTrue\n DoCmd.SelectObject acForm, \"\", True\nDim i As Long\ni = SysCmd(acSysCmdAccessVer)\n If i = 11 Then\n Call MenuBarTrueFalse(True)\n Else\n DoCmd.ShowToolbar \"Ribbon\", acToolbarYes\n End If\n DoCmd.SetWarnings False\n StatusBar_True\n DoCmd.OpenQuery \"Q000_T_ID_PASS\", acViewNormal, acEdit\n DoCmd.Maximize\n DoCmd.RunCommand acCmdAppMaximize\n DoCmd.Maximize\nEnd Sub",
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 8,
+          "io": "",
+          "logical_name": "TODO_lblMenuTrigger",
+          "physical_name": "lblMenuTrigger",
+          "item_attribute": "Label",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E007,E008"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "なし"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": null
+    },
+    {
+      "event_meta": {
+        "event_id": "E009",
+        "title": "-",
+        "type": "Label",
+        "logical_name": "TODO_lblOpenPasswordTable",
+        "physical_name": "lblOpenPasswordTable",
+        "event_trigger": "On Double Click",
+        "event_content": "Closes multiple forms, sets up the user interface, and opens a specific query for viewing.",
+        "module_id": "F009",
+        "notes": "lblOpenPasswordTable_DblClick",
+        "action_type": "UI",
+        "event_description_mapping": "Closes multiple forms, sets up the user interface, and opens a specific query for viewing.",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "Private Sub lblOpenPasswordTable_DblClick(Cancel As Integer)\nDoCmd.Close acForm, \"F_Login\"\n DoCmd.Close acForm, \"F_ユーザー追加\", acSaveNo\n DoCmd.Close acForm, \"F_ユーザー追加_A\", acSaveNo\n DoCmd.SetWarnings False\n MenuBarTrue\n DoCmd.SelectObject acForm, \"\", True\n Dim i As Long\n i = SysCmd(acSysCmdAccessVer)\n If i = 11 Then\n Call MenuBarTrueFalse(True)\n Else\n DoCmd.ShowToolbar \"Ribbon\", acToolbarYes\n End If\n DoCmd.SetWarnings False\n StatusBar_True\n DoCmd.OpenQuery \"Q000_T_ID_PASS\", acViewNormal, acEdit\n DoCmd.Maximize\n DoCmd.RunCommand acCmdAppMaximize\n DoCmd.Maximize\nEnd Sub",
         "references": {
           "forms": [
             "F_Login",
@@ -768,13 +679,13 @@
           ],
           "reports": [],
           "queries": [
-            "F008_SelQuery01"
+            "F009_SelQuery01"
           ],
           "macros": [],
           "modules": [
-            "MenuBar.MenuBarTrueFalse",
-            "MenuBar.MenuBarTrue",
-            "MenuBar.StatusBar_True"
+            "Common.MenuBarTrueFalse",
+            "Common.MenuBarTrue",
+            "Common.StatusBar_True"
           ],
           "tables": []
         }
@@ -783,42 +694,46 @@
         {
           "item_no": 10,
           "io": "",
-          "logical_name": "パスワードテーブルを開く",
+          "logical_name": "TODO_lblOpenPasswordTable",
           "physical_name": "lblOpenPasswordTable",
-          "item_attribute": "ラベル",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E008"
+          "notes": "E009"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. フォーム『F_Login』を閉じる\n1.2. フォーム『F_ユーザー追加』を保存せずに閉じる\n1.3. フォーム『F_ユーザー追加_A』を保存せずに閉じる\n1.4. システムの警告メッセージを無効にする"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. メニューバーを表示する [refer: MenuBarTrue]\n2.2. アクセスバージョン情報を取得する\n2.3. 取得したバージョン情報が11の場合、メニューバーとリボンを表示する [refer: MenuBarTrueFalse(True)]\n2.4. 取得したバージョン情報が11以外の場合、リボンを表示する\n2.5. ステータスバーを表示する [refer: StatusBar_True]\n2.6. 特定のクエリを開く\n[F008_SelQuery01]\n2.7. ウィンドウを最大化する"
+          "detail": "2.1. フォーム 'F_Login' を閉じる\n2.2. フォーム 'F_ユーザー追加' を保存せずに閉じる\n2.3. フォーム 'F_ユーザー追加_A' を保存せずに閉じる\n2.4. システム警告を無効にする\n2.5. メニューバーを表示する [refer: MenuBarTrue]\n2.6. アクティブなフォームを選択モードに設定する\n2.7. アプリケーションのバージョン情報を取得する\n2.8. 取得したバージョン情報が11の場合、メニューバーの表示状態を切り替える [refer: MenuBarTrueFalse(True)]\n2.9. 取得したバージョン情報が11以外の場合、リボンツールバーを表示する\n2.10. システム警告を再度無効にする\n2.11. ステータスバーを有効にする [refer: StatusBar_True]\n2.12. クエリを実行して結果を表示する\n[F009_SelQuery01]\n2.13. アプリケーションウィンドウを最大化する\n2.14. アプリケーションウィンドウを再び最大化する"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F008_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F008_DblClick",
-        "module_id": "F008",
-        "vba_handler": "パスワードテーブルを開く_DblClick"
+        "signature": "private async void F015_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F015_Event",
+        "module_id": "F015",
+        "vba_handler": "lblOpenPasswordTable_DblClick"
       },
       "service_context": {
-        "interface_method": "Task<F008Response> F008Async(F008Request request);",
+        "interface_method": "Task<F009Response> F009Async(F009Request request);",
         "request": {
-          "class": "F008Request",
+          "class": "F009Request",
           "properties": []
         },
         "response": {
-          "class": "F008Response",
+          "class": "F009Response",
           "properties": [
             {
               "name": "Success",
@@ -833,76 +748,32 @@
             {
               "name": "Data",
               "type": "IEnumerable<AuthEntity>?",
-              "nullable": true,
-              "entity_shape": {
-                "class": "AuthEntity",
-                "fields": [
-                  {
-                    "name": "RegionCdId",
-                    "type": "string",
-                    "column": "地区CD_ID"
-                  },
-                  {
-                    "name": "Id",
-                    "type": "string",
-                    "column": "ID"
-                  },
-                  {
-                    "name": "Pass",
-                    "type": "string",
-                    "column": "PASS"
-                  },
-                  {
-                    "name": "ConstructionHandlerName",
-                    "type": "string",
-                    "column": "工事担当_担当者名"
-                  },
-                  {
-                    "name": "HandlerCdA",
-                    "type": "string",
-                    "column": "担当者CD_A"
-                  },
-                  {
-                    "name": "BranchName",
-                    "type": "string",
-                    "column": "支店名"
-                  },
-                  {
-                    "name": "RegionCd",
-                    "type": "string",
-                    "column": "地区CD"
-                  },
-                  {
-                    "name": "AdminFlag",
-                    "type": "string",
-                    "column": "管理者FLG"
-                  }
-                ]
-              }
+              "nullable": true
             }
           ]
         },
-        "vm_method": "F008Async",
+        "vm_method": "F009Async",
         "service_field_hint": "_fLoginService",
         "iface_class": "IFLoginService"
       }
     },
     {
       "event_meta": {
-        "event_id": "E009",
+        "event_id": "E010",
         "title": "-",
-        "type": "ラベル",
-        "logical_name": "プロセス終了",
+        "type": "Label",
+        "logical_name": "TODO_lblEndProcess",
         "physical_name": "lblEndProcess",
-        "event_trigger": "ダブルクリック時",
-        "event_content": "Windows Media Playerを強制終了します。",
-        "module_id": "F009",
-        "notes": "プロセス終了_DblClick",
+        "event_trigger": "On Double Click",
+        "event_content": "Terminates the Windows Media Player process if it is running.",
+        "module_id": "F010",
+        "notes": "lblEndProcess_DblClick",
         "action_type": "SYS",
-        "event_description_mapping": "Windows Media Playerを強制終了します。"
+        "event_description_mapping": "Terminates the Windows Media Player process if it is running.",
+        "event_class": "UI"
       },
       "logic_detail": {
-        "code": "Private Sub プロセス終了_DblClick(Cancel As Integer)\n Dim objShell As Object\n Dim objExec As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n Set objExec = objShell.Exec(\"taskkill.exe /F /IM wmplayer.exe\")\nEnd Sub",
+        "code": "Private Sub lblEndProcess_DblClick(Cancel As Integer)\nDim objShell As Object\n Dim objExec As Object\n Set objShell = CreateObject(\"WScript.Shell\")\n Set objExec = objShell.Exec(\"taskkill.exe /F /IM wmplayer.exe\")\nEnd Sub",
         "references": {
           "forms": [],
           "reports": [],
@@ -916,37 +787,37 @@
         {
           "item_no": 11,
           "io": "",
-          "logical_name": "プロセス終了",
+          "logical_name": "TODO_lblEndProcess",
           "physical_name": "lblEndProcess",
-          "item_attribute": "ラベル",
+          "item_attribute": "Label",
           "attribute_digits": "",
           "required": "",
           "format": "",
           "other_input_checks": "",
           "source_table": "",
           "source_field_or_fixed_value": "",
-          "notes": "E009"
+          "notes": "E010"
         }
       ],
       "dd_steps": {
         "step_1": {
           "step": "1. 初期処理",
-          "detail": "1.1. 必要なオブジェクトを準備する\n1.2. システムシェルオブジェクトを作成する"
+          "detail": "なし"
         },
         "step_2": {
           "step": "2. 主処理",
-          "detail": "2.1. システムシェルオブジェクトを使用して、タスクキルコマンドを実行する\n2.2. Windows Media Playerのプロセスを強制終了させる"
+          "detail": "2.1. システムシェルオブジェクトを作成する\n2.2. 作成したシステムシェルオブジェクトを使用して、タスクキルコマンドを実行し、Windows Media Playerプロセスを強制終了させる"
         },
         "step_3": {
           "step": "3. 終了処理",
-          "detail": "3.1. 使用したオブジェクトを解放する"
+          "detail": "なし"
         }
       },
       "cs_stub": {
-        "signature": "private async void F009_DblClick(object sender, MouseButtonEventArgs e)",
-        "cs_name": "F009_DblClick",
-        "module_id": "F009",
-        "vba_handler": "プロセス終了_DblClick"
+        "signature": "private async void F016_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F016_Event",
+        "module_id": "F016",
+        "vba_handler": "lblEndProcess_DblClick"
       }
     }
   ]

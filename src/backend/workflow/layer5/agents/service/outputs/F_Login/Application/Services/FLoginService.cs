@@ -3,8 +3,8 @@ namespace vba_brain.Application.Services;
 using System;
 using System.Threading.Tasks;
 using vba_brain.Application.DTOs;
-using vba_brain.Application.DTOs.Requests;
-using vba_brain.Application.DTOs.Responses;
+using vba_brain.Application.DTOs.Requests.F_Login;
+using vba_brain.Application.DTOs.Responses.F_Login;
 using vba_brain.Application.Interfaces;
 using vba_brain.Domain.Entities;
 using vba_brain.Domain.Interfaces;
@@ -14,33 +14,33 @@ using vba_brain.Domain.Interfaces;
 /// </summary>
 public class FLoginService : IFLoginService
 {
+    private readonly IQ000TLoginUserRepository _q000TLoginUserRepository;
+    private readonly IAccess配信日Repository _access配信日Repository;
     private readonly IAuthRepository _authRepository;
-    private readonly IBuildingAfterCollectionRepository _buildingAfterCollectionRepository;
-    private readonly IT022PrefectureRepository _t022PrefectureRepository;
+    private readonly IT023地区CD設定Repository _t023地区CD設定Repository;
 
     public FLoginService(
+        IQ000TLoginUserRepository q000TLoginUserRepository,
+        IAccess配信日Repository access配信日Repository,
         IAuthRepository authRepository,
-        IBuildingAfterCollectionRepository buildingAfterCollectionRepository,
-        IT022PrefectureRepository t022PrefectureRepository
+        IT023地区CD設定Repository t023地区CD設定Repository
     )
     {
+        _q000TLoginUserRepository = q000TLoginUserRepository;
+        _access配信日Repository = access配信日Repository;
         _authRepository = authRepository;
-        _buildingAfterCollectionRepository = buildingAfterCollectionRepository;
-        _t022PrefectureRepository = t022PrefectureRepository;
+        _t023地区CD設定Repository = t023地区CD設定Repository;
     }
 
     /// <summary>
-    /// F000 画面を開く時 — ユーザーのログイン情報を確認し、適切な権限を持つユーザーのみがシステムにアクセスできるようにします。
+    /// F000 On Open — Prepares the user interface for a clean and focused login experience.
     /// </summary>
     public async Task<F000Response> F000Async(F000Request request)
     {
         try
         {
-            // Args: txtID → request.TxtID
-            // F000 → AuthRepository.GetUserInfoAsync (query: Q000_T_LoginUser)
-            var userInfo = await _authRepository.GetUserInfoAsync(request.TxtID);
-
-            // VBA reference: Form_Open (Sub) — see original Access form for business rules.
+            // F000 → Q000TLoginUserRepository.GetUserInfoAsync (query: Q000_T_LoginUser)
+            var userInfo = await _q000TLoginUserRepository.GetUserInfoAsync();
 
             // DD 2.3: ユーザー情報をResponseに設定
             return new F000Response {
@@ -55,51 +55,45 @@ public class FLoginService : IFLoginService
     }
 
     /// <summary>
-    /// F002 フォーム読み込み後 — 現在のバージョンが最新かどうかを確認し、必要に応じて新しいバージョンをインストールします。
+    /// F001 On Load — Checks if the current version is up-to-date and prompts for an update if necessary.
     /// </summary>
-    public async Task<F002Response> F002Async(F002Request request)
+    public async Task<F001Response> F001Async(F001Request request)
     {
         try
         {
-            // F002 → BuildingAfterCollectionRepository.GetCommentAsync (query: Access配信日)
-            var comment = await _buildingAfterCollectionRepository.GetCommentAsync();
-
-            // VBA reference: Form_Load (Sub) — see original Access form for business rules.
+            // F001 → Access配信日Repository.GetCommentAsync (query: Access配信日)
+            var comment = await _access配信日Repository.GetCommentAsync();
 
             // DD 2.2: DBから最新バージョン情報を取得
-            var latestComment = comment?.FirstOrDefault() ?? string.Empty;
-            // DD 2.3-2.4: バージョン不一致の場合はVersionCommentで通知 (ViewModelが比較)
-            return new F002Response {
+            // DD 2.3-2.4: バージョン不一致の場合はViewModelが比較
+            return new F001Response {
                 Success = true,
-                VersionComment = latestComment,
+                Data = comment,
             };
         }
         catch (System.Exception ex)
         {
-            return new F002Response { Success = false, Message = ex.Message };
+            return new F001Response { Success = false, Message = ex.Message };
         }
     }
 
     /// <summary>
-    /// F003 更新後処理 — ユーザーが正しいIDとパスワードを入力した場合にのみ、システムへのアクセスを許可します。
+    /// F003 After Update — Verifies user credentials and grants access to the system if valid.
     /// </summary>
     public async Task<F003Response> F003Async(F003Request request)
     {
         try
         {
-            // F003 → AuthRepository.IdPassAsync (query: T_ID_pass)
+            // F003 → AuthRepository.IdPassAsync (query: T_ID_Pass)
             var idPass = await _authRepository.IdPassAsync();
 
-            // F003 → T022PrefectureRepository.GetRegionCdAsync (query: Q023_地区CD設定)
-            var regionCd = await _t022PrefectureRepository.GetRegionCdAsync();
-
-            // VBA reference: txtPass_AfterUpdate (Sub) — see original Access form for business rules.
+            // F003 → T023地区CD設定Repository.SetAreaCdAsync (query: T023_地区CD設定)
+            var setAreaCd = await _t023地区CD設定Repository.SetAreaCdAsync();
 
             // DD 2.3: 認証データをResponseに設定
             return new F003Response {
                 Success = true,
                 AuthEntity = idPass,
-                T022PrefectureEntity = regionCd,
             };
         }
         catch (System.Exception ex)
@@ -109,23 +103,23 @@ public class FLoginService : IFLoginService
     }
 
     /// <summary>
-    /// F008 ダブルクリック時 — ログインフォームとユーザー追加フォームを閉じ、メニューバーとステータスバーを有効にし、特定のクエリを開いて最大化します。
+    /// F009 On Double Click — Closes multiple forms, sets up the user interface, and opens a specific query for viewing.
     /// </summary>
-    public async Task<F008Response> F008Async(F008Request request)
+    public async Task<F009Response> F009Async(F009Request request)
     {
         try
         {
-            // F008 → AuthRepository.QIdPassAsync (query: Q000_T_ID_PASS)
+            // F009 → AuthRepository.QIdPassAsync (query: Q000_T_ID_PASS)
             var qIdPass = await _authRepository.QIdPassAsync();
 
-            return new F008Response {
+            return new F009Response {
                 Success = true,
                 Data = qIdPass,
             };
         }
         catch (System.Exception ex)
         {
-            return new F008Response { Success = false, Message = ex.Message };
+            return new F009Response { Success = false, Message = ex.Message };
         }
     }
 

@@ -176,6 +176,7 @@ def inject_service_field(
     field_name: str,
     feature: str,
     dry_run: bool = False,
+    form_name: str = "",
 ) -> bool:
     """
     Thêm service field và cập nhật constructor để inject ILoginService.
@@ -203,7 +204,7 @@ def inject_service_field(
     # ── Thêm using directives cần thiết ──
     for ns in (
         "vba_brain.Application.Interfaces",
-        "vba_brain.Application.DTOs.Requests",
+        f"vba_brain.Application.DTOs.Requests.{form_name}" if form_name else "vba_brain.Application.DTOs.Requests",
         "System.Windows",          # MessageBox, MessageBoxButton, MessageBoxImage
     ):
         if not re.search(r'^\s*using\s+' + re.escape(ns) + r'\s*;', content, re.MULTILINE):
@@ -820,8 +821,8 @@ def run_vm_agent(
             "using vba_brain.UI.WPF.Utils;",
             "using vba_brain.UI.WPF.Services;",
             "using vba_brain.Application.Interfaces;",
-            "using vba_brain.Application.DTOs.Requests;",
-            "using vba_brain.Application.DTOs.Responses;",
+            f"using vba_brain.Application.DTOs.Requests.{form_name};",
+            f"using vba_brain.Application.DTOs.Responses.{form_name};",
         ]
         _changed = False
         for _u in _required:
@@ -886,6 +887,7 @@ def run_vm_agent(
             field_name=field,
             feature=feature,
             dry_run=dry_run,
+            form_name=form_name,
         )
         if not injected:
             logger.warning("[Agent VM] ⚠  Service field injection failed — continuing anyway")

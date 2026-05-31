@@ -1,0 +1,254 @@
+{
+  "form_name": "F_ProductDetail",
+  "screen_description": "This screen allows users to view and edit detailed information about a specific product, including its name, supplier, and status.",
+  "total_events": 4,
+  "events": [
+    {
+      "event_meta": {
+        "event_id": "E000",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "On Open",
+        "event_content": "画面の初期表示の処理",
+        "module_id": "F000",
+        "notes": "Form_Open",
+        "event_description_mapping": "画面の初期表示の処理",
+        "event_class": "SERVICE"
+      },
+      "logic_detail": {
+        "code": "// Original VBA code not found",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [
+            "F000_SelQuery01"
+          ],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "1.1. 画面を開く際の初期データを取得する\n1.2. クエリを実行してデータを取得する\n[F000_SelQuery01]\n"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. 取得したデータを使用して画面を初期表示する\n"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": null,
+      "service_context": {
+        "interface_method": "Task<F000Response> OnF000Async(F000Request request);",
+        "request": {
+          "class": "F000Request",
+          "properties": []
+        },
+        "response": {
+          "class": "F000Response",
+          "properties": [
+            {
+              "name": "Success",
+              "type": "bool",
+              "nullable": false
+            },
+            {
+              "name": "Message",
+              "type": "string?",
+              "nullable": true
+            }
+          ]
+        },
+        "vm_method": "F000Async",
+        "service_field_hint": "_productDetailService",
+        "iface_class": "IProductDetailService"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E001",
+        "title": "-",
+        "type": "Form",
+        "logical_name": "-",
+        "physical_name": "-",
+        "event_trigger": "Before Update",
+        "event_content": "Prevents the user from proceeding if the product name is empty.",
+        "module_id": "F001",
+        "notes": "Form_BeforeUpdate",
+        "action_type": "VALID",
+        "event_description_mapping": "Prevents the user from proceeding if the product name is empty.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub Form_BeforeUpdate(Cancel As Integer)\nIf IsNull(Me.txtProductName) Or Me.txtProductName = \"\" Then\n MsgBox \"Tên sản phẩm không được để trống!\", vbCritical\n Cancel = True\n End If\nEnd Sub",
+        "references": {
+          "forms": [],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. Check if the product name in the text box 'txtProductName' is empty or null\n2.2. If the product name is empty or null, display a critical message to the user stating that the product name cannot be left blank\n2.3. Prevent the form from being updated and cancel the current operation"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F000_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F000_Event",
+        "module_id": "F000",
+        "vba_handler": "Form_BeforeUpdate"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E002",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnSave",
+        "physical_name": "cmdbtnSave",
+        "event_trigger": "On Click",
+        "event_content": "Saves the current record and closes the form with a success message.",
+        "module_id": "F002",
+        "notes": "btnSave_Click",
+        "action_type": "CREATE",
+        "event_description_mapping": "Saves the current record and closes the form with a success message.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub btnSave_Click()\nDoCmd.RunCommand acCmdSaveRecord\n MsgBox \"Lưu thành công!\", vbInformation\n DoCmd.Close acForm, \"F_ProductDetail\"\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_ProductDetail"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 8,
+          "io": "",
+          "logical_name": "TODO_btnSave",
+          "physical_name": "cmdbtnSave",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E002"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. 現在のレコードを保存する\n2.2. メッセージボックスを表示して、ユーザーに保存が成功したことを通知する\n2.3. F_ProductDetailフォームを閉じる [refer: F_ProductDetail]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F001_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F001_Event",
+        "module_id": "F001",
+        "vba_handler": "btnSave_Click"
+      }
+    },
+    {
+      "event_meta": {
+        "event_id": "E003",
+        "title": "-",
+        "type": "Command Button",
+        "logical_name": "TODO_btnDelete",
+        "physical_name": "cmdbtnDelete",
+        "event_trigger": "On Click",
+        "event_content": "Prompts the user for confirmation before deleting the selected product and closing the form.",
+        "module_id": "F003",
+        "notes": "btnDelete_Click",
+        "action_type": "DELETE",
+        "event_description_mapping": "Prompts the user for confirmation before deleting the selected product and closing the form.",
+        "event_class": "UI"
+      },
+      "logic_detail": {
+        "code": "Private Sub btnDelete_Click()\nIf MsgBox(\"Bạn có chắc chắn muốn xóa sản phẩm này?\", vbYesNo + vbQuestion) = vbYes Then\n DoCmd.RunSQL \"DELETE FROM TBL_Products WHERE ProductID = \" & Me.txtProductID\n DoCmd.Close acForm, \"F_ProductDetail\"\n End If\nEnd Sub",
+        "references": {
+          "forms": [
+            "F_ProductDetail"
+          ],
+          "reports": [],
+          "queries": [],
+          "macros": [],
+          "modules": [],
+          "tables": []
+        }
+      },
+      "bd_items": [
+        {
+          "item_no": 9,
+          "io": "",
+          "logical_name": "TODO_btnDelete",
+          "physical_name": "cmdbtnDelete",
+          "item_attribute": "Command Button",
+          "attribute_digits": "",
+          "required": "",
+          "format": "",
+          "other_input_checks": "",
+          "source_table": "",
+          "source_field_or_fixed_value": "",
+          "notes": "E003"
+        }
+      ],
+      "dd_steps": {
+        "step_1": {
+          "step": "1. 初期処理",
+          "detail": "なし"
+        },
+        "step_2": {
+          "step": "2. 主処理",
+          "detail": "2.1. ユーザーに確認メッセージを表示する\n2.2. ユーザーが確認メッセージで「はい」を選択した場合、以下の処理を行う\n2.2.1. TBL_ProductsテーブルからtxtProductIDの値に基づいて該当するレコードを削除する\n2.2.2. F_ProductDetailフォームを閉じる [refer: F_ProductDetail]"
+        },
+        "step_3": {
+          "step": "3. 終了処理",
+          "detail": "なし"
+        }
+      },
+      "cs_stub": {
+        "signature": "private async void F002_Event(object sender, RoutedEventArgs e)",
+        "cs_name": "F002_Event",
+        "module_id": "F002",
+        "vba_handler": "btnDelete_Click"
+      }
+    }
+  ]
+}

@@ -62,12 +62,118 @@
       "vm_method_name": "F009Async",
       "control": "lblEndProcess",
       "event": "ondblclick"
+    },
+    "F010": {
+      "vba_handler": "cmdLogin_Click",
+      "vm_method_name": "F010Async",
+      "control": "",
+      "event": "",
+      "_auto": true
     }
   },
   "AM報告書(施工)_印刷_PDF": {
     "F000": {
       "vba_handler": "Form_Open",
       "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    }
+  },
+  "F_TestForm": {
+    "F000": {
+      "vba_handler": "Form_Open",
+      "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F001": {
+      "vba_handler": "txtUserName_AfterUpdate",
+      "vm_method_name": "F001Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F002": {
+      "vba_handler": "btnSubmit_Click",
+      "vm_method_name": "F002Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    }
+  },
+  "F_Menu": {
+    "F000": {
+      "vba_handler": "Form_Open",
+      "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F001": {
+      "vba_handler": "btnProductList_Click",
+      "vm_method_name": "F001Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F002": {
+      "vba_handler": "btnOrderEntry_Click",
+      "vm_method_name": "F002Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F003": {
+      "vba_handler": "Macro.M_CloseSystem",
+      "vm_method_name": "F003Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    }
+  },
+  "F_ProductDetail": {
+    "F000": {
+      "vba_handler": "Form_BeforeUpdate",
+      "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F001": {
+      "vba_handler": "btnSave_Click",
+      "vm_method_name": "F001Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F002": {
+      "vba_handler": "btnDelete_Click",
+      "vm_method_name": "F002Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    }
+  },
+  "F_ProductList": {
+    "F000": {
+      "vba_handler": "txtSearch_AfterUpdate",
+      "vm_method_name": "F000Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F001": {
+      "vba_handler": "lstCategory_AfterUpdate",
+      "vm_method_name": "F001Async",
+      "control": "",
+      "event": "",
+      "_auto": true
+    },
+    "F002": {
+      "vba_handler": "btnOpenDetail_Click",
+      "vm_method_name": "F002Async",
       "control": "",
       "event": "",
       "_auto": true

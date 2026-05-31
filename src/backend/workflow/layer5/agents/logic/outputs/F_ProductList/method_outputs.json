@@ -1,0 +1,74 @@
+[
+  {
+    "event_id": "E000",
+    "mapped_command": {
+      "event_id": "E000",
+      "module_id": "F000",
+      "vba_event": "Form_Open",
+      "cs_command": "",
+      "cs_method": "OnNavigatedTo",
+      "action_type": "SYS",
+      "is_main_logic": false,
+      "trigger": "Window loaded"
+    },
+    "cs_method": "OnNavigatedTo",
+    "code": "// Command bound in XAML",
+    "status": "success",
+    "phase_type": "service",
+    "note": "System bound command"
+  },
+  {
+    "event_id": "E001",
+    "mapped_command": {
+      "event_id": "E001",
+      "module_id": "F001",
+      "vba_event": "txtSearch_AfterUpdate",
+      "cs_command": "SearchCommand",
+      "cs_method": "SearchAsync",
+      "action_type": "READ",
+      "is_main_logic": false,
+      "trigger": "After update / Enter key"
+    },
+    "cs_method": "SearchAsync",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E002",
+    "mapped_command": {
+      "event_id": "E002",
+      "module_id": "F002",
+      "vba_event": "lstCategory_AfterUpdate",
+      "cs_command": "LstCategoryCommand",
+      "cs_method": "LstCategoryAsync",
+      "action_type": "READ",
+      "is_main_logic": false,
+      "trigger": "After update / Enter key"
+    },
+    "cs_method": "LstCategoryAsync",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  },
+  {
+    "event_id": "E003",
+    "mapped_command": {
+      "event_id": "E003",
+      "module_id": "F003",
+      "vba_event": "btnOpenDetail_Click",
+      "cs_command": "OpenDetailCommand",
+      "cs_method": "OpenDetail",
+      "action_type": "NAV",
+      "is_main_logic": false,
+      "trigger": "Button click"
+    },
+    "cs_method": "OpenDetail",
+    "code": "// Skipped",
+    "status": "skipped",
+    "phase_type": "ui",
+    "note": "No logic required / Skipped"
+  }
+]

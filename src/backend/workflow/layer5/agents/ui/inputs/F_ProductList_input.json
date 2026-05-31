@@ -1,0 +1,128 @@
+{
+  "form_name": "F_ProductList",
+  "form_properties": {
+    "caption": "Danh sách sản phẩm",
+    "width": null,
+    "height": null,
+    "inner_width": 333,
+    "inner_height": 180,
+    "left": 0,
+    "top": 0,
+    "popup": false,
+    "modal": false,
+    "autocenter": false,
+    "border_style": 3,
+    "maxbutton": true,
+    "minbutton": true,
+    "closebutton": true,
+    "controlbox": true,
+    "scrollbars": 0,
+    "borderstyle": 1,
+    "moveable": 1,
+    "fittoscreen": 0,
+    "events": {}
+  },
+  "sections": [
+    {
+      "section_name": "section",
+      "section_type": "section",
+      "section_format": {
+        "width": 333
+      },
+      "controls": [
+        {
+          "name": "txtSearch",
+          "access_type": "TextBox",
+          "wpf_type": "TextBox",
+          "nodekey": "section",
+          "format": {},
+          "other": {
+            "name": "txtSearch"
+          },
+          "events": {
+            "afterupdate": "txtSearch_AfterUpdate"
+          }
+        },
+        {
+          "name": "lstCategory",
+          "access_type": "ListBox",
+          "wpf_type": "ListBox",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "rowsourcetype": "Table/Query",
+            "rowsource": "SELECT ID, CategoryName FROM T_Category ORDER BY CategoryName;"
+          },
+          "other": {
+            "name": "lstCategory"
+          },
+          "events": {
+            "afterupdate": "lstCategory_AfterUpdate"
+          }
+        },
+        {
+          "name": "subProductGrid",
+          "access_type": "Subform",
+          "wpf_type": "TextBlock",
+          "nodekey": "section",
+          "format": {},
+          "data": {
+            "sourceobject": "Table.TBL_Products"
+          },
+          "other": {
+            "name": "subProductGrid"
+          }
+        },
+        {
+          "name": "btnOpenDetail",
+          "access_type": "CommandButton",
+          "wpf_type": "Button",
+          "nodekey": "section",
+          "format": {},
+          "other": {
+            "name": "btnOpenDetail"
+          },
+          "events": {
+            "onclick": "btnOpenDetail_Click"
+          }
+        }
+      ]
+    }
+  ],
+  "viewmodel_bindings": {
+    "properties": [],
+    "commands": [
+      "F002Command"
+    ],
+    "event_handlers": [
+      {
+        "method": "txtSearch_AfterUpdate",
+        "event": "afterupdate",
+        "control": "txtSearch",
+        "wpf_type": "TextBox",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "lstCategory_AfterUpdate",
+        "event": "afterupdate",
+        "control": "lstCategory",
+        "wpf_type": "ListBox",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      },
+      {
+        "method": "btnOpenDetail_Click",
+        "event": "onclick",
+        "control": "btnOpenDetail",
+        "wpf_type": "Button",
+        "args": "RoutedEventArgs",
+        "todo": ""
+      }
+    ],
+    "query_stubs": {},
+    "fid_cmd_map": {
+      "btnOpenDetailCommand": "F002Command"
+    }
+  }
+}
