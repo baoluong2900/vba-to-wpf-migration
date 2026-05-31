@@ -564,13 +564,100 @@ export L2_STAGE=production
 
 | Model ID | Provider | Context | Used for |
 |----------|---------|---------|---------|
-| `qwen3-coder-480b-a35b-instruct` | Alibaba | 262K | L5 Service/Repository, L2 production complex |
-| `qwen3-235b-a22b-instruct-2507` | Alibaba | 262K | L2 production medium |
-| `qwen-plus-2025-07-28` | Alibaba | 262K | L5 ViewModel/XAML/Entity |
+| `qwen3-max` | Alibaba | 262K | Best for complex tasks, most capable |
+| `qwen3.5-plus` | Alibaba | 1M | Balanced performance, comparable to Qwen3-Max |
+| `qwen-plus` | Alibaba | 1M | L5 ViewModel/XAML/Entity, medium tasks |
+| `qwen-plus-latest` | Alibaba | 1M | L5 ViewModel/XAML/Entity (latest) |
+| `qwen-plus-2025-12-01` | Alibaba | 1M | Stable snapshot |
+| `qwen-plus-2025-07-28` | Alibaba | 1M | Legacy snapshot |
+| `qwen3.5-flash` | Alibaba | 1M | Fast, cost-effective |
+| `qwen-flash` | Alibaba | 1M | Simple tasks, fast |
+| `qwen-turbo` | Alibaba | 1M | Fast inference, lower cost |
+| `qwen-turbo-latest` | Alibaba | 1M | Fast inference (latest) |
 | `qwen-max` | Alibaba | 128K | L2 dev/pilot, L3 migration |
-| `qwen3-vl-235b-a22b-thinking` | Alibaba | 128K | Visual analysis |
-| `qwen-vl-plus-latest` | Alibaba | - | Image understanding |
-| `qvq-max-2025-03-25` | Alibaba | 128K | Complex reasoning |
+| `qwen-max-latest` | Alibaba | 128K | L2 dev/pilot (latest) |
+| `qwen-long-latest` | Alibaba | 10M | Long context documents |
+| `qwq-plus` | Alibaba | 128K | Complex reasoning |
+| `qwen3-coder-plus` | Alibaba | 1M | Code generation, Coding Agent |
+| `qwen3-coder-flash` | Alibaba | 1M | Code generation, fast |
+| `qwen3-coder-next` | Alibaba | 262K | L2 production complex (fallback) |
+| `qwen3-coder-480b-a35b-instruct` | Alibaba | 262K | L5 Service/Repository, L2 production complex |
+| `qwen3-coder-30b-a3b-instruct` | Alibaba | 262K | Code generation (30B) |
+| `qwen3-235b-a22b` | Alibaba | 128K | L2 production medium |
+| `qwen3-235b-a22b-thinking-2507` | Alibaba | 128K | Thinking mode only (July 2025) |
+| `qwen3-235b-a22b-instruct-2507` | Alibaba | 128K | Non-thinking mode only (July 2025) |
+| `qwen3-32b` | Alibaba | 128K | General purpose 32B |
+| `qwen3-30b-a3b` | Alibaba | 128K | MoE 30B |
+| `qwen3-14b` | Alibaba | 128K | General purpose 14B |
+| `qwen3-8b` | Alibaba | 128K | General purpose 8B |
+| `qwen3-4b` | Alibaba | 128K | Lightweight 4B |
+| `qwen3-1.7b` | Alibaba | 32K | Ultra-lightweight 1.7B |
+| `qwen3-0.6b` | Alibaba | 32K | Ultra-lightweight 0.6B |
+| `qwen3-next-80b-a3b-thinking` | Alibaba | 128K | Thinking only (Sep 2025) |
+| `qwen3-next-80b-a3b-instruct` | Alibaba | 128K | Non-thinking only (Sep 2025) |
+| `qwen3-vl-plus` | Alibaba | 262K | Visual understanding (Plus) |
+| `qwen3-vl-flash` | Alibaba | 262K | Visual understanding (Flash) |
+| `qwen3-vl-235b-a22b-thinking` | Alibaba | 128K | Visual reasoning (235B thinking) |
+| `qwen3-vl-235b-a22b-instruct` | Alibaba | 128K | Visual understanding (235B) |
+| `qwen3-vl-32b-thinking` | Alibaba | 128K | Visual reasoning (32B) |
+| `qwen3-vl-30b-a3b-thinking` | Alibaba | 128K | Visual reasoning (30B MoE) |
+| `qwen3-vl-8b-thinking` | Alibaba | 128K | Visual reasoning (8B) |
+| `qwen-vl-max` | Alibaba | 128K | Visual understanding (max) |
+| `qwen-vl-plus` | Alibaba | 128K | Visual understanding (plus) |
+| `qvq-max` | Alibaba | 128K | Visual reasoning |
+| `qvq-plus` | Alibaba | 128K | Visual reasoning (plus) |
+| `qwen-mt-plus` | Alibaba | 16K | Translation (92 languages) |
+| `qwen-mt-flash` | Alibaba | 16K | Translation fast |
+| `qwen-math-plus` | Alibaba | 4K | Mathematical reasoning |
+| `qwen-math-turbo` | Alibaba | 4K | Math fast |
+| `qwen2.5-72b-instruct` | Alibaba | 128K | Open-source 72B |
+| `qwen2.5-32b-instruct` | Alibaba | 128K | Open-source 32B |
+| `qwen2.5-14b-instruct` | Alibaba | 128K | Open-source 14B |
+| `qwen2.5-7b-instruct` | Alibaba | 128K | Open-source 7B |
+| `qwen2.5-vl-72b-instruct` | Alibaba | 128K | Open-source VL 72B |
+| `qwen2.5-coder-32b-instruct` | Alibaba | 128K | Open-source coder 32B |
+| `qwen2.5-coder-7b-instruct` | Alibaba | 128K | Open-source coder 7B |
+
+### Handling Quota Exhaustion & Fallback Models
+
+When a model's free tier quota is exhausted (HTTP 403 `AllocationQuota.FreeTierOnly`), Layer 2 automatically falls back to alternative models:
+
+**Fallback Chain** (Layer 2):
+```
+qwen3-coder-480b-a35b-instruct → qwen-max → qwen-plus-2025-07-28
+qwen3-235b-a22b-instruct-2507  → qwen-max → qwen-plus-2025-07-28
+qwen-max                        → qwen-plus-2025-07-28 → qwen3-coder-480b
+qwen-plus-2025-07-28            → qwen-max
+```
+
+**Usage**:
+```python
+from layer2.utils.llm_client import LLMClient
+from layer2.config import DEV_MODEL
+
+client = LLMClient()
+# Automatically tries DEV_MODEL, then fallback models if quota exhausted
+text, usage = client.call_with_fallback(DEV_MODEL, system_prompt, user_prompt)
+```
+
+**To resolve quota issues**:
+
+1. **Upgrade Alibaba Account** (recommended for production):
+   - Visit [Alibaba Cloud Console](https://dashscope.console.aliyun.com/)
+   - Disable "Use free tier only" mode
+   - Add payment method
+
+2. **Use Alternative API Keys**:
+   - Update `config.json → llm_providers.alibaba.api_key` with a new key
+   - Or add OpenAI/Anthropic keys to `llm_providers`
+
+3. **Wait for Free Tier Reset**:
+   - Alibaba free tier typically resets monthly
+   - Check console for reset date
+
+4. **Monitor Token Usage**:
+   - Layer 2 generates token reports: `layer2/output/token_reports/<name>_<timestamp>.json`
+   - Check `excel_outputs/<name>_cost.xlsx` for cost breakdown
 
 ---
 
