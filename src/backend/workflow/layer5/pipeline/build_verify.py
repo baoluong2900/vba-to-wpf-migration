@@ -21,6 +21,7 @@ from typing import Optional
 
 from core.config import vba_brain_PROJECT_DIR, MAX_RETRIES
 from core.models import GeneratedFile
+from llm.llm_client import L5LLMClient, extract_code_block
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,9 @@ class BuildVerifier:
         self.solution_dir = solution_dir or vba_brain_PROJECT_DIR
         self.sln_path = self.solution_dir / "vba_brain.sln"
         if not self.sln_path.exists():
-            raise FileNotFoundError(f"Solution file not found: {self.sln_path}")
+            self.sln_path = self.solution_dir / "vba_brain.slnx"
+        if not self.sln_path.exists():
+            raise FileNotFoundError(f"Solution file not found (tried vba_brain.sln and vba_brain.slnx): {self.sln_path}")
 
     def build(self) -> BuildResult:
         """Run dotnet build and parse results."""
@@ -131,7 +134,6 @@ class BuildVerifier:
         Returns:
             Final BuildResult after all attempts.
         """
-        from llm.llm_client import L5LLMClient, extract_code_block
         from pipeline.file_writer import SolutionWriter
 
         retries = max_retries or MAX_RETRIES
@@ -249,7 +251,7 @@ class BuildVerifier:
             "Fix ALL compile errors in the code below. "
             "Return ONLY the fixed C# code, no explanations. "
             "Keep the original logic and structure intact. "
-            "Use file-scoped namespaces. Target: net10.0."
+            "Use standard C# file-scoped namespace declaration syntax (e.g. 'namespace vba_brain.Domain.Entities;' with a semicolon and no curly braces). Do NOT write the words 'file-scoped' in the C# code. Target: net10.0."
         )
 
         user = (

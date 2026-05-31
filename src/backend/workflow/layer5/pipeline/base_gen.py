@@ -6,8 +6,8 @@ Only generates if file doesn't already exist (idempotent).
 
 Files:
   - Domain/Common/BaseEntity.cs
-  - UI.WPF/ViewModels/ViewModelBase.cs
-  - UI.WPF/Utils/RelayCommand.cs
+  - UI.Avalonia/ViewModels/ViewModelBase.cs
+  - UI.Avalonia/Utils/RelayCommand.cs
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ VIEWMODEL_BASE_CS = '''\
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace vba_brain.UI.WPF.ViewModels;
+namespace vba_brain.UI.Avalonia.ViewModels;
 
 /// <summary>
 /// Base class for all ViewModels — provides INotifyPropertyChanged.
@@ -67,13 +67,26 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    // ── Command factory helpers (used by generated ViewModels) ──
+    protected static global::vba_brain.UI.Avalonia.Utils.RelayCommand Cmd(Func<object?, Task> execute, Func<object?, bool>? canExecute = null)
+        => new global::vba_brain.UI.Avalonia.Utils.RelayCommand(execute, canExecute);
+
+    protected static global::vba_brain.UI.Avalonia.Utils.RelayCommand Cmd(Action<object?> execute, Func<object?, bool>? canExecute = null)
+        => new global::vba_brain.UI.Avalonia.Utils.RelayCommand(execute, canExecute);
+
+    protected static global::vba_brain.UI.Avalonia.Utils.RelayCommand Cmd(Func<Task> execute)
+        => new global::vba_brain.UI.Avalonia.Utils.RelayCommand(_ => execute());
+
+    protected static global::vba_brain.UI.Avalonia.Utils.RelayCommand Cmd(Action execute)
+        => new global::vba_brain.UI.Avalonia.Utils.RelayCommand(_ => execute());
 }
 '''
 
 RELAY_COMMAND_CS = '''\
 using System.Windows.Input;
 
-namespace vba_brain.UI.WPF.Utils;
+namespace vba_brain.UI.Avalonia.Utils;
 
 /// <summary>
 /// ICommand implementation for MVVM binding.
@@ -96,11 +109,7 @@ public class RelayCommand : ICommand
     public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
         : this(p => { execute(p); return Task.CompletedTask; }, canExecute) { }
 
-    public event EventHandler? CanExecuteChanged
-    {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
-    }
+    public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter)
     {
@@ -127,7 +136,7 @@ public class RelayCommand : ICommand
 
     public void RaiseCanExecuteChanged()
     {
-        CommandManager.InvalidateRequerySuggested();
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 '''

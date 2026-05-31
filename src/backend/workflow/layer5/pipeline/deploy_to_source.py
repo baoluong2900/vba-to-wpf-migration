@@ -65,8 +65,8 @@ NAMESPACE_TO_FOLDER: dict[str, str] = {
     "vba_brain.Application.DTOs.Requests":          "vba_brain.Application/DTOs/Requests",
     "vba_brain.Application.DTOs.Responses":         "vba_brain.Application/DTOs/Responses",
     "vba_brain.Application.DTOs":                   "vba_brain.Application/DTOs",
-    "vba_brain.UI.WPF.ViewModels":                  "vba_brain.UI.WPF/ViewModels",
-    "vba_brain.UI.WPF.Views":                       "vba_brain.UI.WPF/Views",
+    "vba_brain.UI.Avalonia.ViewModels":             "vba_brain.UI.Avalonia/ViewModels",
+    "vba_brain.UI.Avalonia.Views":                  "vba_brain.UI.Avalonia/Views",
 }
 
 # ── Agent output dirs (searched in order) ─────────────────────────────────
@@ -321,6 +321,9 @@ def _cs_param_list(inputs: list[dict]) -> str:
     if not inputs:
         return ""
     return ", ".join(f"{_cs_scalar(p)} {p.get('name', 'param')}" for p in inputs)
+
+
+def validate_interface_vs_impl() -> list[str]:
     """Validate every I{Repo}.cs interface against its {Repo}.cs implementation.
 
     Returns a list of error messages. Empty list means no mismatch.

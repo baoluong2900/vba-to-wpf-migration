@@ -12,9 +12,9 @@ import json
 from pathlib import Path
 
 # Ensure backend root is in sys.path
-_LAYER5_DIR = Path(__file__).resolve().parent.parent  # workflow/src/backend/workflow/layer5
-_BACKEND_DIR = _LAYER5_DIR.parent.parent              # workflow/src/backend
-_WORKFLOW_DIR = _BACKEND_DIR.parent.parent            # workflow/ (workspace root)
+_LAYER5_DIR  = Path(__file__).resolve().parent.parent          # .../core/ → layer5/
+_BACKEND_DIR = _LAYER5_DIR.parent.parent                       # layer5 → workflow → backend/
+_WORKFLOW_DIR = _LAYER5_DIR.parent.parent.parent.parent        # layer5 → workflow → backend → src → workflow/
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
