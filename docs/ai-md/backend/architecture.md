@@ -1,7 +1,7 @@
 # Backend Architecture
 
 ## Overview
-The vba_brain project's backend is responsible for parsing legacy VBA/Access databases, processing the logic using AI agents, and generating modern C# WPF source code. It is structured into multiple layers to separate concerns.
+The vba_brain project's backend is responsible for parsing legacy VBA/Access databases, processing the logic using AI agents, and generating modern C# Avalonia (MVVM, .NET 10) source code. It is structured into multiple layers to separate concerns.
 
 ## Layer 1: Parser
 - Responsible for parsing raw Access JSON exports (database_json) and ingesting them into MongoDB collections (forms, reports, modules, macros, queries, tables).

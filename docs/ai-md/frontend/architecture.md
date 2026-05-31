@@ -1,7 +1,7 @@
 # Frontend Architecture
 
 ## Overview
-The frontend is primarily a Next.js web application that serves as a dashboard and graph explorer to visualize the migration process from VBA to C# WPF.
+The frontend is primarily a Next.js web application that serves as a dashboard and graph explorer to visualize the migration process from VBA to C# Avalonia.
 
 ## Key Constraints & Technologies
 - **Framework:** Next.js 16 (App Router) + React 19 + TypeScript.

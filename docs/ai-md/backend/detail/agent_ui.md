@@ -14,7 +14,7 @@ Data source: MongoDB `forms` collection only — no BD JSON dependency.
 MongoDB forms
     │
     ▼
-control_mapper.py       → map Access controls → WPF controls
+control_mapper.py       → map Access controls → Avalonia controls
     │
     ▼
 LLM (JSONL prompt)      → structured JSONL spec (controls + bindings)
@@ -34,10 +34,10 @@ LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` a
 | File | Role |
 |------|------|
 | `agent_ui.py` | Main agent, LangGraph `UIChunkState` map-reduce |
-| `control_mapper.py` | Access control type → WPF control type mapping |
+| `control_mapper.py` | Access control type → Avalonia control type mapping |
 | `tool_skeleton.py` | Deterministic XAML + ViewModel skeleton generator |
 | `tool_query_stubs.py` | Generates query stub bindings |
-| `configs/ui_event_map.json` | Access event → WPF event mapping |
+| `configs/ui_event_map.json` | Access event → Avalonia event mapping |
 | `configs/ui_query_stubs.json` | Query stub config |
 | `name_spacing/ui_name_map.json` | Control name normalization map |
 | `prompts/agent_ui.md` | LLM system prompt |
@@ -54,7 +54,7 @@ LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` a
 
 ## Form Name Resolution
 
-Uses `agents/graphview/outputs/forms/listFormJpToEn.json` to resolve Japanese Access form names → WPF View/ViewModel class names.
+Uses `agents/graphview/outputs/forms/listFormJpToEn.json` to resolve Japanese Access form names → Avalonia View/ViewModel class names.
 
 ## LangGraph State
 

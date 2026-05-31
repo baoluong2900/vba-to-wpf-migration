@@ -5,12 +5,12 @@
 
 ## Purpose
 
-Reviews generated WPF source against the original VBA dependency graph to detect missing or extra implementations.
+Reviews generated Avalonia source against the original VBA dependency graph to detect missing or extra implementations.
 
 ## Flow
 
 ```
-inputs/mapping_<FormName>.json      ← Access→WPF name mapping
+inputs/mapping_<FormName>.json      ← Access→Avalonia name mapping
 inputs/dependency_<FormName>.json   ← VBA dependency graph (from Layer 1)
     │
     ▼
@@ -20,7 +20,7 @@ Parse C# source files               → deterministic AST parsing
 LLM (agent_graphview.md)            → AI-assisted mapping validation
     │
     ▼
-Compare VBA graph vs WPF graph
+Compare VBA graph vs Avalonia graph
     │
     ▼
 outputs/review_<FormName>.json      ← review result with MISSING / EXTRA flags
@@ -31,8 +31,8 @@ MongoDB agent_repo                  ← persist review result
 
 | Flag | Meaning |
 |------|---------|
-| `MISSING` | VBA feature exists but not implemented in WPF |
-| `EXTRA` | WPF has new feature with no VBA equivalent |
+| `MISSING` | VBA feature exists but not implemented in Avalonia |
+| `EXTRA` | Avalonia has new feature with no VBA equivalent |
 | `MATCHED` | Correctly implemented |
 
 ## Key Files
@@ -79,4 +79,4 @@ agents/graphview/outputs/
 
 - `listFormJpToEn.json` is a critical shared artifact — Agent UI and Agent Service both read it for form name resolution
 - Currently disabled in `pipeline/orchestrator.py` — run manually via `python agent_graphview.py`
-- Requires WPF source files to exist in `source/` directory for C# parsing
+- Requires Avalonia source files to exist in `src/wpf/` directory for C# parsing

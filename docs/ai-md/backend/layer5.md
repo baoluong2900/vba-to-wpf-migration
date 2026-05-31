@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Layer 5 converts DD/BD JSON specifications (from Layer 2) into build-ready C# source code targeting the Avalonia MVVM architecture. It runs a sequential multi-agent pipeline per form and writes output directly into the WPF solution.
+Layer 5 converts DD/BD JSON specifications (from Layer 2) into build-ready C# source code targeting the Avalonia MVVM architecture. It runs a sequential multi-agent pipeline per form and writes output directly into the Avalonia solution.
 
 ---
 
@@ -20,7 +20,7 @@ Agent Repo → Agent Service → Agent UI → Agent Logic → Write → dotnet b
 | 2 | **Service** | IService, Service, `service_contract.json` |
 | 3 | **UI** | ViewModel skeleton (Commands, DI, SetProperty) + XAML + code-behind |
 | 4 | **Logic** | LLM-generated method bodies patched into UI skeleton ViewModel |
-| 5 | **Write** | Files deployed to WPF solution directories |
+| 5 | **Write** | Files deployed to Avalonia solution directories |
 | 6 | **Build** | `dotnet build` + AI auto-fix loop (max 3 retries) |
 
 > UI runs **before** Logic so Logic patches into an existing skeleton rather than generating a new ViewModel from scratch.
@@ -80,16 +80,16 @@ Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestF
 
 ### Agent Mapping (`agents/mapping/agent_mapping.py`)
 
-- Builds Access→WPF name mapping tables (forms, events, modules, macros, queries)
+- Builds Access→Avalonia name mapping tables (forms, events, modules, macros, queries)
 - Outputs: `agents/mapping/outputs/` — `form_access_to_wpf.json`, `event_access_to_dotnet.json`, etc.
 - Runs once as a pre-step; results consumed by all other agents
 
 ### Agent GraphView (`agents/graphview/agent_graphview.py`)
 
 - Builds a deterministic dependency graph of generated C# code
-- Compares WPF graph vs original VBA graph to detect:
-  - `MISSING` — VBA features not yet implemented in WPF
-  - `EXTRA` — new features added in WPF with no VBA equivalent
+- Compares Avalonia graph vs original VBA graph to detect:
+  - `MISSING` — VBA features not yet implemented in Avalonia
+  - `EXTRA` — new features added in Avalonia with no VBA equivalent
 - Inputs: `agents/graphview/inputs/dependency_<FormName>.json`, `mapping_<FormName>.json`
 - Outputs: `agents/graphview/outputs/review_<FormName>.json`
 - Currently disabled in the main pipeline; run separately

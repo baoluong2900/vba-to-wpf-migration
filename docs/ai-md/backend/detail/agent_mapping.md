@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Builds Access → WPF name mapping tables for forms, events, modules, macros, and queries.  
+Builds Access → Avalonia name mapping tables for forms, events, modules, macros, and queries.  
 Output is consumed by all other agents (especially Agent UI and Agent Service) for name resolution.
 
 ## Flow
@@ -28,7 +28,7 @@ LLM (agent_mapping_macro.md)          → macro JP → EN name mapping
 LLM (agent_mapping_module.md)         → module JP → EN name mapping
     │
     ▼
-outputs/form_access_to_wpf.json       ← Access form → WPF View/ViewModel names
+outputs/form_access_to_wpf.json       ← Access form → Avalonia View/ViewModel names
 outputs/event_access_to_dotnet.json   ← Access event → .NET event names
 outputs/query_access_to_dotnet.json
 outputs/macro_access_to_dotnet.json
@@ -69,4 +69,4 @@ agents/mapping/outputs/
 
 - Run with `form_name = "ALL"` to process all forms at once
 - Results are stable across runs (cached in output files)
-- `form_access_to_wpf.json` is the most critical output — used by Agent UI to resolve Japanese form names to WPF class names
+- `form_access_to_wpf.json` is the most critical output — used by Agent UI to resolve Japanese form names to Avalonia class names
