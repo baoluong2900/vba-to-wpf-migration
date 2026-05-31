@@ -91,8 +91,8 @@ if __name__ == "__main__":
     _LAYER2_DIR = Path(__file__).resolve().parent.parent
     
     # Default paths mapped dynamically to the Layer 2 output folder structure
-    DEFAULT_S2_DIR = str(_LAYER2_DIR / "output" / "bd_flow" / "s2_bd_mapping")
-    DEFAULT_OUT_FILE = str(_LAYER2_DIR / "output" / "bd_flow" / "s3_bd_logic" / "ui_formulas_extracted.json")
+    DEFAULT_S2_DIR = str(_LAYER2_DIR / "output" / "bd_flow" / "bd2_bd_mapping")
+    DEFAULT_OUT_FILE = str(_LAYER2_DIR / "output" / "bd_flow" / "bd3_bd_logic" / "ui_formulas_extracted.json")
     
     s2_dir = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_S2_DIR
     out_file = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_OUT_FILE

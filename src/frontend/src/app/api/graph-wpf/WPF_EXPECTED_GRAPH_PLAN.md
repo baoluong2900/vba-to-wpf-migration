@@ -1,7 +1,7 @@
 # WPF Expected Graph Plan
 
 > Mục tiêu trước mắt: mapping đúng từ VBA/BD/DD sang **Expected WPF Graph**.
-> Graph này là kế hoạch migrate trước khi generate code. Về sau sẽ dùng để diff với **Actual WPF Graph** parse từ source `source/vba_brain`.
+> Graph này là kế hoạch migrate trước khi generate code. Về sau sẽ dùng để diff với **Actual Graph** parse từ source `src/wpf/vba_brain.UI.Avalonia`.
 
 ---
 
@@ -32,7 +32,7 @@ Pha hiện tại chỉ tập trung làm **Expected graph** cho đúng.
 Định hướng dài hạn:
 
 - Review toàn bộ solution.
-- Source review nằm trong `workflow/source/vba_brain`.
+- Source review nằm trong `src/wpf/vba_brain.UI.Avalonia`.
 - Agent đọc tất cả file liên quan: XAML, ViewModel, Service, Repository, DTO, Entity, DI config, test nếu có.
 - Output review gồm 3 dạng:
   - Graph hiển thị.
@@ -481,7 +481,7 @@ Nên tách rõ 3 endpoint:
   -> Sinh Expected WPF Graph từ VBA + BD/DD + mapping.
 
 /api/graph-wpf-actual
-  -> Parse source WPF trong workflow/source/vba_brain.
+  -> Parse Avalonia source trong src/wpf/vba_brain.UI.Avalonia.
 
 /api/graph-wpf-review
   -> Diff Expected vs Actual, trả graph có status ok/missing/extra/mismatch.

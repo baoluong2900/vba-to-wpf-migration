@@ -40,7 +40,7 @@ def load_upstream_files(output_dir: Path, form_name: str, agent_name: str) -> li
             "path": str(f.relative_to(form_dir)),
             "content": f.read_text(encoding="utf-8"),
         })
-    for f in form_dir.rglob("*.xaml"):
+    for f in [*form_dir.rglob("*.axaml"), *form_dir.rglob("*.xaml")]:
         files.append({
             "path": str(f.relative_to(form_dir)),
             "content": f.read_text(encoding="utf-8"),

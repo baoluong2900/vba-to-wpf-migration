@@ -261,7 +261,7 @@ export function buildWpfMappingFromVbaGraph(
     addNodeMapping(
       `form:${accessForm}`,
       `view:${accessForm}`,
-      `Views/${mapped.view}.xaml`,
+      `Views/${mapped.view}.axaml`,
       'view',
       mapped.status,
       accessForm,
@@ -522,7 +522,7 @@ export function buildWpfLayerGraph(
     const viewLabel = m?.view ?? `${accessForm}View`;
     const vmLabel = m?.vm ?? `${accessForm}ViewModel`;
     const status: MappingStatus = m ? 'mapped' : 'fallback';
-    addNode(`view:${accessForm}`, viewLabel, 'view', 'Views/*.xaml', accessForm, status);
+    addNode(`view:${accessForm}`, viewLabel, 'view', 'Views/*.axaml', accessForm, status);
     addNode(`viewmodel:${accessForm}`, vmLabel, 'viewmodel', 'ViewModels/*.cs', accessForm, status);
     pushEdge(`view:${accessForm}`, `viewmodel:${accessForm}`, 'DataContext');
   };
@@ -532,7 +532,7 @@ export function buildWpfLayerGraph(
     const viewLabel = m?.view ?? `${accessReport}View`;
     const vmLabel = m?.vm ?? `${accessReport}ViewModel`;
     const status: MappingStatus = m ? 'mapped' : 'fallback';
-    addNode(`view:${accessReport}`, viewLabel, 'view', 'Views/*.xaml', accessReport, status);
+    addNode(`view:${accessReport}`, viewLabel, 'view', 'Views/*.axaml', accessReport, status);
     addNode(`viewmodel:${accessReport}`, vmLabel, 'viewmodel', 'ViewModels/*.cs', accessReport, status);
     pushEdge(`view:${accessReport}`, `viewmodel:${accessReport}`, 'DataContext');
   };

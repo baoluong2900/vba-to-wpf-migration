@@ -43,7 +43,7 @@ if str(backend_dir) not in sys.path:
 from langgraph.graph import StateGraph, START, END
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
-from core.config import MONGO_URI, MONGO_DB, AVAILABLE_MODELS, DEFAULT_MODEL, TARGET_LANGUAGE
+from core.config import MONGO_URI, MONGO_DB, AVAILABLE_MODELS, DEFAULT_MODEL, TARGET_LANGUAGE, VIEWMODELS_DIR
 from llm.llm_client import L5LLMClient, extract_code_block
 from layer2.db.mongo_client import get_db
 from agents.logic.mapping_ast.event_mapper import EventMapper
@@ -56,11 +56,8 @@ AGENT_DIR   = Path(__file__).parent
 INPUTS_DIR  = AGENT_DIR / "inputs"
 OUTPUTS_DIR = AGENT_DIR / "outputs"
 
-# Avalonia source ViewModels folder
-WPF_VIEWMODELS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent.parent  # → src/
-    / "wpf" / "vba_brain.UI.Avalonia" / "ViewModels"
-)
+# Avalonia ViewModels output dir — single source of truth in core.config
+WPF_VIEWMODELS_DIR = VIEWMODELS_DIR
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1460,7 +1457,7 @@ class LogicAgent(BaseAgent):
             else (_viewmodel_name or form_name)
         )
         _vm_file        = f"{_viewmodel_name}.cs"    if _viewmodel_name else ""
-        _codebehind_file = f"{_view_name}.xaml.cs"  if _view_name else ""
+        _codebehind_file = f"{_view_name}.axaml.cs"  if _view_name else ""
 
         # ── 3. Build chunk lookup (event_id → chunk) for context enrichment ─
         chunk_by_event: dict[str, dict] = {}

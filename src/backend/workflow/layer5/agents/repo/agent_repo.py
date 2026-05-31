@@ -334,11 +334,11 @@ class RepoAgent(BaseAgent):
         for _ in range(10):
             cand_source = curr / "source"
             cand_wpf = curr / "src" / "wpf"
-            if cand_source.exists():
-                source_root = cand_source
-                break
-            elif cand_wpf.exists():
+            if cand_wpf.exists():
                 source_root = cand_wpf
+                break
+            elif cand_source.exists():
+                source_root = cand_source
                 break
             if curr.parent == curr:
                 break

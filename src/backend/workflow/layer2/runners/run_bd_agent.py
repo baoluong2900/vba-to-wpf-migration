@@ -50,7 +50,7 @@ def _find_workspace_root() -> Path:
 
 WORKSPACE_ROOT = _find_workspace_root()
 CONFIG_FILE = WORKSPACE_ROOT / "config.json"
-OUT_DIR = WORKSPACE_ROOT / "src" / "backend" / "out"
+OUT_DIR = Path(_LAYER2_DIR) / "output" / "runner_cache"
 
 
 def _stage_from_config(model: str) -> str:

@@ -28,7 +28,9 @@ class VMSyncTool:
             view_file_stem = form_name
             vm_file_stem = form_name
 
-        view_file = self.views_dir / f"{view_file_stem}.xaml.cs"
+        view_file = self.views_dir / f"{view_file_stem}.axaml.cs"
+        if not view_file.exists():
+            view_file = self.views_dir / f"{view_file_stem}.xaml.cs"
         vm_file = self.vms_dir / f"{vm_file_stem}.cs"
         
         if not view_file.exists():

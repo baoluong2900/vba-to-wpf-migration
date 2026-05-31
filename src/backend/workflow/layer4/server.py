@@ -73,10 +73,15 @@ def list_outputs():
     files = []
     for f in OUTPUT_DIR.glob("**/*.*"):
         if f.suffix in (".xlsx", ".docx", ".zip"):
+            rel = f.relative_to(OUTPUT_DIR).parts
+            doc_kind = rel[0] if len(rel) > 1 else ""
+            doc_type = rel[1] if len(rel) > 2 else ""
             files.append({
-                "name": f.name,
-                "path": str(f.relative_to(OUTPUT_DIR)),
-                "size": f.stat().st_size
+                "filename": f.name,
+                "doc_kind": doc_kind,
+                "doc_type": doc_type,
+                "size_kb": round(f.stat().st_size / 1024, 1),
+                "download_url": f"/api/v1/layer4/download/{doc_kind}/{doc_type}/{f.name}",
             })
     return {"success": True, "files": files}
 
@@ -137,10 +142,10 @@ def gen_bd(req):
         "filename": excel_filename,
         "size_kb": size_kb,
         "duration_sec": duration_sec,
-        "download_url": f"/api/l3/download/BD/{doc_type_folder}/{excel_filename}",
+        "download_url": f"/api/v1/layer4/download/BD/{doc_type_folder}/{excel_filename}",
         "file_info": {
-            "url": f"/api/l3/download/BD/{doc_type_folder}/{excel_filename}",
-            "docx_url": f"/api/l3/download/BD/{doc_type_folder}/{docx_filename}"
+            "url": f"/api/v1/layer4/download/BD/{doc_type_folder}/{excel_filename}",
+            "docx_url": f"/api/v1/layer4/download/BD/{doc_type_folder}/{docx_filename}"
         }
     }
 
@@ -215,10 +220,10 @@ def gen_dd(req):
         "filename": excel_filename,
         "size_kb": size_kb,
         "duration_sec": duration_sec,
-        "download_url": f"/api/l3/download/DD/{item_type}/{excel_filename}",
+        "download_url": f"/api/v1/layer4/download/DD/{item_type}/{excel_filename}",
         "file_info": {
-            "url": f"/api/l3/download/DD/{item_type}/{excel_filename}",
-            "docx_url": f"/api/l3/download/DD/{item_type}/{docx_filename}"
+            "url": f"/api/v1/layer4/download/DD/{item_type}/{excel_filename}",
+            "docx_url": f"/api/v1/layer4/download/DD/{item_type}/{docx_filename}"
         }
     }
 

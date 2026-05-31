@@ -12,7 +12,7 @@
 
 | # | Vấn đề | Bằng chứng | Mức độ |
 |---|--------|-----------|--------|
-| G1 | README mô tả Oracle XE + Qdrant nhưng `infa/docker-compose.yml` chỉ có **MongoDB 7 + PostgreSQL 16 + Mongo-Express** | `docker-compose.yml` | 🟡 |
+| G1 | ~~README mô tả Oracle XE + Qdrant~~ — ĐÃ XÓA Oracle/Qdrant khỏi README + code; chỉ còn **MongoDB 7 + PostgreSQL 16 + Mongo-Express** đúng theo `infa/docker-compose.yml` | `docker-compose.yml` | ✅ |
 | G2 | Tên layer gRPC **ngược** với README: `Layer3Service`=Excel, `Layer4Service`=SQL Migration | `grpc_server.py` | 🔴 |
 | G3 | Frontend thực tế **Next.js 16.2.4 / React 19 / Tailwind 4**, README ghi Next 15 / Yarn | `frontend/package.json` | 🟡 |
 | G4 | ~~Tồn tại **2 UI song song**~~ — ĐÃ CHỐT **Avalonia** làm UI chính; Layer 5 codegen + deploy đã trỏ về `vba_brain.UI.Avalonia`. `vba_brain.UI.WPF` là folder trống (không có `.csproj`, không nằm trong `vba_brain.slnx`) → nên xóa | `src/wpf/` | ✅ |
@@ -83,7 +83,7 @@ Mục tiêu: thay đổi không sợ vỡ, có lưới an toàn.
 Mục tiêu: README phản ánh đúng code; giảm nợ kỹ thuật.
 
 ### 3.1 Sửa README cho khớp thực tế
-- [ ] Cập nhật Infra table: bỏ Oracle XE/Qdrant nếu không dùng, ghi đúng **PostgreSQL 16-alpine**.
+- [x] Cập nhật Infra table: đã bỏ Oracle XE/Qdrant, ghi đúng **PostgreSQL 16-alpine**.
 - [ ] Sửa **bảng gRPC**: làm rõ `Layer3Service`=Excel, `Layer4Service`=SQL (hoặc đổi tên service cho khớp ý nghĩa — xem 3.3).
 - [ ] Cập nhật Tech Stack frontend: **Next 16 / React 19 / Tailwind 4**.
 - [x] Làm rõ chiến lược UI: **Avalonia** là target chính (G4 — đã chốt).
@@ -130,7 +130,7 @@ Mục tiêu: các tính năng nâng cao giá trị mà code hiện đã sẵn n�
 - [ ] Kiểm thử thực tế **fallback chain** khi quota cạn (README mô tả nhưng cần test tự động).
 
 ### 4.5 Đa dialect SQL (🟢)
-- [ ] Tổng quát hóa Layer 3 hỗ trợ Oracle thật sự (code đã có vài tham chiếu Oracle) hoặc loại bỏ hẳn dấu vết Oracle nếu không theo đuổi.
+- [x] ĐÃ CHỐT **chỉ PostgreSQL** — đã loại bỏ hẳn mọi dấu vết Oracle khỏi code (table_converter, router prompt, tool_repo type-map, proto, frontend dropdowns) và tài liệu.
 
 ---
 
@@ -158,11 +158,11 @@ Phase 1 (bảo mật + pin deps)        ──► nền an toàn, bắt buộc t
 1. Bind docker-compose về `127.0.0.1` (1.2).
 2. Pin `requirements.txt` (1.4).
 3. Quét secrets trong git history (1.3).
-4. Sửa các lệch README rõ ràng nhất: Oracle/Qdrant, Next version, swap tên layer (3.1).
+4. ~~Sửa các lệch README rõ ràng nhất: Oracle/Qdrant~~ (ĐÃ XONG), Next version, swap tên layer (3.1).
 5. Thêm `pytest.ini` + 1 bộ test cho `table_converter.py` (2.1).
 
 ---
 
 ## Ghi chú phạm vi
-- Plan dựa trên khảo sát ngày lập tài liệu; một số quyết định (UI target, đổi tên service, theo đuổi Oracle) cần **bạn chốt hướng** trước khi thực thi vì có tính breaking.
+- Plan dựa trên khảo sát ngày lập tài liệu; một số quyết định (UI target, đổi tên service) cần **bạn chốt hướng** trước khi thực thi vì có tính breaking.
 - Các mục 🔴 nên hoàn thành trước khi đưa hệ thống ra môi trường chia sẻ/production.

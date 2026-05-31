@@ -155,14 +155,10 @@ export default function Layer4Page() {
     }
   }, [selectedName, selectedItem, handleGenBd, handleGenDd]);
 
-  // Download helper
+  // Download helper — backend already returns the correct /api/v1/layer4/download/... URL
   const handleDownload = useCallback((downloadUrl: string, filename: string) => {
-    // Convert backend URL to frontend proxy URL
-    // downloadUrl from backend: /api/l3/download/BD/screen/...
-    // We need: /api/layer4/download/BD/screen/...
-    const proxyUrl = downloadUrl.replace("/api/l3/download/", "/api/v1/layer4/download/");
     const a = document.createElement("a");
-    a.href = proxyUrl;
+    a.href = downloadUrl;
     a.download = filename;
     a.click();
   }, []);

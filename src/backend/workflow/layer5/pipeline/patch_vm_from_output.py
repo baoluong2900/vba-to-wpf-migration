@@ -14,6 +14,7 @@ sys.path.insert(0, str(LAYER5_DIR))
 sys.path.insert(0, str(LAYER5_DIR / "agents" / "logic"))
 
 from agents.logic.gen_vm_methods import patch_vm_method, inject_vm_method, inject_vm_properties
+from core.config import VIEWMODELS_DIR, AVALONIA_PROJECT_DIR
 
 
 def patch_from_output(form_name: str, dry_run: bool = False):
@@ -42,7 +43,7 @@ def patch_from_output(form_name: str, dry_run: bool = False):
     candidates = [
         LAYER5_DIR / "agents" / "ui" / "outputs" / form_name / "ViewModels" / vm_filename,
         LAYER5_DIR / "agents" / "logic" / "outputs" / form_name / "ViewModels" / vm_filename,
-        LAYER5_DIR.parent.parent.parent / "wpf" / "vba_brain.UI.Avalonia" / "ViewModels" / vm_filename,
+        VIEWMODELS_DIR / vm_filename,
     ]
     vm_file = next((p for p in candidates if p.exists()), None)
     if vm_file is None:
@@ -54,7 +55,7 @@ def patch_from_output(form_name: str, dry_run: bool = False):
     logger.info("Patching ViewModel: %s", vm_file)
 
     # 1. Inject missing properties from Request DTO
-    source_root = LAYER5_DIR.parent.parent / "source"
+    source_root = AVALONIA_PROJECT_DIR
     dto_file = source_root / "vba_brain.Application" / "DTOs" / "Requests" / f"{vm_stem}ServiceRequests.cs"
     if not dto_file.exists():
         dto_file = LAYER5_DIR / "agents" / "service" / "outputs" / form_name / "Application" / "DTOs" / "Requests" / f"{vm_stem}ServiceRequests.cs"

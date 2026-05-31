@@ -17,11 +17,8 @@ BASE_DIR = Path(__file__).parent
 INPUTS_DIR = BASE_DIR / "inputs"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
-# Avalonia source vba_brain.UI.Avalonia folder
-WPF_PROJECT_DIR = (
-    BASE_DIR.parent.parent.parent.parent.parent  # → src/
-    / "wpf" / "vba_brain.UI.Avalonia"
-)
+# Avalonia UI project dir — single source of truth in core.config
+from core.config import UI_PROJECT_DIR as WPF_PROJECT_DIR
 
 # ──────────────────────────────────────────
 # Data & Config Loaders
@@ -926,9 +923,11 @@ def patch_existing_ui(form_name: str, mongo_procedures: list[dict] | None = None
     
     # 1. Resolve paths (support both {form_name} and {form_name}View naming conventions)
     xaml_candidates = [
+        WPF_PROJECT_DIR / "Views" / f"{view_name_stem}.axaml",
         WPF_PROJECT_DIR / "Views" / f"{view_name_stem}.xaml",
     ]
     cs_candidates = [
+        WPF_PROJECT_DIR / "Views" / f"{view_name_stem}.axaml.cs",
         WPF_PROJECT_DIR / "Views" / f"{view_name_stem}.xaml.cs",
     ]
     vm_candidates = [

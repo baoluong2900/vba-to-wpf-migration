@@ -40,10 +40,7 @@ INPUTS_DIR  = AGENT_DIR / "inputs"
 OUTPUTS_DIR = AGENT_DIR / "outputs"
 PROMPTS_DIR = AGENT_DIR / "prompts"
 
-WPF_VIEWS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent.parent
-    / "wpf" / "vba_brain.UI.Avalonia" / "Views"
-)
+from core.config import VIEWS_DIR as WPF_VIEWS_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -576,8 +573,8 @@ def run_ui_agent(
                 logger.info(f"[Cache Load] ⚡ Found cached successful run for form '{form_name}' in database_json/agent_logic/. Restoring code-behind...")
                 cache_data = json.loads(cache_file.read_text(encoding="utf-8"))
                 
-                # 1. Restore xaml.cs file
-                xaml_cs_path = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
+                # 1. Restore axaml.cs file
+                xaml_cs_path = WPF_VIEWS_DIR / f"{view_file_stem}.axaml.cs"
                 if "xaml_cs_content" in cache_data and cache_data["xaml_cs_content"]:
                     WPF_VIEWS_DIR.mkdir(parents=True, exist_ok=True)
                     xaml_cs_path.write_text(cache_data["xaml_cs_content"], encoding="utf-8")
@@ -651,7 +648,9 @@ def run_ui_agent(
             try:
                 db_dir.mkdir(parents=True, exist_ok=True)
                 
-                xaml_cs_path = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
+                xaml_cs_path = WPF_VIEWS_DIR / f"{view_file_stem}.axaml.cs"
+                if not xaml_cs_path.exists():
+                    xaml_cs_path = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
                 xaml_cs_content = xaml_cs_path.read_text(encoding="utf-8") if xaml_cs_path.exists() else ""
                 
                 ui_output = json.loads((out_dir / "codebehind_ui_output.json").read_text(encoding="utf-8")) if (out_dir / "codebehind_ui_output.json").exists() else None
@@ -688,7 +687,9 @@ def run_ui_agent(
 
     data       = json.loads(input_file.read_text(encoding="utf-8"))
     events     = data.get("events", [])
-    view_file  = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
+    view_file  = WPF_VIEWS_DIR / f"{view_file_stem}.axaml.cs"
+    if not view_file.exists():
+        view_file = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
     sys_prompt = load_system_prompt()
 
     if not view_file.exists():

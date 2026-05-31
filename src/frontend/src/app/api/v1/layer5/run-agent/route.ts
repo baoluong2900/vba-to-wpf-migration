@@ -544,7 +544,7 @@ export async function POST(req: NextRequest) {
       const files = vmExists ? [{
         path: `ViewModels/${vmFileName}`,
         size: fs.statSync(vmPath).size,
-        dest: `vba_brain.UI.WPF/ViewModels/${vmFileName}`,
+        dest: `vba_brain.UI.Avalonia/ViewModels/${vmFileName}`,
         copied: true,
       }] : filesCopied;
 

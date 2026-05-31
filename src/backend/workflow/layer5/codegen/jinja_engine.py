@@ -60,7 +60,7 @@ def render_entity(
     Args:
         entity_name: e.g., "IdPassEntity"
         fields: [{"name": "UserId", "type": "string", "default": "string.Empty"}, ...]
-        table_name: Oracle table name for doc comment
+        table_name: source table name for doc comment
 
     Returns:
         Complete C# Entity class code.

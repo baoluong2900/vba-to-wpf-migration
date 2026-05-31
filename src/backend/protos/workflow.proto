@@ -206,7 +206,7 @@ message MigrationTablesResponse {
 
 message ConvertTableRequest {
     string table_name = 1;
-    string target_db = 2; // "PostgreSQL", "Oracle", "SQL Server", "MySQL"
+    string target_db = 2; // "PostgreSQL", "SQL Server", "MySQL"
 }
 
 message ConvertTableResponse {

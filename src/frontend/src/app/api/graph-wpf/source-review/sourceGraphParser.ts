@@ -70,12 +70,13 @@ function methodCallsToClasses(code: string, classNames: string[]) {
 }
 
 export function parseActualSourceGraph(sourceRoot: string, screenName: string): ActualGraph {
-  const files = walkFiles(sourceRoot, new Set(['.cs', '.xaml', '.csproj', '.sln', '.json']));
+  const files = walkFiles(sourceRoot, new Set(['.cs', '.axaml', '.xaml', '.csproj', '.slnx', '.sln', '.json']));
   const nodes = new Map<string, CyNode>();
   const edges: CyEdge[] = [];
   const edgeSeen = new Set<string>();
 
-  const viewFile = files.find((f) => f.endsWith(path.join('Views', `${screenName}.xaml`)));
+  const viewFile = files.find((f) => f.endsWith(path.join('Views', `${screenName}.axaml`)))
+    ?? files.find((f) => f.endsWith(path.join('Views', `${screenName}.xaml`)));
   const viewModelFile = files.find((f) => f.endsWith(path.join('ViewModels', `${screenName}.cs`)));
   const viewLabel = viewFile ? classNameFromFile(viewFile) : `${screenName}View`;
   const viewModelLabel = viewModelFile ? classNameFromFile(viewModelFile) : `${screenName}ViewModel`;

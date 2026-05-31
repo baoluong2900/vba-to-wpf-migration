@@ -25,7 +25,7 @@ import logging
 import re
 import sys
 from pathlib import Path
-from core.config import TARGET_LANGUAGE
+from core.config import TARGET_LANGUAGE, AVALONIA_PROJECT_DIR
 
 # ── Path setup ──────────────────────────────────────────────────────────────
 LAYER5_DIR = Path(__file__).parent.parent.parent.resolve()
@@ -89,7 +89,7 @@ def _resolve_iface_from_service_context(events: list[dict], feature: str, form_n
                 return files[0].stem
                 
         # 2. Check actual source directory
-        source_dir = AGENT_DIR.parent.parent.parent.parent / "source"
+        source_dir = AVALONIA_PROJECT_DIR
         iface_dir = source_dir / "vba_brain.Application" / "Interfaces"
         if iface_dir.exists():
             for f in iface_dir.glob("*.cs"):
@@ -512,7 +512,7 @@ def build_vm_prompt(event: dict, form_name: str, feature: str, vm_method_name: s
     # ── Fallback: đọc Request DTO từ source nếu không có structured ─────
     dto_fallback = ""
     if not req_props and not svc_structured:
-        source_root = LAYER5_DIR.parent.parent / "source"
+        source_root = AVALONIA_PROJECT_DIR
         dto_file = source_root / "vba_brain.Application" / "DTOs" / "Requests" / f"{feature}ServiceRequests.cs"
         if dto_file.exists():
             try:
@@ -906,7 +906,7 @@ def run_vm_agent(
                 all_bd_items.append(item)
 
     # Also extract properties from Request DTOs
-    source_root = LAYER5_DIR.parent.parent / "source"
+    source_root = AVALONIA_PROJECT_DIR
     dto_file = source_root / "vba_brain.Application" / "DTOs" / "Requests" / f"{feature}ServiceRequests.cs"
     # Fallback to local service output directory if not yet deployed to source root
     if not dto_file.exists() and form_name:

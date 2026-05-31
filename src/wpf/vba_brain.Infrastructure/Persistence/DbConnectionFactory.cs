@@ -2,7 +2,6 @@ using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Npgsql;
-using Oracle.ManagedDataAccess.Client;
 using vba_brain.Domain.Common;
 
 namespace vba_brain.Infrastructure.Persistence;
@@ -29,7 +28,6 @@ public class DbConnectionFactory : IDbConnectionFactory
         return DbType switch
         {
             DatabaseType.PostgreSQL => new NpgsqlConnection(_connectionString),
-            DatabaseType.Oracle => new OracleConnection(_connectionString),
             DatabaseType.SqlServer => new SqlConnection(_connectionString),
             _ => throw new NotSupportedException($"Database type {DbType} is not supported.")
         };

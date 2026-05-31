@@ -17,14 +17,21 @@ CONFIG_FILE = BASE_DIR / "config" / "name_config.json"
 INPUTS_DIR  = BASE_DIR / "inputs"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
-# ── Type mappings ────────────────────────────────────────────────────────────
-ORACLE_TO_CS = {
+# ── Type mappings (DB column type → C#) ─────────────────────────────────────
+SQL_TO_CS = {
+    # PostgreSQL types
+    "VARCHAR": "string", "TEXT": "string", "BPCHAR": "string", "UUID": "string",
+    "INT": "int", "INT4": "int", "INTEGER": "int", "SMALLINT": "int", "INT2": "int",
+    "BIGINT": "long", "INT8": "long",
+    "NUMERIC": "decimal", "DECIMAL": "decimal", "MONEY": "decimal",
+    "DOUBLE": "double", "DOUBLE PRECISION": "double", "REAL": "float", "FLOAT": "double",
+    "BOOL": "bool", "BOOLEAN": "bool",
+    "DATE": "DateTime?", "TIMESTAMP": "DateTime?", "TIMESTAMPTZ": "DateTime?", "TIME": "DateTime?",
+    "BYTEA": "byte[]",
+    # Legacy/source type tokens kept for backward-compat with existing JSON data
     "VARCHAR2": "string", "NVARCHAR2": "string", "CHAR": "string",
     "NCHAR": "string", "CLOB": "string", "NCLOB": "string",
-    "NUMBER": "decimal", "INTEGER": "int", "INT": "int",
-    "FLOAT": "double", "BINARY_FLOAT": "float", "BINARY_DOUBLE": "double",
-    "DATE": "DateTime?", "TIMESTAMP": "DateTime?",
-    "BLOB": "byte[]", "RAW": "byte[]",
+    "NUMBER": "decimal", "BLOB": "byte[]",
 }
 
 VBA_TO_CS = {
@@ -133,9 +140,9 @@ def get_csharp_prop_name(jp_raw: str, config: dict) -> str:
     return f"TODO_{jp}"
 
 
-def oracle_to_cs_type(oracle_type: str) -> str:
-    for k, v in ORACLE_TO_CS.items():
-        if oracle_type.upper().startswith(k):
+def sql_to_cs_type(sql_type: str) -> str:
+    for k, v in SQL_TO_CS.items():
+        if sql_type.upper().startswith(k):
             return v
     return "object"
 
@@ -175,7 +182,7 @@ def parse_vba_args(args: list[str], config: dict = None) -> list[dict]:
 
 # ── SQL builder ───────────────────────────────────────────────────────────────
 def build_sql(sql_block: dict, default_table: str = "") -> str:
-    """Reconstruct full Oracle SQL string from the structured sql block."""
+    """Reconstruct full SQL string from the structured sql block."""
     target_table = (sql_block.get("target_table") or "").replace('\\"', '"').strip()
     
     # Safely handle select which can be string or list of dicts
@@ -377,7 +384,7 @@ def gen_dto_class(class_name: str, fields: list[dict], config: dict, namespace_s
     for field in fields:
         jp_raw  = field.get("name", "")
         jp = jp_raw.split('.')[-1].replace('"', '').strip() if jp_raw else ""
-        cs_type = field.get("csharp_type") or oracle_to_cs_type(field.get("type", "VARCHAR2"))
+        cs_type = field.get("csharp_type") or sql_to_cs_type(field.get("type", "VARCHAR2"))
         prop = get_csharp_prop_name(jp_raw, config)
         if prop in seen:
             continue
@@ -424,7 +431,7 @@ def gen_csharp_class(class_name: str, fields: list[dict], config: dict, base_cla
     for field in fields:
         jp_raw  = field.get("name", "")
         jp = jp_raw.split('.')[-1].replace('"', '').strip() if jp_raw else ""
-        cs_type = field.get("csharp_type") or oracle_to_cs_type(field.get("type", "VARCHAR2"))
+        cs_type = field.get("csharp_type") or sql_to_cs_type(field.get("type", "VARCHAR2"))
         prop = get_csharp_prop_name(jp_raw, config)
         en = get_english_name(jp, config)
         # Property name: English if translated, TODO_JapaneseName otherwise
@@ -948,8 +955,8 @@ def generate_files_for_table(
             for search_name in search_names:
                 for e_f in global_fields:
                     if e_f.get("name") == search_name:
-                        return e_f.get("csharp_type") or oracle_to_cs_type(e_f.get("type", "VARCHAR2"))
-            return f.get("csharp_type") or oracle_to_cs_type(f.get("type", "VARCHAR2"))
+                        return e_f.get("csharp_type") or sql_to_cs_type(e_f.get("type", "VARCHAR2"))
+            return f.get("csharp_type") or sql_to_cs_type(f.get("type", "VARCHAR2"))
 
         if len(query_fields) == 1:
             final_return_type = get_real_cs_type(query_fields[0])
@@ -1222,7 +1229,7 @@ def generate_files_for_table(
     for field in entity_fields:
         jp_raw  = field.get("name", "")
         jp = jp_raw.split('.')[-1].replace('"', '').strip() if jp_raw else ""
-        cs_type = field.get("csharp_type") or oracle_to_cs_type(field.get("type", "VARCHAR2"))
+        cs_type = field.get("csharp_type") or sql_to_cs_type(field.get("type", "VARCHAR2"))
         prop = get_csharp_prop_name(jp_raw, config)
         entity_fields_resolved.append({
             "name": prop,

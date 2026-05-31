@@ -228,7 +228,7 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
     s3_logic_map: dict[str, dict] = {}
     from pathlib import Path
     _OUTPUT_BASE = Path(__file__).resolve().parent.parent.parent.parent / "output"
-    s3_logic_path = _OUTPUT_BASE / "bd_flow" / "s3_bd_logic" / f"logic_{screen_id}_result.json"
+    s3_logic_path = _OUTPUT_BASE / "bd_flow" / "bd3_bd_logic" / f"logic_{screen_id}_result.json"
     if s3_logic_path.exists():
         try:
             import json
@@ -645,7 +645,7 @@ def get_dd_skeleton(
             logger.debug("[DD Form/Report] Could not map logic item '%s'", raw_mid)
 
     # S3 Load (for macros)
-    s3_logic_path = bd_final_path.parent.parent / "s3_bd_logic" / f"logic_{screen_name}_result.json"
+    s3_logic_path = bd_final_path.parent.parent / "bd3_bd_logic" / f"logic_{screen_name}_result.json"
     if s3_logic_path.exists():
         try:
             with open(s3_logic_path, encoding="utf-8") as f:

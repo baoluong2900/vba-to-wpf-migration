@@ -8,7 +8,7 @@ import { format } from "sql-formatter";
 const robustFormatSql = (sql: string): string => {
   if (!sql) return "";
   try {
-    let formatted = format(sql, { language: 'plsql', keywordCase: 'upper' });
+    let formatted = format(sql, { language: 'postgresql', keywordCase: 'upper' });
     // Eliminate any consecutive blank lines to make the SQL extremely clean and compact
     return formatted.replace(/\n\s*\n/g, '\n').trim();
   } catch {
@@ -102,19 +102,6 @@ const getPgSuggestion = (errMsg: string): { vn: string; jp: string } | null => {
     };
   }
 
-  // Fallback to ORA codes
-  if (errUpper.includes("ORA-00942")) {
-    return {
-      vn: "Bảng hoặc View không tồn tại trên PostgreSQL.",
-      jp: "テーブルまたはビューが存在しません。"
-    };
-  }
-  if (errUpper.includes("ORA-00904")) {
-    return {
-      vn: "Tên cột/trường không tồn tại hoặc sai chính tả.",
-      jp: "列名が無効です。"
-    };
-  }
   return null;
 };
 
@@ -130,7 +117,7 @@ interface QueryItem {
   conversion_method?: string;
   raw_sql?: string;
   target_sql?: string;
-  oracle_query?: Record<string, string>;
+  target_query?: Record<string, string>;
   description?: string;
   conversion_notes?: string;
   conversion_errors?: string[];
@@ -547,7 +534,6 @@ function TableViewer({
             style={{ padding: "8px 12px", borderRadius: 6, background: "var(--bg-tab-bar)", border: "1px solid var(--border-color)", color: "var(--text-main)", fontSize: 13 }}
           >
             <option value="PostgreSQL">PostgreSQL</option>
-            <option value="Oracle">Oracle</option>
             <option value="SQL Server">SQL Server</option>
             <option value="MySQL">MySQL</option>
           </select>
@@ -618,7 +604,7 @@ export default function Layer3Page() {
   const [converting, setConverting]     = useState(false);
   const [saving, setSaving]             = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
-  const [editedOracle, setEditedOracle] = useState("");
+  const [editedTarget, setEditedTarget] = useState("");
   const [models, setModels]             = useState(["deepseek-v4-pro", "qwen3-vl-235b-a22b-thinking", "qwen-vl-plus-latest", "qwen-max", "qvq-max-2025-03-25"]);
   const [selectedModel, setSelectedModel] = useState("deepseek-v4-pro");
   const [selectedDialect, setSelectedDialect] = useState("PostgreSQL");
@@ -732,9 +718,9 @@ export default function Layer3Page() {
     loadQueries();
   }, []);
 
-  // When selected changes, sync editedOracle and editedDescription
+  // When selected changes, sync editedTarget and editedDescription
   useEffect(() => {
-    setEditedOracle(robustFormatSql(selected?.target_sql || ""));
+    setEditedTarget(robustFormatSql(selected?.target_sql || ""));
     setEditedDescription(selected?.description || "");
     if (selected && selected.test_result) {
       setTestResult(selected.test_result);
@@ -750,14 +736,14 @@ export default function Layer3Page() {
   // Select query and load detail
   const handleSelect = async (q: QueryItem) => {
     setSelected(q);
-    setEditedOracle(robustFormatSql(q.target_sql || ""));
+    setEditedTarget(robustFormatSql(q.target_sql || ""));
     // Fetch full detail if needed
     try {
       const r = await fetch(`/api/v1/layer3/queries/${encodeURIComponent(q.name)}`);
       const d = await r.json();
       if (d.success && d.result) {
         setSelected(d.result);
-        setEditedOracle(robustFormatSql(d.result.target_sql || ""));
+        setEditedTarget(robustFormatSql(d.result.target_sql || ""));
       }
     } catch {}
   };
@@ -766,7 +752,7 @@ export default function Layer3Page() {
   const handleConvert = async () => {
     if (!selected) return;
     setConverting(true);
-    setEditedOracle(""); // Clear for streaming effect
+    setEditedTarget(""); // Clear for streaming effect
     try {
       const r = await fetch(`/api/v1/layer3/convert`, {
         method: "POST",
@@ -785,14 +771,14 @@ export default function Layer3Page() {
         
         const interval = setInterval(() => {
           if (i <= fullText.length) {
-            setEditedOracle(fullText.substring(0, i));
+            setEditedTarget(fullText.substring(0, i));
             i += speed;
           } else {
             let formatted = fullText;
             try {
-              formatted = format(fullText, { language: 'tsql', keywordCase: 'upper' });
+              formatted = format(fullText, { language: 'postgresql', keywordCase: 'upper' });
             } catch {}
-            setEditedOracle(formatted); // ensure final text is set exactly and formatted
+            setEditedTarget(formatted); // ensure final text is set exactly and formatted
             clearInterval(interval);
             setConverting(false);
             if (d.errors && d.errors.length > 0) {
@@ -819,7 +805,7 @@ export default function Layer3Page() {
     setTestResult(null);
     setTestHistory([]);
     setFixNotes([]);
-    setEditedOracle("");
+    setEditedTarget("");
     try {
       const r = await fetch(`/api/v1/layer3/convert_and_test`, {
         method: "POST",
@@ -841,12 +827,12 @@ export default function Layer3Page() {
         const speed = Math.max(1, Math.floor(fullText.length / 40));
         const interval = setInterval(() => {
           if (i <= fullText.length) {
-            setEditedOracle(fullText.substring(0, i));
+            setEditedTarget(fullText.substring(0, i));
             i += speed;
           } else {
             let formatted = fullText;
-            try { formatted = format(fullText, { language: 'tsql', keywordCase: 'upper' }); } catch {}
-            setEditedOracle(formatted);
+            try { formatted = format(fullText, { language: 'postgresql', keywordCase: 'upper' }); } catch {}
+            setEditedTarget(formatted);
             clearInterval(interval);
             setConvertingAndTesting(false);
             if (lastTest.success) {
@@ -875,14 +861,14 @@ export default function Layer3Page() {
   const handleSave = async () => {
     if (!selected) return;
     setSaving(true);
-    const finalOracle = robustFormatSql(editedOracle);
-    setEditedOracle(finalOracle);
+    const finalTarget = robustFormatSql(editedTarget);
+    setEditedTarget(finalTarget);
     try {
       const r = await fetch(`/api/v1/layer3/queries/${encodeURIComponent(selected.name)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          target_sql: finalOracle,
+          target_sql: finalTarget,
           notes: selected.conversion_notes || "",
           description: editedDescription,
           model: selectedModel
@@ -911,7 +897,7 @@ export default function Layer3Page() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          target_sql: editedOracle,
+          target_sql: editedTarget,
           query_name: selected.name,
         }),
       });
@@ -950,8 +936,8 @@ export default function Layer3Page() {
   const accessSql  = useMemo(() => {
     return robustFormatSql(selected?.raw_sql || "");
   }, [selected?.raw_sql]);
-  const oracleSql  = editedOracle;
-  const hasDiff    = oracleSql.trim() !== "" && oracleSql !== accessSql;
+  const targetSql  = editedTarget;
+  const hasDiff    = targetSql.trim() !== "" && targetSql !== accessSql;
 
   return (
     <>
@@ -1002,12 +988,11 @@ export default function Layer3Page() {
                 <select value={selectedDialect} onChange={e => setSelectedDialect(e.target.value)}
                   style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", color: "var(--text-muted)", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none", marginLeft: 8 }}>
                   <option value="PostgreSQL">PostgreSQL</option>
-                  <option value="Oracle SQL">Oracle SQL</option>
                   <option value="SQL Server">SQL Server</option>
                   <option value="MySQL">MySQL</option>
                 </select>
 
-                 <button onClick={handleRunTest} disabled={runningTest || !editedOracle || selectedDialect !== "PostgreSQL"}
+                 <button onClick={handleRunTest} disabled={runningTest || !editedTarget || selectedDialect !== "PostgreSQL"}
                   style={{
                     background: "color-mix(in srgb, var(--success) 10%, transparent)",
                     border: "1px solid var(--success)",
@@ -1016,11 +1001,11 @@ export default function Layer3Page() {
                     padding: "6px 12px",
                     fontSize: 12,
                     fontWeight: 600,
-                    cursor: (runningTest || !editedOracle || selectedDialect !== "PostgreSQL") ? "not-allowed" : "pointer",
+                    cursor: (runningTest || !editedTarget || selectedDialect !== "PostgreSQL") ? "not-allowed" : "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    opacity: (runningTest || !editedOracle || selectedDialect !== "PostgreSQL") ? 0.7 : 1
+                    opacity: (runningTest || !editedTarget || selectedDialect !== "PostgreSQL") ? 0.7 : 1
                   }}>
                   {runningTest ? (
                     <div className="loader" style={{ width: 12, height: 12 }} />
@@ -1113,9 +1098,9 @@ export default function Layer3Page() {
                 {/* Target SQL */}
                 <SqlPanel
                   title="Target SQL (Target)"
-                  sql={oracleSql}
+                  sql={targetSql}
                   editable
-                  onChange={setEditedOracle}
+                  onChange={setEditedTarget}
                   badge={hasDiff ? "Modified" : "PostgreSQL"}
                   badgeColor={hasDiff ? "var(--warning)" : "var(--success)"}
                 />
@@ -1182,7 +1167,7 @@ export default function Layer3Page() {
                             {t.success
                               ? <span style={{ color: "var(--success)" }}>Passed ✔</span>
                               : <span style={{ color: "var(--danger)", fontFamily: "monospace", wordBreak: "break-all" }}>
-                                  {t.error_code ? `ORA-${t.error_code}: ` : ""}{t.error_message}
+                                  {t.error_code ? `${t.error_code}: ` : ""}{t.error_message}
                                 </span>
                             }
                             {fixNotes[t.attempt] && (
@@ -1413,7 +1398,7 @@ export default function Layer3Page() {
               errorLogs.map((log: any, idx: number) => {
                 const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : "";
                 const suggestions = getPgSuggestion(log.error_message || log.error_code || "");
-                const errCode = log.error_code || log.error_message?.match(/ORA-\d+|[A-Z0-9]{5}/)?.[0] || "";
+                const errCode = log.error_code || log.error_message?.match(/[A-Z0-9]{5}/)?.[0] || "";
                 
                 return (
                   <div key={idx} style={{

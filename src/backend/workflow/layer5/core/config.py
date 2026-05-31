@@ -1,6 +1,6 @@
 """
 core/config.py — Layer 5 Configuration
-Model config, API keys, paths for WPF Code Gen pipeline.
+Model config, API keys, paths for Avalonia code-gen pipeline.
 
 Reuse API key từ config.json chung (workflow/config.json) qua common config.
 """
@@ -47,9 +47,34 @@ WORKFLOW_DIR = _WORKFLOW_DIR
 CONFIG_FILE = Path("config.json")
 if not CONFIG_FILE.exists():
     CONFIG_FILE = WORKFLOW_DIR / "config.json"
-vba_brain_PROJECT_DIR = WORKFLOW_DIR / "source"
-if not vba_brain_PROJECT_DIR.exists():
-    vba_brain_PROJECT_DIR = WORKFLOW_DIR / "src" / "wpf"
+
+
+def _find_avalonia_project_dir() -> Path:
+    """Locate the Avalonia solution root by climbing until vba_brain.slnx is found.
+
+    Robust against directory-depth changes (replaces fragile hand-counted
+    .parent chains that previously drifted to orphan paths).
+    """
+    for base in (_LAYER5_DIR, *_LAYER5_DIR.parents):
+        candidate = base / "src" / "wpf"
+        if (candidate / "vba_brain.slnx").exists() or (candidate / "vba_brain.sln").exists():
+            return candidate
+    # Fallback: conventional location under the workflow root
+    return WORKFLOW_DIR / "src" / "wpf"
+
+
+# ── Source tree (single source of truth — import these, never recompute) ──
+AVALONIA_PROJECT_DIR = _find_avalonia_project_dir()      # .../src/wpf (solution root)
+UI_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.UI.Avalonia"
+VIEWS_DIR = UI_PROJECT_DIR / "Views"
+VIEWMODELS_DIR = UI_PROJECT_DIR / "ViewModels"
+SERVICES_DIR = UI_PROJECT_DIR / "Services"
+DOMAIN_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Domain"
+APPLICATION_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Application"
+INFRASTRUCTURE_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Infrastructure"
+
+# Back-compat alias (solution root) — used by file_writer / build_verify / orchestrator
+vba_brain_PROJECT_DIR = AVALONIA_PROJECT_DIR
 
 # ──────────────────────────────────────────────
 # Localization
@@ -82,7 +107,7 @@ L5_ROUTING = {
     # Heavy — cần suy luận logic phức tạp
     "service":    get_model(LAYER5_SERVICE_MODEL_NAME, QWEN3_CODER_480B),      # DD steps → C# business logic
     "viewmodel":  get_model(LAYER5_VIEWMODEL_MODEL_NAME, QWEN_PLUS_20250728),    # MVVM commands + event flow
-    "repository": get_model(LAYER5_REPOSITORY_MODEL_NAME, QWEN3_CODER_480B),      # Oracle SQL → Dapper code
+    "repository": get_model(LAYER5_REPOSITORY_MODEL_NAME, QWEN3_CODER_480B),      # SQL → Dapper code
 
     # Medium — cần reasoning nhưng pattern rõ ràng
     "view_xaml":  get_model(LAYER5_VIEWMODEL_MODEL_NAME, QWEN_PLUS_20250728),    # Layout từ BD → XAML

@@ -185,8 +185,8 @@ def generate_reference_json(form_name: str):
                 def get_real_cs_type(f: dict) -> str:
                     for e_f in entity_fields:
                         if e_f.get("name") == f.get("name"):
-                            return e_f.get("csharp_type") or tr.oracle_to_cs_type(e_f.get("type", "VARCHAR2"))
-                    return f.get("csharp_type") or tr.oracle_to_cs_type(f.get("type", "VARCHAR2"))
+                            return e_f.get("csharp_type") or tr.sql_to_cs_type(e_f.get("type", "VARCHAR2"))
+                    return f.get("csharp_type") or tr.sql_to_cs_type(f.get("type", "VARCHAR2"))
                 
                 # ── Resolve Return Type and Output ───────────────────────────
                 is_scalar = False
@@ -354,7 +354,7 @@ def generate_reference_json(form_name: str):
                 for field in entity_fields:
                     jp_raw  = field.get("name", "")
                     jp = jp_raw.split('.')[-1].replace('"', '').strip() if jp_raw else ""
-                    cs_type = field.get("csharp_type") or tr.oracle_to_cs_type(field.get("type", "VARCHAR2"))
+                    cs_type = field.get("csharp_type") or tr.sql_to_cs_type(field.get("type", "VARCHAR2"))
                     prop = tr.get_csharp_prop_name(jp_raw, config)
                     entity_fields_resolved.append({
                         "name": prop,

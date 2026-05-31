@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent))
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
+from core.config import SERVICES_DIR, DOMAIN_PROJECT_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +207,7 @@ Raw XML Definition:
 
                     # Target paths
                     target_filename = f"{class_name}.cs"
-                    dest_path_wpf = workflow_root.parent / "wpf" / "vba_brain.UI.Avalonia" / "Services" / target_filename
+                    dest_path_wpf = SERVICES_DIR / target_filename
                     dest_path_wpf.parent.mkdir(parents=True, exist_ok=True)
                     dest_path_wpf.write_text(csharp_code, encoding="utf-8")
                     logger.info(f"[Agent Mapping] Deployed macro service to WPF Services: {dest_path_wpf}")
@@ -285,7 +286,7 @@ Functions and Procedures:
 
                     # Target paths
                     target_filename = f"{class_name}.cs"
-                    dest_path_domain = workflow_root.parent / "wpf" / "vba_brain.Domain" / "Common" / target_filename
+                    dest_path_domain = DOMAIN_PROJECT_DIR / "Common" / target_filename
                     dest_path_domain.parent.mkdir(parents=True, exist_ok=True)
                     dest_path_domain.write_text(csharp_code, encoding="utf-8")
                     logger.info(f"[Agent Mapping] Deployed module service to Domain Common: {dest_path_domain}")

@@ -1,7 +1,7 @@
 # vba_brain — VBA & Access Modernization Pipeline
 
 [![Python](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12%20|%203.13-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Next.js](https://img.shields.io/badge/next.js-v15-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/next.js-v16-black?logo=next.js)](https://nextjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![gRPC](https://img.shields.io/badge/gRPC-50051-244c5a?logo=grpc)](https://grpc.io/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-blueviolet)](https://github.com/langchain-ai/langgraph)
@@ -26,7 +26,6 @@
 - [Web Console Dashboard](#-web-console-dashboard)
 - [Output & Artifacts](#-output--artifacts)
 - [Environment Variables](#-environment-variables)
-- [Security](#-security)
 
 ---
 
@@ -61,8 +60,8 @@
   ║   LAYER  3   ║                ║   LAYER  4   ║
   ║  SQL Migration║                ║  Excel Export ║
   ║  → PostgreSQL ║                ║  → .xlsx docs ║
-  ║  → Oracle     ║                ╚═══════════════╝
-  ╚═══════════════╝                         │
+  ╚═══════════════╝                ╚═══════════════╝
+                                            │
                                             ▼
                                   ╔═══════════════╗
                                   ║   LAYER  5   ║
@@ -73,8 +72,8 @@
 
   ┌──────────────────────────────────────────────────────────┐
   │              Infrastructure & Tooling                     │
-  │  Next.js 15 Web Console  ◄──► gRPC Gateway (port 50051) │
-  │  MongoDB 7 + Qdrant + Oracle XE (Docker Compose)         │
+  │  Next.js 16 Web Console  ◄──► gRPC Gateway (port 50051) │
+  │  MongoDB 7 + PostgreSQL 16 (Docker Compose)             │
   └──────────────────────────────────────────────────────────┘
 ```
 
@@ -141,7 +140,7 @@ workflow/
 │   │       ├── layer3/             # ── Layer 3: SQL Migration ──────────────────
 │   │       │   └── sql_migration/
 │   │       │       ├── router.py               # API: list/get/update/convert query + table
-│   │       │       ├── table_converter.py      # Access DDL → PostgreSQL/Oracle DDL
+│   │       │       ├── table_converter.py      # Access DDL → PostgreSQL DDL
 │   │       │       ├── postgres_migrator.py    # LLM-assisted full migration runner
 │   │       │       └── seed_queries_v2.py      # Seed Access queries (raw_sql) → MongoDB
 │   │       │
@@ -180,14 +179,14 @@ workflow/
 │   │               ├── build_verify.py     # dotnet build + AI auto-fix (max 3 iterations)
 │   │               └── file_writer.py      # Safe file write with backup
 │   │
-│   ├── frontend/                   # Next.js 15 Web Console
+│   ├── frontend/                   # Next.js 16 Web Console
 │   │   └── src/
 │   │       ├── app/
 │   │       │   ├── api/
 │   │       │   │   ├── graph/              # VBA dependency graph builder (graphBuilder.ts)
 │   │       │   │   ├── graph-wpf/          # Avalonia graph: mapping, validation, source-review
 │   │       │   │   └── v1/layer5/          # Layer5 run-agent / run-logic API endpoints
-│   │       │   └── (pages)/                # Dashboard pages: layer1→5, graph, graph-wpf
+│   │       │   └── (pages)/                # Dashboard pages: layer1 → layer5
 │   │       └── components/
 │   │           ├── GraphView.tsx           # React Flow canvas for dependency graph
 │   │           ├── Header.tsx / Footer.tsx
@@ -207,7 +206,7 @@ workflow/
 │   └── reference_map.json          # Cross-reference mapping hints
 │
 ├── infa/
-│   ├── docker-compose.yml          # MongoDB 7 + Qdrant + Oracle XE (dev + test)
+│   ├── docker-compose.yml          # MongoDB 7 + Mongo Express + PostgreSQL 16
 │   └── mongo-init/01_init_user.js  # MongoDB init script
 │
 └── docs/                           # Additional documentation
@@ -235,8 +234,8 @@ workflow/
 
 | Component | Technology | Version |
 |-----------|----------|---------|
-| Framework | Next.js | 15 |
-| Styling | TailwindCSS | 3.x |
+| Framework | Next.js | 16 |
+| Styling | TailwindCSS | 4.x |
 | Graph Canvas | React Flow (`@xyflow/react`) | latest |
 | Icons | Lucide React | latest |
 | Animations | Framer Motion | latest |
@@ -248,9 +247,7 @@ workflow/
 |---------|-------|------|---------|
 | MongoDB | `mongo:7.0` | 27017 | Document store (L1/L2 state) |
 | Mongo Express | `mongo-express:1.0.2` | 8082 | DB Web UI |
-| Qdrant | `qdrant/qdrant:latest` | 6333 / 6334 | Vector embeddings |
-| Oracle Dev | `gvenzl/oracle-free:23-slim` | 1522 | Target dev DB |
-| Oracle Test | `gvenzl/oracle-free:23-slim` | 1523 | Target test DB |
+| PostgreSQL | `postgres:16-alpine` | 5432 | Target migration DB (L3/L5) |
 
 ### Target Platform
 
@@ -562,61 +559,17 @@ export L2_STAGE=production
 
 ### Available Models
 
-| Model ID | Provider | Context | Used for |
-|----------|---------|---------|---------|
-| `qwen3-max` | Alibaba | 262K | Best for complex tasks, most capable |
-| `qwen3.5-plus` | Alibaba | 1M | Balanced performance, comparable to Qwen3-Max |
-| `qwen-plus` | Alibaba | 1M | L5 ViewModel/XAML/Entity, medium tasks |
-| `qwen-plus-latest` | Alibaba | 1M | L5 ViewModel/XAML/Entity (latest) |
-| `qwen-plus-2025-12-01` | Alibaba | 1M | Stable snapshot |
-| `qwen-plus-2025-07-28` | Alibaba | 1M | Legacy snapshot |
-| `qwen3.5-flash` | Alibaba | 1M | Fast, cost-effective |
-| `qwen-flash` | Alibaba | 1M | Simple tasks, fast |
-| `qwen-turbo` | Alibaba | 1M | Fast inference, lower cost |
-| `qwen-turbo-latest` | Alibaba | 1M | Fast inference (latest) |
-| `qwen-max` | Alibaba | 128K | L2 dev/pilot, L3 migration |
-| `qwen-max-latest` | Alibaba | 128K | L2 dev/pilot (latest) |
-| `qwen-long-latest` | Alibaba | 10M | Long context documents |
-| `qwq-plus` | Alibaba | 128K | Complex reasoning |
-| `qwen3-coder-plus` | Alibaba | 1M | Code generation, Coding Agent |
-| `qwen3-coder-flash` | Alibaba | 1M | Code generation, fast |
-| `qwen3-coder-next` | Alibaba | 262K | L2 production complex (fallback) |
-| `qwen3-coder-480b-a35b-instruct` | Alibaba | 262K | L5 Service/Repository, L2 production complex |
-| `qwen3-coder-30b-a3b-instruct` | Alibaba | 262K | Code generation (30B) |
-| `qwen3-235b-a22b` | Alibaba | 128K | L2 production medium |
-| `qwen3-235b-a22b-thinking-2507` | Alibaba | 128K | Thinking mode only (July 2025) |
-| `qwen3-235b-a22b-instruct-2507` | Alibaba | 128K | Non-thinking mode only (July 2025) |
-| `qwen3-32b` | Alibaba | 128K | General purpose 32B |
-| `qwen3-30b-a3b` | Alibaba | 128K | MoE 30B |
-| `qwen3-14b` | Alibaba | 128K | General purpose 14B |
-| `qwen3-8b` | Alibaba | 128K | General purpose 8B |
-| `qwen3-4b` | Alibaba | 128K | Lightweight 4B |
-| `qwen3-1.7b` | Alibaba | 32K | Ultra-lightweight 1.7B |
-| `qwen3-0.6b` | Alibaba | 32K | Ultra-lightweight 0.6B |
-| `qwen3-next-80b-a3b-thinking` | Alibaba | 128K | Thinking only (Sep 2025) |
-| `qwen3-next-80b-a3b-instruct` | Alibaba | 128K | Non-thinking only (Sep 2025) |
-| `qwen3-vl-plus` | Alibaba | 262K | Visual understanding (Plus) |
-| `qwen3-vl-flash` | Alibaba | 262K | Visual understanding (Flash) |
-| `qwen3-vl-235b-a22b-thinking` | Alibaba | 128K | Visual reasoning (235B thinking) |
-| `qwen3-vl-235b-a22b-instruct` | Alibaba | 128K | Visual understanding (235B) |
-| `qwen3-vl-32b-thinking` | Alibaba | 128K | Visual reasoning (32B) |
-| `qwen3-vl-30b-a3b-thinking` | Alibaba | 128K | Visual reasoning (30B MoE) |
-| `qwen3-vl-8b-thinking` | Alibaba | 128K | Visual reasoning (8B) |
-| `qwen-vl-max` | Alibaba | 128K | Visual understanding (max) |
-| `qwen-vl-plus` | Alibaba | 128K | Visual understanding (plus) |
-| `qvq-max` | Alibaba | 128K | Visual reasoning |
-| `qvq-plus` | Alibaba | 128K | Visual reasoning (plus) |
-| `qwen-mt-plus` | Alibaba | 16K | Translation (92 languages) |
-| `qwen-mt-flash` | Alibaba | 16K | Translation fast |
-| `qwen-math-plus` | Alibaba | 4K | Mathematical reasoning |
-| `qwen-math-turbo` | Alibaba | 4K | Math fast |
-| `qwen2.5-72b-instruct` | Alibaba | 128K | Open-source 72B |
-| `qwen2.5-32b-instruct` | Alibaba | 128K | Open-source 32B |
-| `qwen2.5-14b-instruct` | Alibaba | 128K | Open-source 14B |
-| `qwen2.5-7b-instruct` | Alibaba | 128K | Open-source 7B |
-| `qwen2.5-vl-72b-instruct` | Alibaba | 128K | Open-source VL 72B |
-| `qwen2.5-coder-32b-instruct` | Alibaba | 128K | Open-source coder 32B |
-| `qwen2.5-coder-7b-instruct` | Alibaba | 128K | Open-source coder 7B |
+The pipeline uses a focused set of Alibaba (DashScope) models, declared in `config.json → llm_providers.alibaba.models`:
+
+| Model ID | Context | Used for |
+|----------|---------|---------|
+| `qwen-max` | 128K | L2 dev/pilot, L3/L4 migration, L2 production (medium) |
+| `qwen3-coder-480b-a35b-instruct` | 262K | L5 Service/Repository, L2 production (critical/high) |
+| `qwen3-coder-next` | 262K | L2 production (low complexity) |
+| `qwen3-235b-a22b-instruct-2507` | 262K | L2 production (medium) reasoning |
+| `qwen-plus-2025-07-28` | 262K | L5 ViewModel/XAML/Entity/DTO/Mapper, fallback |
+
+> Other models (`qwen3-vl-*`, `qvq-max`, `qwen-vl-plus`, OpenAI/Anthropic/Groq) are optional and only used if you add them to `config.json` and select them at runtime.
 
 ### Handling Quota Exhaustion & Fallback Models
 
@@ -670,7 +623,7 @@ text, usage = client.call_with_fallback(DEV_MODEL, system_prompt, user_prompt)
 | Python | ≥ 3.9 | Recommended 3.11+ |
 | Node.js | ≥ 18 | Required for Frontend |
 | Yarn | 1.x | `npm install -g yarn` |
-| Docker Desktop | latest | For MongoDB + Qdrant + PostgreSQL |
+| Docker Desktop | latest | For MongoDB + PostgreSQL |
 | .NET SDK | 10 | Only required if using Layer 5 / Avalonia |
 
 ### Step 1: Clone & Dependencies
@@ -701,7 +654,7 @@ nano config.json  # or your preferred editor
 Required fields:
 - `llm_providers.alibaba.api_key` — Alibaba Cloud API key
 - `mongodb.uri` — MongoDB connection string
-- `postgres_db.connection_string` — PostgreSQL connection string
+- `postgresql.connection_string` — PostgreSQL connection string
 
 > ⚠️ **NEVER commit `config.json`**. This file is already in `.gitignore`.
 
@@ -710,7 +663,7 @@ Required fields:
 ```bash
 cd infa
 
-# Start MongoDB + Qdrant + PostgreSQL (background)
+# Start MongoDB + PostgreSQL (background)
 docker compose up -d
 
 # Only start MongoDB (minimal)
@@ -761,9 +714,9 @@ python run_all.py
 
 | # | Script | Description |
 |---|--------|--------|
-| 1 | `parser/frm_parser.py` | Parse Forms |
-| 2 | `parser/frm_parser.py --reports` | Parse Reports |
-| 3 | `parser/query_parser.py` | Parse Queries |
+| 1 | `parser/table_parser.py` | Parse Tables |
+| 2 | `parser/query_parser.py` | Parse Queries |
+| 3 | `parser/frm_parser.py` | Parse Forms & Reports |
 | 4 | `parser/macro_parser.py` | Parse Macros |
 | 5 | `parser/modules_parser.py` | Parse Modules |
 | 6 | `aggregator.py` | Aggregate cross-references |
@@ -817,8 +770,6 @@ python start_wpf.py --clean
 | Layer 3 | `/layer3` | Review & convert SQL queries (Access → PostgreSQL) |
 | Layer 4 | `/layer4` | Generate & download Excel BD/DD specification files |
 | Layer 5 | `/layer5` | Code gen: run agent, view generated files, Avalonia graph |
-| VBA Graph | `/graph` | Interactive dependency graph (React Flow) |
-| Avalonia Graph | `/graph-wpf` | Access→Avalonia mapping graph + source review |
 
 ---
 
@@ -861,22 +812,6 @@ Variables that can be set in `.env` or shell environment, overriding config.json
 | `SOURCE_LANGUAGE` | Source language code | `ja` |
 | `TARGET_LANGUAGE` | Target language code | `en` |
 | `L2_HUMAN_REVIEW` | Enable interactive review | `0` |
-
----
-
-## 🔒 Security
-
-> **Important**: This project handles credentials and secrets. Strictly comply with the following rules:
-
-- ✅ `config.example.json` — placeholder template file, **commit normally**
-- ❌ `config.json` — contains real API keys, **NEVER commit** (already in `.gitignore`)
-- ❌ `.env`, `.env.*` — **NEVER commit**
-- ❌ `appsettings.json` — .NET configuration with DB password, **NEVER commit**
-
-**If a key is leaked**:
-1. Rotate the key immediately on Alibaba Cloud Console / OpenAI / Anthropic
-2. Check git history: `git log --all -S "sk-"` to find the commit containing the key
-3. If pushed to remote: use `git-filter-repo` to erase it from history
 
 ---
 

@@ -15,10 +15,10 @@ Usage:
 Agents được deploy (theo thứ tự):
     1. repo    → Domain/Entities, Domain/Interfaces, Domain/DTOs, Infrastructure/Repositories
     2. service → Application/Services, Application/Interfaces, Application/DTOs
-    3. ui      → UI.WPF/ViewModels, UI.WPF/Views
+    3. ui      → UI.Avalonia/ViewModels, UI.Avalonia/Views
 
 Post-deploy patches (chạy sau khi copy xong):
-    - App.xaml.cs: fix namespace conflict Application (WPF) vs vba_brain.Application
+    - App.axaml.cs: fix namespace conflict Application (Avalonia) vs vba_brain.Application
 """
 from __future__ import annotations
 
@@ -125,20 +125,20 @@ def _check_interface_impl_mismatch(dry_run: bool = False) -> list[str]:
 
 
 def _patch_app_xaml_cs(dry_run: bool = False) -> None:
-    """Fix CS0118: 'Application' namespace conflict in App.xaml.cs.
+    """Fix CS0118: 'Application' namespace conflict in App.axaml.cs.
 
     When vba_brain.Application project is referenced, the compiler confuses
-    System.Windows.Application (class) with vba_brain.Application (namespace).
-    Patch: replace bare ': Application' with ': System.Windows.Application'.
+    Avalonia.Application (class) with vba_brain.Application (namespace).
+    Patch: replace bare ': Application' with ': global::Avalonia.Application'.
     Only applies if the file still has the unqualified form.
     """
-    target = SOURCE_ROOT / "vba_brain.UI.WPF" / "App.xaml.cs"
+    target = SOURCE_ROOT / "vba_brain.UI.Avalonia" / "App.axaml.cs"
     if not target.exists():
         return
 
     text = target.read_text(encoding="utf-8")
-    # Already patched
-    if "System.Windows.Application" in text:
+    # Already patched (any qualified Avalonia.Application form)
+    if "Avalonia.Application" in text:
         return
     # Must contain the problematic pattern
     if ": Application" not in text:
@@ -146,14 +146,14 @@ def _patch_app_xaml_cs(dry_run: bool = False) -> None:
 
     patched = text.replace(
         "public partial class App : Application",
-        "public partial class App : System.Windows.Application",
+        "public partial class App : global::Avalonia.Application",
     )
     if patched == text:
         return  # nothing changed
 
     rel = target.relative_to(SOURCE_ROOT)
     print(f"\n  [post-deploy patch]")
-    print(f"    🔧 {rel} — qualify Application → System.Windows.Application")
+    print(f"    🔧 {rel} — qualify Application → global::Avalonia.Application")
     if not dry_run:
         target.write_text(patched, encoding="utf-8")
 

@@ -45,7 +45,11 @@ except Exception:  # pragma: no cover - allows direct script execution
             MONGO_DB = mongo_cfg.get("db", MONGO_DB)
         except Exception:
             pass
-    vba_brain_PROJECT_DIR = Path(__file__).resolve().parent.parent.parent.parent / "source"
+    vba_brain_PROJECT_DIR = next(
+        (b / "src" / "wpf" for b in Path(__file__).resolve().parents
+         if (b / "src" / "wpf" / "vba_brain.slnx").exists()),
+        Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "wpf",
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AgentGraphView")
@@ -639,7 +643,7 @@ def parse_actual_source_graph(source_root: Path, screen_name: str, upstream_file
         for gf in upstream_files:
             in_memory_files[gf.path.replace("\\", "/")] = gf.content
 
-    physical_files = walk_files(source_root, {".cs", ".xaml", ".csproj", ".sln", ".json"})
+    physical_files = walk_files(source_root, {".cs", ".axaml", ".xaml", ".csproj", ".slnx", ".sln", ".json"})
     
     all_paths = set(in_memory_files.keys())
     for f in physical_files:
@@ -703,11 +707,11 @@ def parse_actual_source_graph(source_root: Path, screen_name: str, upstream_file
     # Build alternate name: "F_Login" → "FLogin" (strip underscores, capitalize segments)
     _alt_name = "".join(s.capitalize() for s in screen_name.split("_") if s)
     for p in all_paths:
-        if (p.endswith(f"Views/{screen_name}.xaml") or p.endswith(f"Views/{screen_name}View.xaml")
-                or p.endswith(f"/{screen_name}.xaml") or p.endswith(f"/{screen_name}View.xaml")
-                or p == f"{screen_name}.xaml" or p == f"{screen_name}View.xaml"
-                or p.endswith(f"Views/{_alt_name}.xaml") or p.endswith(f"Views/{_alt_name}View.xaml")
-                or p.endswith(f"/{_alt_name}.xaml") or p.endswith(f"/{_alt_name}View.xaml")):
+        _is_view_ext = p.endswith(".axaml") or p.endswith(".xaml")
+        _stem = p.rsplit("/", 1)[-1].rsplit(".", 1)[0] if _is_view_ext else ""
+        if _is_view_ext and _stem in (
+            screen_name, f"{screen_name}View", _alt_name, f"{_alt_name}View"
+        ):
             view_path = p
         if (p.endswith(f"ViewModels/{screen_name}.cs") or p.endswith(f"ViewModels/{screen_name}ViewModel.cs")
                 or p.endswith(f"/{screen_name}ViewModel.cs") or p.endswith(f"/{screen_name}.cs")

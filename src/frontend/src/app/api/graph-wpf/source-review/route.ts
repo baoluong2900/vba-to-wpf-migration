@@ -141,7 +141,7 @@ function diffGraphs(expected: any, actual: any) {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name') || 'F_Login';
-  const sourceRoot = path.resolve(workflowRoot(), 'source');
+  const sourceRoot = path.resolve(workflowRoot(), 'wpf');
   const expectedPath = path.resolve(process.cwd(), 'reports', 'wpf-graph', `${name}.expected.json`);
 
   if (!fs.existsSync(expectedPath)) {

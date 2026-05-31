@@ -40,11 +40,10 @@ _MACRO_JP_TO_EN_PATH = (
     / "graphview" / "outputs" / "macros" / "listMacroJpToEn.json"
 )
 
-# Avalonia Services folder: agents/ui → agents → layer5 → workflow → backend → src
-_WPF_SERVICES_DIR = (
-    Path(__file__).resolve().parent.parent.parent.parent.parent  # → src/
-    / "wpf" / "vba_brain.UI.Avalonia" / "Services"
-)
+# Avalonia Services output dir — single source of truth in core.config
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from core.config import SERVICES_DIR as _WPF_SERVICES_DIR
 
 
 def _load_macro_jp_to_en() -> dict[str, str]:
@@ -1178,7 +1177,7 @@ public partial class {class_name} : Window
             logger.info("[SkeletonTool] Written: %s", vm_path.name)
 
         # Code-behind
-        cs_path = views_dir / f"{form_name}.xaml.cs"
+        cs_path = views_dir / f"{form_name}.axaml.cs"
         if overwrite_cs or not cs_path.exists():
             views_dir.mkdir(parents=True, exist_ok=True)
             cs_path.write_text(self.gen_codebehind(form_name, vm_bindings), encoding="utf-8")

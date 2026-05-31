@@ -130,7 +130,7 @@ def convert_query(req):
         model_cfg = get_model(model_name, QWEN_MAX)
         
         system_prompt = (
-            "You are an expert database administrator specialized in migrating database queries from MS Access/Oracle dialect to PostgreSQL.\n"
+            "You are an expert database administrator specialized in migrating database queries from MS Access dialect to PostgreSQL.\n"
             "Translate the input query into valid PostgreSQL syntax.\n\n"
             "Follow these strict rules:\n"
             "1. Maintain all bind variables (parameters) exactly as they are in the original query (e.g. :txt工事名称, :txt店所コード, etc.). Keep the colons and variable names identical.\n"

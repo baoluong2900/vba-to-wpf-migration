@@ -26,11 +26,10 @@ logger = logging.getLogger(__name__)
 AGENT_DIR    = Path(__file__).parent
 INPUTS_DIR   = AGENT_DIR / "inputs"
 
-# Avalonia Views folder: agents/logic → agents → layer5 → workflow → backend → src
-WPF_VIEWS_DIR = (
-    AGENT_DIR.parent.parent.parent.parent.parent  # → src/
-    / "wpf" / "vba_brain.UI.Avalonia" / "Views"
-)
+# Avalonia Views output dir — single source of truth in core.config
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from core.config import VIEWS_DIR as WPF_VIEWS_DIR, AVALONIA_PROJECT_DIR
 
 
 class ChunkBuilder:
@@ -319,7 +318,7 @@ class ChunkBuilder:
             "screen_description": screen_desc,
             "description":  "Events chỉ xử lý UI/navigation/validation. Gen C# method body cho WPF code-behind.",
             "total_events": len(ui_events),
-            "cs_file":      f"{view_file_stem}.xaml.cs",
+            "cs_file":      f"{view_file_stem}.axaml.cs",
             "events":       ui_events,
         }
         service_data = {
@@ -328,7 +327,7 @@ class ChunkBuilder:
             "screen_description": screen_desc,
             "description":  "Events có xử lý data/query. Gen ViewModel + IService + Service method.",
             "total_events": len(service_events),
-            "cs_file":      f"{view_file_stem}.xaml.cs",
+            "cs_file":      f"{view_file_stem}.axaml.cs",
             "events":       service_events,
         }
 
@@ -466,15 +465,17 @@ class ChunkBuilder:
         except ImportError:
             view_file_stem = form_name
 
-        cs_file = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
+        cs_file = WPF_VIEWS_DIR / f"{view_file_stem}.axaml.cs"
         if not cs_file.exists():
-            # Also check agent ui outputs folder
-            ui_out = (
-                Path(__file__).resolve().parent.parent / "ui" / "outputs" / form_name / "Views"
-                / f"{view_file_stem}.xaml.cs"
-            )
-            if ui_out.exists():
-                cs_file = ui_out
+            cs_file = WPF_VIEWS_DIR / f"{view_file_stem}.xaml.cs"
+        if not cs_file.exists():
+            # Also check agent ui outputs folder (try .axaml.cs then .xaml.cs)
+            ui_views = Path(__file__).resolve().parent.parent / "ui" / "outputs" / form_name / "Views"
+            for _ext in (".axaml.cs", ".xaml.cs"):
+                _cand = ui_views / f"{view_file_stem}{_ext}"
+                if _cand.exists():
+                    cs_file = _cand
+                    break
 
         if cs_file.exists():
             try:
@@ -800,9 +801,7 @@ class ChunkBuilder:
                                 for p in contract_res_props
                             ]
                             # Resolve entity_shapes for IEnumerable<XEntity> props
-                            source_root = (
-                                Path(__file__).resolve().parent.parent.parent.parent.parent / "source"
-                            )
+                            source_root = AVALONIA_PROJECT_DIR
                             for prop in res_props:
                                 inner_m = re.search(r'(?:IEnumerable|List|IList)<([A-Za-z]\w+)>', prop.get("type", ""))
                                 if inner_m:
@@ -949,9 +948,7 @@ class ChunkBuilder:
             class_name = f"{module_id}Response"
             props = _parse_properties(res_content, class_name)
             # Resolve entity shapes for IEnumerable<XEntity> properties
-            source_root = (
-                Path(__file__).resolve().parent.parent.parent.parent.parent / "source"
-            )
+            source_root = AVALONIA_PROJECT_DIR
             for prop in props:
                 raw_t = prop.get("type", "")
                 inner_m = re.search(r'(?:IEnumerable|List|IList|IReadOnlyList)<([A-Za-z]\w+)>', raw_t)
@@ -986,10 +983,7 @@ class ChunkBuilder:
         so LLM knows the exact field names instead of hallucinating.
         Fallback to default [Success, Message] if file not found.
         """
-        source_root = (
-            Path(__file__).resolve().parent.parent.parent.parent.parent  # → workflow/
-            / "source"
-        )
+        source_root = AVALONIA_PROJECT_DIR
         feature = re.sub(r"_", "", (form_name or "").replace("F_", "F")) or "Default"
         responses_file = source_root / "vba_brain.Application" / "DTOs" / "Responses" / f"{feature}ServiceResponses.cs"
 
