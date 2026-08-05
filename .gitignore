@@ -1,5 +1,6 @@
 # Existing content
 .kiro/
+.codegraph/
 .vscode/
 .antigravitycli/
 src/backend/logs/

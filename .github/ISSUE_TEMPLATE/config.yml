@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/baoluong2900/vba-to-wpf-migration/security/advisories/new
+    about: Please report security issues privately, never as a public issue. See SECURITY.md.
+  - name: 📋 Tracked backlog
+    url: https://github.com/baoluong2900/vba-to-wpf-migration/blob/main/docs/UPGRADE_PLAN.md
+    about: Known gaps and planned work — check here before filing a feature request.
+  - name: 🤝 Contributing guide
+    url: https://github.com/baoluong2900/vba-to-wpf-migration/blob/main/CONTRIBUTING.md
+    about: Environment setup, quality gates, and the hard rules for pull requests.

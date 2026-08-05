@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend · compile (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: src/backend/requirements.txt
+
+      - name: Compile every Python module
+        run: |
+          python -m compileall -q \
+            src/backend \
+            start.py \
+            start_wpf.py \
+            clean_generated_files.py
+
+      # Dependency install is a separate, non-blocking signal: requirements.txt is
+      # floor-pinned (>=), so upstream releases can break it without this repo changing.
+      # Tracked in docs/UPGRADE_PLAN.md §1.4.
+      - name: Install dependencies (advisory)
+        continue-on-error: true
+        run: pip install -r src/backend/requirements.txt
+
+  frontend:
+    name: Frontend · lint & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+          cache-dependency-path: src/frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Production build
+        run: yarn build
+
+  hygiene:
+    name: Hygiene · secrets & artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No secret files are tracked
+        run: |
+          set -e
+          tracked=$(git ls-files \
+            'config.json' '.env' '.env.*' '**/.env' '**/.env.*' \
+            'appsettings.json' '**/appsettings.json' \
+            | grep -v '\.example' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::Secret-bearing files are tracked by git:"
+            echo "$tracked"
+            exit 1
+          fi
+          echo "OK - no secret files tracked."
+
+      - name: No raw data exports or build artifacts are tracked
+        run: |
+          set -e
+          tracked=$(git ls-files \
+            'data/**' 'src/excel_outputs/**' \
+            '**/node_modules/**' '**/.next/**' \
+            '**/bin/**' '**/obj/**' '**/__pycache__/**' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::Generated or sensitive paths are tracked by git:"
+            echo "$tracked" | head -40
+            exit 1
+          fi
+          echo "OK - no generated or sensitive paths tracked."
+
+      - name: Config templates exist
+        run: |
+          set -e
+          for f in config.example.json infa/.env.example .env.example; do
+            test -f "$f" || { echo "::error::Missing template: $f"; exit 1; }
+          done
+          echo "OK - all config templates present."
+
+      - name: Docker ports stay bound to loopback
+        run: |
+          set -e
+          if grep -nE '^\s*-\s*"0\.0\.0\.0:' infa/docker-compose.yml; then
+            echo "::error::infa/docker-compose.yml exposes a port on 0.0.0.0 - keep bindings on 127.0.0.1 (see SECURITY.md)."
+            exit 1
+          fi
+          echo "OK - all published ports bound to 127.0.0.1."

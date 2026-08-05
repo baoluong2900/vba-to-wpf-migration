@@ -1,0 +1,90 @@
+name: 🐛 Bug report
+description: Something in the pipeline behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do **not** paste API keys, connection strings, or
+        customer data from `data/`. For security issues use a
+        [private advisory](https://github.com/baoluong2900/vba-to-wpf-migration/security/advisories/new)
+        instead of this form.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Layer 1 — AST extraction
+        - Layer 2 — BD/DD generation
+        - Layer 3 — SQL migration
+        - Layer 4 — Excel export
+        - Layer 5 — Code generation
+        - gRPC gateway
+        - Web console (frontend)
+        - Avalonia app (src/wpf)
+        - Infrastructure / Docker
+        - Docs
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. cd src/backend/workflow/layer2/runners
+        2. python main.py --item F_Login --type form --stage dev
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Traceback, compiler diagnostics, or console output. Redact secrets.
+      render: shell
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.11.9  (output of: python -V)"
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      placeholder: "22.13.0  (output of: node -v) — skip for backend-only issues"
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 15.3 / Windows 11 / Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am on Python 3.10 or newer (3.9 fails on PEP 604 unions)
+          required: true
+        - label: I copied `config.example.json` to `config.json` and filled it in
+          required: true
+        - label: This output contains no API keys, passwords, or customer data
+          required: true
