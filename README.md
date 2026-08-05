@@ -740,7 +740,7 @@ Every variable below overrides `config.json`. Names verified against
 | --- | --- | --- |
 | `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` |
 | `MONGO_DB` | MongoDB database name | `vba_brain_core` |
-| `MONGO_COL_AGENT_REPO` | Layer 5 repo-contract collection | `agent_repo` |
+| `MONGO_COL_DDS` / `MONGO_COL_AGENT_REPO` | Layer 5 collection-name overrides | `dds` / `agent_repo` |
 | `POSTGRES_CONN` | Full ADO.NET-style connection string | built from the parts below |
 | `POSTGRES_HOST` / `POSTGRES_PORT` | PostgreSQL host / port | `localhost` / `5432` |
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Database / user / password | `vba_brain` / `vba_brain` / from `config.json` |
