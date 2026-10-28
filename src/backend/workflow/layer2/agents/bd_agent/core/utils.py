@@ -1,12 +1,20 @@
 from __future__ import annotations
-import argparse
+import functools
 import json
+import logging
 import re
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 from .constants import *
+
+_logger = logging.getLogger(__name__)
+
+# Access string literals ("..." or '...'); dotted tokens inside them are not field references
+_STRING_LITERAL_RE = re.compile(r'"[^"]*"|\'[^\']*\'')
+
+
 def normalize_vba_path_expression(expr: str) -> str:
     """Heuristic to convert VBA path expr to readable string."""
     s = expr.strip()
@@ -237,28 +245,40 @@ def is_english_name(name: str) -> bool:
     return bool(re.match(r'^[A-Za-z0-9_]+$', name))
 
 
-def resolve_names(logical_in: str, attribute: str) -> tuple[str, str]:
+def has_type_prefix(name: str) -> bool:
+    """True when *name* already starts with a Hungarian control prefix (txtX, cboX, btnX, ...)."""
+    for p in KNOWN_CTRL_PREFIXES:
+        if name.startswith(p) and len(name) > len(p) and not name[len(p)].islower():
+            return True
+    return False
+
+
+@functools.lru_cache(maxsize=1)
+def _name_maps() -> tuple[dict, dict]:
+    """(logical_to_physical, physical_to_logical) from layer2/schema; empty dicts when absent."""
+    schema_dir = Path(__file__).resolve().parent.parent.parent.parent / "schema"
+    maps = []
+    for file_name in ("logical_to_physical.json", "physical_to_logical.json"):
+        data = {}
+        path = schema_dir / file_name
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except Exception as e:
+                _logger.warning("[BD] Could not read %s: %s", path, e)
+        maps.append(data if isinstance(data, dict) else {})
+    if not any(maps):
+        _logger.warning(
+            "[BD] Name maps not found in %s; logical names fall back to captions/control names.", schema_dir
+        )
+    return maps[0], maps[1]
+
+
+def resolve_names(logical_in: str, attribute: str, fallback_logical: str = "") -> tuple[str, str]:
     if not logical_in or logical_in == "-":
         return "", logical_in
 
-    # Load translation maps
-    schema_dir = Path(__file__).resolve().parent.parent.parent.parent / "schema"
-    config_path = schema_dir / "logical_to_physical.json"
-    reverse_config_path = schema_dir / "physical_to_logical.json"
-    
-    trans_map = {}
-    if config_path.exists():
-        try:
-            trans_map = json.loads(config_path.read_text(encoding="utf-8"))
-        except:
-            pass
-            
-    p2l_map = {}
-    if reverse_config_path.exists():
-        try:
-            p2l_map = json.loads(reverse_config_path.read_text(encoding="utf-8"))
-        except:
-            pass
+    trans_map, p2l_map = _name_maps()
 
     prefix = ATTR_PREFIX.get(attribute, "")
 
@@ -280,11 +300,11 @@ def resolve_names(logical_in: str, attribute: str) -> tuple[str, str]:
                 base_en = physical[len(prefix):]
                 logical_out = reverse_map.get(base_en) or reverse_map.get(base_en.capitalize()) or reverse_map.get(base_en.lower())
         
-        # 3. Fallback and mark as TODO
+        # 3. Fallback: caption/label of the control, else its own name
         if not logical_out:
-            logical_out = f"TODO_{physical}"
+            logical_out = fallback_logical or physical
             
-        if prefix and not physical.lower().startswith(prefix.lower()):
+        if prefix and not physical.lower().startswith(prefix.lower()) and not has_type_prefix(physical):
             physical = f"{prefix}{physical}"
             
         return physical, logical_out
@@ -499,10 +519,10 @@ def extract_field_references(expr: str) -> list[str]:
                 full = f"{full}.{m_fld.group(0)}"
         refs.append(full)
 
-    # 2. Match unbracketed Table.Field
+    # 2. Match unbracketed Table.Field (outside string literals, e.g. not Format(x,"yyyy.mm.dd"))
     for m in re.finditer(
         r"(?<![\[A-Za-z0-9_＿０-９Ａ-Ｚａ-ｚ一-龯ぁ-ゔァ-ヶー\u2160-\u217b])([A-Za-z0-9_＿０-９Ａ-Ｚａ-ｚ一-龯ぁ-ゔァ-ヶー\u2160-\u217b]+)\.([A-Za-z0-9_＿０-９Ａ-Ｚａ-ｚ一-龯ぁ-ゔァ-ヶー\u2160-\u217b]+|\[[^\]]+\])",
-        expr,
+        _STRING_LITERAL_RE.sub(lambda lit: " " * len(lit.group(0)), expr),
     ):
         refs.append(m.group(0))
 
@@ -597,8 +617,8 @@ def resolve_source_table_field(
         left, right = left.strip(), right.strip()
         field = normalize_field_token(right)
         
-        # Check alias map first
-        alias_map = query_meta.get("_alias_to_table") or {}
+        # Check alias map first (query_meta is None for table-bound or unbound forms)
+        alias_map = (query_meta or {}).get("_alias_to_table") or {}
         norm_left = normalize_field_token(left)
         if norm_left in alias_map:
             return finalize(alias_map[norm_left], field)

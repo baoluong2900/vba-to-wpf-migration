@@ -48,6 +48,14 @@ def strip_vba_comments(code: str) -> str:
         cleaned.append(line)
     return "\n".join(cleaned)
 
+_REQUIRED_TRUE_VALUES = frozenset({"true", "1", "yes", "on", "required", "y", "-1"})
+
+
+def is_required_flag(value) -> bool:
+    """Layer 1 stores a column's 'required' flag as text ("True"/"False"); only affirmative values count."""
+    return str(value).strip().lower() in _REQUIRED_TRUE_VALUES
+
+
 def normalize_query_name(name: str) -> str:
     """Normalize MS Access query names for consistent mapping and search."""
     if not name:

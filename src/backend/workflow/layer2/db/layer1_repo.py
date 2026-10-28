@@ -18,7 +18,6 @@ from config import (
     L1_COLLECTION_MODULES,
     L1_COLLECTION_QUERIES,
     L1_COLLECTION_MACROS,
-    L1_COLLECTION_GRAPH,
 )
 
 from db.query_bd import (
@@ -128,7 +127,7 @@ class Layer1Repo:
             (L1_COLLECTION_REPORTS, q_dd_report),
             (L1_COLLECTION_MODULES, q_dd_module),
             (L1_COLLECTION_MACROS, q_dd_macro),
-            (L1_COLLECTION_QUERIES, self.get_bd_code_json_query),
+            (L1_COLLECTION_QUERIES, q_bd_query),
         ]:
             if self._find_one(coll, name):
                 return fn(self, name)
@@ -204,6 +203,15 @@ class Layer1Repo:
 
     def list_modules(self) -> list[str]:
         return [d["name"] for d in self._db[L1_COLLECTION_MODULES].find({}, {"name": 1})]
+
+    def list_macros(self) -> list[str]:
+        return [d["name"] for d in self._db[L1_COLLECTION_MACROS].find({}, {"name": 1})]
+
+    def find_module_name_for_procedure(self, proc_name: str) -> str:
+        """Name of the module that defines procedure *proc_name*, or "" if none does."""
+        clauses = [{f"{key}.handler": proc_name} for key in ("functions", "vba_procedures", "procedures")]
+        doc = self._db[L1_COLLECTION_MODULES].find_one({"$or": clauses}, {"name": 1, "_id": 0})
+        return (doc or {}).get("name", "")
 
     def list_queries(self) -> list[str]:
         return [d["name"] for d in self._db[L1_COLLECTION_QUERIES].find({}, {"name": 1})]

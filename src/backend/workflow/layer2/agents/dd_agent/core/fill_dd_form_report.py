@@ -3,17 +3,15 @@ dd_agent/fill_dd_form_report.py — D1 & D2 processing for Forms/Reports (Advanc
 """
 from __future__ import annotations
 
-import argparse
 import json
 import re
 import logging
 from pathlib import Path
-from typing import Any, List, Dict, Optional
+from typing import Any
 from copy import deepcopy
 
 from .fill_utils import (
     parse_dd_source,
-    extract_vba_dim_vars,
     collect_pending_refers,
     build_event_map,
     build_steps_placeholder,
@@ -24,6 +22,8 @@ from .fill_utils import (
 from .query_mapper import TableResolver, _load_table_config, _fill_query_sheets, parse_aliases, _get_mapped_query
 from db.layer1_repo import Layer1Repo
 from db.query_dd import get_dd_code_json_table
+from utils.paths import bd3_result_path, safe_child_path
+from utils.vba_utils import is_required_flag
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,6 @@ def _extract_parameter_info(logic_items: list[dict], repo: Any, all_queries: lis
     seen_params = set()
     table_cache = {}
 
-    import logging
     logger.info(f"[DEBUG] Extracting parameters from {len(logic_items)} logic items")
     
     # Collect queries from logic_items
@@ -190,7 +189,7 @@ def _extract_parameter_info(logic_items: list[dict], repo: Any, all_queries: lis
                             meta["data_type"] = map_db_type_to_csharp(db_type, t_digits, d_digits)
                             meta["total_digits"] = t_digits
                             meta["decimal_digits"] = d_digits
-                            meta["required"] = "o" if col.get("required") == "Y" else ""
+                            meta["required"] = "o" if is_required_flag(col.get("required")) else ""
                             break
             
             params_metadata.append(meta)
@@ -226,10 +225,11 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
 
     # ── Load S3 BD Logic result for event_content ─────────────────────────
     s3_logic_map: dict[str, dict] = {}
-    from pathlib import Path
-    _OUTPUT_BASE = Path(__file__).resolve().parent.parent.parent.parent / "output"
-    s3_logic_path = _OUTPUT_BASE / "bd_flow" / "bd3_bd_logic" / f"logic_{screen_id}_result.json"
-    if s3_logic_path.exists():
+    try:
+        s3_logic_path = bd3_result_path(bd_final.get("name") or screen_id)
+    except ValueError:
+        s3_logic_path = None
+    if s3_logic_path and s3_logic_path.exists():
         try:
             import json
             s3_results = json.loads(s3_logic_path.read_text(encoding="utf-8"))
@@ -242,9 +242,6 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
             logger.warning("[DD Skeleton] Could not load S3 logic result: %s", e)
 
     # ── Resolve RecordSource name for event_content ───────────────────────
-    record_sources: list[dict] = layout.get("record_sources") or []
-    rs_name_raw = record_sources[0].get("query_name", "") if record_sources else ""
-    rs_name = rs_name_raw or screen_id
     screen_edit_items: list = layout.get("screen_edit_items") or []
 
     # event_map now handles both module_id and VBA handler names
@@ -268,7 +265,6 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
         if raw_mid == "RecordSource":
             continue
         else:
-            input_vars = extract_vba_dim_vars(code)
             refers = collect_pending_refers(code)
             steps = []
             if "macro_actions" in item:
@@ -308,7 +304,11 @@ def _build_dd_skeleton(logic_items: list[dict[str, Any]], bd_final: dict[str, An
     bd_order = {ev.get("module_id"): i for i, ev in enumerate(bd_events)}
     details.sort(key=lambda x: bd_order.get(x.get("module_id"), 999))
 
-    is_report = bd_final.get("category") == "report" or screen_id.upper().startswith("R")
+    is_report = (
+        bd_final.get("type") == "report"
+        or bd_final.get("category") == "report"
+        or screen_id.upper().startswith("R")
+    )
     if is_report:
         # If no events/logic_items, build a synthetic detail from file_spec + process_overview
         if not details:
@@ -462,13 +462,6 @@ def _add_recordsource_if_missing(logic_items: list[dict], bd_final: dict, dd_cod
                     "queries": [new_q]
                 })
 
-def _merge_open_events(logic_items: list[dict], bd_final: dict) -> set[str]:
-    """
-    (Disabled for DD) Merging Form_Load into Form_Open (F000) for screen category.
-    Returns empty set to keep them separate in DD documentation.
-    """
-    return set()
-
 def _update_sheet2_parameter_info(skeleton: dict[str, Any], repo: Any, screen_name: str, table_config: dict = None) -> dict[str, Any]:
     """
     Scan all resolved queries in skeleton['sheet_4_sel_query_templates'] and skeleton['sheet_5_upd_query_templates'],
@@ -586,7 +579,7 @@ def _update_sheet2_parameter_info(skeleton: dict[str, Any], repo: Any, screen_na
                             meta["data_type"] = map_db_type_to_csharp(db_type, t_digits, d_digits)
                             meta["total_digits"] = t_digits
                             meta["decimal_digits"] = d_digits
-                            meta["required"] = "o" if col.get("required") == "Y" else ""
+                            meta["required"] = "o" if is_required_flag(col.get("required")) else ""
                             break
 
             params_metadata.append(meta)
@@ -645,7 +638,7 @@ def get_dd_skeleton(
             logger.debug("[DD Form/Report] Could not map logic item '%s'", raw_mid)
 
     # S3 Load (for macros)
-    s3_logic_path = bd_final_path.parent.parent / "bd3_bd_logic" / f"logic_{screen_name}_result.json"
+    s3_logic_path = bd3_result_path(screen_name, bd_final_path.parent.parent / "bd3_bd_logic")
     if s3_logic_path.exists():
         try:
             with open(s3_logic_path, encoding="utf-8") as f:
@@ -660,11 +653,6 @@ def get_dd_skeleton(
     logic_items.extend(macro_items)
     
     _add_recordsource_if_missing(logic_items, bd_final, dd_code_json_path, table_config)
-
-    # Pre-process: Merge Form_Load into Form_Open for screens
-    merged_out_ids = set()
-    if category == "screen":
-        merged_out_ids = _merge_open_events(logic_items, bd_final)
     
     # Finally, ensure EVERY event from BD has a logic_item, even if it had no VBA code!
     # This prevents missing F-numbers (like F007) when their VBA sub was completely empty or missing from AST.
@@ -797,7 +785,7 @@ def get_dd_skeleton(
     
     if output_dir:
         output_dir.mkdir(parents=True, exist_ok=True)
-        out_file = output_dir / f"{screen_name}.json"
+        out_file = safe_child_path(output_dir, screen_name)
         out_file.write_text(json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.info("[DD Form/Report] Wrote %s", out_file)
     return skeleton, logic_items

@@ -24,6 +24,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -36,6 +37,8 @@ if _LAYER2_DIR not in sys.path:
     sys.path.insert(0, _LAYER2_DIR)
 if _RUNNERS_DIR not in sys.path:
     sys.path.insert(0, _RUNNERS_DIR)
+
+from utils.paths import safe_child_path
 
 # ── Load .env from the layer2 directory ──────────────────────────────────────
 _ENV_FILE = Path(_LAYER2_DIR) / ".env"
@@ -78,6 +81,11 @@ logger = logging.getLogger(__name__)
 # Core helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _redact_uri(uri: str) -> str:
+    """Hide user:password in a MongoDB URI before logging it."""
+    return re.sub(r"//[^@/]+@", "//***@", uri)
+
+
 def _load_json_files(directory: Path) -> list[tuple[str, dict, Path]]:
     """Return list of (name, doc, path) for every *.json in *directory*."""
     if not directory.exists():
@@ -95,10 +103,11 @@ def _load_json_files(directory: Path) -> list[tuple[str, dict, Path]]:
     return results
 
 
-def _detect_item_type_from_l1(name: str) -> str:
+def _detect_item_type_from_l1(name: str, db=None) -> str:
     """
     Look up the item type from Layer 1 MongoDB collections.
     Returns "form" | "report" | "module" | "macro".
+    *db* is an open pymongo Database to reuse; without it a short-lived client is opened and closed.
 
     Note: Layer 1 parser sometimes stores Reports inside the `forms` collection
     with a `type` field value of "Reports". We check this field to correctly
@@ -110,23 +119,26 @@ def _detect_item_type_from_l1(name: str) -> str:
         ("modules", "module"),
         ("macros",  "macro"),
     ]
-    try:
-        from pymongo import MongoClient
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
-        db = client[MONGO_DB]
-        for coll, type_label in L1_CHECKS:
-            doc = db[coll].find_one({"name": name}, {"_id": 0, "type": 1})
-            if doc is not None:
-                client.close()
-                # L1 parser stores reports in forms collection with type="Reports"
-                doc_type = str(doc.get("type", "")).lower()
-                if doc_type in ("reports", "report"):
-                    return "report"
-                # modules and macros are always correct from collection name
-                return type_label
-        client.close()
-    except Exception:
-        pass
+    if db is None:
+        try:
+            from pymongo import MongoClient
+            with MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000) as client:
+                return _detect_item_type_from_l1(name, client[MONGO_DB])
+        except Exception:
+            pass
+    else:
+        try:
+            for coll, type_label in L1_CHECKS:
+                doc = db[coll].find_one({"name": name}, {"_id": 0, "type": 1})
+                if doc is not None:
+                    # L1 parser stores reports in forms collection with type="Reports"
+                    doc_type = str(doc.get("type", "")).lower()
+                    if doc_type in ("reports", "report"):
+                        return "report"
+                    # modules and macros are always correct from collection name
+                    return type_label
+        except Exception:
+            pass
     # Fallback: name-prefix heuristic
     if name.upper().startswith("R"):
         return "report"
@@ -162,60 +174,59 @@ def _upsert_docs(
 
     try:
         from pymongo import MongoClient
-        from pymongo.errors import PyMongoError
     except ImportError:
         logger.error("pymongo is not installed. Run: pip install pymongo")
         sys.exit(1)
 
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        db     = client[MONGO_DB]
-        col    = db[collection_name]
     except Exception as exc:
-        logger.error("Cannot connect to MongoDB: %s", exc)
+        logger.error("Cannot connect to MongoDB: %s", _redact_uri(str(exc)))
         sys.exit(1)
 
     inserted = updated = failed = 0
     now = datetime.now(tz=timezone.utc).isoformat()
 
-    for name, raw_doc, _ in docs:
-        # Determine type — priority:
-        #   1. extra_fields["type"] — caller knows for sure (macro/module category folder)
-        #   2. raw_doc["type"] — only trust if it's "macro" or "module" (cannot be wrong)
-        #      "form"/"report" in old file can be wrong → always verify again via L1
-        #   3. L1 lookup — most authoritative source
-        _extra_type = (extra_fields or {}).get("type")
-        _doc_type   = raw_doc.get("type", "")
-        if _extra_type:
-            item_type = _extra_type
-        elif _doc_type in ("macro", "module"):
-            item_type = _doc_type   # macro/module cannot be mistaken for form/report
-        else:
-            item_type = _detect_item_type_from_l1(name)
-        doc = {
-            **raw_doc,          # original JSON fields first
-            "name": name,       # always set / overwrite with the canonical key
-            "type": item_type,  # authoritative type field
-            "updated_at": now,
-            **(extra_fields or {}),
-        }
-        try:
-            result = col.update_one(
-                {"name": name},
-                {"$set": doc},
-                upsert=True,
-            )
-            if result.upserted_id is not None:
-                inserted += 1
-                logger.info("[%s] INSERTED: %s (type=%s)", collection_name, name, item_type)
+    with client:
+        db  = client[MONGO_DB]
+        col = db[collection_name]
+        for name, raw_doc, _ in docs:
+            # Determine type — priority:
+            #   1. extra_fields["type"] — caller knows for sure (macro/module category folder)
+            #   2. raw_doc["type"] — only trust if it's "macro" or "module" (cannot be wrong)
+            #      "form"/"report" in old file can be wrong → always verify again via L1
+            #   3. L1 lookup — most authoritative source
+            _extra_type = (extra_fields or {}).get("type")
+            _doc_type   = raw_doc.get("type", "")
+            if _extra_type:
+                item_type = _extra_type
+            elif _doc_type in ("macro", "module"):
+                item_type = _doc_type   # macro/module cannot be mistaken for form/report
             else:
-                updated += 1
-                logger.info("[%s] UPDATED : %s (type=%s)", collection_name, name, item_type)
-        except Exception as exc:
-            failed += 1
-            logger.error("[%s] FAILED  : %s — %s", collection_name, name, exc)
+                item_type = _detect_item_type_from_l1(name, db)
+            doc = {
+                **raw_doc,          # original JSON fields first
+                "name": name,       # always set / overwrite with the canonical key
+                "type": item_type,  # authoritative type field
+                "updated_at": now,
+                **(extra_fields or {}),
+            }
+            try:
+                result = col.update_one(
+                    {"name": name},
+                    {"$set": doc},
+                    upsert=True,
+                )
+                if result.upserted_id is not None:
+                    inserted += 1
+                    logger.info("[%s] INSERTED: %s (type=%s)", collection_name, name, item_type)
+                else:
+                    updated += 1
+                    logger.info("[%s] UPDATED : %s (type=%s)", collection_name, name, item_type)
+            except Exception as exc:
+                failed += 1
+                logger.error("[%s] FAILED  : %s — %s", collection_name, name, exc)
 
-    client.close()
     return inserted, updated, failed
 
 
@@ -295,7 +306,7 @@ def push_bd(dry_run: bool = False) -> None:
 
 def push_bd_one(screen_name: str, dry_run: bool = False) -> bool:
     """Upsert a specific BD4 file into MongoDB bds — used after the BD flow is completed."""
-    bd4_file = BD_FINAL_DIR / f"{screen_name}.json"
+    bd4_file = safe_child_path(BD_FINAL_DIR, screen_name)
     if not bd4_file.exists():
         logger.warning("[push_bd_one] BD4 file not found: %s", bd4_file)
         return False
@@ -326,7 +337,7 @@ def push_dd_one(screen_name: str, dry_run: bool = False) -> bool:
     dd4_file: Path | None = None
     category: str = ""
     for cat in ("screen", "report", "macro", "common"):
-        candidate = BASE_DIR / "output" / "dd_flow" / cat / "dd4_dd_final" / f"{screen_name}.json"
+        candidate = safe_child_path(BASE_DIR / "output" / "dd_flow" / cat / "dd4_dd_final", screen_name)
         if candidate.exists():
             dd4_file = candidate
             category = cat
@@ -371,7 +382,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    logger.info("MongoDB: %s / db=%s", MONGO_URI, MONGO_DB)
+    logger.info("MongoDB: %s / db=%s", _redact_uri(MONGO_URI), MONGO_DB)
     logger.info("Dry-run: %s", args.dry_run)
 
     if args.only == "dd":

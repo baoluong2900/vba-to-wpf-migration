@@ -5,7 +5,6 @@ Rewrote to fix import errors and align with bd_agent pattern.
 """
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from utils.llm_client import LLMClient, parse_json_response
@@ -30,12 +29,15 @@ class DDAgent:
         category: str = "screen",
         model_id: str | None = None,
         retry_context: dict | None = None,
+        *,
+        stage: str | None = None,
+        complexity_level: str = "medium",
     ) -> dict[str, Any]:
         """
         Run D3 for one module.
         """
         from utils.model_router import select_model
-        model_cfg = select_model(complexity_level="medium", model_id=model_id)
+        model_cfg = select_model(complexity_level=complexity_level, stage=stage, model_id=model_id)
 
         module_id = logic_item.get("module_id", "UNKNOWN")
         user_prompt = build_dd_prompt(logic_item, bd_event, dd_schema_template, category, retry_context)

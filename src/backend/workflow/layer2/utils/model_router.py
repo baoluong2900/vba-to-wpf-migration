@@ -5,6 +5,9 @@ Used by BDAgent and DDAgent to dispatch to the correct model.
 """
 from __future__ import annotations
 
+import logging
+import threading
+
 from config import (
     ModelConfig,
     STAGE,
@@ -13,6 +16,11 @@ from config import (
     PRODUCTION_ROUTING,
     AVAILABLE_MODELS,
 )
+
+logger = logging.getLogger(__name__)
+
+_warned_substitutions: set[tuple[str, str]] = set()
+_warned_lock = threading.Lock()
 
 # Fallback chain: if primary model fails, try these in order
 FALLBACK_CHAIN = {
@@ -92,27 +100,38 @@ def select_model(
     effective_stage = stage or STAGE
 
     if effective_stage == "dev":
-        return DEV_MODEL
+        chosen = DEV_MODEL
+    elif effective_stage == "pilot":
+        chosen = PILOT_MODEL
+    else:
+        # production: route by complexity
+        chosen = PRODUCTION_ROUTING.get(complexity_level, PRODUCTION_ROUTING["low"])
 
-    if effective_stage == "pilot":
-        return PILOT_MODEL
+    if model_id:
+        with _warned_lock:
+            first_time = (model_id, chosen.model_id) not in _warned_substitutions
+            _warned_substitutions.add((model_id, chosen.model_id))
+        if first_time:
+            logger.warning(
+                "[ModelRouter] Requested model '%s' is not in AVAILABLE_MODELS — using '%s' instead "
+                "(stage=%s, complexity=%s)",
+                model_id, chosen.model_id, effective_stage, complexity_level,
+            )
+    return chosen
 
-    # production: route theo complexity
-    return PRODUCTION_ROUTING.get(complexity_level, PRODUCTION_ROUTING["low"])
 
-
-def get_fallback_model(primary_model_id: str) -> ModelConfig | None:
+def get_fallback_model(primary_model_id: str, tried: frozenset[str] | set[str] = frozenset()) -> ModelConfig | None:
     """
-    Get fallback model when primary model fails (e.g., quota exhausted).
+    Get the next fallback model when the primary model fails (e.g., quota exhausted).
     
     Args:
-        primary_model_id: The model ID that failed
+        primary_model_id: The model ID whose fallback chain is walked
+        tried: Model IDs already attempted (skipped)
         
     Returns:
-        First available fallback ModelConfig, or None if no fallback available
+        First available fallback ModelConfig in the chain that has not been tried, or None
     """
-    fallback_ids = FALLBACK_CHAIN.get(primary_model_id, [])
-    for fallback_id in fallback_ids:
-        if fallback_id in AVAILABLE_MODELS:
+    for fallback_id in FALLBACK_CHAIN.get(primary_model_id, []):
+        if fallback_id in AVAILABLE_MODELS and fallback_id not in tried and fallback_id != primary_model_id:
             return AVAILABLE_MODELS[fallback_id]
     return None

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import copy
 import json
-import time
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +14,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from .core.fill_utils import normalize_vba_name
 from utils.logger import get_logger
+from utils.paths import bd3_result_path, safe_child_path, validate_item_name
 
 logger = get_logger(__name__)
 
@@ -26,6 +26,9 @@ _OUTPUT_BASE = _LAYER2_DIR / "output"
 
 class DDService:
     """Orchestrates the DD pipeline D1→D4 for one screen."""
+
+    def __init__(self, stage: str = "") -> None:
+        self._stage = stage
 
     # ── Internal: push single DD4 file to MongoDB + backup ─────────────────
     def _push_dd4_to_mongo(self, screen_name: str, doc: dict, dd4_file: Path, category: str = "") -> None:
@@ -60,10 +63,9 @@ class DDService:
             except Exception:
                 item_type = "report" if screen_name.upper().startswith("R") else "form"
 
-        # ── MongoDB upsert ────────────────────────────────────────────────
+        # ── MongoDB upsert (shared cached client — nothing to close or leak) ──
         try:
-            from pymongo import MongoClient
-            from config import MONGO_URI, MONGO_DB
+            from db.mongo_client import get_db
 
             now = datetime.now(tz=timezone.utc).isoformat()
             payload = {
@@ -73,10 +75,8 @@ class DDService:
                 "updated_at": now,
             }
 
-            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-            col = client[MONGO_DB]["dds"]
+            col = get_db()["dds"]
             result = col.update_one({"name": screen_name}, {"$set": payload}, upsert=True)
-            client.close()
 
             if result.upserted_id is not None:
                 logger.info("[DD Service] [PUSH] INSERTED  dds ← %s", screen_name)
@@ -102,6 +102,7 @@ class DDService:
         skip_llm: bool = False,
         stop_step: int = 4,
         force: bool = False,
+        complexity_level: str | None = None,
     ) -> dict[str, Any]:
 
 
@@ -124,6 +125,8 @@ class DDService:
         Returns:
           dict with paths and stats
         """
+        validate_item_name(screen_name)
+
         # ── Detect Category ──────────────────────────────────────────────
         from db.layer1_repo import Layer1Repo
         from config import L1_COLLECTION_FORMS, L1_COLLECTION_REPORTS, L1_COLLECTION_MODULES, L1_COLLECTION_MACROS
@@ -150,7 +153,7 @@ class DDService:
         dd3_dir = category_dir / "dd3_dd_logic"
         dd4_dir = category_dir / "dd4_dd_final"
 
-        bd_final_path    = bd_final_dir / f"{screen_name}.json"
+        bd_final_path    = safe_child_path(bd_final_dir, screen_name)
         if category == "macro":
             dd_form_sample = _SCHEMA_DIR / "dd_macros.json"
         elif category == "common":
@@ -174,7 +177,7 @@ class DDService:
         logger.info("[DD Service] [DD1] Fetching dd_code_json from DB for %s ...", screen_name)
         
         # Load BD source for dependency hints
-        bd_source_path = _OUTPUT_BASE / "bd_flow" / "bd1_bd_form" / f"{screen_name}.json"
+        bd_source_path = safe_child_path(_OUTPUT_BASE / "bd_flow" / "bd1_bd_form", screen_name)
         bd_source = None
         if bd_source_path.exists():
             try:
@@ -185,9 +188,11 @@ class DDService:
         # from db.layer1_repo import Layer1Repo
         # repo = Layer1Repo()
         dd_source = repo.get_dd_code_json_unified(screen_name, bd_source=bd_source)
+        _src_root = dd_source.get("form") or dd_source.get("report") or dd_source.get("module") or {}
+        complexity = complexity_level or str(_src_root.get("complexity_level") or "medium")
         
         dd1_dir.mkdir(parents=True, exist_ok=True)
-        dd1_file = dd1_dir / f"{screen_name}.json"
+        dd1_file = safe_child_path(dd1_dir, screen_name)
         dd1_file.write_text(json.dumps(dd_source, ensure_ascii=False, indent=2), encoding="utf-8")
         logger.info("[DD Service] [DD1] Source saved: %s", dd1_file)
 
@@ -198,7 +203,6 @@ class DDService:
         # ── D2: Skeleton & Mapping ─────────────────────────────────────────
         logger.info("[DD Service] [DD2] Building mapping skeleton for %s ...", screen_name)
         
-        from .core.fill_utils import parse_dd_source
         if category == "screen":
             from .screen.fill_dd_form import get_dd_skeleton
         elif category == "report":
@@ -216,7 +220,7 @@ class DDService:
             output_dir=dd2_dir,
             category=category,
         )
-        dd2_file = dd2_dir / f"{screen_name}.json"
+        dd2_file = safe_child_path(dd2_dir, screen_name)
         logger.info("[DD Service] [DD2] Mapping saved: %s", dd2_file)
 
         if stop_step == 2:
@@ -250,7 +254,7 @@ class DDService:
 
         # ── Load BD3 BD Logic result (event_content per module_id) ─────────
         s3_logic_map: dict[str, dict] = {}
-        s3_logic_path = _OUTPUT_BASE / "bd_flow" / "bd3_bd_logic" / f"logic_{screen_name}_result.json"
+        s3_logic_path = bd3_result_path(screen_name)
         if s3_logic_path.exists():
             try:
                 s3_results = json.loads(s3_logic_path.read_text(encoding="utf-8"))
@@ -262,14 +266,6 @@ class DDService:
             except Exception as e:
                 logger.warning("[DD Service] [DD3] Could not load BD3 logic result: %s", e)
 
-
-        # Load DD1 source for form/report controls (used when no real VBA code exists)
-        try:
-            d1_raw = json.loads(dd1_file.read_text(encoding="utf-8"))
-            _form_item = d1_raw.get("form") or d1_raw.get("report") or {}
-            d1_form_controls = _form_item.get("controls", [])
-        except Exception:
-            d1_form_controls = []
 
         # logic_items is already populated and modified (RecordSource, Merges) by get_dd_skeleton
         # Build map for quick lookup by module_id. For screens, map VBA name to Fxxx using BD events notes
@@ -303,8 +299,8 @@ class DDService:
         d3_results: dict[str, dict] = {}
         
         dd3_dir.mkdir(parents=True, exist_ok=True)
-        input_file_json = dd3_dir / f"input_{screen_name}.json"
-        output_file_json = dd3_dir / f"output_{screen_name}.json"
+        input_file_json = safe_child_path(dd3_dir, screen_name, prefix="input_")
+        output_file_json = safe_child_path(dd3_dir, screen_name, prefix="output_")
         
         # ── DD3 cache: clear if force=True ────────────────────────────────
         if force:
@@ -336,6 +332,7 @@ class DDService:
                 pass
 
 
+        failed_modules: list[str] = []
         if skip_llm:
             logger.info("[DD Service] [D3] Skipping LLM as requested.")
         else:
@@ -352,6 +349,18 @@ class DDService:
                 iter_items = logic_items
 
             d3_lock = threading.Lock()
+
+            def _persist_d3() -> None:
+                """Write DD3 inputs/outputs; callers hold d3_lock."""
+                input_file_json.write_text(
+                    json.dumps(existing_inputs, ensure_ascii=False, indent=2),
+                    encoding="utf-8"
+                )
+                output_results = [{**result, "module_id": mid} for mid, result in d3_results.items()]
+                output_file_json.write_text(
+                    json.dumps(output_results, ensure_ascii=False, indent=2),
+                    encoding="utf-8"
+                )
 
             def process_module(idx_item):
                 idx, item = idx_item
@@ -378,7 +387,7 @@ class DDService:
                 # Macro is considered empty if it contains only basic headers/structures.
                 _macro_xml_is_empty = False
                 if category == "macro":
-                    macro_raw = item.get("macro_raw", "")
+                    macro_raw = item.get("macro_raw") or code
                     _macro_xml_is_empty = (
                         not macro_raw
                         or not macro_raw.strip()
@@ -441,27 +450,6 @@ class DDService:
                     }
 
                 logger.info("[DD Service] [DD3] %d/%d module=%s (Starting parallel)", idx + 1, len(iter_items), mid)
-                # no code AND no macro XML (catches edge cases not covered above).
-                if not code and category not in ("screen", "macro", "report"):
-                    logger.info("[DD Service] [D3] Skipping empty module: %s", mid)
-                    return
-
-                with d3_lock:
-                    if mid in d3_results:
-                        logger.info("[DD Service] [D3] %d/%d module=%s (Cached)", idx + 1, len(iter_items), mid)
-                        return
-
-                bd_event = bd_events_map.get(mid, {})
-                # For screens/reports, BD events provide high-level context
-                if category in ("screen", "report"):
-                    bd_event = {
-                        **bd_event,
-                        "event_trigger": item.get("event_trigger", ""),
-                        "event_content": item.get("event_content", ""),
-                        "action_type": item.get("action_type", ""),
-                    }
-
-                logger.info("[DD Service] [D3] %d/%d module=%s (Starting parallel)", idx + 1, len(iter_items), mid)
 
                 # Unified merging logic: item (skeleton) + li (extracted logic)
                 merged = {**item, **{k: v for k, v in li.items() if v and k not in item}}
@@ -578,18 +566,27 @@ class DDService:
                 if input_item.get("_hint"):
                     clean_item["_hint"] = input_item["_hint"]
 
-                # Call LLM Agent
-                result = agent.run(
-                    logic_item=clean_item,
-                    bd_event=clean_bd_event,
-                    dd_schema_template=dd_schema_template,
-                    category=category,
-                    model_id=model_id,
-                )
+                # Call LLM Agent (a failing module must not discard the others' paid-for results)
+                try:
+                    result = agent.run(
+                        logic_item=clean_item,
+                        bd_event=clean_bd_event,
+                        dd_schema_template=dd_schema_template,
+                        category=category,
+                        model_id=model_id,
+                        stage=self._stage or None,
+                        complexity_level=complexity,
+                    )
+                except Exception as exc:
+                    logger.error("[DD Service] [DD3] module=%s failed: %s", mid, exc)
+                    with d3_lock:
+                        failed_modules.append(mid)
+                    return
 
-                # Save results to JSON array
+                # Save results to JSON array (persisted after every module)
                 with d3_lock:
                     d3_results[mid] = result
+                    _persist_d3()
                     logger.info("[DD Service] [DD3] %d/%d module=%s (Parallel Done)", idx + 1, len(iter_items), mid)
 
             max_workers = 5
@@ -598,18 +595,12 @@ class DDService:
                 list(executor.map(process_module, enumerate(iter_items)))
             
             # Save all inputs and outputs to JSON files (not JSONL)
-            input_file_json.write_text(
-                json.dumps(existing_inputs, ensure_ascii=False, indent=2), 
-                encoding="utf-8"
-            )
+            with d3_lock:
+                _persist_d3()
             logger.info("[DD Service] [DD3] Saved input JSON: %s", input_file_json)
-            
-            output_results = [{"module_id": mid, **result} for mid, result in d3_results.items()]
-            output_file_json.write_text(
-                json.dumps(output_results, ensure_ascii=False, indent=2),
-                encoding="utf-8"
-            )
             logger.info("[DD Service] [DD3] Saved output JSON: %s", output_file_json)
+            if failed_modules:
+                logger.warning("[DD Service] [DD3] %d module(s) failed: %s", len(failed_modules), failed_modules)
 
 
 
@@ -688,7 +679,11 @@ class DDService:
 
         # For report, merge all details into a single item in the final JSON structure
         if category == "screen":
-            is_report = final.get("category") == "report" or screen_name.upper().startswith("R")
+            is_report = (
+                bd_final.get("type") == "report"
+                or final.get("category") == "report"
+                or screen_name.upper().startswith("R")
+            )
             if is_report and details:
                 combined_steps = []
                 for item in details:
@@ -736,7 +731,7 @@ class DDService:
         final["name"] = screen_name
 
         dd4_dir.mkdir(parents=True, exist_ok=True)
-        dd4_file = dd4_dir / f"{screen_name}.json"
+        dd4_file = safe_child_path(dd4_dir, screen_name)
         final_str = json.dumps(final, ensure_ascii=False, indent=2)
         dd4_file.write_text(
             final_str, encoding="utf-8"
@@ -760,4 +755,5 @@ class DDService:
             "logic_items_total": len(logic_items),
             "dd3_modules_processed": len(d3_results),
             "auto_pushed": category in ("macro", "common"),
+            "dd3_failed_modules": failed_modules,
         }

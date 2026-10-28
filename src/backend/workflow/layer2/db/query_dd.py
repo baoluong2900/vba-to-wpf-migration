@@ -3,35 +3,8 @@ db/query_dd.py — Detail Design (DD) Query Implementations
 """
 from __future__ import annotations
 from typing import Any
-import xml.dom.minidom
-import html
 
-def _format_xml(xml_str: str) -> str:
-    if not xml_str:
-        return ""
-    try:
-        # Remove extra whitespace between tags to avoid minidom bug
-        cleaned = "".join(line.strip() for line in xml_str.splitlines())
-        dom = xml.dom.minidom.parseString(cleaned)
-        return dom.toprettyxml(indent="  ")
-    except Exception:
-        return xml_str
-
-def _unescape_action(action: dict) -> dict:
-    if not isinstance(action, dict):
-        return action
-    new_act = {}
-    for k, v in action.items():
-        if isinstance(v, str):
-            new_act[k] = html.unescape(v)
-        elif isinstance(v, dict):
-            new_act[k] = _unescape_action(v)
-        elif isinstance(v, list):
-            new_act[k] = [_unescape_action(x) if isinstance(x, dict) else x for x in v]
-        else:
-            new_act[k] = v
-    return new_act
-
+from db.query_bd import _format_xml
 from config import (
     L1_COLLECTION_FORMS,
     L1_COLLECTION_GRAPH,
@@ -151,9 +124,6 @@ def get_dd_code_json_macro(repo: Any, macro_name: str) -> dict[str, Any]:
     
     # Dependencies
     refs = macro.get("references") or macro.get("dependencies") or {}
-    dep_queries = refs.get("queries", [])
-    dep_macros = refs.get("macros", [])
-    dep_modules = refs.get("modules", []) or refs.get("vba_calls", [])
 
     payload = {
         "request_type": "macro_detail_analysis",

@@ -1,14 +1,11 @@
 from __future__ import annotations
-import argparse
-import json
 import re
-from copy import deepcopy
-from pathlib import Path
 from typing import Any
 
 from ..core.constants import *
 from ..core.utils import *
 from ..core.extractors import *
+from utils.vba_utils import is_required_flag
 def collect_sheet3(
     controls: list[dict[str, Any]],
     recordsource: str,
@@ -106,7 +103,9 @@ def collect_sheet3(
 
         logical = logical_name_for_ctrl(ctrl, label_caption_map, optiongroup_label_map)
         cleaned_logical = clean_value(logical)
-        final_physical, final_logical = resolve_names(cleaned_logical, ctype)
+        final_physical, final_logical = resolve_names(
+            cleaned_logical, ctype, descriptive_title_for_ctrl(ctrl, label_caption_map, optiongroup_label_map)
+        )
         caption_val = caption(ctrl)
         data = (ctrl.get("properties") or {}).get("data") or {}
         fmt = (ctrl.get("properties") or {}).get("format") or {}
@@ -153,7 +152,6 @@ def collect_sheet3(
                 is_param_mapped = True
 
         # Try to fetch field metadata from table_index
-        attr_digits = ""
         required = ""
         flen = ""
         
@@ -178,14 +176,8 @@ def collect_sheet3(
                 for col in columns:
                     pname = col.get("physical_name")
                     if pname and normalize_field_token(pname) == normalize_field_token(first_fld):
-                        ftype = str(col.get("data_type") or "")
                         flen = str(col.get("length") or "")
-                        sql_t = f"{ftype}({flen})" if flen and flen != "0" else ftype
-                        cs_t = sql_to_csharp(ftype, flen)
-                        attr_digits = f"{sql_t} / {cs_t}" if cs_t else sql_t
-                        required = "○" if str(col.get("required")).lower() in ("true", "1", "yes", "on", "required", "y") else ""
-                        if col.get("required"):
-                            required = "○"
+                        required = "○" if is_required_flag(col.get("required")) else ""
                         break
 
         # Determine I/O status

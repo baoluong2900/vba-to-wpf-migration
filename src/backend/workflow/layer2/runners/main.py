@@ -3,7 +3,9 @@ main.py — Layer 2 Entrypoint
 
 Usage:
     python main.py --item C000_MAINⅡ --type form --stage dev
+    python main.py --item M_Startup --type macro --stage dev
     python main.py --all-forms --stage dev
+    python main.py --all-macros --stage dev
     python main.py --all --stage production
 
 Environment variables:
@@ -28,7 +30,7 @@ if _LAYER2_DIR not in sys.path:
 if _RUNNERS_DIR not in sys.path:
     sys.path.insert(0, _RUNNERS_DIR)
 
-from config import STAGE, OUTPUT_DIR
+from config import OUTPUT_DIR
 from pipeline import build_pipeline
 from state import PipelineState
 from db.layer1_repo import Layer1Repo
@@ -62,6 +64,10 @@ def run_item(
         bd_code = repo.get_bd_code_json_module(item_name)
         dd_code = repo.get_dd_code_json_module(item_name)
         complexity = "low"
+    elif item_type == "macro":
+        bd_code = repo.get_bd_code_json_macro(item_name)
+        dd_code = repo.get_dd_code_json_macro(item_name)
+        complexity = "low"
     else:
         raise ValueError(f"Unknown item_type: {item_type}")
 
@@ -91,10 +97,11 @@ def run_item(
 
     logger.info("Completed '%s' → bd_docs + dd_docs saved to %s", item_name, OUTPUT_DIR)
     
-    # ── Auto push to MongoDB & Backup ──
+    # ── Auto push to MongoDB & Backup (this item only; BD exists only for forms/reports) ──
     try:
-        push_to_mongo.push_bd()
-        push_to_mongo.push_dd()
+        if item_type in ("form", "report"):
+            push_to_mongo.push_bd_one(item_name)
+        push_to_mongo.push_dd_one(item_name)
     except Exception as exc:
         logger.error("Auto-backup failed for '%s': %s", item_name, exc)
         
@@ -108,11 +115,12 @@ def main() -> None:
     group.add_argument("--all-forms", action="store_true", help="Process all forms from Layer 1")
     group.add_argument("--all-reports", action="store_true", help="Process all reports")
     group.add_argument("--all-modules", action="store_true", help="Process all modules")
+    group.add_argument("--all-macros", action="store_true", help="Process all macros (DD only)")
     group.add_argument("--all", action="store_true", help="Process all items (forms + reports + modules)")
 
     parser.add_argument(
         "--type",
-        choices=["form", "report", "module"],
+        choices=["form", "report", "module", "macro"],
         help="Item type (required when --item is used)",
     )
     parser.add_argument(
@@ -145,6 +153,8 @@ def main() -> None:
         items = [(n, "report") for n in repo.list_reports()]
     elif args.all_modules:
         items = [(n, "module") for n in repo.list_modules()]
+    elif args.all_macros:
+        items = [(n, "macro") for n in repo.list_macros()]
     elif args.all:
         items = (
             [(n["name"] if isinstance(n, dict) else n, "form") for n in repo.list_forms()]
@@ -172,7 +182,7 @@ def main() -> None:
 
     # ── Summary ──
     print(f"\n{'='*60}")
-    print(f"Layer 2 Complete")
+    print("Layer 2 Complete")
     print(f"  Success : {success}")
     print(f"  Failed  : {len(failed)}")
     print(f"  Total   : {len(items)}")
