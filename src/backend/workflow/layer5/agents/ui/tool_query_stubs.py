@@ -19,8 +19,7 @@ Usage:
     from agents.ui.tool_query_stubs import QueryStubTool
     tool = QueryStubTool()
     stubs = tool.extract(form_name, wpf_controls)   # returns dict
-    tool.save(form_name, stubs)                      # writes ui_query_stubs.json
-    tool.load(form_name)                             # reads existing stubs
+    tool.save(form_name, stubs)                      # merges into ui_query_stubs.json
 """
 from __future__ import annotations
 
@@ -28,7 +27,8 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
+
+from core.fsutil import atomic_write_text, file_lock
 
 logger = logging.getLogger(__name__)
 
@@ -340,52 +340,28 @@ class QueryStubTool:
 
     def save(self, form_name: str, stubs: dict[str, dict]) -> Path:
         """
-        Merge stubs into ui_query_stubs.json.
+        Merge stubs into ui_query_stubs.json (atomic, locked).
         Existing entries with status != "pending" are preserved (not overwritten).
         """
-        registry: dict = {}
-        if _UI_QUERY_STUBS.exists():
-            try:
-                registry = json.loads(_UI_QUERY_STUBS.read_text(encoding="utf-8"))
-            except Exception:
-                pass
+        with file_lock(_UI_QUERY_STUBS):
+            registry: dict = {}
+            if _UI_QUERY_STUBS.exists():
+                try:
+                    registry = json.loads(_UI_QUERY_STUBS.read_text(encoding="utf-8"))
+                except Exception as exc:
+                    # Never rewrite a file we could not read: it holds every form's stubs.
+                    logger.warning("[QueryStubTool] %s unreadable (%s) — not saving", _UI_QUERY_STUBS.name, exc)
+                    return _UI_QUERY_STUBS
 
-        # Merge: preserve non-pending entries
-        form_stubs = registry.get(form_name, {})
-        for ctrl_name, new_stub in stubs.items():
-            existing = form_stubs.get(ctrl_name, {})
-            if existing.get("status", "pending") != "pending":
-                continue   # Keep resolved entries as-is
-            form_stubs[ctrl_name] = new_stub
+            # Merge: preserve non-pending entries
+            form_stubs = registry.get(form_name, {})
+            for ctrl_name, new_stub in stubs.items():
+                existing = form_stubs.get(ctrl_name, {})
+                if existing.get("status", "pending") != "pending":
+                    continue   # Keep resolved entries as-is
+                form_stubs[ctrl_name] = new_stub
 
-        registry[form_name] = form_stubs
-        _UI_QUERY_STUBS.parent.mkdir(parents=True, exist_ok=True)
-        _UI_QUERY_STUBS.write_text(
-            json.dumps(registry, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+            registry[form_name] = form_stubs
+            atomic_write_text(_UI_QUERY_STUBS, json.dumps(registry, ensure_ascii=False, indent=2))
         logger.info("[QueryStubTool] Saved %d stub(s) for %s → %s", len(stubs), form_name, _UI_QUERY_STUBS.name)
         return _UI_QUERY_STUBS
-
-    def load(self, form_name: str) -> dict[str, dict]:
-        """Load existing stubs for a form from ui_query_stubs.json."""
-        if not _UI_QUERY_STUBS.exists():
-            return {}
-        try:
-            registry = json.loads(_UI_QUERY_STUBS.read_text(encoding="utf-8"))
-            return registry.get(form_name, {})
-        except Exception as exc:
-            logger.warning("[QueryStubTool] Failed to load stubs: %s", exc)
-            return {}
-
-    def get_property_map(self, form_name: str) -> dict[str, str]:
-        """
-        Returns dict[control_name → suggested_property] for quick lookup.
-        Used by _infer_bindings_from_controls to ensure consistent property names.
-        """
-        stubs = self.load(form_name)
-        return {
-            ctrl: entry["suggested_property"]
-            for ctrl, entry in stubs.items()
-            if entry.get("suggested_property")
-        }

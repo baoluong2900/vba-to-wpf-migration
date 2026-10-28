@@ -8,11 +8,8 @@ Pipeline flow (không cache):
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from pathlib import Path
-
-if TYPE_CHECKING:
-    from core.config import ModelConfig
 
 
 @dataclass

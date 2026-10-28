@@ -8,8 +8,8 @@ Full pipeline:
   4. Filter chunks (skip SYS/UI action_type)
   5. Save input snapshot
   6. LLM call per VALID chunk via LangGraph StateGraph (map-reduce)
-  7. Merge methods → complete ViewModel.cs (deterministic)
-  8. Save output (outputs/ + WPF source)
+  7. Patch method bodies into the UI skeleton ViewModel (F-IDs via core.fid_resolver)
+  8. Save output (outputs/ + Avalonia source)
 
 Ref: Agent_Logic.md design doc
 Ref: agents/ui/agent_ui.py — same LangGraph chunked pattern
@@ -43,12 +43,18 @@ if str(backend_dir) not in sys.path:
 from langgraph.graph import StateGraph, START, END
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
-from core.config import MONGO_URI, MONGO_DB, AVAILABLE_MODELS, DEFAULT_MODEL, TARGET_LANGUAGE, VIEWMODELS_DIR
+from core.config import (
+    MONGO_URI, MONGO_DB, AVAILABLE_MODELS, TARGET_LANGUAGE, VIEWMODELS_DIR,
+    APPLICATION_PROJECT_DIR, SERVICE_OUTPUTS_DIR, SERVICES_DIR,
+)
+from core.cs_text import declares_namespace, extract_method_body, replace_method_body
+from core.fid_resolver import fid_for_bd_event, load_form_entries, macro_name
+from core.naming import dto_namespace, form_name_error
 from llm.llm_client import L5LLMClient, extract_code_block
 from layer2.db.mongo_client import get_db
 from agents.logic.mapping_ast.event_mapper import EventMapper
 from agents.logic.chunk_builder import ChunkBuilder
-from agents.logic.tool_method_merger import MethodMerger
+from agents.logic.sys_bodies import sys_body
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +102,6 @@ class LogicAgent(BaseAgent):
     def __init__(self):
         self._event_mapper = EventMapper()
         self._chunk_builder = ChunkBuilder()
-        # MethodMerger không còn dùng — Logic Agent chỉ patch vào UI skeleton
 
     @property
     def name(self) -> str:
@@ -104,6 +109,12 @@ class LogicAgent(BaseAgent):
 
     async def run(self, input: AgentInput, input_only: bool = False) -> AgentOutput:
         form_name = input.form_name
+        name_error = form_name_error(form_name)
+        if name_error:
+            return AgentOutput(agent=self.name, form_name=form_name or "", status="error", error=name_error)
+
+        # The frontend reports stats from this file — never let a failed run leave stale ones.
+        (OUTPUTS_DIR / form_name / "method_outputs.json").unlink(missing_ok=True)
 
         # ── Setup LLM config based on override ──────────────────────
         model_override = input.model_override
@@ -348,7 +359,7 @@ class LogicAgent(BaseAgent):
                     vm_text = vm_text[:_ins.start()] + _close_event + "\n" + vm_text[_ins.start():]
                     logger.info("[Agent Logic] ✅ Injected CloseRequested into skeleton")
             
-            # Ensure using statements for services and DTOs are present
+            # Usings for services and DTOs — only for namespaces that exist (CS0234 otherwise)
             required_usings = [
                 "using System;",
                 "using System.Linq;",
@@ -356,14 +367,27 @@ class LogicAgent(BaseAgent):
                 "using System.Windows;",
                 "using System.Windows.Input;",
                 "using vba_brain.UI.WPF.Utils;",
-                "using vba_brain.UI.WPF.Services;",
-                "using vba_brain.Application.Interfaces;",
-                f"using vba_brain.Application.DTOs.Requests.{form_name};",
-                f"using vba_brain.Application.DTOs.Responses.{form_name};",
             ]
+            if declares_namespace("vba_brain.UI.Avalonia.Services", [SERVICES_DIR]):
+                required_usings.append("using vba_brain.UI.WPF.Services;")
+            svc_app = SERVICE_OUTPUTS_DIR / form_name / "Application"
+            if declares_namespace("vba_brain.Application.Interfaces", [APPLICATION_PROJECT_DIR / "Interfaces", svc_app / "Interfaces"]):
+                required_usings.append("using vba_brain.Application.Interfaces;")
+            for kind in ("Requests", "Responses"):
+                ns = dto_namespace(form_name, kind)
+                if declares_namespace(ns, [APPLICATION_PROJECT_DIR / "DTOs", svc_app / "DTOs"]):
+                    required_usings.append(f"using {ns};")
             for ru in required_usings:
                 if ru not in vm_text:
                     vm_text = ru + "\n" + vm_text
+
+            # BD event → the F-ID the UI skeleton used for that handler (ui_event_map.json),
+            # falling back to the BD module_id (same numbering as the service contract).
+            registry_entries = load_form_entries(form_name)
+            fid_by_event = {
+                c["bd_event"].get("event_id", ""): fid_for_bd_event(c["bd_event"], registry_entries)
+                for c in all_chunks
+            }
 
             patched_count = 0
 
@@ -372,70 +396,35 @@ class LogicAgent(BaseAgent):
                 if not code or len(code) < 5:
                     continue
 
-                # Resolve F-ID: từ mapped_command.module_id hoặc event_id (EXxx → FXxx)
-                mid = mo.get("mapped_command", {}).get("module_id", "")
-                if not mid:
-                    eid = mo.get("event_id", "")
-                    mid = eid.replace("E", "F", 1) if eid.startswith("E") else ""
+                mid = fid_by_event.get(mo.get("event_id", "")) or mo.get("mapped_command", {}).get("module_id", "")
                 fxxx_async = f"{mid}Async" if mid else ""
                 if not fxxx_async:
                     logger.debug("[Agent Logic] Cannot resolve F-ID for event %s — skip", mo.get("event_id"))
                     continue
 
-                # Extract body: nếu LLM trả về full method → lấy nội dung trong braces
-                body = code
-                if re.search(r'(public|private|protected|internal)\s+', body):
-                    brace = body.find('{')
-                    if brace != -1:
-                        depth, chars, in_body = 0, [], False
-                        for ch in body:
-                            if ch == '{':
-                                depth += 1
-                                if depth == 1:
-                                    in_body = True
-                                    continue
-                            elif ch == '}':
-                                depth -= 1
-                                if depth == 0:
-                                    break
-                            if in_body:
-                                chars.append(ch)
-                        extracted = "".join(chars).strip()
-                        if extracted:
-                            body = extracted
-
-                # Indent body sang 8 spaces (method body level)
-                indented = "\n".join(
-                    f"        {ln}" if ln.strip() else ""
-                    for ln in body.splitlines()
-                )
-
-                # Tìm và replace body của FxxxAsync() trong skeleton
-                # Pattern khớp cả method không tham số F004Async() lẫn có tham số F001Async(KeyEventArgs? e)
-                sig_pat = re.compile(
-                    r'(public\s+virtual\s+async\s+System\.Threading\.Tasks\.Task\s+'
-                    + re.escape(fxxx_async)
-                    + r'\s*\([^)]*\)\s*)\{',
-                )
-                sig_m = sig_pat.search(vm_text)
-                if sig_m:
-                    start_brace = sig_m.end() - 1
-                    depth, end_brace = 0, start_brace
-                    for i in range(start_brace, len(vm_text)):
-                        if vm_text[i] == '{': depth += 1
-                        elif vm_text[i] == '}':
-                            depth -= 1
-                            if depth == 0:
-                                end_brace = i
-                                break
-                    replacement = f"{sig_m.group(1)}{{\n{indented}\n    }}"
-                    vm_text = vm_text[:sig_m.start()] + replacement + vm_text[end_brace + 1:]
+                # LLM may return the whole method → keep the body only (literal/comment aware)
+                body = extract_method_body(code)
+                vm_text, patched = replace_method_body(vm_text, fxxx_async, body)
+                if patched:
                     patched_count += 1
                     logger.info("[Agent Logic] ✅ Patched %s", fxxx_async)
                 else:
-                    logger.debug("[Agent Logic] No match for %s in skeleton", fxxx_async)
+                    logger.warning("[Agent Logic] %s not found in the skeleton — body not applied", fxxx_async)
 
             logger.info("[Agent Logic] Patched %d/%d methods into %s", patched_count, len(method_outputs), vm_filename)
+
+            # Bodies may use Key / KeyEventArgs unqualified (prompt convention)
+            if re.search(r"(?<![\w.])(?:Key\.|KeyEventArgs\b)", vm_text) and "using Avalonia.Input;" not in vm_text:
+                vm_text = "using Avalonia.Input;\n" + vm_text
+            # A patched close handler may no longer raise CloseRequested (CS0067)
+            if "event EventHandler? CloseRequested;" in vm_text and "CloseRequested?.Invoke" not in vm_text:
+                vm_text = vm_text.replace(
+                    "    public event EventHandler? CloseRequested;\n",
+                    "    public event EventHandler? CloseRequested;\n\n"
+                    "    /// <summary>View に CloseRequested を通知する (DoCmd.Close相当)。</summary>\n"
+                    "    protected void RequestClose() => CloseRequested?.Invoke(this, EventArgs.Empty);\n",
+                    1,
+                )
 
             # Ghi lại cả hai nơi: ui/outputs/ và Avalonia source
             from pipeline.avalonia_cs import to_avalonia_cs
@@ -463,7 +452,6 @@ class LogicAgent(BaseAgent):
             for chunk in all_chunks:
                 eid = chunk["bd_event"].get("event_id", "")
                 mapped = chunk.get("mapped_command", {})
-                vba_event = mapped.get("vba_event", "")
                 cs_method = mapped.get("cs_method", "")
                 event_class = chunk.get("event_class", "UI")
                 
@@ -730,9 +718,14 @@ class LogicAgent(BaseAgent):
                 except json.JSONDecodeError:
                     pass
 
-        # Check UI agent outputs
+        # Check UI agent outputs — Agent UI names the preview after the EN view (FLoginView_preview.json)
         ui_outputs = AGENT_DIR.parent / "ui" / "outputs"
-        bindings_file = ui_outputs / f"{form_name}_preview.json"
+        from agents.ui.agent_ui import _load_form_name_map, _resolve_wpf_names
+        view_stem, _ = _resolve_wpf_names(form_name, _load_form_name_map())
+        bindings_file = next(
+            (p for p in (ui_outputs / f"{view_stem}_preview.json", ui_outputs / f"{form_name}_preview.json") if p.exists()),
+            ui_outputs / f"{view_stem}_preview.json",
+        )
         if bindings_file.exists():
             try:
                 preview = json.loads(bindings_file.read_text(encoding="utf-8"))
@@ -800,7 +793,6 @@ class LogicAgent(BaseAgent):
         Returns dict with method code and metadata.
         """
         bd_event = chunk["bd_event"]
-        dd_steps = chunk["dd_steps"]
         mapped   = chunk["mapped_command"]
         idx      = chunk["chunk_idx"]
         total    = chunk["total_chunks"]
@@ -966,8 +958,20 @@ class LogicAgent(BaseAgent):
             "[Agent Logic][LangGraph] Invoking graph for %s — %d chunks",
             form_name, len(chunks),
         )
-        final_state = graph.invoke(initial_state)
+        # One superstep per chunk (+ split/merge); older langgraph defaults to 25
+        final_state = graph.invoke(initial_state, config={"recursion_limit": len(chunks) + 10})
         return final_state.get("method_outputs", [])
+
+    @staticmethod
+    def _service_call_target(svc_ctx: Any, fxxx_async: str) -> tuple[str, str]:
+        """(service field, service method) for a SERVICE event, from the structured service context."""
+        field, method = "_service", fxxx_async
+        if isinstance(svc_ctx, dict):
+            field = svc_ctx.get("service_field_hint") or field
+            m = re.search(r"(\w+)\s*\(", svc_ctx.get("interface_method") or "")
+            if m:
+                method = m.group(1)
+        return field, method
 
     def _build_chunk_prompt(self, chunk: dict) -> str:
         """Build user prompt for a single event chunk."""
@@ -982,7 +986,6 @@ class LogicAgent(BaseAgent):
         cs_stub      = chunk.get("cs_stub")          # C# stub from xaml.cs
         event_class  = chunk.get("event_class", "")  # UI or SERVICE
 
-        event_id   = bd_event.get("event_id", "")
         vba_event  = mapped.get("vba_event", "")
         cs_command = mapped.get("cs_command", "")
         cs_method  = mapped.get("cs_method", "")
@@ -1011,13 +1014,14 @@ class LogicAgent(BaseAgent):
             if isinstance(svc_ctx, dict):
                 _req_obj = svc_ctx.get("request", {})
                 _svc_req_props = [p["name"] for p in _req_obj.get("properties", [])]
-            _vm_props_hint = _svc_req_props or list(props) or ["TxtID", "TxtPass"]
+            _vm_props_hint = _svc_req_props or list(props)
+            _svc_field, _svc_method = self._service_call_target(svc_ctx, fxxx_async)
 
             prompt += (
                 f"> **SERVICE — ViewModel Method**: Generate the body of `public virtual async Task {fxxx_async}()`.\n"
-                f"> Rules:\n"
-                f"> 1. Call the service: `await _fLoginService.{fxxx_async}(request)`\n"
-                f"> 2. Build `request` using EXACT ViewModel property names: `{', '.join(_vm_props_hint)}`\n"
+                "> Rules:\n"
+                f"> 1. Call the service: `await {_svc_field}.{_svc_method}(request)`\n"
+                f"> 2. Build `request` using EXACT ViewModel property names: `{', '.join(_vm_props_hint) or '(none)'}`\n"
                 f"> 3. Perform input validation before calling the service based on the VBA logic (e.g., check if properties are empty/null and use MessageBox.Show to notify the user).\n"
                 f"> 4. Initialize fields if necessary (e.g., set `TxtID = System.Environment.UserName;` during Form Open/F000Async if the VBA code initialized txtID to the username).\n"
                 f"> 5. Handle `response.Success == false` by displaying the error message: `MessageBox.Show(response.Message ?? \"Error description\")`.\n"
@@ -1025,7 +1029,7 @@ class LogicAgent(BaseAgent):
                 f"> 7. Output: ONLY code INSIDE the method braces — no method signature or surrounding braces.\n"
                 f"> 8. NO direct VBA functions (SwitchShiftKey, DoCmd, etc.) — map them to C# equivalents or TODOs if they are form close/navigation.\n\n"
             )
-            prompt += f"### ViewModel method to implement (output body only):\n"
+            prompt += "### ViewModel method to implement (output body only):\n"
             prompt += f"```csharp\npublic virtual async System.Threading.Tasks.Task {fxxx_async}()\n{{\n    // Build request and call service here\n}}\n```\n\n"
         else:
             # UI → gen code-behind handler
@@ -1035,10 +1039,9 @@ class LogicAgent(BaseAgent):
             )
             if cs_stub:
                 signature = cs_stub.get("signature", "")
-                cs_name   = cs_stub.get("cs_name", "")
                 mid       = cs_stub.get("module_id", "")
                 vba_hdlr  = cs_stub.get("vba_handler", notes)
-                prompt += f"### C# code-behind method to implement:\n"
+                prompt += "### C# code-behind method to implement:\n"
                 prompt += f"```csharp\n{signature}\n{{\n    // TODO: implement\n}}\n```\n"
                 prompt += f"**F-ID:** `{mid}` | **VBA:** `{vba_hdlr}`\n\n"
             else:
@@ -1113,6 +1116,7 @@ class LogicAgent(BaseAgent):
                 # Version check pattern (F002-type)
                 if any(kw in dd_text_flat for kw in ("バージョン", "最新版", "インストール", "コメント")):
                     res_class = res_obj.get("class", "Response") if isinstance(svc_ctx, dict) else "Response"
+                    _svc_field, _svc_method = self._service_call_target(svc_ctx, fxxx_async)
                     prompt += (
                         "### ⚠️ 実装ガイド: バージョンチェックパターン\n"
                         f"> `{res_class}.Message` にはServiceがDBから取得した最新バージョン文字列が入る。\n"
@@ -1120,7 +1124,7 @@ class LogicAgent(BaseAgent):
                         "> `response.Success == true` でも `response.Message` のチェックは必須。\n"
                         "> **実装例:**\n"
                         "> ```csharp\n"
-                        "> var response = await _fLoginService.F002Async(request);\n"
+                        f"> var response = await {_svc_field}.{_svc_method}(request);\n"
                         "> if (response.Success && !string.IsNullOrEmpty(response.Message))\n"
                         "> {\n"
                         ">     // TODO: ラベル400から現在バージョンを取得して比較\n"
@@ -1149,42 +1153,16 @@ class LogicAgent(BaseAgent):
     # Save & Output
     # ──────────────────────────────────────────
 
-    def _save_input_snapshot(
-        self,
-        form_name: str,
-        chunks: list[dict],
-        mapped_events: list[dict],
-        xaml_bindings: dict | None,
-    ) -> None:
-        """Save input snapshot for debug & replay."""
-        INPUTS_DIR.mkdir(parents=True, exist_ok=True)
-
-        # Save chunks
-        self._chunk_builder.save_chunks(form_name, chunks)
-
-        # Save mapped events summary
-        summary = {
-            "form_name":     form_name,
-            "total_events":  len(mapped_events),
-            "mapped_events": mapped_events,
-            "xaml_bindings": xaml_bindings,
-        }
-        summary_file = INPUTS_DIR / f"{form_name}_mapping_summary.json"
-        summary_file.write_text(
-            json.dumps(summary, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        logger.info("[Agent Logic] Input snapshot saved to inputs/")
-
     def _gen_sys_bodies(self, all_chunks: list[dict]) -> list[dict]:
         """
-        Deterministically generate method bodies for SYS/UI events that have known WPF equivalents.
-        These events are skipped by LLM but still need real implementation code.
+        Deterministically generate method bodies for SYS/UI events that have known Avalonia equivalents.
+        These events are skipped by LLM but still need real implementation code (agents/logic/sys_bodies.py).
 
         Patterns handled:
-          - DoCmd.Quit        → confirm dialog → Application.Current.Shutdown()
+          - DoCmd.Quit        → desktop lifetime Shutdown()
+          - DoCmd.Close       → CloseRequested (the View closes itself)
           - taskkill/Shell    → Process.Start(taskkill)
-          - Form_KeyDown      → stub only (key blocking stays in code-behind)
+          - Form_KeyDown      → F11/F12 blocked via Avalonia.Input.Key
           - Others            → no body generated (keep skeleton stub)
 
         Returns list of {event_id, module_id, code} — same format as LLM method_outputs.
@@ -1219,7 +1197,7 @@ class LogicAgent(BaseAgent):
             if not fxxx_async:
                 continue
 
-            # Skip events already in service contract — LLM / gen_vm_methods handles them
+            # Skip events in the service contract — the skeleton already calls the service
             if module_id in service_module_ids:
                 logger.debug("[Agent Logic] SYS skip %s — in service contract (LLM handled)", fxxx_async)
                 continue
@@ -1231,115 +1209,20 @@ class LogicAgent(BaseAgent):
             # 2. chunk["bd_event"]["vba_code"]
             if not vba_code:
                 vba_code = bd.get("vba_code", "")
-            # 3. Extract from MongoDB using notes (VBA handler name)
+            # 3. Extract from MongoDB using notes (VBA handler name; macro events have no Sub)
             if not vba_code or vba_code.startswith("//"):
                 notes = bd.get("notes", "")
-                if notes and not notes.startswith("参照マクロ"):
+                if notes and not macro_name(notes):
                     vba_code = self._chunk_builder._extract_vba_code(
                         bd.get("form_name", chunk.get("form_name", "")), notes
                     ) or vba_code
 
-            body: str | None = None
-
-            # ── Quit / Close application ─────────────────────────────────
-            if re.search(r'DoCmd\.Quit|acQuitPrompt', vba_code, re.IGNORECASE):
-                body = (
-                    "public virtual async System.Threading.Tasks.Task " + fxxx_async + "()\n"
-                    "{\n"
-                    "    var result = MessageBox.Show(\n"
-                    '        "アプリケーションを終了しますか？",\n'
-                    '        "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);\n'
-                    "    if (result == MessageBoxResult.Yes)\n"
-                    "        System.Windows.Application.Current.Shutdown();\n"
-                    "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                    "}"
-                )
-
-            # ── Process kill (taskkill.exe) ──────────────────────────────
-            elif re.search(r'taskkill', vba_code, re.IGNORECASE):
-                im_match = re.search(r'/IM\s+(\S+)', vba_code, re.IGNORECASE)
-                im_arg = im_match.group(1).strip('"\'') if im_match else "wmplayer.exe"
-                body = (
-                    "public virtual async System.Threading.Tasks.Task " + fxxx_async + "()\n"
-                    "{\n"
-                    "    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo\n"
-                    "    {\n"
-                    f'        FileName = "taskkill.exe",\n'
-                    f'        Arguments = "/F /IM {im_arg}",\n'
-                    "        CreateNoWindow = true,\n"
-                    "        UseShellExecute = false\n"
-                    "    });\n"
-                    "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                    "}"
-                )
-
-            # ── KeyDown F11/F12 — logic in ViewModel, code-behind only sets e.Handled ──
-            elif re.search(r'Form_KeyDown|vbKeyF11|vbKeyF12', vba_code, re.IGNORECASE):
-                body = (
-                    "public virtual async System.Threading.Tasks.Task " + fxxx_async + "(System.Windows.Input.KeyEventArgs? e = null)\n"
-                    "{\n"
-                    "    if (e == null) { await System.Threading.Tasks.Task.CompletedTask; return; }\n"
-                    "    switch (e.Key)\n"
-                    "    {\n"
-                    "        case System.Windows.Input.Key.F11:\n"
-                    "            e.Handled = true;\n"
-                    '            MessageBox.Show("ファンクション【F11】キーは無効に設定されてます！！",\n'
-                    '                "警告", MessageBoxButton.OK, MessageBoxImage.Warning);\n'
-                    "            break;\n"
-                    "        case System.Windows.Input.Key.F12:\n"
-                    "            e.Handled = true;\n"
-                    '            MessageBox.Show("ファンクション【F12】キーは無効に設定されてます！！",\n'
-                    '                "警告", MessageBoxButton.OK, MessageBoxImage.Warning);\n'
-                    "            break;\n"
-                    "    }\n"
-                    "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                    "}"
-                )
-
-            # ── Fallback: use event_content / notes to determine pattern ──
-            else:
-                event_content = bd.get("event_content", "")
-                notes = bd.get("notes", "")
-                # Quit pattern from event_content
-                if re.search(r'終了|Quit|アプリケーション.*終了', event_content, re.IGNORECASE):
-                    body = (
-                        "public virtual async System.Threading.Tasks.Task " + fxxx_async + "()\n"
-                        "{\n"
-                        "    var result = MessageBox.Show(\n"
-                        '        "アプリケーションを終了しますか？",\n'
-                        '        "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);\n'
-                        "    if (result == MessageBoxResult.Yes)\n"
-                        "        System.Windows.Application.Current.Shutdown();\n"
-                        "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                        "}"
-                    )
-                # taskkill pattern from event_content
-                elif re.search(r'強制終了|taskkill|wmplayer|Media Player', event_content, re.IGNORECASE):
-                    body = (
-                        "public virtual async System.Threading.Tasks.Task " + fxxx_async + "()\n"
-                        "{\n"
-                        "    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo\n"
-                        "    {\n"
-                        '        FileName = "taskkill.exe",\n'
-                        '        Arguments = "/F /IM wmplayer.exe",\n'
-                        "        CreateNoWindow = true,\n"
-                        "        UseShellExecute = false\n"
-                        "    });\n"
-                        "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                        "}"
-                    )
-                # DblClick → open form pattern (DD steps contain "フォームを開く" or "詳細を表示")
-                elif re.search(r'DblClick|ondblclick|ダブルクリック', notes + event_content, re.IGNORECASE):
-                    # Extract logical name for TODO comment
-                    logical_name = bd.get("logical_name", "") or bd.get("title", "")
-                    comment = f"open {logical_name} form" if logical_name and logical_name not in ("-", "") else "open related form"
-                    body = (
-                        "public virtual async System.Threading.Tasks.Task " + fxxx_async + "()\n"
-                        "{\n"
-                        f"    // TODO: {comment} — verify View class name before instantiating\n"
-                        "    await System.Threading.Tasks.Task.CompletedTask;\n"
-                        "}"
-                    )
+            body = sys_body(
+                fxxx_async, vba_code,
+                event_content=bd.get("event_content", ""),
+                notes=bd.get("notes", ""),
+                logical_name=bd.get("logical_name", "") or bd.get("title", ""),
+            )
 
             if body:
                 results.append({
@@ -1618,15 +1501,6 @@ class LogicAgent(BaseAgent):
                 WPF_VIEWMODELS_DIR.parent,
             )
 
-    # ──────────────────────────────────────────
-    # Helpers
-    # ──────────────────────────────────────────
-
-    @staticmethod
-    def _form_to_vm_name(form_name: str) -> str:
-        """Keep original name: F_Login → F_Login"""
-        return re.sub(r'[^\w]', '', form_name)
-
 
 async def main_cli():
     """Run Agent Logic from CLI."""
@@ -1644,6 +1518,8 @@ async def main_cli():
 
     if not args.all and not args.form_name:
         parser.error("Either form_name or --all is required")
+    if args.form_name and form_name_error(args.form_name):
+        parser.error(form_name_error(args.form_name))
 
     agent = LogicAgent()
     
@@ -1657,6 +1533,7 @@ async def main_cli():
     else:
         forms_to_process = [args.form_name]
 
+    failures = 0
     for fname in forms_to_process:
         logger.info(f"\n{'='*60}\n[Agent Logic] Processing: {fname}\n{'='*60}")
         try:
@@ -1665,10 +1542,15 @@ async def main_cli():
                 model_override=args.model,
                 logic_event_class=args.event_class,
             )
-            await agent.run(input_data, input_only=args.input_only)
+            output = await agent.run(input_data, input_only=args.input_only)
+            if output.status != "success":
+                failures += 1
+                logger.error(f"[Agent Logic] {fname}: {output.error}")
         except Exception as e:
+            failures += 1
             logger.error(f"[Agent Logic] Failed to process {fname}: {e}")
+    return 1 if failures else 0
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main_cli())
+    sys.exit(asyncio.run(main_cli()))
