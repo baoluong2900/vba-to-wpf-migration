@@ -82,6 +82,8 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
   const [error, setError] = useState<string | null>(null);
   const [isDark, setIsDark] = useState<boolean>(true);
   const isDarkRef = useRef(isDark);
+  // Bumped on every build and on unmount, so a slower earlier build never draws over a newer one
+  const buildSeqRef = useRef(0);
 
   useEffect(() => {
     isDarkRef.current = isDark;
@@ -110,6 +112,8 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
 
   const buildGraph = useCallback(async () => {
     if (!name || !containerRef.current) return;
+    const seq = ++buildSeqRef.current;
+    const superseded = () => seq !== buildSeqRef.current;
     setLoading(true);
     setSelectedNode(null);
     setTestReport(null);
@@ -127,32 +131,23 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
       } catch {
         // fallback to built-in cose
       }
-
-      const wpfRootCfg =
-        graphKind === "wpf"
-          ? type === "macro"
-            ? TYPE_CFG.handler
-            : type === "module"
-              ? TYPE_CFG.service
-              : TYPE_CFG.view
-          : (TYPE_CFG[type] ?? TYPE_CFG.form);
+      if (superseded()) return;
 
       const res = await fetch(`${apiPath}?name=${encodeURIComponent(name)}&type=${type}`);
       const data = await res.json();
-      if (!data.success) { setError(data.error || "Unknown error"); setLoading(false); return; }
+      if (superseded() || !containerRef.current) return;
+      if (!data.success) { setError(data.error || "Unknown error"); return; }
       setStats(data.stats);
 
       // Validate elements to avoid "Invalid array length"
       const nodes: any[] = Array.isArray(data.elements?.nodes) ? data.elements.nodes : [];
       const edges: any[] = Array.isArray(data.elements?.edges) ? data.elements.edges : [];
-      if (nodes.length === 0) { setError("Graph is empty — no nodes returned."); setLoading(false); return; }
+      if (nodes.length === 0) { setError("Graph is empty — no nodes returned."); return; }
 
       const rootId =
         typeof data.rootId === "string" && data.rootId.length > 0
           ? data.rootId
           : `${type}:${name}`;
-
-      const rootCfg = graphKind === "wpf" ? wpfRootCfg : (TYPE_CFG[type] ?? TYPE_CFG["form"]);
 
       if (cyRef.current) { cyRef.current.destroy(); cyRef.current = null; }
 
@@ -383,9 +378,9 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
       });
 
     } catch (e: any) {
-      setError(e.message);
+      if (!superseded()) setError(e.message);
     } finally {
-      setLoading(false);
+      if (!superseded()) setLoading(false);
     }
   }, [name, type, apiPath, graphKind]);
 
@@ -472,7 +467,10 @@ export function GraphView({ name, type, apiPath = "/api/graph", graphKind = "vba
 
   useEffect(() => {
     buildGraph();
-    return () => { if (cyRef.current) { cyRef.current.destroy(); cyRef.current = null; } };
+    return () => {
+      buildSeqRef.current++;
+      if (cyRef.current) { cyRef.current.destroy(); cyRef.current = null; }
+    };
   }, [buildGraph]);
 
   // Resize canvas when selection drawer toggles

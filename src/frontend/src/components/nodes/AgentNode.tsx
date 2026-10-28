@@ -26,6 +26,7 @@ export const AgentNode = ({ data }: any) => {
           <select 
             className="input-field nodrag" 
             value={data.selectedModel}
+            onFocus={() => data.loadModelHealth?.()}
             onChange={(e) => data.setSelectedModel(e.target.value)}
             disabled={data.agentStatus === "running"}
             style={{ marginBottom: 12, fontSize: 13 }}

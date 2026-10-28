@@ -18,7 +18,7 @@ Next.js 16 (App Router) web console for the **vba_brain** 5-layer VBA/Access →
 
 ```bash
 yarn install
-yarn dev          # http://localhost:3000
+yarn dev          # http://localhost:3000 (bound to 127.0.0.1)
 ```
 
 > The gRPC gateway must be running on `:50051`. From the repo root you can start FE + BE together with `python start.py`.
@@ -27,10 +27,16 @@ yarn dev          # http://localhost:3000
 
 | Command | Description |
 |---|---|
-| `yarn dev` | Start dev server (port 3000) |
-| `yarn build` | Production build |
+| `yarn dev` | Start dev server (port 3000, `127.0.0.1` only) |
+| `yarn build` | Production build (includes the TypeScript check) |
 | `yarn start` | Serve production build |
 | `yarn lint` | Run ESLint |
+| `yarn test` | Unit tests in `tests/*.test.ts` (`node --test`; Node ≥ 22.6 runs the TypeScript directly) |
+
+Environment the API routes read: `GRPC_SERVER_ADDRESS` (default `localhost:50051`),
+`GRPC_AUTH_TOKEN` (sent as a bearer token when set), `PYTHON_BIN` (interpreter for spawned
+scripts), `VBA_BRAIN_ROOT` (repo root, when the server is not started from `src/frontend`),
+`MONGO_URI` / `MONGO_DB` (routes that read MongoDB directly). `python start.py` sets them.
 
 ## Structure
 
@@ -42,13 +48,21 @@ src/
 │   ├── page.tsx           # Redirects → /layer1
 │   ├── layer1..layer5/    # One workspace page per pipeline layer
 │   └── api/               # Route handlers bridging to the gRPC gateway
+├── proxy.ts               # Rejects cross-site POST/PUT/PATCH/DELETE to /api/**
 ├── components/
 │   ├── Header.tsx         # Top nav: per-layer accent tabs + theme toggle
 │   ├── Footer.tsx         # Status bar with live clock
 │   ├── GraphView.tsx      # Cytoscape dependency / Avalonia mapping graph
 │   └── nodes/             # React Flow custom nodes (Agent, DdAgent, L5Agent, …)
 └── lib/
-    └── logging.ts         # Shared LogEntry / LogLevel / getLogColor / formatLogTime
+    ├── logging.ts         # Shared LogEntry / LogLevel / getLogColor / formatLogTime
+    ├── paths.ts           # All backend paths (VBA_BRAIN_ROOT override)
+    ├── python.ts          # Interpreter for spawned scripts (PYTHON_BIN → python3 → python)
+    ├── pathSafety.ts      # isSafeName / isSafeCliValue for request-supplied names
+    ├── originCheck.ts     # Same-origin rule used by proxy.ts
+    ├── grpcAuth.ts        # Bearer-token client interceptor
+    └── sse.ts …           # SSE reader, download names, Layer 5 summaries
+tests/                     # node --test unit tests for src/lib and route helpers
 ```
 
 ## Design System
@@ -67,5 +81,7 @@ Theme is persisted to `localStorage.theme` and applied before first paint by the
 ## Conventions
 
 - **Never hardcode** API keys or hostnames in source — config lives in the repo-root `config.json`.
+- **Never build shell commands** from request data — spawn with argument arrays and validate names
+  with `isSafeName` first.
 - Reuse the shared helpers in `src/lib/logging.ts` for any pipeline log console.
 - Keep page logic intact when restyling; visual changes should flow through tokens/shared classes.

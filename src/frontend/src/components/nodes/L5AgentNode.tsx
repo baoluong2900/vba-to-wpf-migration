@@ -14,7 +14,6 @@ function L5AgentNodeInner({ data }: { data: any }) {
   const {
     agentKey, label, icon, color, description, inputs, outputs, status, files, duration, errorMsg,
     onRun, onViewInput, onViewOutput, isRunnable, selectedInput, inputLabel, currentModel, modelList, onModelChange,
-    mappingType, onMappingTypeChange, macroModuleName, onMacroModuleNameChange, macroModuleList
   } = data;
   const st = STATUS_CFG[status] || STATUS_CFG.idle;
   const StIcon = st.Icon;

@@ -1,28 +1,32 @@
 /**
- * POST /api/layer5/run-logic
+ * POST /api/v1/layer5/run-logic
  *
- * Run Agent Logic (gen_code_behind.py) for a form — SSE streaming.
- * Two-step pipeline:
- *   1. agent_logic.py --event-class all --input-only  (build input snapshots)
- *   2. gen_code_behind.py --input-type all             (LLM gen + patch xaml.cs)
+ * Run Agent Logic (agent_logic.py) for a form and stream its output as SSE.
  *
  * Body: { form_name, phase?, model?, dry_run? }
  * SSE:  { type:"log"|"done"|"error", ... }
  */
 
 import { NextRequest } from "next/server";
-import { spawn, execSync } from "child_process";
+import { spawn, type ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs";
+import { LAYER5_DIR, WPF_DIR } from "../../../../../lib/paths";
+import { pythonExecutable } from "../../../../../lib/python";
+import { isSafeCliValue, isSafeName } from "../../../../../lib/pathSafety";
+import { logicCodeStatus, summarizeLogicMethods } from "../../../../../lib/logicSummary";
+import { lookupFormView } from "../../../graph-wpf/wpfGraphTransform";
 
-const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "workflow", "layer5");
-const VIEWS_DIR  = path.resolve(process.cwd(), "..", "wpf", "vba_brain.UI.Avalonia", "Views");
+const LOGIC_PHASES = ["all", "ui", "service"];
 
 function sseMsg(data: object): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 function ts(): string {
   return new Date().toLocaleTimeString("vi-VN", { hour12: false });
+}
+function sseError(message: string, status: number): Response {
+  return new Response(sseMsg({ type: "error", message }), { status, headers: { "Content-Type": "text/event-stream" } });
 }
 
 export async function POST(req: NextRequest) {
@@ -34,18 +38,26 @@ export async function POST(req: NextRequest) {
     dry_run = false,
   } = body as { form_name: string; phase?: string; model?: string; dry_run?: boolean };
 
-  if (!form_name) {
-    return new Response(sseMsg({ type: "error", message: "Missing form_name" }),
-      { status: 400, headers: { "Content-Type": "text/event-stream" } });
-  }
+  if (!form_name) return sseError("Missing form_name", 400);
+  if (!isSafeName(form_name)) return sseError("Invalid form_name", 400);
+  if (!LOGIC_PHASES.includes(phase)) return sseError(`Invalid phase: ${phase}`, 400);
+  if (model && !isSafeCliValue(model)) return sseError("Invalid model", 400);
 
   const encoder = new TextEncoder();
   const env = { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUNBUFFERED: "1" };
+  let child: ChildProcess | null = null;
+  let closed = false;
+  // Client gone (request aborted or stream cancelled): stop the agent instead of letting it run on.
+  const stop = () => {
+    closed = true;
+    child?.kill();
+  };
 
   const stream = new ReadableStream({
     async start(controller) {
       const enq = (data: object) => {
-        try { controller.enqueue(encoder.encode(sseMsg(data))); } catch { /* closed */ }
+        if (closed) return;
+        try { controller.enqueue(encoder.encode(sseMsg(data))); } catch { closed = true; }
       };
 
       const logLine = (line: string) => {
@@ -58,118 +70,96 @@ export async function POST(req: NextRequest) {
         enq({ type: "log", level, ts: ts(), message: line.trim() });
       };
 
-function getPythonExecutable(): string {
-  const candidates = [
-    '/Library/Frameworks/Python.framework/Versions/3.13/bin/python3',
-    '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3',
-    '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3',
-    '/opt/homebrew/bin/python3',
-    '/usr/local/bin/python3',
-    'python3',
-    'python'
-  ];
-  for (const c of candidates) {
-    if (c === 'python3' || c === 'python' || fs.existsSync(c)) {
-      return c;
-    }
-  }
-  return 'python3';
-}
-
-      // Helper: spawn a python process and stream its output
+      // Spawn python (no shell) and stream its output line by line
       const runPython = (args: string[]): Promise<number> =>
         new Promise((resolve) => {
-          const pythonCmd = getPythonExecutable();
-          const proc = spawn(pythonCmd, args, { cwd: LAYER5_DIR, env });
+          const proc = spawn(pythonExecutable(), args, { cwd: LAYER5_DIR, env, windowsHide: true });
+          child = proc;
+          proc.stdout.setEncoding("utf8");
+          proc.stderr.setEncoding("utf8");
           let outBuf = "", errBuf = "";
-          const flush = (buf: string) =>
-            buf.split("\n").forEach(l => { if (l.trim()) logLine(l); });
-
-          proc.stdout.on("data", (c: Buffer) => {
-            outBuf += c.toString("utf-8");
+          proc.stdout.on("data", (c: string) => {
+            outBuf += c;
             const parts = outBuf.split("\n"); outBuf = parts.pop() ?? "";
             parts.forEach(logLine);
           });
-          proc.stderr.on("data", (c: Buffer) => {
-            errBuf += c.toString("utf-8");
+          proc.stderr.on("data", (c: string) => {
+            errBuf += c;
             const parts = errBuf.split("\n"); errBuf = parts.pop() ?? "";
             parts.forEach(logLine);
           });
           proc.on("close", (code) => {
             if (outBuf.trim()) logLine(outBuf);
             if (errBuf.trim()) logLine(errBuf);
-            resolve(code ?? 0);
+            child = null;
+            resolve(code ?? 1);
           });
           proc.on("error", (err) => {
             logLine(`Process error: ${err.message}`);
+            child = null;
             resolve(1);
           });
         });
 
+      req.signal.addEventListener("abort", stop, { once: true });
       try {
         enq({ type: "log", level: "INFO", ts: ts(), message: `▶ Agent Logic — ${form_name} (phase=${phase})` });
-
-        // ── Step 1: Run ViewModel Generation Pipeline ────────────────────
         enq({ type: "log", level: "INFO", ts: ts(), message: "Running LLM generation for ViewModel methods..." });
+
         const logicScript = path.join(LAYER5_DIR, "agents", "logic", "agent_logic.py");
-        const logicArgs = [logicScript, form_name, "--event-class", phase || "all"];
+        const logicArgs = [logicScript, form_name, "--event-class", phase];
         if (dry_run) logicArgs.push("--input-only");
         if (model) logicArgs.push("--model", model);
-        const exitCode = await runPython(logicArgs);
+        const exitCode = closed ? 1 : await runPython(logicArgs);
+        if (closed) return;
 
-        // Try to resolve EN name from listFormJpToEn.json for ViewModel
-        let vmFileName = `${form_name}ViewModel.cs`;
-        const jpToEnPath = path.join(LAYER5_DIR, "agents", "graphview", "outputs", "forms", "listFormJpToEn.json");
-        if (fs.existsSync(jpToEnPath)) {
-          try {
-            const jpToEn = JSON.parse(fs.readFileSync(jpToEnPath, "utf-8"));
-            const entry = (jpToEn.items || []).find((i: any) => i.access_form_name === form_name);
-            if (entry?.wpf_viewmodel_name) {
-              vmFileName = `${entry.wpf_viewmodel_name}.cs`;
-            }
-          } catch { /* fallback */ }
-        }
+        const vmFileName = `${lookupFormView(form_name)?.vm || `${form_name}ViewModel`}.cs`;
 
         // ── Read output snapshot (method_outputs.json) ────────────────────
         let methodOutputs: any[] = [];
         const outputsPath = path.join(LAYER5_DIR, "agents", "logic", "outputs", form_name, "method_outputs.json");
         try {
           if (fs.existsSync(outputsPath)) {
-            methodOutputs = JSON.parse(fs.readFileSync(outputsPath, "utf-8"));
+            const parsed = JSON.parse(fs.readFileSync(outputsPath, "utf-8"));
+            if (Array.isArray(parsed)) methodOutputs = parsed;
           }
         } catch { /* ignore */ }
 
         // ── Read updated ViewModel from source or outputs ──────────────────
         let csContent: string | null = null;
-        let csPath = path.resolve(process.cwd(), "..", "wpf", "vba_brain.UI.Avalonia", "ViewModels", vmFileName);
+        let csPath = path.join(WPF_DIR, "vba_brain.UI.Avalonia", "ViewModels", vmFileName);
         if (!fs.existsSync(csPath)) {
           csPath = path.join(LAYER5_DIR, "agents", "logic", "outputs", form_name, "ViewModels", vmFileName);
         }
         try { if (fs.existsSync(csPath)) csContent = fs.readFileSync(csPath, "utf-8"); } catch { /* ignore */ }
 
-        const success = exitCode === 0;
+        const summary = summarizeLogicMethods(methodOutputs, exitCode);
+        const patched = summary.done + summary.todo;
 
         enq({
           type:      "done",
-          success,
+          success:   exitCode === 0,
           exit_code: exitCode,
           form_name,
           phase,
           dry_run,
+          summary,
           stats: {
             total:     methodOutputs.length,
-            generated: methodOutputs.filter((m: any) => m.status === "success").length,
-            patched:   methodOutputs.filter((m: any) => m.status === "success").length,
-            skipped:   methodOutputs.filter((m: any) => m.status === "skipped").length,
-            errors:    methodOutputs.filter((m: any) => m.status === "error").length,
+            generated: patched,
+            patched,
+            skipped:   summary.skip,
+            errors:    summary.error,
           },
-          summary: `Successfully patched ${methodOutputs.filter((m: any) => m.status === "success").length} methods into pure MVVM ViewModel: ${vmFileName}`,
+          message: exitCode === 0
+            ? `Patched ${patched} methods into ViewModel ${vmFileName}`
+            : `agent_logic.py exited with code ${exitCode} (${summary.error} method error(s))`,
           methods: methodOutputs.map((m: any) => ({
             event_id:    m.event_id,
             notes:       m.mapped_command?.vba_event || m.notes || "",
             cs_name:     m.cs_method,
             status:      m.status,
-            code_status: m.status === "skipped" ? "SKIP" : m.status === "error" ? "ERROR" : "DONE",
+            code_status: logicCodeStatus(m),
             note:        m.note ?? "",
             code_preview: typeof m.code === "string" && m.code.length > 5 ? m.code.slice(0, 400) : null,
             phase_type:  m.phase_type || "all",
@@ -181,8 +171,13 @@ function getPythonExecutable(): string {
       } catch (err: any) {
         enq({ type: "error", message: err.message });
       } finally {
-        controller.close();
+        req.signal.removeEventListener("abort", stop);
+        closed = true;
+        try { controller.close(); } catch { /* already cancelled */ }
       }
+    },
+    cancel() {
+      stop();
     },
   });
 

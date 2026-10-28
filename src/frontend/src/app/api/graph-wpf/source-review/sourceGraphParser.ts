@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { CyEdge, CyNode } from '../../graph/graphBuilder';
+import { lookupFormView } from '../wpfGraphTransform';
 
 type ActualGraph = {
   nodes: CyNode[];
@@ -9,14 +10,28 @@ type ActualGraph = {
   files: string[];
 };
 
+const SKIPPED_DIRS = new Set(['bin', 'obj']);
+
 function walkFiles(dir: string, exts: Set<string>, out: string[] = []) {
   if (!fs.existsSync(dir)) return out;
   for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, item.name);
-    if (item.isDirectory()) walkFiles(p, exts, out);
-    else if (exts.has(path.extname(item.name).toLowerCase())) out.push(p);
+    if (item.isDirectory()) {
+      if (item.name.startsWith('.') || SKIPPED_DIRS.has(item.name.toLowerCase())) continue;
+      walkFiles(p, exts, out);
+    } else if (exts.has(path.extname(item.name).toLowerCase())) out.push(p);
   }
   return out;
+}
+
+/** First file found under `<...>/<folder>/<name>` for the given candidate names, in order. */
+function findInFolder(files: string[], folder: string, names: string[]) {
+  for (const name of names) {
+    const suffix = path.sep + path.join(folder, name);
+    const hit = files.find((f) => f.endsWith(suffix));
+    if (hit) return hit;
+  }
+  return undefined;
 }
 
 function readIfExists(filePath: string) {
@@ -75,9 +90,13 @@ export function parseActualSourceGraph(sourceRoot: string, screenName: string): 
   const edges: CyEdge[] = [];
   const edgeSeen = new Set<string>();
 
-  const viewFile = files.find((f) => f.endsWith(path.join('Views', `${screenName}.axaml`)))
-    ?? files.find((f) => f.endsWith(path.join('Views', `${screenName}.xaml`)));
-  const viewModelFile = files.find((f) => f.endsWith(path.join('ViewModels', `${screenName}.cs`)));
+  // Codegen names files after listFormJpToEn (F_Login → FLoginView / FLoginViewModel);
+  // the raw Access name is only a fallback.
+  const mapped = lookupFormView(screenName);
+  const viewNames = [...new Set([mapped?.view, `${screenName}View`, screenName].filter(Boolean) as string[])];
+  const vmNames = [...new Set([mapped?.vm, `${screenName}ViewModel`, screenName].filter(Boolean) as string[])];
+  const viewFile = findInFolder(files, 'Views', viewNames.flatMap((n) => [`${n}.axaml`, `${n}.xaml`]));
+  const viewModelFile = findInFolder(files, 'ViewModels', vmNames.map((n) => `${n}.cs`));
   const viewLabel = viewFile ? classNameFromFile(viewFile) : `${screenName}View`;
   const viewModelLabel = viewModelFile ? classNameFromFile(viewModelFile) : `${screenName}ViewModel`;
 

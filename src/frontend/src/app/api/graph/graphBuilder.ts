@@ -1,28 +1,35 @@
 import { MongoClient, Db } from 'mongodb';
-import path from 'path';
 import fs from 'fs';
+import { CONFIG_PATH } from '../../../lib/paths';
 
 // ── Mongo connection ──────────────────────────────────────────────────────────
 let _config: any = null;
 function getConfig() {
   if (_config) return _config;
-  const cfgPath = path.resolve(process.cwd(), '../../config.json');
   try {
-    _config = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+    _config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
   } catch (e) {
-    throw new Error(`Failed to load config.json at ${cfgPath}: ${e}`);
+    throw new Error(`Failed to load config.json at ${CONFIG_PATH}: ${e}`);
   }
   return _config;
 }
 
-let cachedClient: MongoClient | null = null;
+// The connect promise lives on globalThis so dev reloads reuse it; a failed connect is
+// forgotten so the next request retries instead of reusing a closed client.
+const mongoCache = globalThis as typeof globalThis & { __vbaBrainMongo?: Promise<MongoClient> };
+
 export async function getDb(): Promise<Db> {
   const cfg = getConfig();
-  if (!cachedClient) {
-    cachedClient = new MongoClient(cfg.mongodb.uri);
-    await cachedClient.connect();
+  if (!mongoCache.__vbaBrainMongo) {
+    const client = new MongoClient(cfg.mongodb.uri);
+    mongoCache.__vbaBrainMongo = client.connect().catch((err) => {
+      mongoCache.__vbaBrainMongo = undefined;
+      client.close().catch(() => {});
+      throw err;
+    });
   }
-  return cachedClient.db(cfg.mongodb.db);
+  const client = await mongoCache.__vbaBrainMongo;
+  return client.db(cfg.mongodb.db);
 }
 
 // ── VBA preprocess ────────────────────────────────────────────────────────────

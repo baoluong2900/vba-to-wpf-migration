@@ -116,10 +116,10 @@ Các file mapping hiện tại:
 
 | File | Dùng để |
 |---|---|
-| `backend/layer5/agents/graphview/outputs/forms/listFormJpToEn.json` | Map Access form/report sang WPF View + ViewModel. |
-| `backend/layer5/agents/graphview/outputs/events/listEventJpToEn.json` | Map Access event handler sang ICommand/method. |
-| `backend/layer5/agents/graphview/outputs/queries/listQueryJpToEn.json` | Map Access query sang Repository/spec name. |
-| `backend/layer5/agents/graphview/outputs/macros/listMacroJpToEn.json` | Map Access macro sang command/workflow name gợi ý. |
+| `src/backend/workflow/layer5/agents/graphview/outputs/forms/listFormJpToEn.json` | Map Access form/report sang WPF View + ViewModel. |
+| `src/backend/workflow/layer5/agents/graphview/outputs/events/listEventJpToEn.json` | Map Access event handler sang ICommand/method. |
+| `src/backend/workflow/layer5/agents/graphview/outputs/queries/listQueryJpToEn.json` | Map Access query sang Repository/spec name. |
+| `src/backend/workflow/layer5/agents/graphview/outputs/macros/listMacroJpToEn.json` | Map Access macro sang command/workflow name gợi ý. |
 
 Nếu thiếu mapping:
 

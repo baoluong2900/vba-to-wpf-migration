@@ -3,6 +3,8 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, buildAccessGraph } from '../../graph/graphBuilder';
 import { buildWpfLayerGraph } from '../wpfGraphTransform';
+import { WPF_GRAPH_REPORTS_DIR } from '../../../../lib/paths';
+import { isSafeName } from '../../../../lib/pathSafety';
 
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,6 +13,9 @@ export async function POST(req: NextRequest) {
 
   if (!name) {
     return NextResponse.json({ success: false, error: 'Missing name param' });
+  }
+  if (!isSafeName(name)) {
+    return NextResponse.json({ success: false, error: 'Invalid name param' }, { status: 400 });
   }
 
   try {
@@ -35,9 +40,8 @@ export async function POST(req: NextRequest) {
       stats: wpf.stats,
     };
 
-    const outDir = path.resolve(process.cwd(), 'reports', 'wpf-graph');
-    const outPath = path.resolve(outDir, `${name}.expected.json`);
-    fs.mkdirSync(outDir, { recursive: true });
+    const outPath = path.join(WPF_GRAPH_REPORTS_DIR, `${name}.expected.json`);
+    fs.mkdirSync(WPF_GRAPH_REPORTS_DIR, { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(graph, null, 2), 'utf-8');
 
     return NextResponse.json({

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-
-const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "layer5");
+import { LAYER5_DIR } from "../../../../../lib/paths";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -13,8 +12,17 @@ export async function GET(req: NextRequest) {
   if (!agent || !type) {
     return NextResponse.json({ success: false, error: "Missing agent or type param" }, { status: 400 });
   }
+  if (type !== "inputs" && type !== "outputs") {
+    return NextResponse.json({ success: false, error: "type must be inputs or outputs" }, { status: 400 });
+  }
 
-  const dir = path.join(LAYER5_DIR, "agents", agent, type);
+  const agentsRoot = path.join(LAYER5_DIR, "agents");
+  const dir = path.resolve(agentsRoot, agent, type);
+
+  // Prevent path traversal (e.g. agent="../../.." ): confine to agents root
+  if (dir !== agentsRoot && !dir.startsWith(agentsRoot + path.sep)) {
+    return NextResponse.json({ success: false, error: "Invalid agent or type param" }, { status: 400 });
+  }
 
   if (!fs.existsSync(dir)) {
     return NextResponse.json({ success: false, error: `Directory not found: agents/${agent}/${type}` });

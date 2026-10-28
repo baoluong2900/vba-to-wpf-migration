@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
+import { BACKEND_LOGS_DIR } from "../../../../../lib/paths";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    // Layer 2 token log lives at src/backend/workflow/logs/token_log.xlsx
-    const logsDir = path.resolve(process.cwd(), "..", "backend", "workflow", "logs");
-    const filePath = path.join(logsDir, "token_log.xlsx");
+    // Layer 2 cost tracker writes src/backend/logs/token_log.xlsx (LOG_DIR in layer2/config.py)
+    const filePath = path.join(BACKEND_LOGS_DIR, "token_log.xlsx");
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json({ success: false, error: "Layer 2 token report not found. Run BD/DD agent first." }, { status: 404 });

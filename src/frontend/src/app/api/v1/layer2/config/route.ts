@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { layer2Client, promisifyGrpcCall } from '../../../grpcClient';
 import fs from 'fs';
-import path from 'path';
+import { CONFIG_PATH } from '../../../../../lib/paths';
 
 export async function GET() {
   try {
@@ -20,8 +20,7 @@ export async function GET() {
 
   // Fallback: đọc config.json trực tiếp
   try {
-    const configPath = path.resolve(process.cwd(), '../../config.json');
-    const raw = fs.readFileSync(configPath, 'utf-8');
+    const raw = fs.readFileSync(CONFIG_PATH, 'utf-8');
     const cfg = JSON.parse(raw);
 
     const providers = cfg.llm_providers || {};
