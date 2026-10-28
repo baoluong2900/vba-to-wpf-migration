@@ -26,7 +26,9 @@ GENERATED_DIRS = [
     WPF_ROOT / "vba_brain.Domain" / "Entities",
     WPF_ROOT / "vba_brain.Domain" / "Interfaces",
 ]
-KEEP_FILES = {".gitkeep", "README.md"}
+# ViewModelBase.cs is a base class (pipeline/base_gen.py) that only a full orchestrator run
+# recreates; deleting it breaks single-agent deploys from the console.
+KEEP_FILES = {".gitkeep", "README.md", "ViewModelBase.cs"}
 
 
 def clean_generated_files(dry_run: bool = False) -> int:

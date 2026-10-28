@@ -421,6 +421,8 @@ class UIAgent(BaseAgent):
                 password_binding="TxtPass" if vm_bindings.get("password_property") else None,
             )
 
+            self._sync_bound_properties(vm_bindings, ui_spec.get("controls", []))
+
             # ── Step 8d: Generate Code-behind and ViewModel (deterministic — zero LLM token) ──
             # Pass wpf_view_name/wpf_viewmodel_name so generated class names are English
             _skeleton = SkeletonTool()
@@ -2010,6 +2012,37 @@ class UIAgent(BaseAgent):
 
         return "\n".join(lines)
 
+
+    @staticmethod
+    def _bound_property_names(controls: list) -> list[str]:
+        """Plain `binding` names referenced by the controls (nested included), in document order."""
+        names: list[str] = []
+        for ctrl in controls or []:
+            binding = str(ctrl.get("binding") or "").strip()
+            if re.fullmatch(r"[A-Za-z_]\w*", binding) and binding not in names:
+                names.append(binding)
+            for nested in UIAgent._bound_property_names(ctrl.get("controls", [])):
+                if nested not in names:
+                    names.append(nested)
+        return names
+
+    @staticmethod
+    def _sync_bound_properties(vm_bindings: dict, controls: list) -> None:
+        """
+        Make every property the AXAML binds exist on the ViewModel skeleton, spelled exactly the
+        same — compiled bindings are case-sensitive and a miss is a build error (AVLN2000).
+        Unbound Access text boxes that VBA fills (txtID) are never inferred from the controls,
+        and inferred names keep the control's casing (txtProductID) while the AXAML binds
+        PascalCase (TxtProductID). The PasswordBox property is left alone (tool_skeleton renames
+        it to TxtPass, which is what the converted PasswordBox binds).
+        """
+        props = vm_bindings.setdefault("properties", [])
+        for name in UIAgent._bound_property_names(controls):
+            same = next((i for i, p in enumerate(props) if p.lower() == name.lower()), None)
+            if same is None:
+                props.append(name)
+            elif props[same] != vm_bindings.get("password_property"):
+                props[same] = name
 
     @staticmethod
     def _collect_control_events(
