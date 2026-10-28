@@ -14,6 +14,8 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
 
 ### Security
 - **gRPC gateway** binds `localhost` by default instead of `[::]` (all interfaces); optional
+  TLS (`GRPC_TLS_CERT` + `GRPC_TLS_KEY`; the console trusts `GRPC_TLS_CA` or, with `GRPC_TLS=1`,
+  the system roots — setting only one of cert/key stops the gateway at startup); optional
   shared bearer token (`GRPC_AUTH_TOKEN`, `api_gateway/auth.py`) checked in constant time; item
   names / doc kinds / file names that become path components are validated at the gateway and
   again in Layer 2 (`utils/paths.py`) — `screen_name="../../config"` could previously overwrite
@@ -159,6 +161,10 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   (`txtID`), or names that only differ in case (`txtProductID` vs `TxtProductID`) — so Avalonia
   compiled bindings failed with AVLN2000; `clean_generated_files.py` deleted `ViewModelBase.cs`,
   which only a full orchestrator run recreates.
+- **Gateway cost tracking:** concurrent BD/DD runs shared one module-level cost tracker that every
+  run replaced, so each reported (and logged) the other's tokens and costs. Each request now has
+  its own tracker (`cost_tracker.track_request()`, a context variable), the BD3/DD3 worker pools
+  pass it on (`ContextThreadPoolExecutor`), and `GetTokenReport` returns the last finished run.
 - Avalonia app: 10 build warnings → 0 (`RelayCommand` exceptions no longer crash the app, login
   view gets the public constructor the XAML loader needs, Close raises `CloseRequested`).
 - `src/backend/requirements.txt`: floors below what the generated gRPC stubs require

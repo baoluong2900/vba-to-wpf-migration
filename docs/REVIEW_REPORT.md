@@ -16,13 +16,13 @@
   ghép sai handler khiến bấm Login chạy `taskkill`.
 - **Đã sửa:** toàn bộ mức 🔴/🟠 và đa số 🟡/🟢. Phần còn lại là thay đổi kiến trúc lớn, được ghi
   ở mục 9 kèm lý do.
-- **Phát triển thêm:** xác thực token cho gRPC, chống cross-site, bộ test (427 test backend +
-  34 frontend, trước đó gần như bằng 0), CI 4 job, các cờ `--from/--only/--skip/--dry-run` cho
+- **Phát triển thêm:** xác thực token và TLS tuỳ chọn cho gRPC, chống cross-site, bộ test (437 test
+  backend + 36 frontend, trước đó gần như bằng 0), CI 4 job, các cờ `--from/--only/--skip/--dry-run` cho
   pipeline, `--dry-run` cho migration PostgreSQL, collection `dependency_graph`, kiểm tra SQL
   tĩnh, đăng ký model từ `config.json`, và các mục khác ở mục 6.
 - **Dọn dẹp:** gom code trùng lặp ở Layer 4 (8.031 → 3.022 dòng), xoá 43 file/route chết hoặc hỏng,
   bỏ 9 dependency không dùng, ~330 cảnh báo pyflakes → 0, gỡ 95 file sinh ra khỏi git. Tổng cộng
-  repo gọn hơn ~5.200 dòng dù có thêm 461 test và tài liệu mới.
+  repo gọn hơn ~4.800 dòng dù có thêm 473 test và tài liệu mới.
 
 ---
 
@@ -62,9 +62,9 @@
 | --- | --- | --- |
 | `python -m compileall` | OK | OK |
 | `ruff` (E9 + pyflakes) | ~330 cảnh báo, trong đó 3 tên **chưa định nghĩa** (crash khi chạy) và 1 module bị dán trùng toàn bộ | **0** (ruff). Pyflakes chỉ còn ghi chú star-import cố ý của `bd_agent` và 13 re-export đã đánh dấu `noqa` |
-| pytest | 0 test (chỉ có vài script in ra màn hình) | **427 test** (256 `tests/backend` + 171 `tests/layer5`), pass trên Python 3.10 / 3.11 / 3.12 / 3.14, không cần Mongo/LLM/mạng |
+| pytest | 0 test (chỉ có vài script in ra màn hình) | **437 test** (266 `tests/backend` + 171 `tests/layer5`), pass trên Python 3.10 / 3.11 / 3.12 / 3.14, không cần Mongo/LLM/mạng |
 | `yarn lint` / `tsc --noEmit` | OK / OK | OK / OK. Trên clone sạch cần `yarn typecheck` (chạy `next typegen` trước), nếu không sẽ lỗi TS2882 |
-| Test frontend | không có | 34 test (`yarn test`) |
+| Test frontend | không có | 36 test (`yarn test`) |
 | `next build` | OK, 2 cảnh báo (Cache-Control, NFT trace) | OK, 1 cảnh báo NFT trace (có từ trước) |
 | `dotnet build` | 0 lỗi, **10 cảnh báo** | 0 lỗi, **0 cảnh báo** |
 | Layer 5 sinh code cho 5 form rồi `dotnet build` (không LLM, mục 5.6) | chưa kiểm | 5/5 form sinh thành công; build **0 lỗi, 0 cảnh báo** |
@@ -109,6 +109,7 @@
 | 29 | Layer 5 | CLI Logic luôn exit 0; `fill_json` gọi `sys.exit(1)` trong code thư viện | 🟠 Console báo thành công khi đã thất bại; một lỗi làm dừng cả batch | Trả trạng thái đúng; raise thay vì exit |
 | 30 | Layer 5 | `agent_ui.py` dùng `form_name`/`form_config` chưa định nghĩa | 🟠 NameError bị nuốt, nên phần tra cứu event map không bao giờ chạy | Truyền tham số; xoá hàm không ai gọi |
 | 31 | Layer 5 | AXAML bind những thuộc tính mà ViewModel sinh ra không khai báo. Ví dụ text box không bound mà VBA tự điền (`txtID`), hoặc tên chỉ khác hoa/thường (`txtProductID` ↔ `TxtProductID`) | 🟠 Build Avalonia lỗi AVLN2000, vì compiled binding phân biệt hoa thường | ViewModel nhận đủ mọi tên mà AXAML bind, đúng chính tả trong AXAML (`UIAgent._sync_bound_properties`) |
+| 32 | Gateway, Layer 2 | Các lượt BD/DD chạy song song dùng chung một tracker chi phí toàn cục, mà mỗi lượt lại thay bằng tracker mới | 🟠 Token và chi phí trả về cho console, cũng như file log, bị lẫn giữa các request | Mỗi request có tracker riêng (`track_request`, contextvars); pool BD3/DD3 dùng `ContextThreadPoolExecutor` để lời gọi LLM trong worker vẫn ghi đúng tracker |
 
 ---
 
@@ -118,6 +119,10 @@
 - Đã sửa:
   - Bind theo `GRPC_HOST` (mặc định `localhost`).
   - Interceptor token tuỳ chọn (`auth.py`).
+  - TLS tuỳ chọn: đặt cả `GRPC_TLS_CERT` và `GRPC_TLS_KEY` thì gateway chỉ phục vụ TLS. Chỉ đặt
+    một trong hai thì gateway dừng ngay lúc khởi động, không lặng lẽ chạy plaintext.
+  - Mỗi request BD/DD có tracker chi phí riêng (#32). `GetTokenReport` trả về request vừa xong
+    gần nhất.
   - `_bad_name` cho mọi tên dùng làm đường dẫn.
   - `ListForms` luôn lỗi (đưa dict vào `repeated string`).
   - `GetBdStatus` bỏ sót DD của report.
@@ -286,6 +291,8 @@ Sửa 21 mục:
 | Kiểm tra SQL tĩnh (PostgreSQL SQLSTATE) | `api/v1/layer3/staticSqlCheck.ts` | Nút Test ở `/layer3` |
 | Model từ `config.json` chọn được thật | `common/config.py` | Khai báo trong `llm_providers.<p>.models` |
 | Cache health-check model | `grpc_server.GetModelsHealth` | 5 phút |
+| TLS tuỳ chọn cho gateway và console | `api_gateway/auth.server_credentials`, `src/lib/grpcAuth.ts`, `start.py` | Gateway: `GRPC_TLS_CERT` + `GRPC_TLS_KEY`. Console: `GRPC_TLS_CA` (file PEM cần tin) hoặc `GRPC_TLS=1`; `start.py` tự đặt `GRPC_TLS_CA` |
+| Tracker chi phí theo request | `layer2/utils/cost_tracker.py` | Tự động. Pool thread mới có gọi LLM phải dùng `ContextThreadPoolExecutor` |
 | Bộ test | `tests/backend`, `tests/layer5`, `src/frontend/tests` | `pytest && pytest tests/layer5`, `yarn test` |
 | CI đầy đủ | `.github/workflows/ci.yml` | Tự động trên PR |
 | API token-stats Layer 5 | `GET /api/v1/layer5/token-stats` | Trang `/layer5` |
@@ -306,16 +313,18 @@ Sửa 21 mục:
   - xoá `infa/scripts/{translate_templates,update_prompts}.py` (trỏ vào thư mục không tồn tại);
   - xoá `src/vba/vba_source/run_tests.py` (đã thành pytest);
   - xoá `Class1.cs` ×3.
+- **Line ending:** khôi phục CRLF gốc cho 17 file bị đổi sang LF trong lúc sửa, để diff so với
+  `main` chỉ còn thay đổi thật (ví dụ `frm_parser.py`: từ 1.493 dòng xuống 3 dòng).
 - **Gỡ khỏi git index** (file vẫn giữ trên máy, nay đã gitignore): `layer2/agents/output/`, `layer3/scratch/*` (có script chứa tên dữ liệu khách hàng), `layer5/logs/token_report.json`, `src/frontend/reports/`.
 - **Dependency:** bỏ FastAPI, uvicorn, google-generativeai, langchain-core/-groq/-openai, jsonschema, psycopg2-binary, requests; `grpcio-tools` chuyển sang `requirements-dev.txt`.
 - **Layer 5:**
   - Xoá 13 module/template/prompt chết: `tool_method_merger`, `sync_vm_stubs`, `gen_code_behind`, `gen_vm_methods`, `patch_vm_from_output`, `core/utils`, 3 template Jinja, 4 prompt/template không dùng, `run_codegen_test.py`. Kèm nhiều hàm không ai gọi.
   - Gỡ khỏi git các artifact sinh lại mỗi lượt: contract cũ, 4 snapshot hỏng, review/mapping theo lượt, `list*Jp.json` không ai đọc. Giữ lại bản đồ tên, config, prompt.
 - **Tổng cộng (so với `main`):**
-  - 272 file thay đổi, trong đó 66 file mới và 43 file xoá hẳn.
+  - 274 file thay đổi, trong đó 68 file mới và 43 file xoá hẳn.
   - Thêm 95 file sinh ra được gỡ khỏi git (~62.600 dòng, vẫn giữ trên máy).
-  - Khoảng **+23.600 / −28.800 dòng** (không tính 95 file trên), đã gồm 461 test mới
-    (~3.400 dòng) và tài liệu.
+  - Khoảng **+16.400 / −21.200 dòng** (không tính 95 file trên), đã gồm 473 test mới
+    (~3.600 dòng) và tài liệu.
 
 ---
 
@@ -353,6 +362,8 @@ Sửa 21 mục:
     - `OnF000Async` → `GetInitialDataAsync` (giờ đã nhận diện trigger tiếng Anh).
 14. **Mã thoát CLI:** repo/report/logic trả exit 1 khi lỗi, tên không an toàn trả exit 2. Console
     giờ hiển thị đúng là thất bại, thay vì "success".
+15. **TLS của gateway:** chỉ đặt một trong `GRPC_TLS_CERT` / `GRPC_TLS_KEY` thì gateway không khởi
+    động. Khi bật TLS, console cần `GRPC_TLS_CA` hoặc `GRPC_TLS=1` (`python start.py` tự lo).
 
 ---
 
@@ -360,8 +371,6 @@ Sửa 21 mục:
 
 | Ưu tiên | Việc | Lý do chưa làm |
 | --- | --- | --- |
-| 🟠 | TLS cho gateway (`add_secure_port`) | Cần quyết định cách cấp cert; hiện bind localhost + token |
-| 🟠 | Tracker chi phí theo request (contextvars) | Gateway 20 thread dùng chung tracker toàn cục, nên số liệu chi phí có thể lẫn giữa các request chạy đồng thời. Sửa cần truyền context qua ThreadPoolExecutor |
 | 🟡 | Chạy một lượt Layer 5 thật có LLM, gồm Agent Logic và vòng build-fix, rồi `dotnet build` | Phần sinh code tất định (Repo → Service → UI) đã được chạy thử cho 5 form và build sạch (mục 5.6). Thân method do Agent Logic viết và vòng build-fix cần gọi LLM tính phí |
 | 🟡 | Health service chuẩn `grpc.health.v1` + `start.py` chờ backend sẵn sàng | Thêm dependency `grpcio-health-checking` |
 | 🟡 | Ô chọn `source_path` ở `/layer1` chưa có tác dụng | Nối vào parser sẽ cho trình duyệt đọc thư mục tuỳ ý; cần quyết định chính sách (allow-list thư mục) |
