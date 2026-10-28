@@ -116,6 +116,10 @@ GRPC_HOST = get_setting("GRPC_HOST", ["grpc", "host"], "localhost")
 GRPC_PORT = int(get_setting("GRPC_PORT", ["grpc", "port"], "50051"))
 # When set, every RPC must carry "authorization: Bearer <token>" (api_gateway/auth.py).
 GRPC_AUTH_TOKEN = get_setting("GRPC_AUTH_TOKEN", ["grpc", "auth_token"], "")
+# PEM certificate chain + private key: set both and the gateway serves TLS only
+# (api_gateway/auth.server_credentials). Relative paths are resolved from the repo root.
+GRPC_TLS_CERT = get_setting("GRPC_TLS_CERT", ["grpc", "tls_cert"], "")
+GRPC_TLS_KEY = get_setting("GRPC_TLS_KEY", ["grpc", "tls_key"], "")
 
 # ── Default LLM Models ─────────────────────────────────────
 _llm_cfg = config_data.get("llm_settings", {})

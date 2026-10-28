@@ -160,9 +160,7 @@ full review. Good first contributions:
 
 | Task | Where | Plan ref |
 | --- | --- | --- |
-| TLS for the gateway (`add_secure_port`, cert paths from config) | `api_gateway/grpc_server.py` | §1.1 |
 | Standard `grpc.health.v1` service + readiness wait in `start.py` | `api_gateway/`, `start.py` | §2.4 |
-| Per-request cost tracker (contextvars) instead of the global swap | `layer2/utils/cost_tracker.py`, gateway | §2.4 |
 | Index / foreign-key migration and rollback scripts | `layer3/sql_migration/` | §4.1 |
 | Split `agent_ui.py` by responsibility | `layer5/agents/ui/` | §3.4 |
 | Tests for `graphBuilder.ts` / `wpfGraphTransform.ts` | `src/frontend/tests/` | §2.2 |

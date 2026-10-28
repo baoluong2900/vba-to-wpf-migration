@@ -149,9 +149,10 @@ model *list*, via `Layer2Service.GetConfig`.
 - **Python 3.10+.** Some modules use PEP 604 `X | None` without
   `from __future__ import annotations` (e.g. `layer1/parser/frm_parser.py`), so 3.9 raises
   `SyntaxError`. Add the `__future__` import to any new module using those unions.
-- **The gateway has no TLS.** It binds `GRPC_HOST` (default `localhost`) and enforces a bearer
-  token only when `GRPC_AUTH_TOKEN` is set. Do not expose port 50051 beyond localhost without
-  both a token and a TLS-terminating proxy — see `SECURITY.md`.
+- **TLS and auth are opt-in on the gateway.** It binds `GRPC_HOST` (default `localhost`), enforces
+  a bearer token only when `GRPC_AUTH_TOKEN` is set, and serves TLS only when `GRPC_TLS_CERT` and
+  `GRPC_TLS_KEY` are set. Do not expose port 50051 beyond localhost without both — see
+  `SECURITY.md`.
 - **Request data is untrusted:** names that become path components are validated
   (`grpc_server._bad_name`, `layer2/utils/paths.py`); never pass them to a shell.
 - **Use the module `logger`, not `print`,** in library code.

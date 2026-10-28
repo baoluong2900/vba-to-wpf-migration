@@ -19,7 +19,7 @@ Layer 1 / Layer 5 Python scripts.
 | `python.ts` | Interpreter for spawned scripts: `PYTHON_BIN`, then `python3`, then `python` |
 | `pathSafety.ts` | `isSafeName` / `isSafeCliValue` — names that become path segments or CLI arguments |
 | `originCheck.ts` | Same-origin check used by `src/proxy.ts` |
-| `grpcAuth.ts` | Client interceptor adding `authorization: Bearer <GRPC_AUTH_TOKEN>` |
+| `grpcAuth.ts` | Channel credentials (TLS when `GRPC_TLS_CA` / `GRPC_TLS` is set) and the interceptor adding `authorization: Bearer <GRPC_AUTH_TOKEN>` |
 | `contentDisposition.ts`, `downloadUrl.ts` | RFC 5987 file names (Japanese file names), encoded download URLs |
 | `sse.ts` | Shared Server-Sent-Events reader (buffers partial events, UTF-8 safe) |
 | `logicSummary.ts`, `tokenReport.ts` | Layer 5 run summary and token report readers |

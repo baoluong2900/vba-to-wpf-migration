@@ -39,10 +39,11 @@ Layer 3's `seed_queries_v2.py`, which `run_all.py` runs before Layer 2) and `dep
 - **Failures are visible:** a failed screen summary leaves the description empty and returns
   `summary_error`; failed DD3 modules come back in `dd3_failed_modules` while finished modules are
   saved incrementally.
-- **Cost tracking** (`utils/cost_tracker.py`): one tracker per flow, written to
+- **Cost tracking** (`utils/cost_tracker.py`): one tracker per gateway request (`track_request()`,
+  a context variable; CLI runs share one process-wide tracker), written to
   `src/backend/logs/token_log.json` / `.xlsx` under a lock; an unreadable log is moved to `.bak`
-  instead of being overwritten. Known limitation: concurrent gRPC requests share the global
-  tracker, so per-request attribution can mix (see `docs/REVIEW_REPORT.md` §9).
+  instead of being overwritten. Worker pools that make LLM calls must be a
+  `ContextThreadPoolExecutor`, or their calls miss the request's tracker.
 
 ## CLI
 ```bash

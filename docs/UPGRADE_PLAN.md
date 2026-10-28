@@ -16,7 +16,7 @@
 | G2 | Tên layer gRPC **ngược** với README: `Layer3Service`=Excel, `Layer4Service`=SQL Migration | `grpc_server.py` | 🔴 |
 | G3 | Frontend thực tế **Next.js 16.2.4 / React 19 / Tailwind 4**, README ghi Next 15 / Yarn | `frontend/package.json` | 🟡 |
 | G4 | ~~Tồn tại **2 UI song song**~~ — ĐÃ CHỐT **Avalonia** làm UI chính; Layer 5 codegen + deploy đã trỏ về `vba_brain.UI.Avalonia`. `vba_brain.UI.WPF` là folder trống (không có `.csproj`, không nằm trong `vba_brain.slnx`) → nên xóa | `src/wpf/` | ✅ |
-| G5 | ~~gRPC không auth, bind `[::]`~~ — ĐÃ bind `localhost` mặc định + token Bearer tùy chọn (`api_gateway/auth.py`); **còn thiếu TLS** | `grpc_server.py::serve` | 🟡 |
+| G5 | ~~gRPC không auth, bind `[::]`~~ — ĐÃ bind `localhost` mặc định + token Bearer tùy chọn (`api_gateway/auth.py`) + TLS tùy chọn (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`) | `grpc_server.py::serve` | 🟡 |
 | G6 | ~~docker-compose bind `0.0.0.0`~~ — ĐÃ bind `127.0.0.1` | `docker-compose.yml` | ✅ |
 | G7 | ~~Không test, không CI, dependency không pin~~ — ĐÃ có pytest (backend + Layer 5) + `node --test` (frontend) + CI 4 job; dependency có trần major | toàn repo | 🟡 |
 | G8 | File khổng lồ khó bảo trì (`agent_ui.py` 123KB, `fill_dd_excel_report.py` 79KB, FE `layer3/page.tsx` 73KB) | layer4/5, frontend | 🟡 |
@@ -30,7 +30,7 @@ Mục tiêu: hệ thống an toàn, chạy lại được tin cậy trước khi
 
 ### 1.1 Bảo mật gRPC Gateway
 - [x] Thêm **token/API-key interceptor** cho gRPC server (`api_gateway/auth.py`, `GRPC_AUTH_TOKEN`); gateway bind `localhost` mặc định (`GRPC_HOST`).
-- [ ] Thêm tùy chọn **TLS** (`add_secure_port` + cert) cho môi trường không-localhost; mặc định localhost vẫn cho phép insecure.
+- [x] Thêm tùy chọn **TLS** (`GRPC_TLS_CERT` / `GRPC_TLS_KEY` → `add_secure_port`; console tin `GRPC_TLS_CA`); mặc định localhost vẫn chạy plaintext.
 - [ ] Chuẩn hóa **error handling**: map exception → `grpc.StatusCode` thay vì để lỗi rò rỉ stack trace.
 
 ### 1.2 Khóa bề mặt hạ tầng
@@ -74,6 +74,7 @@ Mục tiêu: thay đổi không sợ vỡ, có lưới an toàn.
 ### 2.4 Logging & quan sát
 - [ ] Chuẩn hóa **structured logging** (JSON) thay cho `print`/`*.log` rải rác.
 - [ ] Thêm endpoint/health-check cho gRPC (`grpc_health_v1`) để FE và `start.py` kiểm tra trạng thái BE.
+- [x] Tracker chi phí theo request (`cost_tracker.track_request`, contextvars) thay cho tracker toàn cục bị các request song song dùng chung.
 - [ ] Hợp nhất token/cost report (Layer 2 `cost_tracker` + Layer 5 `token_tracker`) về một định dạng chung.
 
 ---
@@ -172,6 +173,6 @@ Phase 1 (bảo mật + pin deps)        ──► nền an toàn, bắt buộc t
 ## Cập nhật sau đợt review toàn bộ source (2026-10-28)
 
 Kết quả chi tiết, lý do từng bản sửa và danh sách việc còn lại: [`docs/REVIEW_REPORT.md`](REVIEW_REPORT.md).
-Các mục mới phát sinh từ đợt review (chưa làm) đã được đưa vào §9 của báo cáo đó, trong đó
-quan trọng nhất là: TLS cho gateway, tracker chi phí theo request, một lượt Layer 5 thật để kiểm
-AXAML ↔ ViewModel ↔ Service, và chính sách cho ô `source_path` ở `/layer1`.
+Các mục mới phát sinh từ đợt review (chưa làm) đã được đưa vào §9 của báo cáo đó. TLS cho
+gateway và tracker chi phí theo request đã làm xong (2026-10-29); quan trọng nhất còn lại là một
+lượt Layer 5 thật có LLM (Agent Logic, vòng build-fix) và chính sách cho ô `source_path` ở `/layer1`.

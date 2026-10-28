@@ -15,7 +15,7 @@ _spec.loader.exec_module(start)
 
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
-    for var in ("GRPC_HOST", "GRPC_PORT", "GRPC_AUTH_TOKEN"):
+    for var in ("GRPC_HOST", "GRPC_PORT", "GRPC_AUTH_TOKEN", "GRPC_TLS_CERT", "GRPC_TLS_KEY", "GRPC_TLS_CA"):
         monkeypatch.delenv(var, raising=False)
 
 
@@ -32,6 +32,22 @@ def test_environment_wins_over_config(monkeypatch):
     monkeypatch.setenv("GRPC_PORT", "7000")
     monkeypatch.setenv("GRPC_AUTH_TOKEN", "from-env")
     assert start.grpc_settings({"grpc": {"port": 6000, "auth_token": "t"}}) == ("localhost", 7000, "from-env")
+
+
+def test_console_trusts_nothing_extra_while_tls_is_off():
+    assert start.grpc_tls_ca({}) == ""
+    assert start.grpc_tls_ca({"grpc": {"tls_cert": "certs/gateway.pem"}}) == ""  # key missing: TLS stays off
+
+
+def test_console_trusts_the_gateway_certificate_or_the_configured_ca(monkeypatch):
+    cfg = {"grpc": {"tls_cert": "certs/gateway.pem", "tls_key": "certs/gateway.key"}}
+    assert start.grpc_tls_ca(cfg) == str(start.WORKFLOW_DIR / "certs" / "gateway.pem")  # self-signed
+    cfg["grpc"]["tls_ca"] = "/etc/ssl/internal-ca.pem"
+    assert start.grpc_tls_ca(cfg) == "/etc/ssl/internal-ca.pem"
+    monkeypatch.setenv("GRPC_TLS_CA", "/env/ca.pem")
+    assert start.grpc_tls_ca(cfg) == "/env/ca.pem"
+    monkeypatch.setenv("GRPC_TLS_CA", "certs/ca.pem")  # the console runs in src/frontend
+    assert start.grpc_tls_ca({}) == str(start.WORKFLOW_DIR / "certs" / "ca.pem")
 
 
 def test_redact_uri():

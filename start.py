@@ -84,6 +84,21 @@ def grpc_settings(cfg: dict) -> tuple[str, int, str]:
     token = os.environ.get("GRPC_AUTH_TOKEN") or grpc_cfg.get("auth_token") or ""
     return host, port, token
 
+def grpc_tls_ca(cfg: dict) -> str:
+    """
+    PEM file the console must trust: GRPC_TLS_CA / grpc.tls_ca, else — when the gateway serves
+    TLS — its own certificate (enough for a self-signed one). Empty when neither applies.
+    Relative paths are resolved from the repo root, as the gateway does.
+    """
+    grpc_cfg = cfg.get("grpc", {})
+    ca = os.environ.get("GRPC_TLS_CA") or grpc_cfg.get("tls_ca") or ""
+    cert = os.environ.get("GRPC_TLS_CERT") or grpc_cfg.get("tls_cert") or ""
+    key = os.environ.get("GRPC_TLS_KEY") or grpc_cfg.get("tls_key") or ""
+    path = ca or (cert if cert and key else "")
+    if not path:
+        return ""
+    return str(Path(path) if Path(path).is_absolute() else WORKFLOW_DIR / path)
+
 def popen_group_kwargs() -> dict:
     """Start each service in its own process group so stopping it also stops its children."""
     if IS_WINDOWS:
@@ -177,6 +192,8 @@ def run_frontend(cfg: dict) -> subprocess.Popen:
     env.setdefault("GRPC_SERVER_ADDRESS", f"{client_host}:{grpc_port}")
     if token:
         env.setdefault("GRPC_AUTH_TOKEN", token)
+    if tls_ca := grpc_tls_ca(cfg):
+        env["GRPC_TLS_CA"] = tls_ca  # your own GRPC_TLS_CA wins; it is only made absolute for the console
 
     if cfg.get("_clean_cache"):
         log("FE", YELLOW, "Cleaning .next cache...")

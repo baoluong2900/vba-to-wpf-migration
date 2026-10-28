@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { PROTO_PATH } from '../../lib/paths';
-import { bearerAuthInterceptor } from '../../lib/grpcAuth';
+import { bearerAuthInterceptor, channelCredentials } from '../../lib/grpcAuth';
 
 type ServiceName = 'Layer1Service' | 'Layer2Service' | 'Layer3Service' | 'Layer4Service';
 
@@ -24,7 +24,7 @@ function getClient(service: ServiceName): any {
     const token = process.env.GRPC_AUTH_TOKEN;
     client = new apiV1[service](
       process.env.GRPC_SERVER_ADDRESS || 'localhost:50051',
-      grpc.credentials.createInsecure(),
+      channelCredentials(),
       token ? { interceptors: [bearerAuthInterceptor(token)] } : {},
     );
     clients.set(service, client);

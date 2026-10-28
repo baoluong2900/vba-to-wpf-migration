@@ -1,5 +1,5 @@
 """
-api_gateway/auth.py — Optional shared-token authentication for the gRPC gateway.
+api_gateway/auth.py — Optional shared-token authentication and TLS for the gRPC gateway.
 
 When a token is configured (env ``GRPC_AUTH_TOKEN`` or ``config.json → grpc.auth_token``),
 every RPC must carry the metadata header ``authorization: Bearer <token>``; anything else is
@@ -8,10 +8,14 @@ interceptor is not installed, so local development keeps working unchanged.
 
 The Next.js console attaches the header automatically (``src/frontend/src/app/api/grpcClient.ts``)
 when the same ``GRPC_AUTH_TOKEN`` is present in its environment.
+
+With ``GRPC_TLS_CERT`` and ``GRPC_TLS_KEY`` set, the gateway serves TLS only; the console then
+needs ``GRPC_TLS_CA`` (the PEM file to trust) or ``GRPC_TLS=1`` (system roots).
 """
 from __future__ import annotations
 
 import hmac
+from pathlib import Path
 from typing import Callable, Optional
 
 import grpc
@@ -66,3 +70,17 @@ class TokenAuthInterceptor(grpc.ServerInterceptor):
 def build_interceptors(token: str) -> list[grpc.ServerInterceptor]:
     """Interceptors to install on the server — empty when no token is configured."""
     return [TokenAuthInterceptor(token)] if token else []
+
+
+def server_credentials(cert_file: str, key_file: str, base_dir: Path | None = None) -> grpc.ServerCredentials | None:
+    """
+    TLS credentials from a PEM certificate chain and private key (relative paths resolved from
+    ``base_dir``), or None — plaintext — when neither is configured. Only one of them is a
+    configuration error: falling back to plaintext would silently drop the protection asked for.
+    """
+    if not cert_file and not key_file:
+        return None
+    if not cert_file or not key_file:
+        raise ValueError("GRPC_TLS_CERT and GRPC_TLS_KEY must be set together (or both left empty)")
+    cert_path, key_path = (Path(base_dir or ".") / p for p in (cert_file, key_file))
+    return grpc.ssl_server_credentials([(key_path.read_bytes(), cert_path.read_bytes())])

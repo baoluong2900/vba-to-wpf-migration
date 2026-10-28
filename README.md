@@ -47,8 +47,8 @@ Everything is driven from a Next.js web console, or headlessly from the CLI.
 
 > [!NOTE]
 > **Status: working prototype, not hardened for production.** The gRPC gateway binds to
-> `localhost` by default and supports an optional shared bearer token (`GRPC_AUTH_TOKEN`), but
-> it has no TLS. See [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md) for the latest full-source
+> `localhost` by default; a shared bearer token (`GRPC_AUTH_TOKEN`) and TLS (`GRPC_TLS_CERT` /
+> `GRPC_TLS_KEY`) are available but off by default. See [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md) for the latest full-source
 > review, [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) for the backlog, and
 > [SECURITY.md](SECURITY.md) before exposing any port beyond `localhost`.
 
@@ -524,7 +524,14 @@ Collection names are configurable — see `layer2/config.py` and `layer5/core/co
 - **Authentication** — set `GRPC_AUTH_TOKEN` (or `config.json → grpc.auth_token`) and every RPC
   must carry `authorization: Bearer <token>`, otherwise it fails with `UNAUTHENTICATED`. The
   console's API routes attach the header when they see the same variable; `start.py` passes it to
-  them. There is no TLS — keep the gateway on loopback or behind a TLS-terminating proxy.
+  them.
+- **TLS** — set `GRPC_TLS_CERT` and `GRPC_TLS_KEY` (PEM files, or `config.json → grpc.tls_cert /
+  tls_key`; relative paths start at the repo root) and the gateway serves TLS only; setting just
+  one of them stops it at startup. The console then needs `GRPC_TLS_CA`, the PEM file to trust
+  (the gateway certificate itself when it is self-signed), or `GRPC_TLS=1` for a publicly trusted
+  certificate — `start.py` sets `GRPC_TLS_CA` for you. The certificate must name the host the
+  console connects to (`localhost` by default). Without TLS the token crosses the network in
+  clear text, so keep a plaintext gateway on loopback.
 - **Input validation** — item names, document kinds and file names that become path components
   are rejected if they contain `/`, `\`, NUL, `..` or a drive prefix.
 
@@ -713,7 +720,7 @@ python start.py --clean      # wipe .next cache first (Turbopack/OOM recovery)
 ```
 
 `start.py` frees the two ports by stopping only the process *listening* on them, passes
-`GRPC_SERVER_ADDRESS` / `GRPC_AUTH_TOKEN` to the console, never overrides variables you already
+`GRPC_SERVER_ADDRESS` / `GRPC_AUTH_TOKEN` / `GRPC_TLS_CA` to the console, never overrides variables you already
 exported, and stops each service's whole process tree on Ctrl+C. The dev server listens on
 `127.0.0.1` only.
 
@@ -821,6 +828,8 @@ Every variable below overrides `config.json`. Names verified against
 | `MONGO_DB` | MongoDB database name | `vba_brain_core` |
 | `GRPC_HOST` / `GRPC_PORT` | Gateway bind address | `localhost` / `50051` |
 | `GRPC_AUTH_TOKEN` | Shared bearer token for every RPC (gateway and console) | unset = auth off |
+| `GRPC_TLS_CERT` / `GRPC_TLS_KEY` | Gateway: PEM certificate chain / private key — both set = TLS only | unset = plaintext |
+| `GRPC_TLS_CA` / `GRPC_TLS` | Console: PEM file to trust / `1` to trust the system roots | unset = plaintext |
 | `GRPC_SERVER_ADDRESS` | Where the console's API routes reach the gateway | `localhost:50051` |
 | `PYTHON_BIN` | Python interpreter the console's API routes spawn | `python3`, then `python` |
 | `MONGO_COL_DDS` / `MONGO_COL_AGENT_REPO` | Layer 5 collection-name overrides | `dds` / `agent_repo` |

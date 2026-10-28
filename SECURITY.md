@@ -12,7 +12,7 @@ hidden — read them before you run this anywhere but `localhost`.
 
 | ID | Issue | Evidence | Severity |
 | --- | --- | --- | --- |
-| S1 | The gRPC gateway has no TLS, and authentication is opt-in. It binds `localhost` by default; with `GRPC_HOST=0.0.0.0` and no `GRPC_AUTH_TOKEN`, anything that reaches the port can drive the pipeline, including LLM spend | `src/backend/api_gateway/grpc_server.py::serve`, `auth.py` | 🟡 Medium |
+| S1 | TLS and authentication on the gRPC gateway are opt-in. It binds `localhost` by default; with `GRPC_HOST=0.0.0.0` and no `GRPC_AUTH_TOKEN`, anything that reaches the port can drive the pipeline, including LLM spend, and without `GRPC_TLS_CERT` / `GRPC_TLS_KEY` the token travels in clear text | `src/backend/api_gateway/grpc_server.py::serve`, `auth.py` | 🟡 Medium |
 | S2 | Mongo Express ships with `admin` / `admin123` from `infa/.env.example` | `infa/.env.example` | 🔴 High if reachable |
 | S3 | Default database credentials (`vba_brain` / `vba_brain2024`) are committed as example values | `infa/.env.example` | 🟡 Medium |
 | S4 | `postgres_migrator.py` drops and recreates every table it migrates. The DDL is deterministic (no LLM) and `--dry-run` exists, but nothing forces you to use it | `layer3/sql_migration/postgres_migrator.py` | 🟢 Low |
@@ -44,7 +44,8 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
 
 - **The gRPC gateway listens on `localhost` only** unless `GRPC_HOST` says otherwise, and with
   `GRPC_AUTH_TOKEN` set every RPC needs `authorization: Bearer <token>` (compared in constant
-  time). `start.py` passes the token to the console's API routes.
+  time). `start.py` passes the token to the console's API routes. With `GRPC_TLS_CERT` and
+  `GRPC_TLS_KEY` set it serves TLS only, and it refuses to start when just one of them is set.
 - **Request names are validated** before they become paths: the gateway rejects `/`, `\`, NUL,
   `..` and drive prefixes, Layer 2/4/5 confine every resolved path to its output directory, and
   the console's routes do the same for their own file access.
@@ -76,8 +77,8 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
 - [ ] **Change every default credential** in `infa/.env` — MongoDB, PostgreSQL, and Mongo Express.
 - [ ] **Do not run Mongo Express.** Comment the service out of `infa/docker-compose.yml`.
 - [ ] **Set `GRPC_AUTH_TOKEN`** (long random string) before `GRPC_HOST` leaves `localhost`, and
-      terminate TLS in front of the gateway — native `add_secure_port` support is still open
-      (`docs/UPGRADE_PLAN.md` §1.1).
+      turn on TLS (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`, or a TLS-terminating proxy) so the token
+      never crosses the network in clear text.
 - [ ] **Keep container ports on `127.0.0.1`.** If a remote client genuinely needs access, front it
       with a reverse proxy that terminates TLS and authenticates, rather than widening the bind.
 - [ ] **Restrict the PostgreSQL migration role.** Layer 3 executes generated DDL; give it rights

@@ -10,7 +10,6 @@ import grpc
 # Add necessary paths to sys.path
 GATEWAY_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = GATEWAY_DIR.parent
-WORKSPACE_DIR = BACKEND_DIR.parent
 
 sys.path.insert(0, str(GATEWAY_DIR))
 sys.path.insert(0, str(BACKEND_DIR))
@@ -48,8 +47,10 @@ import layer3.sql_migration.router as l3_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("vba_brain.grpc_gateway")
 
-from common.config import config_data, GRPC_AUTH_TOKEN, GRPC_HOST, GRPC_PORT
-from auth import build_interceptors
+from common.config import (
+    config_data, GRPC_AUTH_TOKEN, GRPC_HOST, GRPC_PORT, GRPC_TLS_CERT, GRPC_TLS_KEY, WORKSPACE_DIR,
+)
+from auth import build_interceptors, server_credentials
 
 
 # --- Request validation ---
@@ -605,6 +606,7 @@ class Layer4ServiceServicer(workflow_pb2_grpc.Layer4ServiceServicer):
 
 
 def serve():
+    tls = server_credentials(GRPC_TLS_CERT, GRPC_TLS_KEY, base_dir=WORKSPACE_DIR)  # fail before binding
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=20),
         interceptors=build_interceptors(GRPC_AUTH_TOKEN),
@@ -618,10 +620,13 @@ def serve():
     # set GRPC_HOST=0.0.0.0 (and GRPC_AUTH_TOKEN) to expose it deliberately.
     host = f"[{GRPC_HOST}]" if ":" in GRPC_HOST and not GRPC_HOST.startswith("[") else GRPC_HOST
     address = f"{host}:{GRPC_PORT}"
-    server.add_insecure_port(address)
+    if tls:
+        server.add_secure_port(address, tls)
+    else:
+        server.add_insecure_port(address)
     logger.info(
-        "Starting Unified gRPC API Gateway on %s (auth: %s)",
-        address, "bearer token" if GRPC_AUTH_TOKEN else "disabled",
+        "Starting Unified gRPC API Gateway on %s (tls: %s, auth: %s)",
+        address, "on" if tls else "off", "bearer token" if GRPC_AUTH_TOKEN else "disabled",
     )
     server.start()
     server.wait_for_termination()
