@@ -803,7 +803,7 @@ paint. Frontend conventions live in [`src/frontend/README.md`](src/frontend/READ
 
 All of these are runtime artifacts and git-ignored. `clean_generated_files.py --dry-run` lists
 (and without the flag deletes) the Layer 5 files deployed into `src/wpf` when you want a fresh
-generation; hand-written infrastructure there is left alone.
+generation; hand-written infrastructure there and the shared `ViewModelBase.cs` are left alone.
 
 ---
 
