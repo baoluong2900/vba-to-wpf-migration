@@ -191,7 +191,7 @@ def main():
 
     print(f"\n{BOLD}{MAGENTA}{'='*55}")
     print("  vba_brain WPF Launcher")
-    print(f"  .NET 10 — Clean Architecture + MVVM + Dapper")
+    print("  .NET 10 — Clean Architecture + MVVM + Dapper")
     print(f"{'='*55}{RESET}\n")
 
     # Check prerequisites
