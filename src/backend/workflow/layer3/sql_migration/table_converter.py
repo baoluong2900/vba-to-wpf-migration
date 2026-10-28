@@ -1,110 +1,214 @@
-def convert_table_to_ddl(table: dict, target_db: str) -> str:
-    """
-    Deterministically converts an Access table schema (from MongoDB) 
-    into a CREATE TABLE DDL for the specified target_db.
-    No LLM used.
-    """
-    table_name = table.get("table_name", "UNKNOWN_TABLE")
-    columns = table.get("columns", [])
-    
-    lines = [f"CREATE TABLE {table_name} ("]
-    
-    target_db_upper = target_db.upper()
-    
-    col_defs = []
-    for col in columns:
-        col_name = col.get("logical_name", "UNKNOWN_COL")
-        access_type = col.get("data_type", "Text").lower()
-        length = col.get("length", "")
-        required = str(col.get("required", "False")).lower() == "true"
-        
-        # Mapping logic
-        if target_db_upper == "POSTGRESQL":
-            if "text" in access_type:
-                dt = f"VARCHAR({length if length else 255})"
-            elif "memo" in access_type:
-                dt = "TEXT"
-            elif "long" in access_type:
-                dt = "BIGINT"
-            elif "integer" in access_type:
-                dt = "INTEGER"
-            elif "byte" in access_type:
-                dt = "SMALLINT"
-            elif "double" in access_type or "single" in access_type:
-                dt = "DOUBLE PRECISION"
-            elif "currency" in access_type:
-                dt = "NUMERIC(19, 4)"
-            elif "date" in access_type or "time" in access_type:
-                dt = "TIMESTAMP"
-            elif "boolean" in access_type or "yes/no" in access_type:
-                dt = "BOOLEAN"
-            elif "ole" in access_type:
-                dt = "BYTEA"
-            else:
-                dt = "VARCHAR(255)"
-                
-        elif target_db_upper == "SQL SERVER":
-            if "text" in access_type:
-                dt = f"VARCHAR({length if length else 255})"
-            elif "memo" in access_type:
-                dt = "VARCHAR(MAX)"
-            elif "long" in access_type:
-                dt = "BIGINT"
-            elif "integer" in access_type:
-                dt = "INT"
-            elif "byte" in access_type:
-                dt = "TINYINT"
-            elif "double" in access_type or "single" in access_type:
-                dt = "FLOAT"
-            elif "currency" in access_type:
-                dt = "MONEY"
-            elif "date" in access_type or "time" in access_type:
-                dt = "DATETIME"
-            elif "boolean" in access_type or "yes/no" in access_type:
-                dt = "BIT"
-            elif "ole" in access_type:
-                dt = "VARBINARY(MAX)"
-            else:
-                dt = "VARCHAR(255)"
-                
-        elif target_db_upper == "MYSQL":
-            if "text" in access_type:
-                dt = f"VARCHAR({length if length else 255})"
-            elif "memo" in access_type:
-                dt = "TEXT"
-            elif "long" in access_type:
-                dt = "BIGINT"
-            elif "integer" in access_type:
-                dt = "INT"
-            elif "byte" in access_type:
-                dt = "TINYINT"
-            elif "double" in access_type or "single" in access_type:
-                dt = "DOUBLE"
-            elif "currency" in access_type:
-                dt = "DECIMAL(19,4)"
-            elif "date" in access_type or "time" in access_type:
-                dt = "DATETIME"
-            elif "boolean" in access_type or "yes/no" in access_type:
-                dt = "BOOLEAN"
-            elif "ole" in access_type:
-                dt = "BLOB"
-            else:
-                dt = "VARCHAR(255)"
-        
-        else: # Default ANSI SQL
-            if "text" in access_type:
-                dt = f"VARCHAR({length if length else 255})"
-            elif "long" in access_type or "integer" in access_type:
-                dt = "INTEGER"
-            elif "date" in access_type or "time" in access_type:
-                dt = "TIMESTAMP"
-            else:
-                dt = "VARCHAR(255)"
+"""
+sql_migration/table_converter.py — Deterministic Access table schema → CREATE TABLE DDL.
 
-        req_str = " NOT NULL" if required else ""
-        col_defs.append(f"    {col_name} {dt}{req_str}")
-        
-    lines.append(",\n".join(col_defs))
-    lines.append(");")
-    
-    return "\n".join(lines)
+No LLM involved. Input is a Layer 1 table document::
+
+    {"table_name": "TBL_Users",
+     "columns": [{"logical_name": "ID", "data_type": "Long", "length": "4", "required": "True"}, ...]}
+
+A column may also carry ``primary_key`` (truthy) to emit a PRIMARY KEY constraint.
+PostgreSQL is the migration target; SQL Server, MySQL and generic ANSI SQL are offered for
+side-by-side comparison in the console.
+"""
+from __future__ import annotations
+
+import re
+
+POSTGRESQL, SQL_SERVER, MYSQL, ANSI = "POSTGRESQL", "SQL SERVER", "MYSQL", "ANSI"
+
+# Canonical Access type → DDL type per dialect. "{length}" is filled from the column length.
+_TYPE_MAP: dict[str, dict[str, str]] = {
+    POSTGRESQL: {
+        "text": "VARCHAR({length})",
+        "memo": "TEXT",
+        "autonumber": "INTEGER GENERATED BY DEFAULT AS IDENTITY",
+        "long": "BIGINT",
+        "integer": "INTEGER",
+        "byte": "SMALLINT",
+        "bigint": "BIGINT",
+        "single": "DOUBLE PRECISION",
+        "double": "DOUBLE PRECISION",
+        "decimal": "NUMERIC",
+        "currency": "NUMERIC(19, 4)",
+        "datetime": "TIMESTAMP",
+        "boolean": "BOOLEAN",
+        "binary": "BYTEA",
+        "guid": "UUID",
+    },
+    SQL_SERVER: {
+        # N-types: Access text is Unicode, VARCHAR would lose Japanese characters.
+        "text": "NVARCHAR({length})",
+        "memo": "NVARCHAR(MAX)",
+        "autonumber": "INT IDENTITY(1,1)",
+        "long": "BIGINT",
+        "integer": "INT",
+        "byte": "TINYINT",
+        "bigint": "BIGINT",
+        "single": "FLOAT",
+        "double": "FLOAT",
+        "decimal": "DECIMAL(18, 4)",
+        "currency": "MONEY",
+        "datetime": "DATETIME2",
+        "boolean": "BIT",
+        "binary": "VARBINARY(MAX)",
+        "guid": "UNIQUEIDENTIFIER",
+    },
+    MYSQL: {
+        "text": "VARCHAR({length})",
+        "memo": "LONGTEXT",
+        "autonumber": "INT AUTO_INCREMENT",
+        "long": "BIGINT",
+        "integer": "INT",
+        "byte": "TINYINT",
+        "bigint": "BIGINT",
+        "single": "DOUBLE",
+        "double": "DOUBLE",
+        "decimal": "DECIMAL(18,4)",
+        "currency": "DECIMAL(19,4)",
+        "datetime": "DATETIME",
+        "boolean": "BOOLEAN",
+        "binary": "LONGBLOB",
+        "guid": "CHAR(36)",
+    },
+    ANSI: {
+        "text": "VARCHAR({length})",
+        "memo": "CLOB",
+        "autonumber": "INTEGER",
+        "long": "INTEGER",
+        "integer": "INTEGER",
+        "byte": "SMALLINT",
+        "bigint": "BIGINT",
+        "single": "DOUBLE PRECISION",
+        "double": "DOUBLE PRECISION",
+        "decimal": "NUMERIC",
+        "currency": "NUMERIC(19, 4)",
+        "datetime": "TIMESTAMP",
+        "boolean": "BOOLEAN",
+        "binary": "BLOB",
+        "guid": "CHAR(36)",
+    },
+}
+_FALLBACK_TYPE = "VARCHAR(255)"
+_DEFAULT_TEXT_LENGTH = 255
+
+# Normalized Access / DAO type names (lower-case, no spaces, "_", "/" or "-") → canonical type.
+_EXACT_TYPES = {
+    "text": "text", "shorttext": "text", "char": "text", "varchar": "text",
+    "memo": "memo", "longtext": "memo", "hyperlink": "memo",
+    "autonumber": "autonumber", "counter": "autonumber", "autoincrement": "autonumber",
+    "long": "long", "longinteger": "long",
+    "integer": "integer", "int": "integer",
+    "byte": "byte",
+    "bigint": "bigint", "largenumber": "bigint",
+    "single": "single",
+    "double": "double", "float": "double",
+    "decimal": "decimal", "numeric": "decimal", "number": "decimal",
+    "currency": "currency", "money": "currency",
+    "datetime": "datetime", "date": "datetime", "time": "datetime", "timestamp": "datetime",
+    "dateandtime": "datetime", "datetimeextended": "datetime",
+    "boolean": "boolean", "yesno": "boolean", "bit": "boolean",
+    "oleobject": "binary", "ole": "binary", "longbinary": "binary", "binary": "binary",
+    "varbinary": "binary", "attachment": "binary",
+    "guid": "guid", "replicationid": "guid",
+}
+# For spellings not listed above: substring rules, most specific first ("longbinary" must not
+# reach "long", "longtext" must not reach "text").
+_FUZZY_TYPES = (
+    ("autonumber", "autonumber"), ("counter", "autonumber"),
+    ("binary", "binary"), ("ole", "binary"),
+    ("longtext", "memo"), ("memo", "memo"), ("hyperlink", "memo"),
+    ("bigint", "bigint"), ("long", "long"), ("integer", "integer"), ("byte", "byte"),
+    ("currency", "currency"), ("decimal", "decimal"), ("double", "double"), ("single", "single"),
+    ("date", "datetime"), ("time", "datetime"),
+    ("bool", "boolean"), ("yesno", "boolean"),
+    ("guid", "guid"),
+    ("text", "text"),
+)
+
+# Words that cannot appear as a bare table/column name in common SQL dialects.
+_RESERVED_WORDS = frozenset("""
+    ALL ANALYSE ANALYZE AND ANY ARRAY AS ASC ASYMMETRIC AUTHORIZATION BETWEEN BINARY BOTH BY CASE
+    CAST CHECK COLLATE COLLATION COLUMN CONCURRENTLY CONSTRAINT CREATE CROSS CURRENT_CATALOG
+    CURRENT_DATE CURRENT_ROLE CURRENT_SCHEMA CURRENT_TIME CURRENT_TIMESTAMP CURRENT_USER DEFAULT
+    DEFERRABLE DELETE DESC DISTINCT DO DROP ELSE END EXCEPT EXISTS FALSE FETCH FOR FOREIGN FREEZE
+    FROM FULL GRANT GROUP HAVING ILIKE IN INDEX INITIALLY INNER INSERT INTERSECT INTO IS ISNULL
+    JOIN KEY LATERAL LEADING LEFT LIKE LIMIT LOCALTIME LOCALTIMESTAMP NATURAL NOT NOTNULL NULL
+    OFFSET ON ONLY OR ORDER OUTER OVERLAPS PLACING PRIMARY REFERENCES RETURNING RIGHT SELECT
+    SESSION_USER SIMILAR SOME SYMMETRIC TABLE TABLESAMPLE THEN TO TRAILING TRUE UNION UNIQUE
+    UPDATE USER USING VARIADIC VERBOSE WHEN WHERE WINDOW WITH
+""".split())
+# Letter or underscore in any script, then word characters — what every dialect accepts unquoted.
+_PLAIN_IDENTIFIER_RE = re.compile(r"[^\W\d]\w*\Z")
+_QUOTES = {POSTGRESQL: ('"', '"'), SQL_SERVER: ("[", "]"), MYSQL: ("`", "`"), ANSI: ('"', '"')}
+
+
+def normalize_dialect(target_db: str) -> str:
+    key = (target_db or "").strip().upper()
+    return key if key in _TYPE_MAP else ANSI
+
+
+def canonical_access_type(access_type: str) -> str:
+    """Map an Access/DAO type name ("Long Text", "Date/Time", "Yes/No", …) to a canonical key."""
+    norm = re.sub(r"[\s_/\-]", "", (access_type or "").lower())
+    if norm in _EXACT_TYPES:
+        return _EXACT_TYPES[norm]
+    for needle, canonical in _FUZZY_TYPES:
+        if needle in norm:
+            return canonical
+    return "unknown"
+
+
+def quote_identifier(name: str, target_db: str = POSTGRESQL) -> str:
+    """
+    Quote ``name`` only when the dialect requires it (spaces, punctuation, leading digit,
+    reserved word). Plain names stay bare so PostgreSQL keeps folding them to lower case,
+    exactly as before — generated repositories reference tables without quotes.
+    """
+    if _PLAIN_IDENTIFIER_RE.match(name) and name.upper() not in _RESERVED_WORDS:
+        return name
+    open_q, close_q = _QUOTES[normalize_dialect(target_db)]
+    return f"{open_q}{name.replace(close_q, close_q * 2)}{close_q}"
+
+
+def _is_true(value) -> bool:
+    return str(value).strip().lower() in {"true", "yes", "1", "-1", "y"}
+
+
+def _text_length(raw) -> int:
+    try:
+        length = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return _DEFAULT_TEXT_LENGTH
+    return length if length > 0 else _DEFAULT_TEXT_LENGTH
+
+
+def column_type(column: dict, target_db: str) -> str:
+    dialect = normalize_dialect(target_db)
+    template = _TYPE_MAP[dialect].get(canonical_access_type(column.get("data_type", "Text")), _FALLBACK_TYPE)
+    return template.format(length=_text_length(column.get("length")))
+
+
+def convert_table_to_ddl(table: dict, target_db: str) -> str:
+    """Build a CREATE TABLE statement for ``table`` in the ``target_db`` dialect."""
+    dialect = normalize_dialect(target_db)
+    table_name = table.get("table_name") or "UNKNOWN_TABLE"
+    columns = table.get("columns") or []
+    if not columns:
+        raise ValueError(f"Table '{table_name}' has no columns")
+
+    definitions = []
+    primary_key = []
+    for col in columns:
+        name = quote_identifier(col.get("logical_name") or "UNKNOWN_COL", dialect)
+        not_null = " NOT NULL" if _is_true(col.get("required", "False")) else ""
+        definitions.append(f"    {name} {column_type(col, dialect)}{not_null}")
+        if _is_true(col.get("primary_key", False)):
+            primary_key.append(name)
+    if primary_key:
+        definitions.append(f"    PRIMARY KEY ({', '.join(primary_key)})")
+
+    return "\n".join([
+        f"CREATE TABLE {quote_identifier(table_name, dialect)} (",
+        ",\n".join(definitions),
+        ");",
+    ])
