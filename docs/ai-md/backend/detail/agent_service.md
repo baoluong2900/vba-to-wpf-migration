@@ -35,9 +35,21 @@ The interface (`IService.cs`) is always generated deterministically via `tool_se
 | `tool_service_gen.py` | Deterministic service + interface generator |
 | `configs/method_names.json` | Method name mapping config |
 | `configs/response_field_mapping.json` | Response DTO field mapping |
-| `prompts/agent_service_form.md` | LLM prompt for form services |
-| `prompts/agent_service_macro.md` | LLM prompt for macro services |
-| `prompts/agent_service_module.md` | LLM prompt for module services |
+| `prompts/agent_service_form.md` | LLM prompt (LLM mode only) |
+
+## Contract rules
+
+- `methods` are keyed by the BD `module_id` — the same F-ID the UI skeleton and Agent Logic use
+  (`core/fid_resolver.py`); `vba_handler` comes from the BD event `notes`, and `method_name`
+  matches the generated `IService`.
+- Repository calls follow the repository's own input contract (order and types); a DTO input
+  becomes `new XInputDto { … }`. Request DTOs declare exactly those properties.
+- DTO namespaces come from `core.naming.dto_namespace(form, "Requests"|"Responses")`, so
+  Japanese or punctuated form names still produce valid C#.
+- Triggers are recognised in Japanese and English (`On Click`, `After Update`, …).
+- **Credentials:** login-style events get a parameterised `VerifyCredentialsAsync`
+  (`COUNT(1) … WHERE "<id>" = @id AND "<pass>" = @password`) and return `Authenticated`;
+  password columns are never selected or returned.
 
 ## Data Sources (in priority order)
 
@@ -60,6 +72,8 @@ Reports override forms if same name exists.
 `L5_ROUTING["service"]` → `qwen3-coder-480b` (default, only used in LLM mode)
 
 ## Outputs
+
+Per-run artifacts (git-ignored):
 
 ```
 agents/service/outputs/<FormName>/

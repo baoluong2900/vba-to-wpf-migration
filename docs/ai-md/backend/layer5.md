@@ -11,19 +11,23 @@ Layer 5 converts DD/BD JSON specifications (from Layer 2) into build-ready C# so
 For each form, agents run in this fixed order:
 
 ```
-Agent Repo → Agent Service → Agent UI → Agent Logic → Write → dotnet build
+Repo → Service → (Logic input refresh) → UI → Logic → GraphView (non-blocking) → Write → dotnet build
 ```
 
 | Step | Agent | Output |
 |------|-------|--------|
-| 1 | **Repo** | Entity, DTO, IRepository, Repository (Dapper) |
-| 2 | **Service** | IService, Service, `service_contract.json` |
-| 3 | **UI** | ViewModel skeleton (Commands, DI, SetProperty) + XAML + code-behind |
-| 4 | **Logic** | LLM-generated method bodies patched into UI skeleton ViewModel |
-| 5 | **Write** | Files deployed to Avalonia solution directories |
-| 6 | **Build** | `dotnet build` + AI auto-fix loop (max 3 retries) |
+| 1 | **Repo** | Entity, DTO, IRepository, Repository (Dapper) + the form's repo contract |
+| 2 | **Service** | IService, Service, DTOs, service contract (keyed by the shared F-ID) |
+| 3 | **UI** | ViewModel skeleton (Commands, DI, SetProperty) + AXAML + code-behind |
+| 4 | **Logic** | Method bodies (LLM, or deterministic `sys_bodies.py`) patched into the skeleton |
+| 5 | **GraphView** | Access ↔ .NET review graph; failures are logged, never block the form |
+| 6 | **Write** | Code files (`.cs` / `.axaml`) written inside the solution, de-duplicated by target path |
+| 7 | **Build** | `dotnet build` + LLM auto-fix loop (max 3 retries) on the on-disk file that failed |
 
-> UI runs **before** Logic so Logic patches into an existing skeleton rather than generating a new ViewModel from scratch.
+> UI runs **before** Logic so Logic patches into an existing skeleton rather than generating a new
+> ViewModel. All agents number methods through `core/fid_resolver.py`, so `F003Command`,
+> `F003Async` and the service contract's `F003` are the same event. A form counts as `success`
+> only when Repo, Service, UI and Logic succeeded **and** the build passed.
 
 ---
 
@@ -33,8 +37,8 @@ Agent Repo → Agent Service → Agent UI → Agent Logic → Write → dotnet b
 # Run all forms
 python src/backend/workflow/layer5/run_codegen_all.py
 
-# Run single form (test)
-python src/backend/workflow/layer5/run_codegen_test.py
+# Run selected forms (repeatable; exits 1 if any form fails)
+python src/backend/workflow/layer5/run_codegen_all.py --form F_Login --form F_Menu
 ```
 
 Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestForm`
@@ -57,7 +61,7 @@ Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestF
 - Reads DD step-by-step logic + repo contract
 - Generates: `IService.cs`, `Service.cs`, `service_contract.json`
 - LLM model: `service` routing slot → `qwen3-coder-480b` (default)
-- Prompts: `agents/service/prompts/agent_service_form.md`, `_macro.md`, `_module.md`
+- Prompt (LLM mode only): `agents/service/prompts/agent_service_form.md`
 - Outputs: `agents/service/outputs/<FormName>/Application/`
 
 ### Agent UI (`agents/ui/agent_ui.py`)
@@ -65,7 +69,7 @@ Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestF
 - Reads BD layout + service contract
 - Generates: XAML View (`.axaml`), ViewModel skeleton, code-behind stub
 - Control mapping: `agents/ui/control_mapper.py` (Access control → Avalonia control)
-- Event mapping: `agents/ui/configs/ui_event_map.json`
+- F-ID registry: `agents/ui/configs/ui_event_map.json` (via `core/fid_resolver.py`)
 - LLM model: `view_xaml` / `viewmodel` routing slots → `qwen-plus-2025-07-28`
 - Outputs: `agents/ui/outputs/<FormName>/Views/`, `ViewModels/`
 
@@ -73,7 +77,8 @@ Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestF
 
 - Reads DD event steps + UI skeleton ViewModel
 - Translates VBA events → C# RelayCommands, Properties, Service DI injections
-- Breaks complex events into chunks (`chunk_builder.py`) and merges via AST (`tool_method_merger.py`)
+- Breaks complex events into chunks (`chunk_builder.py`) and patches each `FxxxAsync` body into the UI skeleton; system events (quit, kill process, keys) come from `sys_bodies.py` without an LLM call
+- Exits 1 when any method fails; `method_outputs.json` is cleared at the start of every run
 - LLM model: `viewmodel` routing slot
 - Prompts: `agents/logic/prompts/agent_logic.md`, `agent_vm_methods.md`
 - Outputs: `agents/logic/outputs/<FormName>/ViewModels/`, `method_outputs.json`
@@ -92,12 +97,18 @@ Default forms: `F_Login`, `F_Menu`, `F_ProductDetail`, `F_ProductList`, `F_TestF
   - `EXTRA` — new features added in Avalonia with no VBA equivalent
 - Inputs: `agents/graphview/inputs/dependency_<FormName>.json`, `mapping_<FormName>.json`
 - Outputs: `agents/graphview/outputs/review_<FormName>.json`
-- Currently disabled in the main pipeline; run separately
+- Runs inside the orchestrator as a non-blocking step, or separately from the console
 
 ### Agent Report (`agents/report/agent_report.py`)
 
-- Aggregates token usage, file counts, build results across all forms
-- Outputs: `logs/token_report.json`
+- Converts an Access report into an Avalonia report view + view model (RDLC layout, fields,
+  section formatting); print/PDF handlers get a TODO naming the `.rdlc` and the service call
+  that supplies its rows (no WinForms/WPF ReportViewer code)
+- Reports are recognised by the `forms` document `type`, then `listReportJpToEn.json`, then the
+  "R" prefix
+
+Token usage of every Layer 5 LLM call is recorded by `llm/token_tracker.py` in
+`logs/token_report.json` and `logs/token_report.xlsx`.
 
 ---
 
@@ -112,7 +123,7 @@ Defined in `core/config.py` → `L5_ROUTING`:
 | `repository` | `qwen3-coder-480b` | SQL → Dapper code |
 | `view_xaml` | `qwen-plus-2025-07-28` | BD layout → XAML |
 | `validator` | `qwen-plus-2025-07-28` | Business rules → FluentValidation |
-| `entity` | `qwen-plus-2025-07-28` | Fallback if Jinja2 insufficient |
+| `entity` | `qwen-plus-2025-07-28` | Entity classes (LLM fallback) |
 | `dto` | `qwen-plus-2025-07-28` | DTOs |
 | `mapper` | `qwen-plus-2025-07-28` | AutoMapper profiles |
 
@@ -153,10 +164,6 @@ Override via env vars: `LAYER5_SERVICE_MODEL`, `LAYER5_VIEWMODEL_MODEL`, `LAYER5
 
 - Generates base classes (`ViewModelBase`, `RelayCommand`, etc.) if missing from solution
 
-### `pipeline/patch_vm_from_output.py`
-
-- Utility to re-patch ViewModel from saved `method_outputs.json` without re-running LLM
-
 ---
 
 ## Codegen Templates
@@ -165,10 +172,9 @@ Jinja2 templates in `codegen/templates/`:
 
 | Template | Output |
 |----------|--------|
-| `Entity.cs.j2` | Domain entity class |
-| `DTO.cs.j2` | Data transfer object |
-| `Interface.cs.j2` | Repository/Service interface |
-| `IService.cs.j2` | Service interface |
+| `IService.cs.j2` | Service interface (used by Agent Service) |
+
+Entities, DTOs and repositories are emitted by `agents/repo/tool_repo.py` directly.
 
 Rendered by `codegen/jinja_engine.py`.
 

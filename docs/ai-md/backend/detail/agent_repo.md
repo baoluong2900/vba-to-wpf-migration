@@ -13,22 +13,41 @@ Generates the data access layer: Entity, DTO, IRepository interface, and Reposit
 MongoDB (queries_v2, tables) + DD JSON
     │
     ▼
-tool_repo.py                → extract queries, parameters, table schemas
-    │
-    ▼
-fill_json.py                → build repository JSON contract
+tool_repo.py                → extract queries, parameters, table schemas; per-table repo JSON
     │
     ▼
 Phase: Translate TODOs      → LLM batch call for unknown field/table names only
     │
     ▼
-Jinja2 templates            → Entity.cs, DTO.cs, IRepository.cs, Repository.cs
+tool_repo.py                → Entity.cs, DTO.cs, IRepository.cs, Repository.cs (Dapper)
     │
     ▼
-outputs/<FormName>/
+fill_json.py                → aggregate the per-table JSON into the form contract
+    │
+    ▼
+outputs/<FormName>/ + outputs/<FormName>.json, merged into src/wpf
 ```
 
-LLM is used **only** for translating unknown names (TODO batch phase). All code generation is deterministic via Jinja2.
+LLM is used **only** for translating unknown names (TODO batch phase). Code generation is
+deterministic.
+
+## Generated-code rules
+
+- **SQL source order:** the DD `sql` block, then `queries_v2.target_sql` (Layer 3's reviewed
+  PostgreSQL), then `raw_sql`. A query with no SQL at all becomes
+  `throw new NotImplementedException(...)`; the run stays `success` but lists it in
+  `metadata.stubbed_queries`, and the contract marks the method `implemented: false`.
+- **Dapper mapping:** every selected column is aliased to its property name
+  (`"製品名" AS "ProductName"`); `[Column]` attributes are documentation only.
+- **Names:** table/schema lookups are exact or NFKC-normalised (no substring matching);
+  colliding properties, methods, parameters, CTEs and class stems get numeric suffixes; every
+  identifier goes through `core.naming.cs_identifier`.
+- **Types:** Access names first (Long/AutoNumber → `int`, Currency → `decimal`, Yes/No → `bool`,
+  Date/Time → `DateTime?`, …), then PostgreSQL types by longest prefix (INT8 → `long`,
+  TIME/INTERVAL → `TimeSpan?`, UUID → `Guid`).
+- **Re-runs merge, never truncate:** members are merged inside the existing type body only, so a
+  re-run cannot delete the class/interface declaration; Japanese class names and base lists are
+  supported.
 
 ## Key Files
 
@@ -36,12 +55,9 @@ LLM is used **only** for translating unknown names (TODO batch phase). All code 
 |------|------|
 | `agent_repo.py` | Main agent |
 | `tool_repo.py` | Core logic: extract queries, params, register columns |
-| `fill_json.py` | Builds repository JSON contract from DD + table schemas |
+| `fill_json.py` | Aggregates the per-table repo JSON into the form contract (`outputs/<FormName>.json`) |
 | `config/name_config.json` | Name translation cache (Access → C# names) |
 | `config/table_config.json` | Table schema config |
-| `config/repository_template.json` | Repository structure template |
-| `config/repository_ref_template.json` | Reference repository template |
-| `prompts/agent_repo.md` | LLM prompt for TODO translation |
 | `prompts/agent_translate.md` | LLM prompt for name translation |
 
 ## TODO Translation Phase
@@ -53,6 +69,8 @@ When `name_config.json` contains `"TODO"` values for `table_name`, `field_name`,
 `L5_ROUTING["repository"]` → `qwen3-coder-480b` (default)
 
 ## Outputs
+
+Per-run artifacts (git-ignored) — regenerated on every run:
 
 ```
 agents/repo/outputs/

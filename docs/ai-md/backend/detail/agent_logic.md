@@ -29,7 +29,7 @@ Save input snapshot     → inputs/<FormName>_output.json
 LangGraph map-reduce    → LLM call per chunk (parallel)
     │
     ▼
-tool_method_merger.py   → merge all method bodies → patch into skeleton ViewModel.cs
+patch each FxxxAsync body into the UI skeleton ViewModel.cs (brace-matched; F-IDs from core/fid_resolver.py)
     │
     ▼
 outputs/<FormName>/ViewModels/<Name>ViewModel.cs
@@ -41,10 +41,8 @@ outputs/<FormName>/ViewModels/<Name>ViewModel.cs
 |------|------|
 | `agent_logic.py` | Main agent, LangGraph `LogicChunkState` map-reduce |
 | `chunk_builder.py` | Splits events into per-event chunks |
-| `tool_method_merger.py` | AST-based merger: patches method bodies into skeleton |
-| `gen_vm_methods.py` | Generates ViewModel method stubs |
-| `gen_code_behind.py` | Generates code-behind delegates |
-| `sync_vm_stubs.py` | Syncs stubs between skeleton and output |
+| `sys_bodies.py` | Deterministic Avalonia bodies for system events (quit/close, kill process, key handling) — no LLM |
+| `../../core/fid_resolver.py` | One F-ID numbering shared with Agent UI and the service contract |
 | `mapping_ast/event_mapper.py` | VBA event → C# method signature mapping |
 | `prompts/agent_logic.md` | LLM system prompt |
 | `prompts/agent_vm_methods.md` | ViewModel method generation prompt |

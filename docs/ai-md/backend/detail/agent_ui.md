@@ -37,7 +37,7 @@ LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` a
 | `control_mapper.py` | Access control type → Avalonia control type mapping |
 | `tool_skeleton.py` | Deterministic XAML + ViewModel skeleton generator |
 | `tool_query_stubs.py` | Generates query stub bindings |
-| `configs/ui_event_map.json` | Access event → Avalonia event mapping |
+| `configs/ui_event_map.json` | F-ID registry per form (written atomically by `core/fid_resolver.py`; `_auto` ids are stable) |
 | `configs/ui_query_stubs.json` | Query stub config |
 | `name_spacing/ui_name_map.json` | Control name normalization map |
 | `prompts/agent_ui.md` | LLM system prompt |
@@ -51,6 +51,20 @@ LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` a
 - Macro references → `comment` field only (no command)
 - `visible: false` → `Visibility="Collapsed"`
 - Never translate or rename control `name` or `content`
+
+## F-IDs and events
+
+- F-IDs (`F003Command` / `F003Async`) come from `core/fid_resolver.py`: the BD `module_id` first
+  (matched on handler, raw `macro.X` value, or control + trigger), then the registry entry, then
+  a new `_auto` id. The agent resolves once per run and passes the same map to the AXAML,
+  ViewModel and code-behind generators, so Agent Logic and Agent Service see the same ids.
+- Access form events without an Avalonia equivalent become a TODO comment in the code-behind,
+  never a raw VBA event name. Avalonia has no `Interaction.Triggers`: control events
+  (AfterUpdate → `LostFocus`, `DoubleTapped`, `PointerReleased`, `GotFocus`) are subscribed in
+  the code-behind.
+- The converted PasswordBox is `<TextBox PasswordChar="*" Text="{Binding TxtPass}"/>`.
+- The code-behind has a public parameterless constructor (XAML loader) and a view-model
+  constructor that chains `: this()`, wires events and closes on `CloseRequested`.
 
 ## Form Name Resolution
 
