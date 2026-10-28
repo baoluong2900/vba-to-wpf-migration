@@ -1,0 +1,31 @@
+# Tooling configuration only — the backend is not packaged (see README "Quick start").
+
+[tool.pytest.ini_options]
+# tests/layer5 needs its own session (see tests/layer5/conftest.py):
+#   pytest && pytest tests/layer5
+testpaths = ["tests/backend"]
+# The backend modules import each other through these roots (mirrors the sys.path set up by
+# src/backend/api_gateway/grpc_server.py), so tests import them the same way.
+pythonpath = ["src/backend", "src/backend/workflow"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+    "src/backend/api_gateway/workflow_pb2.py",
+    "src/backend/api_gateway/workflow_pb2_grpc.py",
+    "src/frontend",
+    "**/outputs/**",
+]
+
+[tool.ruff.lint]
+# Correctness only: syntax errors (E9) and pyflakes (F) — undefined names, unused imports,
+# redefinitions. Style is deliberately not enforced on this codebase yet.
+select = ["E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# bd_agent shares helpers through star imports by design (core/constants, core/utils,
+# core/extractors); ruff cannot resolve those names statically.
+"src/backend/workflow/layer2/agents/bd_agent/**" = ["F403", "F405"]

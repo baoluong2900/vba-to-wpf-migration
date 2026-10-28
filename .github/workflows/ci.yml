@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   backend:
-    name: Backend · compile (py${{ matrix.python-version }})
+    name: Backend · lint & test (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -30,7 +30,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-          cache-dependency-path: src/backend/requirements.txt
+          cache-dependency-path: |
+            src/backend/requirements.txt
+            src/backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r src/backend/requirements.txt -r src/backend/requirements-dev.txt
 
       - name: Compile every Python module
         run: |
@@ -40,15 +45,31 @@ jobs:
             start_wpf.py \
             clean_generated_files.py
 
-      # Dependency install is a separate, non-blocking signal: requirements.txt is
-      # floor-pinned (>=), so upstream releases can break it without this repo changing.
-      # Tracked in docs/UPGRADE_PLAN.md §1.4.
-      - name: Install dependencies (advisory)
-        continue-on-error: true
-        run: pip install -r src/backend/requirements.txt
+      - name: Lint (ruff — correctness rules, see pyproject.toml)
+        run: ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts
+
+      - name: Unit tests
+        run: pytest
+
+      # Separate session: layer5 and layer2 both have a top-level `agents` package.
+      - name: Unit tests (Layer 5)
+        run: pytest tests/layer5
+
+      - name: gRPC stubs match workflow.proto
+        run: |
+          set -e
+          out=$(mktemp -d)
+          python -m grpc_tools.protoc -I src/backend/protos \
+            --python_out="$out" --grpc_python_out="$out" src/backend/protos/workflow.proto
+          if ! diff -q "$out/workflow_pb2.py" src/backend/api_gateway/workflow_pb2.py \
+             || ! diff -q "$out/workflow_pb2_grpc.py" src/backend/api_gateway/workflow_pb2_grpc.py; then
+            echo "::error::src/backend/api_gateway/workflow_pb2*.py are stale - regenerate them (see CONTRIBUTING.md)."
+            exit 1
+          fi
+          echo "OK - stubs are up to date."
 
   frontend:
-    name: Frontend · lint & build
+    name: Frontend · lint, test & build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -69,8 +90,38 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Type check
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Unit tests
+        run: yarn test
+
       - name: Production build
         run: yarn build
+
+  dotnet:
+    name: Avalonia app · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build solution
+        run: dotnet build src/wpf/vba_brain.slnx
+
+      - name: No vulnerable NuGet packages
+        run: |
+          set -e
+          report=$(dotnet list src/wpf/vba_brain.slnx package --vulnerable --include-transitive)
+          echo "$report"
+          if echo "$report" | grep -q "has the following vulnerable packages"; then
+            echo "::error::Vulnerable NuGet packages found - upgrade or pin a patched version."
+            exit 1
+          fi
 
   hygiene:
     name: Hygiene · secrets & artifacts
@@ -98,7 +149,13 @@ jobs:
           tracked=$(git ls-files \
             'data/**' 'src/excel_outputs/**' \
             '**/node_modules/**' '**/.next/**' \
-            '**/bin/**' '**/obj/**' '**/__pycache__/**' || true)
+            '**/bin/**' '**/obj/**' '**/__pycache__/**' \
+            '**/scratch/**' 'src/backend/logs/**' 'src/backend/workflow/layer5/logs/**' \
+            'src/backend/workflow/layer2/output/**' 'src/backend/workflow/layer2/agents/output/**' \
+            'src/frontend/reports/**' \
+            'src/backend/workflow/layer5/agents/repo/outputs/*.json' 'src/backend/workflow/layer5/agents/repo/outputs/*/**' \
+            'src/backend/workflow/layer5/agents/service/outputs/**' 'src/backend/workflow/layer5/agents/service/inputs/**' \
+            'src/backend/workflow/layer5/agents/graphview/outputs/review_*.json' || true)
           if [ -n "$tracked" ]; then
             echo "::error::Generated or sensitive paths are tracked by git:"
             echo "$tracked" | head -40
