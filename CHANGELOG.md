@@ -43,8 +43,9 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
 - **Tests:** `pyproject.toml` (pytest + ruff), `tests/backend/` and `tests/layer5/` (separate
   session), frontend `yarn test` (`node --test` with TypeScript type stripping, no new
   dependency). Layer 1 parsers run end to end on the fixture export.
-- **CI:** ruff, pytest (both sessions), a check that the committed gRPC stubs match
-  `workflow.proto`, frontend type check + unit tests, a .NET build job and a vulnerable-NuGet gate.
+- **CI:** ruff, pytest (both sessions, Python 3.10–3.12), a check that the committed gRPC stubs
+  match `workflow.proto`, frontend type check (`yarn typecheck` generates the Next.js types first,
+  so it passes on a fresh checkout) + unit tests, a .NET build job and a vulnerable-NuGet gate.
 - `run_all.py`: step keys and `--list`, `--from`, `--only`, `--skip`, `--dry-run`, `--keep-going`;
   new step `seed-queries` (`queries` → `queries_v2`) before Layer 2.
 - `postgres_migrator.py`: `--dry-run`, `--table`, `--output`; exit code 1 when a table fails.
@@ -152,6 +153,12 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   substring table matching mapped different tables to one class; Access types (Long, Currency,
   Yes/No, …) fell back to `object`; English DD triggers were never recognised;
   `border_color_hex` was used before assignment and system colours were mis-mapped.
+- **Layer 5, found by an offline end-to-end run** (Repo → Service → UI for the five sample forms
+  with every LLM call blocked, then `dotnet build`: 0 errors, 0 warnings): the generated
+  ViewModel did not declare properties the AXAML binds — unbound text boxes that VBA fills
+  (`txtID`), or names that only differ in case (`txtProductID` vs `TxtProductID`) — so Avalonia
+  compiled bindings failed with AVLN2000; `clean_generated_files.py` deleted `ViewModelBase.cs`,
+  which only a full orchestrator run recreates.
 - Avalonia app: 10 build warnings → 0 (`RelayCommand` exceptions no longer crash the app, login
   view gets the public constructor the XAML loader needs, Close raises `CloseRequested`).
 - `src/backend/requirements.txt`: floors below what the generated gRPC stubs require

@@ -16,13 +16,13 @@
   ghép sai handler khiến bấm Login chạy `taskkill`.
 - **Đã sửa:** toàn bộ mức 🔴/🟠 và đa số 🟡/🟢. Phần còn lại là thay đổi kiến trúc lớn, được ghi
   ở mục 9 kèm lý do.
-- **Phát triển thêm:** xác thực token cho gRPC, chống cross-site, bộ test (420 test backend +
+- **Phát triển thêm:** xác thực token cho gRPC, chống cross-site, bộ test (427 test backend +
   34 frontend, trước đó gần như bằng 0), CI 4 job, các cờ `--from/--only/--skip/--dry-run` cho
   pipeline, `--dry-run` cho migration PostgreSQL, collection `dependency_graph`, kiểm tra SQL
   tĩnh, đăng ký model từ `config.json`, và các mục khác ở mục 6.
 - **Dọn dẹp:** gom code trùng lặp ở Layer 4 (8.031 → 3.022 dòng), xoá 43 file/route chết hoặc hỏng,
   bỏ 9 dependency không dùng, ~330 cảnh báo pyflakes → 0, gỡ 95 file sinh ra khỏi git. Tổng cộng
-  code gọn hơn ~6.800 dòng dù có thêm ~450 test.
+  repo gọn hơn ~5.200 dòng dù có thêm 461 test và tài liệu mới.
 
 ---
 
@@ -45,6 +45,14 @@
    Layer 4 còn có so sánh output trước/sau trên 9 trường hợp.
 5. **Chạy lại toàn bộ quality gate** sau khi sửa (mục 3) và kiểm tra tĩnh mọi câu
    `from X import Y`. Lần kiểm tra này đã bắt được 3 re-export bị ruff gỡ nhầm; đã khôi phục.
+6. **Chạy thử Layer 5 end-to-end mà không gọi LLM** (mục 5.6), trên một bản sao tạm của repo và
+   một database Mongo tạm seed từ dữ liệu mẫu trong repo. Lượt chạy này bắt được 2 lỗi build mà
+   test đơn vị không thấy.
+7. **Chạy lại CI trên một bản clone sạch của branch:** Python 3.10/3.11/3.12, frontend, .NET và
+   job hygiene. Lượt này bắt được 2 lỗi chỉ lộ ra trên clone sạch, đã sửa:
+   - 95 file sinh ra vẫn còn trong git index dù đã có trong `.gitignore`, nên job hygiene sẽ fail;
+   - bước type-check của frontend luôn lỗi TS2882 vì thiếu `next-env.d.ts` (file sinh ra, bị
+     gitignore). Nay dùng `yarn typecheck`, chạy `next typegen` trước `tsc`.
 
 ---
 
@@ -54,11 +62,13 @@
 | --- | --- | --- |
 | `python -m compileall` | OK | OK |
 | `ruff` (E9 + pyflakes) | ~330 cảnh báo, trong đó 3 tên **chưa định nghĩa** (crash khi chạy) và 1 module bị dán trùng toàn bộ | **0** (ruff). Pyflakes chỉ còn ghi chú star-import cố ý của `bd_agent` và 13 re-export đã đánh dấu `noqa` |
-| pytest | 0 test (chỉ có vài script in ra màn hình) | **420 test** (254 `tests/backend` + 166 `tests/layer5`), chạy dưới 2 giây, không cần Mongo/LLM/mạng |
-| `yarn lint` / `tsc --noEmit` | OK / OK | OK / OK |
+| pytest | 0 test (chỉ có vài script in ra màn hình) | **427 test** (256 `tests/backend` + 171 `tests/layer5`), pass trên Python 3.10 / 3.11 / 3.12 / 3.14, không cần Mongo/LLM/mạng |
+| `yarn lint` / `tsc --noEmit` | OK / OK | OK / OK. Trên clone sạch cần `yarn typecheck` (chạy `next typegen` trước), nếu không sẽ lỗi TS2882 |
 | Test frontend | không có | 34 test (`yarn test`) |
 | `next build` | OK, 2 cảnh báo (Cache-Control, NFT trace) | OK, 1 cảnh báo NFT trace (có từ trước) |
 | `dotnet build` | 0 lỗi, **10 cảnh báo** | 0 lỗi, **0 cảnh báo** |
+| Layer 5 sinh code cho 5 form rồi `dotnet build` (không LLM, mục 5.6) | chưa kiểm | 5/5 form sinh thành công; build **0 lỗi, 0 cảnh báo** |
+| CI chạy lại trên clone sạch (backend ×3 bản Python, frontend, .NET, hygiene) | — | pass hết, sau khi sửa 2 lỗi chỉ lộ ra trên clone sạch (mục 2, bước 7) |
 | NuGet có lỗ hổng | `System.Security.Cryptography.Pkcs` 9.0.x (high + moderate) | không còn |
 | Secret trong lịch sử git | chưa kiểm | sạch: không `config.json`/`.env` nào từng commit, không có key `sk-`/`gsk_`/`AKIA`/`ghp_` |
 
@@ -98,6 +108,7 @@
 | 28 | Layer 5 | `tool_report` chèn code WinForms/ReportViewer riêng của R005 | 🟠 Build Avalonia hỏng với mọi report | Bỏ hẳn; sinh TODO theo service contract |
 | 29 | Layer 5 | CLI Logic luôn exit 0; `fill_json` gọi `sys.exit(1)` trong code thư viện | 🟠 Console báo thành công khi đã thất bại; một lỗi làm dừng cả batch | Trả trạng thái đúng; raise thay vì exit |
 | 30 | Layer 5 | `agent_ui.py` dùng `form_name`/`form_config` chưa định nghĩa | 🟠 NameError bị nuốt, nên phần tra cứu event map không bao giờ chạy | Truyền tham số; xoá hàm không ai gọi |
+| 31 | Layer 5 | AXAML bind những thuộc tính mà ViewModel sinh ra không khai báo. Ví dụ text box không bound mà VBA tự điền (`txtID`), hoặc tên chỉ khác hoa/thường (`txtProductID` ↔ `TxtProductID`) | 🟠 Build Avalonia lỗi AVLN2000, vì compiled binding phân biệt hoa thường | ViewModel nhận đủ mọi tên mà AXAML bind, đúng chính tả trong AXAML (`UIAgent._sync_bound_properties`) |
 
 ---
 
@@ -204,9 +215,23 @@ Sửa 21 mục:
 - **Report:** tên item RDLC hợp lệ; một hàm `access_color_to_hex` với bảng màu hệ thống đúng.
 
 **Kiểm chứng:**
-- 166 test Layer 5 pass; cả 7 CLI agent khởi động được ở script mode.
-- ViewModel + code-behind sinh ra cho F_Login đã được **biên dịch thử** trong bản sao tạm của solution cùng DTO/interface do Agent Service sinh: **phần C# không còn lỗi**.
-- Độ khớp AXAML ↔ ViewModel cần một lượt Layer 5 thật (có LLM) để kiểm (mục 9).
+- 171 test Layer 5 pass; cả 7 CLI agent khởi động được ở script mode.
+- **Chạy thử end-to-end, không gọi LLM.** Môi trường: bản sao tạm của repo và một database Mongo
+  tạm, seed bằng Layer 1 (`run_all.py --only seed,seed-queries`) từ dữ liệu mẫu trong repo
+  (5 form, 1 report, 3 module, 2 macro, 7 query, 9 bảng).
+  - Chạy Agent Repo → Service → UI cho cả 5 form (F_Login, F_Menu, F_ProductDetail,
+    F_ProductList, F_TestForm). Mọi lời gọi LLM bị chặn. Riêng Agent UI dùng lại câu trả lời LLM
+    đã lưu (`agents/ui/outputs/<View>_preview.json`); mọi bước sau đó là code sinh thật.
+  - Ghi file vào solution rồi `dotnet build`: **0 lỗi, 0 cảnh báo**.
+  - Compiled binding của Avalonia kiểm AXAML ↔ ViewModel ngay lúc build. ViewModel gọi interface
+    service, service gọi repository do các agent sinh ra. Vì vậy lượt build này kiểm được độ
+    khớp **AXAML ↔ ViewModel ↔ Service ↔ Repository** của phần code sinh tất định.
+  - Lượt chạy bắt được 2 lỗi, đã sửa và có test hồi quy:
+    - #31 (AXAML bind thuộc tính ViewModel không có);
+    - `clean_generated_files.py` xoá cả `ViewModelBase.cs`, file mà chỉ lượt chạy orchestrator
+      đầy đủ mới tạo lại, nên deploy từng agent từ console sau đó sẽ build lỗi.
+- **Chưa kiểm:** Agent Logic (thân method do LLM viết) và vòng build-fix, vì cả hai đều cần gọi
+  LLM (mục 9).
 
 ### 5.7 Frontend
 - **Bảo mật:** #1, #2. Tên tiếng Nhật giờ dùng được: regex cũ chặn 127/135 form thật nhưng lại cho `..` lọt qua.
@@ -236,11 +261,13 @@ Sửa 21 mục:
   - Không ghi đè biến môi trường của bạn; không ghi lại `api_gateway/.env`.
   - Che mật khẩu khi log; truyền `GRPC_*` sang console.
   - Dừng cả cây tiến trình khi Ctrl+C.
-- **`clean_generated_files.py`:** trước dùng đường dẫn tương đối theo thư mục đang đứng. Nay có `--dry-run`, khử trùng lặp, và trước đây không xoá được file trong thư mục con.
+- **`clean_generated_files.py`:**
+  - Trước dùng đường dẫn tương đối theo thư mục đang đứng và không xoá được file trong thư mục con.
+  - Nay có `--dry-run`, khử trùng lặp, và giữ lại `ViewModelBase.cs`.
 - **`requirements.txt`:** mức sàn thấp hơn mức mà stub gRPC đòi (`grpcio>=1.71.2`), thiếu `python-docx` và `protobuf`, thừa 9 gói không ai import. Nay có trần major cho mọi gói.
 - **CI 4 job:**
   - backend: ruff, 2 phiên pytest, kiểm tra stub gRPC khớp `.proto`;
-  - frontend: lint, tsc, test, build;
+  - frontend: lint, `yarn typecheck` (`next typegen` rồi `tsc`), test, build;
   - .NET: build và chặn NuGet có lỗ hổng;
   - hygiene: thêm các đường dẫn sinh ra.
 
@@ -284,9 +311,11 @@ Sửa 21 mục:
 - **Layer 5:**
   - Xoá 13 module/template/prompt chết: `tool_method_merger`, `sync_vm_stubs`, `gen_code_behind`, `gen_vm_methods`, `patch_vm_from_output`, `core/utils`, 3 template Jinja, 4 prompt/template không dùng, `run_codegen_test.py`. Kèm nhiều hàm không ai gọi.
   - Gỡ khỏi git các artifact sinh lại mỗi lượt: contract cũ, 4 snapshot hỏng, review/mapping theo lượt, `list*Jp.json` không ai đọc. Giữ lại bản đồ tên, config, prompt.
-- **Tổng cộng:**
-  - 365 file thay đổi; 43 file xoá hẳn; 95 file gỡ khỏi git (vẫn giữ trên máy).
-  - Code **+22.151 / −28.914 dòng**, đã gồm ~450 test mới.
+- **Tổng cộng (so với `main`):**
+  - 272 file thay đổi, trong đó 66 file mới và 43 file xoá hẳn.
+  - Thêm 95 file sinh ra được gỡ khỏi git (~62.600 dòng, vẫn giữ trên máy).
+  - Khoảng **+23.600 / −28.800 dòng** (không tính 95 file trên), đã gồm 461 test mới
+    (~3.400 dòng) và tài liệu.
 
 ---
 
@@ -333,6 +362,7 @@ Sửa 21 mục:
 | --- | --- | --- |
 | 🟠 | TLS cho gateway (`add_secure_port`) | Cần quyết định cách cấp cert; hiện bind localhost + token |
 | 🟠 | Tracker chi phí theo request (contextvars) | Gateway 20 thread dùng chung tracker toàn cục, nên số liệu chi phí có thể lẫn giữa các request chạy đồng thời. Sửa cần truyền context qua ThreadPoolExecutor |
+| 🟡 | Chạy một lượt Layer 5 thật có LLM, gồm Agent Logic và vòng build-fix, rồi `dotnet build` | Phần sinh code tất định (Repo → Service → UI) đã được chạy thử cho 5 form và build sạch (mục 5.6). Thân method do Agent Logic viết và vòng build-fix cần gọi LLM tính phí |
 | 🟡 | Health service chuẩn `grpc.health.v1` + `start.py` chờ backend sẵn sàng | Thêm dependency `grpcio-health-checking` |
 | 🟡 | Ô chọn `source_path` ở `/layer1` chưa có tác dụng | Nối vào parser sẽ cho trình duyệt đọc thư mục tuỳ ý; cần quyết định chính sách (allow-list thư mục) |
 | 🟡 | Migration index / FK / rollback cho Layer 3 | Dữ liệu `AllColumns.csv` hiện không có thông tin PK/FK/index |
@@ -341,14 +371,14 @@ Sửa 21 mục:
 | 🟡 | Ngữ nghĩa cột CSV `LogicalName` / `PhysicalName` | DDL dùng `logical_name` (khớp query trong fixture), nhưng Layer 2 coi `physical_name` là cột DB. Cần đối chiếu với export thật |
 | 🟡 | Dịch văn bản tiếng Nhật cố định ngay từ Layer 2 (tiêu đề bước, …) thay vì ở Layer 4 | Xem mục 8.4 |
 | 🟡 | Cột "attribute_digits" của BD sheet 3 chỉ có độ dài | Code từng tính sẵn chuỗi "kiểu(độ dài)" nhưng không dùng; cần xác nhận định dạng mong muốn |
+| 🟡 | Sinh lại `graphview/outputs/{macros,modules}/list*JpToEn.json` bằng `agent_mapping ALL` | Bản đang track dùng key cũ (code đã đọc được cả hai) |
+| 🟡 | Quyết định có untrack `agents/ui/outputs` và `agents/logic/{inputs,outputs}` hay không | Sinh lại mỗi lượt, nhưng console đang đọc trực tiếp |
 | 🟢 | Đổi tên `Layer3Service`/`Layer4Service` cho khớp số layer | Thay đổi phá vỡ tương thích (proto + frontend) |
 | 🟢 | Tách `agent_ui.py`, `layer3/page.tsx`, `layer5/page.tsx` | Refactor lớn, nên làm sau khi có test giao diện |
 | 🟢 | Lockfile Python | Phụ thuộc phiên bản Python đích |
-| 🟠 | Chạy một lượt Layer 5 thật (có LLM), rồi `dotnet build`, để kiểm độ khớp AXAML ↔ ViewModel ↔ Service | Đợt review không gọi LLM; đã kiểm C# sinh ra biên dịch được với DTO/interface sinh ra |
-| 🟡 | Sinh lại `graphview/outputs/{macros,modules}/list*JpToEn.json` bằng `agent_mapping ALL` | Bản đang track dùng key cũ (code đã đọc được cả hai) |
-| 🟡 | Quyết định có untrack `agents/ui/outputs` và `agents/logic/{inputs,outputs}` hay không | Sinh lại mỗi lượt, nhưng console đang đọc trực tiếp |
 | 🟢 | `deploy_to_source.py` chỉ copy `*.cs`, không copy `.axaml` | Cần quyết định luồng deploy view |
 | 🟢 | Prompt `agents/logic/prompts/agent_vm_methods.md` không còn được dùng | Giữ lại để tham khảo |
+| 🟢 | Đưa lượt chạy thử Layer 5 không LLM (mục 5.6) vào CI | Cần Mongo trong CI và bộ spec UI cố định làm fixture |
 
 ---
 
@@ -362,7 +392,7 @@ pytest && pytest tests/layer5
 
 # Frontend
 cd src/frontend && yarn install --frozen-lockfile
-yarn lint && npx tsc --noEmit -p tsconfig.json && yarn test && yarn build
+yarn lint && yarn typecheck && yarn test && yarn build
 
 # Ứng dụng đích (.NET 10)
 dotnet build src/wpf/vba_brain.slnx
