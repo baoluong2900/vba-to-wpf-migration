@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from .core.fill_utils import normalize_vba_name
+from utils.cost_tracker import ContextThreadPoolExecutor
 from utils.logger import get_logger
 from utils.paths import bd3_result_path, safe_child_path, validate_item_name
 
@@ -591,7 +591,7 @@ class DDService:
 
             max_workers = 5
             logger.info("[DD Service] [DD3] Starting parallel processing with %d workers...", max_workers)
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            with ContextThreadPoolExecutor(max_workers=max_workers) as executor:
                 list(executor.map(process_module, enumerate(iter_items)))
             
             # Save all inputs and outputs to JSON files (not JSONL)

@@ -12,9 +12,9 @@ import json
 import copy
 import time
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from utils.cost_tracker import ContextThreadPoolExecutor
 from utils.logger import get_logger
 from utils.paths import BD_FLOW_DIR, bd3_result_path, safe_child_path, validate_item_name
 
@@ -108,7 +108,7 @@ class BDService:
                     by_id[res["module_id"]] = res
 
         if vba_items:
-            with ThreadPoolExecutor(max_workers=3) as executor:
+            with ContextThreadPoolExecutor(max_workers=3) as executor:
                 batch_starts = range(0, len(vba_items), batch_size)
                 # list() re-raises a worker's exception instead of silently dropping its batch
                 list(executor.map(process_batch, batch_starts))

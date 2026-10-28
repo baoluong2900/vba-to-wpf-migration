@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
+import types
 from pathlib import Path
 
 import pytest
@@ -101,3 +103,48 @@ def test_excel_generation_rejects_traversal():
 def test_status_rejects_traversal():
     res = grpc_server.Layer2ServiceServicer.GetBdStatus(None, pb.BdStatusRequest(screen_name="../x"), None)
     assert not res.success
+
+
+class FakeDDService:
+    """Like DDService.run_full_flow: one LLM call per DD3 module, made on a worker pool."""
+
+    in_flight: threading.Barrier
+
+    def __init__(self, stage=None):
+        pass
+
+    def run_full_flow(self, screen_name, model_id=None, force=False):
+        ct = sys.modules[grpc_server.CostTracker.__module__]
+        FakeDDService.in_flight.wait(timeout=5)  # both requests are running at the same time
+        with ct.ContextThreadPoolExecutor(max_workers=2) as pool:
+            list(pool.map(lambda _: ct.get_tracker().record(screen_name, "qwen-plus", "DD3", 100, 50), range(3)))
+        return {"screen_name": screen_name}
+
+
+def test_concurrent_dd_runs_report_only_their_own_tokens(monkeypatch, tmp_path):
+    ct = sys.modules[grpc_server.CostTracker.__module__]
+    monkeypatch.setattr(ct, "LOG_DIR", str(tmp_path))
+    monkeypatch.setattr(grpc_server, "DDService", FakeDDService)
+    monkeypatch.setitem(sys.modules, "push_to_mongo", types.SimpleNamespace(push_dd_one=lambda name: None))
+    FakeDDService.in_flight = threading.Barrier(2)
+    service = grpc_server.Layer2ServiceServicer.__new__(grpc_server.Layer2ServiceServicer)  # no Mongo repo
+    responses = {}
+
+    def run(name):
+        responses[name] = service.RunDdFlowFull(pb.DdFlowRequest(screen_name=name), None)
+
+    threads = [threading.Thread(target=run, args=(name,)) for name in ("F_Login", "F_Menu")]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=10)
+
+    assert set(responses) == {"F_Login", "F_Menu"}
+    for name, res in responses.items():
+        assert res.success, res.error
+        stats = json.loads(res.token_stats_json)
+        assert {r["item"] for r in stats["records"]} == {name}
+        assert (stats["total_input_tokens"], stats["total_output_tokens"]) == (300, 150)
+    # GetTokenReport: the last finished request, not both mixed together
+    last = json.loads(service.GetTokenReport(pb.Empty(), None).token_stats_json)
+    assert last["total_tokens"] == 450

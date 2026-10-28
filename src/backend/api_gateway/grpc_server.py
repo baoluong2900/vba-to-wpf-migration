@@ -37,7 +37,7 @@ import workflow_pb2_grpc
 from db.layer1_repo import Layer1Repo
 from agents.bd_agent.bd_service import BDService
 from agents.dd_agent.dd_service import DDService
-from utils.cost_tracker import get_tracker, CostTracker
+from utils.cost_tracker import CostTracker, last_request_tracker, track_request
 
 # For Layer 4
 import layer4.server as l4_server
@@ -73,11 +73,6 @@ def _bad_name(*values: str) -> str | None:
 
 
 # --- Cost Tracker Helpers ---
-def _reset_tracker() -> CostTracker:
-    from utils import cost_tracker as _ct
-    _ct._tracker = CostTracker()
-    return _ct._tracker
-
 def _tracker_summary_dict(tracker: CostTracker, flow_type: str = "Unknown") -> dict:
     return {
         "flow_type": flow_type,
@@ -303,16 +298,15 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
                 item_type = "form"
 
             service = BDService(stage=_resolve_stage())
-            tracker = _reset_tracker()
-
-            result_dict = service.run_full_flow(
-                screen_name=request.screen_name,
-                bd_code_json=db_data,
-                item_type=item_type,
-                repo=self.repo,
-                model_id=model,
-                force=request.force
-            )
+            with track_request() as tracker:
+                result_dict = service.run_full_flow(
+                    screen_name=request.screen_name,
+                    bd_code_json=db_data,
+                    item_type=item_type,
+                    repo=self.repo,
+                    model_id=model,
+                    force=request.force
+                )
 
             # Auto push to mongo
             try:
@@ -385,15 +379,15 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
                 repo=self.repo
             )
             
-            tracker = _reset_tracker()
-            res = service.run_analysis_phase(
-                screen_name=request.screen_name,
-                bd_code_json=db_data,
-                mapped_data=extract_res["mapped_data"],
-                repo=self.repo,
-                model_id=model,
-                force=request.force
-            )
+            with track_request() as tracker:
+                res = service.run_analysis_phase(
+                    screen_name=request.screen_name,
+                    bd_code_json=db_data,
+                    mapped_data=extract_res["mapped_data"],
+                    repo=self.repo,
+                    model_id=model,
+                    force=request.force
+                )
 
             excel_path = tracker.save_excel_report(label=request.screen_name, flow_type="BD Agent")
             json_path = tracker.save_report(label=request.screen_name, flow_type="BD Agent")
@@ -414,12 +408,12 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
             if err := _bad_name(request.screen_name):
                 return workflow_pb2.DdFlowResponse(success=False, error=err)
             service = DDService(stage=_resolve_stage())
-            tracker = _reset_tracker()
-            result_dict = service.run_full_flow(
-                screen_name=request.screen_name,
-                model_id=request.model or None,
-                force=request.force,
-            )
+            with track_request() as tracker:
+                result_dict = service.run_full_flow(
+                    screen_name=request.screen_name,
+                    model_id=request.model or None,
+                    force=request.force,
+                )
 
             try:
                 import push_to_mongo
@@ -443,7 +437,7 @@ class Layer2ServiceServicer(workflow_pb2_grpc.Layer2ServiceServicer):
 
     def GetTokenReport(self, request, context):
         try:
-            tracker = get_tracker()
+            tracker = last_request_tracker()
             summary = _tracker_summary_dict(tracker)
             return workflow_pb2.TokenReportResponse(success=True, token_stats_json=json.dumps(summary))
         except Exception as e:

@@ -1,14 +1,19 @@
 """
-llm/cost_tracker.py — Track token usage and estimated cost.
+utils/cost_tracker.py — Track token usage and estimated cost.
 
-Singleton: get_tracker() returns a shared instance within a session.
+get_tracker() returns the tracker of the current gateway request (see track_request()), or one
+process-wide tracker for CLI runs.
 """
 from __future__ import annotations
 
+import contextvars
 import json
 import logging
 import os
 import threading
+from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -279,13 +284,52 @@ class CostTracker:
             ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
 
 
-# ── Singleton ──────────────────────────────────────────────────────────────
+# ── Current tracker ────────────────────────────────────────────────────────
+# The gateway serves requests on a thread pool. They used to share one module-level tracker that
+# each request replaced, so concurrent runs recorded into (and reported) each other's tokens and
+# costs. Each request now gets its own tracker through a context variable; CLI runs, which never
+# call track_request(), keep using one process-wide tracker.
+_current: contextvars.ContextVar[CostTracker | None] = contextvars.ContextVar("cost_tracker", default=None)
 _tracker: CostTracker | None = None
+_last_request: CostTracker | None = None
+_tracker_lock = threading.Lock()
 
 
 def get_tracker() -> CostTracker:
-    """Returns the singleton CostTracker for the current session."""
+    """The tracker of the current request, else the process-wide one."""
+    current = _current.get()
+    if current is not None:
+        return current
     global _tracker
-    if _tracker is None:
-        _tracker = CostTracker()
-    return _tracker
+    with _tracker_lock:
+        if _tracker is None:
+            _tracker = CostTracker()
+        return _tracker
+
+
+@contextmanager
+def track_request() -> Iterator[CostTracker]:
+    """
+    Record the LLM calls made inside the block into a new tracker, including calls made by worker
+    threads started through ContextThreadPoolExecutor (plain threads do not see it).
+    """
+    global _last_request
+    tracker = CostTracker()
+    token = _current.set(tracker)
+    try:
+        yield tracker
+    finally:
+        _current.reset(token)
+        _last_request = tracker
+
+
+def last_request_tracker() -> CostTracker:
+    """The tracker of the most recently finished request, else the process-wide one."""
+    return _last_request if _last_request is not None else get_tracker()
+
+
+class ContextThreadPoolExecutor(ThreadPoolExecutor):
+    """ThreadPoolExecutor whose tasks run with the submitter's context variables, so they record into its tracker."""
+
+    def submit(self, fn, /, *args, **kwargs):
+        return super().submit(contextvars.copy_context().run, fn, *args, **kwargs)
