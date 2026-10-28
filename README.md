@@ -893,6 +893,10 @@ python start.py --be-only             # start it standalone
 The frontend reaches the gateway only through the API routes under
 `src/frontend/src/app/api/` — a browser cannot speak gRPC directly.
 
+With TLS on (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`), the console must use TLS too and trust the
+certificate: set `GRPC_TLS_CA` to it (or start both with `python start.py`, which does), and make
+sure the certificate names the host in `GRPC_SERVER_ADDRESS` (`localhost` by default).
+
 </details>
 
 <details>
