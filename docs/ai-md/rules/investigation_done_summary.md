@@ -30,7 +30,7 @@ Sau khi hoàn thành bất kỳ tác vụ điều tra nào (bug hunt, code revie
 
 ## Quy tắc bắt buộc
 
-1. **Luôn chạy `py_compile` và `tsc --noEmit`** trước khi báo fixed — không báo fixed nếu chưa verify compile.
+1. **Luôn chạy `py_compile` và `yarn typecheck`** trước khi báo fixed — không báo fixed nếu chưa verify compile.
 2. **Phân biệt rõ** "bug đã fix", "không phải bug", "cần theo dõi" — không gộp chung.
 3. **Ghi rõ file + dòng** cho mỗi bug — không mô tả chung chung.
 4. **Không báo cáo false positive** — phải đọc context đủ trước khi kết luận là bug.

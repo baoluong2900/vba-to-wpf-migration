@@ -971,7 +971,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Short version:
 ```bash
 ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts
 pytest && pytest tests/layer5              # backend tests (two sessions)
-(cd src/frontend && yarn lint && npx tsc --noEmit && yarn test && yarn build)
+(cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build)
 dotnet build src/wpf/vba_brain.slnx        # target app
 ```
 

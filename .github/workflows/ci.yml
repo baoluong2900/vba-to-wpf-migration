@@ -90,8 +90,10 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      # next-env.d.ts and .next/types are generated (and git-ignored): without them every CSS
+      # side-effect import fails TS2882 on a fresh checkout.
       - name: Type check
-        run: npx tsc --noEmit -p tsconfig.json
+        run: yarn typecheck
 
       - name: Unit tests
         run: yarn test

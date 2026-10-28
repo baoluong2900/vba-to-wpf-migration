@@ -37,5 +37,5 @@
   (`:50051`, `src/backend/protos/workflow.proto`). Components never talk gRPC directly.
 
 ## 7. Quality gates
-`ruff check` + `pytest` (backend), `yarn lint` + `tsc --noEmit` + `yarn test` + `yarn build`
+`ruff check` + `pytest` (backend), `yarn lint` + `yarn typecheck` + `yarn test` + `yarn build`
 (frontend), `dotnet build src/wpf/vba_brain.slnx` (target app). CI runs all of them.

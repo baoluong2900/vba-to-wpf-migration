@@ -25,7 +25,7 @@ Closes #
 
 - [ ] `ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts`
 - [ ] `pytest && pytest tests/layer5`
-- [ ] `cd src/frontend && yarn lint && npx tsc --noEmit -p tsconfig.json && yarn test && yarn build`
+- [ ] `cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build`
 - [ ] `dotnet build src/wpf/vba_brain.slnx` (if `src/wpf` or Layer 5 changed)
 - [ ] Ran the affected pipeline layer end to end (say which item / command)
 

@@ -42,7 +42,7 @@ ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa
 pytest && pytest tests/layer5
 
 # Frontend — lint, types, unit tests (node --test with TypeScript type stripping), build
-cd src/frontend && yarn lint && npx tsc --noEmit -p tsconfig.json && yarn test && yarn build
+cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build
 
 # Target app — must build, and no vulnerable NuGet package
 dotnet build src/wpf/vba_brain.slnx
