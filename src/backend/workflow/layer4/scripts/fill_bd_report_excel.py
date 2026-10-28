@@ -54,13 +54,20 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
+from excel_translator import (  # noqa: E402
+    restore_japanese_sheet_names,
+    snapshot_template_labels,
+    translate_workbook,
+)
 from layer4_output_settings import get_bd_report_output_filename_prefix  # noqa: E402
 from fill_bd_excel import (  # noqa: E402
     DEFAULT_IMAGE_DIR,
+    add_mock_change_history_args,
     build_mock_change_history,
     clear_row_cells,
+    ensure_change_history_labels,
     expand_table,
-    fill_branded_header_fields_by_label,
+    fill_branded_header_fields,
     fill_change_history,
     find_row_by_cell_contains,
     find_row_by_cell_text,
@@ -68,6 +75,7 @@ from fill_bd_excel import (  # noqa: E402
     locate_template_row,
     purge_stale_data_rows,
     put,
+    record_source_label,
     replace_layout_screen_image,
     _resolve_screen_image,
 )
@@ -125,18 +133,18 @@ from fill_bd_excel import LAYOUT_EVENT_COL, LAYOUT_PROC_COL  # noqa: E402
 
 
 def fill_common_header_report_layout(ws: Worksheet, bd: dict) -> None:
-    """Header on 帳票仕様書(レイアウト)."""
-    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
+    """Header on 帳票仕様書(レイアウト) (AR1/AR2 are the 作成日/更新日 labels; values in AW)."""
+    fill_branded_header_fields(ws, bd)
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "S4", bd.get("screen_name"))
     put(ws, "AK2", bd.get("updated_by"))
-    put(ws, "AR2", bd.get("updated_date"))
+    put(ws, "AW2", bd.get("updated_date"))
 
 
 def fill_common_header_report_edit(ws: Worksheet, bd: dict) -> None:
     """Header on 帳票仕様書（項目編集）."""
-    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
+    fill_branded_header_fields(ws, bd)
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "S4", bd.get("screen_name"))
@@ -145,15 +153,19 @@ def fill_common_header_report_edit(ws: Worksheet, bd: dict) -> None:
 
 
 def locate_report_edit_template_row(ws: Worksheet, fallback: int = 9) -> int:
-    """Row below 転送元 sub-header ``K = ﾃｰﾌﾞﾙ名／領域名``; else ＜詳細＞; else screen edit locator."""
+    """Row below 転送元 sub-header ``K = ﾃｰﾌﾞﾙ名／領域名``; else ＜詳細＞; else
+    ``№`` + 2 (this sheet's item header spans two rows); else ``fallback``."""
     r = find_row_by_cell_text(ws, "K", "ﾃｰﾌﾞﾙ名／領域名")
     if r is not None:
         return r + 1
     r = find_row_by_cell_text(ws, "C", "＜詳細＞")
     if r is not None:
         return r + 1
-    from fill_bd_excel import locate_edit_template_row
-    return locate_edit_template_row(ws, fallback=fallback)
+    for marker in ("№", "No.", "NO", "No", "Ｎｏ．"):
+        r = find_row_by_cell_text(ws, "A", marker)
+        if r is not None:
+            return r + 2
+    return fallback
 
 
 def _normalize_report_edit_item(raw: dict) -> dict:
@@ -310,8 +322,7 @@ def fill_report_layout(ws: Worksheet, bd: dict,
         rows = expand_table(ws, recsrc_row, len(rec_sources))
         for src, r in zip(rec_sources, rows):
             clear_row_cells(ws, r, [LAYOUT_RECSRC_COL])
-            val = src.get("query_display") if isinstance(src, dict) else src
-            put(ws, f"{LAYOUT_RECSRC_COL}{r}", val)
+            put(ws, f"{LAYOUT_RECSRC_COL}{r}", record_source_label(src))
 
     r_proc_hdr = find_row_by_cell_text(ws, "AM", "【処理概要】")
     if r_proc_hdr is not None:
@@ -357,24 +368,17 @@ def fill_report_excel(
     bd: dict,
     output_path: Path,
     *,
-    mock_change_history: bool = True,
+    mock_change_history: bool = False,
     image_search_dirs: list[Path] | None = None,
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(template_path, output_path)
 
     wb = load_workbook(output_path)
-
-    try:
-        import sys
-        from pathlib import Path
-        _scripts_dir = Path(__file__).resolve().parent
-        if str(_scripts_dir) not in sys.path:
-            sys.path.insert(0, str(_scripts_dir))
-        from excel_translator import restore_japanese_sheet_names
-        restore_japanese_sheet_names(wb)
-    except Exception as e:
-        print(f"[WARN] Failed to restore Japanese sheet names: {e}")
+    restore_japanese_sheet_names(wb)
+    if SHEET_CHANGE_HISTORY in wb.sheetnames:
+        ensure_change_history_labels(wb[SHEET_CHANGE_HISTORY])
+    labels = snapshot_template_labels(wb)
 
     if SHEET_CHANGE_HISTORY in wb.sheetnames:
         ch_data = (bd.get("sheet_1_change_history", {}) or {}).get("data", []) or []
@@ -401,17 +405,7 @@ def fill_report_excel(
     # sheet_5_file_spec is merged into 帳票仕様書（項目編集） — do not add ファイル仕様書.
     handle_event_sheets(wb, bd)
 
-    try:
-        import sys
-        from pathlib import Path
-        _scripts_dir = Path(__file__).resolve().parent
-        if str(_scripts_dir) not in sys.path:
-            sys.path.insert(0, str(_scripts_dir))
-        from excel_translator import translate_workbook
-        translate_workbook(wb)
-    except Exception as e:
-        print(f"[WARN] Failed to translate workbook: {e}")
-
+    translate_workbook(wb, labels)
     wb.save(output_path)
 
 
@@ -439,13 +433,7 @@ def main() -> None:
         default=None,
         help=f"Batch output folder (default: {DEFAULT_OUTPUT_DIR})",
     )
-    parser.add_argument(
-        "--no-mock-change-history",
-        dest="mock_change_history",
-        action="store_false",
-        default=True,
-        help="Disable auto-fill of 変更履歴 mock rows when JSON data is empty.",
-    )
+    add_mock_change_history_args(parser)
     parser.add_argument(
         "--image-dir",
         action="append",
@@ -466,7 +454,9 @@ def main() -> None:
         in_dir = args.input_dir or DEFAULT_INPUT_DIR
         out_dir = args.output_dir or DEFAULT_OUTPUT_DIR
         if not in_dir.is_dir():
-            raise SystemExit(f"[ERR] Input directory not found: {in_dir}")
+            raise SystemExit(
+                f"[ERR] Input directory not found: {in_dir} (pass --input-dir or --input)"
+            )
         json_files = sorted(in_dir.glob("*.json"))
         if not json_files:
             raise SystemExit(f"[ERR] No *.json in {in_dir}")

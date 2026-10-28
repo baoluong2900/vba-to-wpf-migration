@@ -1,11 +1,24 @@
+"""Japanese → English translation for filled Layer 4 workbooks.
+
+The target language comes from ``common.config.TARGET_LANGUAGE`` (config.json →
+``localization.target_language``, overridable with the ``TARGET_LANGUAGE`` env var).
+
+Only template text is translated: ``snapshot_template_labels`` records the label cells of
+a freshly loaded template, and ``translate_workbook`` rewrites exactly those cells plus the
+template part of sheet titles once the workbook is filled. Values written by the fill
+scripts and formula cells are never changed; formulas that reference a renamed sheet are
+re-pointed at its new title.
+"""
+from __future__ import annotations
+
 import re
-from openpyxl.workbook import Workbook
+import sys
+from pathlib import Path
 
 JP_REGEX = re.compile(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]')
 
 JP_EN_MAPPING = {
-    # Thay thế chung & Change History
-    
+    # General terms / change history
     "ページ": "Page",
     "更新": "Update",
     "備    考": "Notes",
@@ -124,7 +137,7 @@ JP_EN_MAPPING = {
     "Query名": "Query Name",
     "SELECT句": "SELECT Clause",
     "パラメータ": "Parameters",
-    
+
     # Detailed mappings to fix mixed Japanese-English replacements
     "パラメータ情報": "Parameters Info",
     "引数情報": "Arguments Info",
@@ -146,87 +159,173 @@ JP_EN_MAPPING = {
     "情報": "Information",
 }
 
-def get_target_language():
+# Longest keys first so compound labels win over their parts.
+_SORTED_MAPPING = sorted(JP_EN_MAPPING.items(), key=lambda kv: len(kv[0]), reverse=True)
+
+# Template sheet titles, and title prefixes of per-event / per-module sheets.
+SHEET_TITLES = {
+    "変更履歴": "Change History",
+    "概要仕様書": "Overview Spec",
+    "画面仕様書(レイアウト)": "Screen Spec (Layout)",
+    "画面仕様書(画面編集)": "Screen Spec (Edit)",
+    "画面仕様書（テーブル更新）": "Screen Spec (Table Update)",
+    "帳票仕様書(レイアウト)": "Report Spec (Layout)",
+    "帳票仕様書（項目編集）": "Report Spec (Field Edit)",
+}
+SHEET_TITLE_PREFIXES = (
+    ("画面仕様書（", "Screen Spec（"),
+    ("ファイル仕様書（", "File Spec（"),
+    ("詳細仕様書_", "Detailed Design Spec_"),
+)
+
+_INVALID_TITLE_CHARS = re.compile(r'[\\*?:/\[\]]')
+
+
+def get_target_language() -> str:
+    """Target language from ``common.config`` — the single source for all of Layer 4."""
     try:
-        import json
-        from pathlib import Path
-        config_path = Path(__file__).resolve().parent.parent.parent.parent.parent / "config.json"
-        if config_path.exists():
-            with open(config_path, "r", encoding="utf-8") as f:
-                return json.load(f).get("localization", {}).get("target_language", "en")
-    except Exception:
-        pass
-    return "en"
-
-def translate_workbook(wb: Workbook):
-    TARGET_LANGUAGE = get_target_language()
-    if TARGET_LANGUAGE.lower() not in ("en", "english"):
-        return
-        
-    # Sort mapping by key length in descending order to avoid partial replacement issues
-    sorted_mapping = sorted(JP_EN_MAPPING.items(), key=lambda x: len(x[0]), reverse=True)
-        
-    # Translate sheet names
-    for name in list(wb.sheetnames):
-        ws = wb[name]
-        new_name = name
-        for jp, en in sorted_mapping:
-            if jp in new_name:
-                new_name = new_name.replace(jp, en)
-        # Limit to 31 chars (Excel sheet name constraint) and clean special chars
-        new_name = re.sub(r'[\\*?:/\[\]]', '', new_name)[:31].strip()
-        if new_name != name and new_name not in wb.sheetnames:
-            try:
-                ws.title = new_name
-            except Exception:
-                pass
-                
-    # Translate cell values
-    for sheet_name in wb.sheetnames:
-        ws = wb[sheet_name]
-        # Iterate over all non-empty cells
-        for row in ws.iter_rows():
-            for cell in row:
-                val = cell.value
-                if isinstance(val, str) and JP_REGEX.search(val):
-                    val_clean = val
-                    for jp, en in sorted_mapping:
-                        if jp in val_clean:
-                            val_clean = val_clean.replace(jp, en)
-                    cell.value = val_clean
+        from common.config import TARGET_LANGUAGE
+    except ImportError:
+        # CLI run from scripts/: make src/backend importable.
+        backend_dir = Path(__file__).resolve().parents[3]
+        if str(backend_dir) not in sys.path:
+            sys.path.insert(0, str(backend_dir))
+        from common.config import TARGET_LANGUAGE
+    return str(TARGET_LANGUAGE or "").strip() or "en"
 
 
-def restore_japanese_sheet_names(wb):
-    mapping = {
-        "Change History": "変更履歴",
-        "Screen Spec (Layout)": "画面仕様書(レイアウト)",
-        "Screen Spec (Edit)": "画面仕様書(画面編集)",
-        "Screen Spec (Table Update)": "画面仕様書（テーブル更新）",
-        "Overview Spec": "概要仕様書",
-        "Report Spec (Layout)": "帳票仕様書(レイアウト)",
-        "Report Spec (Field Edit)": "帳票仕様書（項目編集）",
-    }
-    for name in list(wb.sheetnames):
-        ws = wb[name]
-        new_name = name
-        if name in mapping:
-            new_name = mapping[name]
+def is_english_target() -> bool:
+    return get_target_language().lower() in ("en", "english")
+
+
+def translate_text(text: str) -> str:
+    """Substring-translate ``text`` with ``JP_EN_MAPPING`` (pure; ignores the target language)."""
+    for jp, en in _SORTED_MAPPING:
+        if jp in text:
+            text = text.replace(jp, en)
+    return text
+
+
+def translate_label(text: str) -> str:
+    """Translate a label the fill code writes itself (never use this for JSON values)."""
+    return translate_text(text) if is_english_target() else text
+
+
+def translate_sheet_title(title: str) -> str:
+    """English title for a template-derived sheet; the JSON-supplied part stays as is."""
+    if title in SHEET_TITLES:
+        new = SHEET_TITLES[title]
+    else:
+        for jp, en in SHEET_TITLE_PREFIXES:
+            if title.startswith(jp):
+                new = en + title[len(jp):]
+                break
         else:
-            if name.startswith("Screen Spec（") or name.startswith("Screen Spec ("):
-                prefix_len = len("Screen Spec（") if name.startswith("Screen Spec（") else len("Screen Spec (")
-                suffix = name[prefix_len:]
-                if suffix.endswith(")") or suffix.endswith("）"):
-                    inner = suffix[:-1]
-                    new_name = f"画面仕様書（{inner}）"
-            elif name.startswith("File Spec（") or name.startswith("File Spec ("):
-                prefix_len = len("File Spec（") if name.startswith("File Spec（") else len("File Spec (")
-                suffix = name[prefix_len:]
-                if suffix.endswith(")") or suffix.endswith("）"):
-                    inner = suffix[:-1]
-                    new_name = f"ファイル仕様書（{inner}）"
-                    
-        if new_name != name:
-            try:
-                ws.title = new_name
-            except Exception as e:
-                print(f"[WARN] Failed to restore sheet name '{name}' to '{new_name}': {e}")
+            return title
+    return _INVALID_TITLE_CHARS.sub("", new)[:31].strip()
+
+
+def _quote_sheet(title: str) -> str:
+    return "'" + title.replace("'", "''") + "'"
+
+
+def retarget_formula_refs(wb, renames: dict[str, str]) -> None:
+    """Re-point formulas at renamed sheets (``=概要仕様書!E1`` → ``='Overview Spec'!E1``)."""
+    if not renames:
+        return
+    subs = []
+    for old, new in renames.items():
+        target = _quote_sheet(new) + "!"
+        subs.append((re.compile(re.escape(_quote_sheet(old)) + "!"), target))
+        subs.append((re.compile(r"(?<![\w.'\]])" + re.escape(old) + "!"), target))
+    for ws in wb.worksheets:
+        for cell in ws._cells.values():
+            value = cell.value
+            if cell.data_type != "f" or not isinstance(value, str):
+                continue
+            new_value = value
+            for pattern, target in subs:
+                new_value = pattern.sub(lambda _m, t=target: t, new_value)
+            if new_value != value:
+                cell.value = new_value
+
+
+class TemplateLabels:
+    """Label cells of a freshly loaded template (see ``translate_workbook``)."""
+
+    def __init__(self, wb) -> None:
+        # Keep the sheet / cell objects alive so their ids cannot be reused.
+        self._sheets = list(wb.worksheets)
+        self._sheet_ids = {id(ws) for ws in self._sheets}
+        self._cells: dict[int, tuple[object, str]] = {}
+        self._by_coord: set[tuple[str, str]] = set()
+        for ws in self._sheets:
+            for cell in ws._cells.values():
+                value = cell.value
+                if isinstance(value, str) and cell.data_type != "f" and JP_REGEX.search(value):
+                    self._cells[id(cell)] = (cell, value)
+                    self._by_coord.add((cell.coordinate, value))
+
+    def is_label(self, ws, cell) -> bool:
+        """True while ``cell`` still holds template text (not a value written by the fill)."""
+        entry = self._cells.get(id(cell))
+        if entry is not None and entry[0] is cell:
+            return cell.value == entry[1]
+        if id(ws) in self._sheet_ids:
+            return False
+        # Sheet cloned from a template after the snapshot: same text at the same coordinate.
+        return (cell.coordinate, cell.value) in self._by_coord
+
+
+def snapshot_template_labels(wb) -> TemplateLabels:
+    """Record the template's label cells; call right after loading, before any fill."""
+    return TemplateLabels(wb)
+
+
+def translate_workbook(wb, labels: TemplateLabels) -> None:
+    """Translate template labels and sheet titles when the target language is English."""
+    if not is_english_target():
+        return
+    for ws in wb.worksheets:
+        for cell in list(ws._cells.values()):
+            value = cell.value
+            if not isinstance(value, str) or cell.data_type == "f" or not JP_REGEX.search(value):
+                continue
+            if labels.is_label(ws, cell):
+                cell.value = translate_text(value)
+
+    renames: dict[str, str] = {}
+    for ws in list(wb.worksheets):
+        new_title = translate_sheet_title(ws.title)
+        if new_title != ws.title and new_title not in wb.sheetnames:
+            renames[ws.title] = new_title
+            ws.title = new_title
+    retarget_formula_refs(wb, renames)
+
+
+def _restore_prefixed_title(name: str) -> str | None:
+    for en, jp in (("Screen Spec", "画面仕様書"), ("File Spec", "ファイル仕様書")):
+        for opener in ("（", " ("):
+            prefix = en + opener
+            if name.startswith(prefix) and name.endswith((")", "）")):
+                return f"{jp}（{name[len(prefix):-1]}）"
+    if name.startswith("Detailed Design Spec_"):
+        return "詳細仕様書_" + name[len("Detailed Design Spec_"):]
+    return None
+
+
+def restore_japanese_sheet_names(wb) -> None:
+    """Rename English titles of an already-translated template back to the Japanese ones."""
+    reverse = {en: jp for jp, en in SHEET_TITLES.items()}
+    renames: dict[str, str] = {}
+    for ws in list(wb.worksheets):
+        name = ws.title
+        new_name = reverse.get(name) or _restore_prefixed_title(name)
+        if not new_name or new_name == name:
+            continue
+        if new_name in wb.sheetnames:
+            print(f"[WARN] Cannot restore sheet name '{name}': '{new_name}' already exists")
+            continue
+        ws.title = new_name
+        renames[name] = new_name
+    retarget_formula_refs(wb, renames)
