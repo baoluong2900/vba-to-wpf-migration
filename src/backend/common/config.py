@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import os
 import json
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
 from pathlib import Path
 
 # ── Paths ──────────────────────────────────────────────────
@@ -14,8 +15,9 @@ COMMON_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = COMMON_DIR.parent
 
 # Robustly find workspace root containing config.json by climbing up
+# (fallback: the repository root — src/backend/../..)
 _curr = COMMON_DIR
-WORKSPACE_DIR = BACKEND_DIR.parent
+WORKSPACE_DIR = BACKEND_DIR.parent.parent
 for _ in range(5):
     if (_curr / "config.json").exists():
         WORKSPACE_DIR = _curr
@@ -81,6 +83,11 @@ GROQ_API_KEY = get_setting("GROQ_API_KEY", ["llm_providers", "groq", "api_key"])
 MEGALLM_API_KEY = get_setting("MEGALLM_API_KEY", ["llm_providers", "megallm", "api_key"])
 
 # ── Database Configurations ────────────────────────────────
+def redact_uri(uri: str) -> str:
+    """Hide the credentials of a connection URI before it is logged (user:pw@ → ***@)."""
+    return re.sub(r"//[^@/]+@", "//***@", uri or "")
+
+
 _mongo_cfg = config_data.get("mongodb", {})
 MONGO_URI = os.getenv("MONGO_URI", _mongo_cfg.get("uri", "mongodb://localhost:27017"))
 MONGO_DB = os.getenv("MONGO_DB", _mongo_cfg.get("db", "vba_brain_core"))
@@ -102,6 +109,13 @@ POSTGRES_PASS = os.getenv("POSTGRES_PASSWORD", _pg_cfg.get("password", ""))
 # ── Localization ───────────────────────────────────────────
 SOURCE_LANGUAGE = get_setting("SOURCE_LANGUAGE", ["localization", "source_language"], "ja")
 TARGET_LANGUAGE = get_setting("TARGET_LANGUAGE", ["localization", "target_language"], "en")
+
+# ── gRPC gateway ───────────────────────────────────────────
+# "localhost" keeps the gateway off the network unless GRPC_HOST is set on purpose.
+GRPC_HOST = get_setting("GRPC_HOST", ["grpc", "host"], "localhost")
+GRPC_PORT = int(get_setting("GRPC_PORT", ["grpc", "port"], "50051"))
+# When set, every RPC must carry "authorization: Bearer <token>" (api_gateway/auth.py).
+GRPC_AUTH_TOKEN = get_setting("GRPC_AUTH_TOKEN", ["grpc", "auth_token"], "")
 
 # ── Default LLM Models ─────────────────────────────────────
 _llm_cfg = config_data.get("llm_settings", {})
@@ -255,6 +269,26 @@ AVAILABLE_MODELS: dict[str, ModelConfig] = {
     "qwen-mt-flash":                    ModelConfig(provider="alibaba", model_id="qwen-mt-flash",                    max_tokens=4096,  temperature=0.1),
     "qwen-mt-lite":                     ModelConfig(provider="alibaba", model_id="qwen-mt-lite",                     max_tokens=4096,  temperature=0.1),
 }
+
+# Providers common/llm/llm_client.py can dispatch to.
+SUPPORTED_PROVIDERS = ("alibaba", "openai", "anthropic", "groq", "deepseek", "megallm")
+
+
+def _register_config_models() -> None:
+    """
+    Make every model listed under config.json → llm_providers.<provider>.models resolvable, so a
+    model picked in the console (GetConfig lists exactly these) is the model that actually runs.
+    Built-in definitions above keep precedence.
+    """
+    for provider, pcfg in (config_data.get("llm_providers") or {}).items():
+        if provider not in SUPPORTED_PROVIDERS or not isinstance(pcfg, dict):
+            continue
+        for model_id in pcfg.get("models") or []:
+            if isinstance(model_id, str) and model_id not in AVAILABLE_MODELS:
+                AVAILABLE_MODELS[model_id] = ModelConfig(provider=provider, model_id=model_id)
+
+
+_register_config_models()
 
 # ── Dynamic Model Helper ───────────────────────────────────
 def get_model(model_name_or_id: str, default: ModelConfig) -> ModelConfig:

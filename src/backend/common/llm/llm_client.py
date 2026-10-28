@@ -4,7 +4,6 @@ Supports: Google Gemini / Anthropic Claude / OpenAI GPT / DeepSeek / Alibaba Das
 """
 from __future__ import annotations
 
-import os
 import json
 import time
 import logging
@@ -147,22 +146,7 @@ class LLMClient:
                 )
         except Exception:
             pass
-
-        # Layer 2 Cost Tracker Integration
-        try:
-            from llm.cost_tracker import get_tracker as get_l2_tracker
-            l2_tracker = get_l2_tracker()
-            if l2_tracker:
-                l2_tracker.record(
-                    item_name="unknown",
-                    model_id=model_cfg.model_id,
-                    stage="unknown",
-                    input_tokens=usage.get("input_tokens", 0),
-                    output_tokens=usage.get("output_tokens", 0),
-                    flow_type="chat"
-                )
-        except Exception:
-            pass
+        # Layer 2 records usage itself (utils/cost_tracker.py) at each call site.
 
     def _get_usage(self, resp: Any, system: str, user: str) -> dict:
         """Extract token counts from an OpenAI-compatible response object, with fallback estimation."""
@@ -387,16 +371,15 @@ class L5LLMClient(LLMClient):
                 logger.debug("[L5-LLM] Token tracking error (non-fatal): %s", track_err)
 
         self.register_usage_callback(layer5_callback)
-        content = self.chat(cfg, system_prompt, user_prompt)
-        
-        # Clear the callback to avoid memory accumulation or duplicate callbacks next time
-        self._usage_callbacks.clear()
-        
-        return content
+        try:
+            return self.chat(cfg, system_prompt, user_prompt)
+        finally:
+            # One-shot callback: drop it even when the call raised, otherwise the next call
+            # would also be recorded under this form/agent.
+            self._usage_callbacks.remove(layer5_callback)
 
 
 # ── Utilities ────────────────────────────────────────────────────────────────
-import re as _re
 
 def extract_code_block(raw: str, language: str = "csharp") -> str:
     """

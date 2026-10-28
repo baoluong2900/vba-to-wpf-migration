@@ -95,10 +95,11 @@
     "dev_command": "yarn dev"
   },
 
-  "backend": {
-    "_comment": "gRPC Gateway port (50051 hardcoded trong grpc_server.py)",
-    "port": 8000,
-    "host": "0.0.0.0"
+  "grpc": {
+    "_comment": "gRPC gateway (src/backend/api_gateway/grpc_server.py). host 'localhost' giữ gateway khỏi mạng LAN. Đặt auth_token (chuỗi ngẫu nhiên dài) trước khi mở ra ngoài — start.py tự truyền token cho web console. Override bằng env GRPC_HOST / GRPC_PORT / GRPC_AUTH_TOKEN.",
+    "host": "localhost",
+    "port": 50051,
+    "auth_token": ""
   },
 
   "model_overrides": {
