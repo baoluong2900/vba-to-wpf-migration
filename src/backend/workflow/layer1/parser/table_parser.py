@@ -2,17 +2,18 @@
 """
 table_parser.py
 
-Read VBA_Export_All/Tables/AllColumns.csv and emit one JSON file per table,
+Read the Access export's Tables/AllColumns.csv and emit one JSON file per table,
 matching table_example.json: table_name, description, columns[].
 
-Column mapping (AllColumns.csv → JSON): CSV PhysicalName holds Japanese labels → logical_name;
-CSV LogicalName holds English / physical identifiers → physical_name.
+Column mapping (AllColumns.csv → JSON) is one-to-one: CSV LogicalName → logical_name (the
+Access field name that queries reference; Layer 3 uses it as the DDL column name) and CSV
+PhysicalName → physical_name.
 
 Usage:
     python table_parser.py [AllColumns.csv] [--output-dir <dir>]
 
-Default CSV: <project>/VBA_Export_All/Tables/AllColumns.csv
-Default out: <project>/output/table_json/
+Default CSV: <repo>/src/vba/vba_source/Tables/AllColumns.csv (else <repo>/VBA_Export_All/…)
+Default out: <repo>/data/tables/
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[5]
-vba_dir = ROOT / "src" / "VBA" / "vba_source"
+vba_dir = ROOT / "src" / "vba" / "vba_source"
 if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 

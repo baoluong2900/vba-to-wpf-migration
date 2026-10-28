@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[5]
-vba_dir = ROOT / "src" / "VBA" / "vba_source"
+vba_dir = ROOT / "src" / "vba" / "vba_source"
 if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
@@ -371,8 +371,9 @@ def main() -> int:
     if inp.is_dir():
         items = sorted(inp.glob("*.mac"))
         if not items:
-            print(f"No .mac files in {inp}", file=sys.stderr)
-            return 1
+            # An Access app without macros is fine — don't fail the batch pipeline.
+            print(f"[WARN] No .mac files in {inp} — nothing to parse.", file=sys.stderr)
+            return 0
         out_dir: Path = args.output_dir
         out_dir.mkdir(parents=True, exist_ok=True)
         if args.output:

@@ -96,6 +96,37 @@ def get_record_name(data: dict, file_stem: str) -> str:
         or file_stem
     )
 
+def build_dependency_graph(reference_map: dict) -> list[dict]:
+    """
+    Flatten aggregator.py's reference_map.json ({category: {name: {forms, reports, queries,
+    macros, modules, tables}}}) into one document per item — the shape Layer 2
+    (db/layer1_repo._get_graph_context) reads from the ``dependency_graph`` collection.
+    """
+    opened_by: dict[str, set[str]] = {}
+    for refs_by_name in reference_map.values():
+        for name, refs in (refs_by_name or {}).items():
+            for target in (refs or {}).get("forms", []) + (refs or {}).get("reports", []):
+                opened_by.setdefault(target, set()).add(name)
+
+    docs = []
+    for category, item_type in (("forms", "form"), ("reports", "report"), ("macros", "macro"),
+                                ("modules", "module"), ("queries", "query")):
+        for name, refs in (reference_map.get(category) or {}).items():
+            refs = refs or {}
+            docs.append({
+                "name": name,
+                "type": item_type,
+                "opens_forms": sorted(refs.get("forms", [])),
+                "opens_reports": sorted(refs.get("reports", [])),
+                "uses_queries": sorted(refs.get("queries", [])),
+                "calls_modules": sorted(refs.get("modules", [])),
+                "direct_macros": sorted(refs.get("macros", [])),
+                "uses_tables": sorted(refs.get("tables", [])),
+                "opened_by": sorted(opened_by.get(name, ())),
+            })
+    return docs
+
+
 def parse_file(file_path: Path) -> dict:
     """Parses JSON or JSONL format."""
     text = file_path.read_text(encoding="utf-8").lstrip("\ufeff")
@@ -136,7 +167,9 @@ def main() -> int:
     if args.dry_run:
         print(f"[DRY-RUN] Would seed these directories -> {', '.join(folders)}")
 
-    print(f"MongoDB URI -> {mongo_uri}")
+    # This output is streamed to the web console: never print the password.
+    from common.config import redact_uri
+    print(f"MongoDB URI -> {redact_uri(mongo_uri)}")
     print(f"Database    -> {mongo_db_name}\n")
 
     client = None
@@ -157,6 +190,10 @@ def main() -> int:
     for folder_name in folders:
         folder_path = DATABASE_JSON_DIR / folder_name
         collection_name = folder_name
+        if not folder_path.is_dir():
+            # An Access app without e.g. reports or macros has nothing to seed there.
+            print(f"📂 [{collection_name}] no folder, skipped")
+            continue
 
         # Find .json or .jsonl files (exclude .gitkeep)
         files = sorted([
@@ -222,6 +259,14 @@ def main() -> int:
             )
             print("   ✅ upserted=1  skipped=0  errors=0")
             total_ok += 1
+
+            # Per-item dependency context read by Layer 2 (L1_COLLECTION_GRAPH) and Layer 5.
+            graph_docs = build_dependency_graph(ref_map_data)
+            col = db["dependency_graph"]
+            for doc in graph_docs:
+                col.update_one({"name": doc["name"], "type": doc["type"]}, {"$set": doc}, upsert=True)
+            print(f"📂 [dependency_graph] {len(graph_docs)} item(s)\n   ✅ upserted={len(graph_docs)}")
+            total_ok += len(graph_docs)
         except Exception as e:
             print(f"   ❌ reference_map.json: {e}", file=sys.stderr)
             total_err += 1

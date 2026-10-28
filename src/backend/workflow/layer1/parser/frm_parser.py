@@ -20,7 +20,7 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[5]
-vba_dir = ROOT / "src" / "VBA" / "vba_source"
+vba_dir = ROOT / "src" / "vba" / "vba_source"
 if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
@@ -1386,8 +1386,8 @@ def run_batch(input_dir: Path, output_dir: Path, config_opt: str | None) -> int:
         return 1
     frm_paths = sorted(input_dir.glob("*.frm"))
     if not frm_paths:
-        print(f"[ERROR] No .frm files in {input_dir}", file=sys.stderr)
-        return 1
+        print(f"[WARN] No .frm files in {input_dir} — nothing to parse.", file=sys.stderr)
+        return 0
     config_path = resolve_config_path(config_opt, frm_paths[0])
     config = json.loads(config_path.read_text(encoding="utf-8"))
     output_dir.mkdir(parents=True, exist_ok=True)
