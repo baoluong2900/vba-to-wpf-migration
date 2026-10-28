@@ -5,21 +5,14 @@ const nextConfig = {
     maxInactiveAge: 15 * 1000,
     pagesBufferLength: 2,
   },
-  // Prevent stale CSS/JS on new deployments across machines
+  // Prevent stale pages after a redeploy: HTML and API responses are never cached.
+  // /_next/* is excluded on purpose — Next.js already serves hashed static assets
+  // as immutable, and overriding Cache-Control there breaks dev mode (and would
+  // otherwise force no-store onto every JS/CSS chunk).
   async headers() {
     return [
       {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            // Immutable for hashed static assets (safe), but revalidate HTML
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/:path*',
+        source: '/((?!_next/).*)',
         headers: [
           {
             key: 'Cache-Control',

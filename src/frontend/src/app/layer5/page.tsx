@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Play, Eye, Cpu, Settings2, DatabaseZap, BarChart3, Download, Brain, Loader2, CheckCircle, AlertCircle, Search, ChevronDown, ChevronRight, Terminal, Bot, FileSpreadsheet, Database, Sparkles } from "lucide-react";
+import { Play, Eye, Settings2, DatabaseZap, BarChart3, Download, Brain, Loader2, Search, ChevronDown, ChevronRight, Terminal } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 // @ts-ignore
@@ -9,6 +9,7 @@ import { ReactFlow, Controls, Background, Node, Edge, useNodesState, useEdgesSta
 import "@xyflow/react/dist/style.css";
 import { L5AgentNode } from "../../components/nodes/L5AgentNode";
 import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
+import { readSseStream } from "../../lib/sse";
 
 // ── Types ─────────────────────────────────────
 interface AgentDef { key: string; label: string; icon: string; color: string; description: string; inputs: string[]; outputs: string[]; defaultModel: string; }
@@ -51,27 +52,6 @@ interface TokenStats {
     timestamp: string;
   }[];
 }
-interface TestRunResult {
-  agent: string;
-  formName: string;
-  timestamp: string;
-  duration: number;
-  ran: boolean;
-  success: boolean;
-  errors: string;
-  output: string;
-  filter: string;
-  project: string;
-  cases: {
-    name: string;
-    className: string;
-    outcome: string;
-    duration: string;
-    output: string;
-    errorMessage: string;
-    stackTrace: string;
-  }[];
-}
 
 // ── Agent Definitions ─────────────────────────
 const AGENTS: AgentDef[] = [
@@ -82,20 +62,16 @@ const AGENTS: AgentDef[] = [
   { key: "ui",       label: "Agent UI",        icon: "🎨", color: "#ec4899", description: "WPF XAML View",                   inputs: ["BD layout", "MongoDB controls"],  outputs: ["Window.xaml"],                           defaultModel: "deepseek-v4-pro" },
   { key: "report",   label: "Agent Report",    icon: "📊", color: "#f97316", description: "WPF Report RDLC/XAML",            inputs: ["BD layout", "DD report specs"],   outputs: ["Report.xaml", "Report.rdlc"],            defaultModel: "deepseek-v4-pro" },
   { key: "graphview",label: "Agent GraphView", icon: "🔍", color: "#6366f1", description: "Mapping + Dependency",             inputs: ["FE graph", "All outputs"],        outputs: ["mapping.json", "dependency.json"],       defaultModel: "deepseek-v4-flash" },
-  { key: "test",     label: "Agent Test",      icon: "🧪", color: "#10b981", description: "Test + Golden Master",            inputs: ["BD/DD JSON", "All C#/XAML"],      outputs: ["Tests/*.cs", "certificate.json"],        defaultModel: "deepseek-v4-flash" },
 ];
 
-const PIPELINE_ORDER = ["repo", "service", "logic", "ui", "graphview", "test"];
-
 // ── Node Positions ────────────────────────────
-// Form mode: full pipeline (Repo → Service → Logic → UI → GraphView → Test)
+// Form mode: full pipeline (Repo → Service → Logic → UI → GraphView)
 const NODE_POSITIONS_FORM: Record<string, { x: number; y: number }> = {
   repo:      { x: 50,   y: 20  },
   service:   { x: 370,  y: 20  },
   logic:     { x: 690,  y: 20  },
   ui:        { x: 1010, y: 20  },
   graphview: { x: 430,  y: 310 },
-  test:      { x: 430,  y: 590 },
 };
 
 // Report mode: same layout but Agent Report replaces Agent UI
@@ -105,7 +81,6 @@ const NODE_POSITIONS_REPORT: Record<string, { x: number; y: number }> = {
   logic:     { x: 690,  y: 20  },
   report:    { x: 1010, y: 20  },
   graphview: { x: 430,  y: 310 },
-  test:      { x: 430,  y: 590 },
 };
 
 // Macro/Module mode: Mapping → Repo (side by side)
@@ -120,17 +95,13 @@ export default function Layer5Page() {
   const [macroModuleName, setMacroModuleName] = useState("");
   const [mappingType, setMappingType] = useState<"all" | "macro" | "module">("all");
   const [dbScreens, setDbScreens] = useState<{ key: string; name: string; type?: string }[]>([]);
-  const [queryName, setQueryName] = useState("");
-  const [dbQueries, setDbQueries] = useState<{ name: string }[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Record<string, AgentRunStatus>>({});
   const [agentModels, setAgentModels] = useState<Record<string, string>>({});
-  const [testAgentFilter, setTestAgentFilter] = useState("all");
   const [modelList, setModelList] = useState<ModelOption[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [previewContent, setPreviewContent] = useState<{ title: string; content: string } | null>(null);
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null);
-  const [testResult, setTestResult] = useState<TestRunResult | null>(null);
-  const [rightTab, setRightTab] = useState<"logs" | "preview" | "tests" | "tokens" | "logic">("logs");
+  const [rightTab, setRightTab] = useState<"logs" | "preview" | "tokens" | "logic">("logs");
   const [sidebarWidth, setSidebarWidth] = useState(420);
   const [terminalCollapsed, setTerminalCollapsed] = useState(false);
 
@@ -197,34 +168,29 @@ export default function Layer5Page() {
         signal: ctrl.signal,
       });
       if (!resp.ok || !resp.body) throw new Error(`HTTP ${resp.status}`);
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const chunks = buf.split("\n\n"); buf = chunks.pop() ?? "";
-        for (const chunk of chunks) {
-          const line = chunk.replace(/^data:\s*/, "").trim();
-          if (!line) continue;
-          try {
-            const ev = JSON.parse(line);
-            const t = formatLogTime();
-            if (ev.type === "log") {
-              setLogicLogs(prev => [...prev, { ts: ev.ts ?? t, level: ev.level ?? "INFO", message: ev.message }]);
-            } else if (ev.type === "done") {
-              setLogicMethods(ev.methods ?? []);
-              setLogicSummary(ev.summary ?? null);
-              if (ev.cs_content) setLogicPreview({ title: ev.cs_file, content: ev.cs_content });
-              const ok = ev.success;
-              addLog(ok ? "SUCCESS" : "ERROR", `[logic] ${ok ? "✅" : "❌"} ${screenName} — ${ev.stats?.patched ?? 0} patched, ${ev.stats?.skipped ?? 0} skipped`, "logic");
-              setAgentStatuses(prev => ({ ...prev, logic: { status: ok ? "success" : "error" } }));
-            } else if (ev.type === "error") {
-              setLogicLogs(prev => [...prev, { ts: t, level: "ERROR", message: ev.message }]);
-            }
-          } catch { /* ignore */ }
+      let finished = false;
+      await readSseStream(resp.body, (ev) => {
+        const t = formatLogTime();
+        if (ev.type === "log") {
+          setLogicLogs(prev => [...prev, { ts: ev.ts ?? t, level: ev.level ?? "INFO", message: ev.message }]);
+        } else if (ev.type === "done") {
+          finished = true;
+          setLogicMethods(ev.methods ?? []);
+          setLogicSummary(ev.summary && typeof ev.summary === "object" ? ev.summary : null);
+          if (ev.cs_content) setLogicPreview({ title: ev.cs_file, content: ev.cs_content });
+          const ok = ev.success;
+          addLog(ok ? "SUCCESS" : "ERROR", `[logic] ${ok ? "✅" : "❌"} ${screenName} — ${ev.stats?.patched ?? 0} patched, ${ev.stats?.skipped ?? 0} skipped`, "logic");
+          setAgentStatuses(prev => ({ ...prev, logic: { status: ok ? "success" : "error" } }));
+        } else if (ev.type === "error") {
+          finished = true;
+          setLogicLogs(prev => [...prev, { ts: t, level: "ERROR", message: ev.message }]);
+          addLog("ERROR", `[logic] ❌ ${screenName} — ${ev.message}`, "logic");
+          setAgentStatuses(prev => ({ ...prev, logic: { status: "error", message: ev.message } }));
         }
+      });
+      if (!finished) {
+        addLog("ERROR", `[logic] ❌ ${screenName} — stream ended without a result`, "logic");
+        setAgentStatuses(prev => ({ ...prev, logic: { status: "error" } }));
       }
     } catch (err: any) {
       if (err.name !== "AbortError") {
@@ -250,21 +216,9 @@ export default function Layer5Page() {
     }).catch(err => addLog("ERROR", `DB: ${err.message}`));
   }, []);
 
-  // Fetch queries list from MongoDB queries_v2
+  // Fetch initial token stats (logs/token_report.json)
   useEffect(() => {
-    addLog("INFO", "Loading queries from MongoDB...");
-    fetch("/api/v1/layer3/queries").then(r => r.json()).then(d => {
-      if (d.success && Array.isArray(d.queries)) {
-        setDbQueries(d.queries);
-        if (d.queries.length > 0) setQueryName(d.queries[0].name);
-        addLog("SUCCESS", `Loaded ${d.queries.length} queries (queries_v2)`);
-      }
-    }).catch(err => addLog("WARN", `Queries: ${err.message}`));
-  }, []);
-
-  // Fetch initial token stats
-  useEffect(() => {
-    fetch("/api/v1/layer5/run-agent", { method: "POST", body: JSON.stringify({ agent: "repo", form_name: "INIT", dry_run: true }) })
+    fetch("/api/v1/layer5/token-stats")
       .then(r => r.json())
       .then(d => { if (d.token_stats) setTokenStats(d.token_stats); })
       .catch(() => { });
@@ -277,11 +231,6 @@ export default function Layer5Page() {
     document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
     return () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); };
   }, []);
-
-  // Form list for combobox
-  const formList = useMemo(() => {
-    return dbScreens.filter(s => s.type === "form" || (!s.type && s.name.startsWith("F")));
-  }, [dbScreens]);
 
   // Auto-reset selected macro/module target if it is not in the filtered type list
   useEffect(() => {
@@ -351,86 +300,54 @@ export default function Layer5Page() {
 
   // Run agent — moi agent doc lap, khong phu thuoc nhau
   const runAgent = useCallback(async (agentKey: string) => {
-    const isRepo = agentKey === "repo";
     const isMapping = agentKey === "mapping";
-    const inputTarget = isMapping ? (macroModuleName || "ALL") : (screenName || (isRepo ? queryName : ""));
+    const inputTarget = isMapping ? (macroModuleName || "ALL") : screenName;
 
-    if (!isMapping && !inputTarget) {
-      addLog("WARN", `[${agentKey}] Chưa chọn mục tiêu (Form/Query). Hãy chọn từ danh sách.`);
+    if (!inputTarget) {
+      addLog("WARN", `[${agentKey}] Chưa chọn mục tiêu (Form). Hãy chọn từ danh sách.`);
       return;
     }
 
-    // Logic agent → dùng SSE stream qua run-logic, show tab Logic
+    // Logic agent → SSE stream via run-logic (Logic tab); awaited so the pipeline stays in order
     if (agentKey === "logic") {
-      runLogicAgent();
+      await runLogicAgent();
       return;
     }
 
     setAgentStatuses(prev => ({ ...prev, [agentKey]: { status: "running" } }));
     const model = agentModels[agentKey] || AGENTS.find(a => a.key === agentKey)?.defaultModel || "";
     addLog("INFO", `[${agentKey}] input=${inputTarget} model=${model}`, agentKey);
-    if (agentKey === "test") addLog("INFO", `[test] scope=${testAgentFilter}`, agentKey);
     setRightTab("logs");
     const start = Date.now();
     try {
       const res = await fetch("/api/v1/layer5/run-agent", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agent: agentKey,
-          form_name: isMapping ? (macroModuleName || "ALL") : screenName,
-          model,
-          ...(agentKey === "test" && testAgentFilter !== "all" ? { test_agents: [testAgentFilter] } : {}),
-          ...(isRepo && queryName ? { query_name: queryName } : {}),
-        }),
+        body: JSON.stringify({ agent: agentKey, form_name: inputTarget, model }),
       });
       const data = await res.json();
       const duration = Date.now() - start;
-      const tests = data.tests;
-      if (tests?.ran) {
-        setTestResult({
-          agent: agentKey,
-          formName: screenName,
-          timestamp: new Date().toLocaleString("vi-VN", { hour12: false }),
-          duration,
-          ran: Boolean(tests.ran),
-          success: Boolean(tests.success),
-          errors: tests.errors || "",
-          output: tests.output || "",
-          filter: tests.filter || "",
-          project: tests.project || "",
-          cases: Array.isArray(tests.cases) ? tests.cases : [],
-        });
-        setRightTab("tests");
+      const files = data.files || [];
+      const build = data.build;
+      if (data.token_stats) setTokenStats(data.token_stats);
+      files.forEach((f: any) => {
+        const dest = f.dest ? ` → source/vba_brain/${f.dest}` : "";
+        const icon = f.copied ? "📂" : "📄";
+        addLog("INFO", `  ${icon} ${f.path}${dest}`, agentKey);
+      });
+      // Build result
+      if (build?.ran) {
+        if (build.success) {
+          addLog("SUCCESS", `  🔨 dotnet build OK (${build.iterations} attempt${build.iterations > 1 ? "s" : ""})`, agentKey);
+        } else {
+          addLog("ERROR", `  🔨 dotnet build FAILED (${build.iterations} attempt${build.iterations > 1 ? "s" : ""})`, agentKey);
+          const lastErr = build.log?.[build.log.length - 1]?.errors;
+          if (lastErr) addLog("INFO", `  ${lastErr.slice(0, 300)}`, agentKey);
+        }
       }
       if (data.success) {
-        const files = data.files || [];
         const copiedCount = data.copied ?? 0;
-        const build = data.build;
-        if (data.token_stats) setTokenStats(data.token_stats);
         setAgentStatuses(prev => ({ ...prev, [agentKey]: { status: "success", files, duration } }));
         addLog("SUCCESS", `✅ ${agentKey}: ${files.length} file(s) in ${(duration / 1000).toFixed(1)}s — ${copiedCount} copied to source`, agentKey);
-        files.forEach((f: any) => {
-          const dest = f.dest ? ` → source/vba_brain/${f.dest}` : "";
-          const icon = f.copied ? "📂" : "📄";
-          addLog("INFO", `  ${icon} ${f.path}${dest}`, agentKey);
-        });
-        // Build result
-        if (build?.ran) {
-          if (build.success) {
-            addLog("SUCCESS", `  🔨 dotnet build OK (${build.iterations} attempt${build.iterations > 1 ? "s" : ""})`, agentKey);
-          } else {
-            addLog("ERROR", `  🔨 dotnet build FAILED after ${build.iterations} AI fix attempt(s)`, agentKey);
-            const lastErr = build.log?.[build.log.length - 1]?.errors;
-            if (lastErr) addLog("INFO", `  ${lastErr.slice(0, 300)}`, agentKey);
-          }
-        }
-        if (tests?.ran) {
-          if (tests.success) {
-            addLog("SUCCESS", `  Test PASS: dotnet test ${tests.filter ? `--filter "${tests.filter}"` : ""}`, agentKey);
-          } else {
-            addLog("ERROR", `  Test FAIL: ${tests.errors || "See Tests tab for details"}`, agentKey);
-          }
-        }
         const review = data.graphview_review;
         if (agentKey === "graphview" && review) {
           const s = review.summary || {};
@@ -452,32 +369,21 @@ export default function Layer5Page() {
           });
         }
       } else {
-        setAgentStatuses(prev => ({ ...prev, [agentKey]: { status: "error", message: data.error, duration } }));
+        setAgentStatuses(prev => ({ ...prev, [agentKey]: { status: "error", message: data.error, files, duration } }));
         addLog("ERROR", `❌ ${agentKey}: ${data.error}`, agentKey);
-        if (tests?.ran) {
-          addLog("ERROR", "  Test output is available in the Tests tab", agentKey);
-        }
       }
 
     } catch (err: any) {
       setAgentStatuses(prev => ({ ...prev, [agentKey]: { status: "error", message: err.message } }));
       addLog("ERROR", `${agentKey}: ${err.message}`, agentKey);
     }
-  }, [screenName, queryName, agentModels, testAgentFilter, addLog, runLogicAgent, macroModuleName]);
-
-  // Run full pipeline
-  const runPipeline = useCallback(async () => {
-    addLog("INFO", `══════ PIPELINE START: ${screenName} ══════`);
-    for (const key of PIPELINE_ORDER) {
-      await runAgent(key);
-    }
-    addLog("SUCCESS", `══════ PIPELINE COMPLETE ══════`);
-  }, [screenName, runAgent, addLog]);
+  }, [screenName, agentModels, addLog, runLogicAgent, macroModuleName]);
 
   // View files
   const viewFiles = useCallback(async (agentKey: string, type: "inputs" | "outputs") => {
     try {
-      const res = await fetch(`/api/v1/layer5/files?agent=${agentKey}&type=${type}&form=${screenName}`);
+      const qs = new URLSearchParams({ agent: agentKey, type, form: screenName });
+      const res = await fetch(`/api/v1/layer5/files?${qs}`);
       const data = await res.json();
       setPreviewContent({
         title: `${agentKey}/${type}/${screenName}`,
@@ -516,39 +422,37 @@ export default function Layer5Page() {
   const isMacroModuleMode = selectedItemType === "macro" || selectedItemType === "module";
   const isReportMode      = selectedItemType === "report";
 
+  // The agents shown for the current mode, in run order (Report replaces UI for reports)
+  const pipelineOrder = useMemo(
+    () => isMacroModuleMode
+      ? ["mapping", "repo"]
+      : ["repo", "service", "logic", isReportMode ? "report" : "ui", "graphview"],
+    [isMacroModuleMode, isReportMode]
+  );
+
+  // Run full pipeline
+  const runPipeline = useCallback(async () => {
+    addLog("INFO", `══════ PIPELINE START: ${screenName} ══════`);
+    for (const key of pipelineOrder) {
+      await runAgent(key);
+    }
+    addLog("SUCCESS", `══════ PIPELINE COMPLETE ══════`);
+  }, [screenName, runAgent, addLog, pipelineOrder]);
+
   // ── ReactFlow Nodes — filtered by mode ───────
   const rfNodes: Node[] = useMemo(() => {
-    // Which agents to show
-    let visibleKeys: string[];
-    let posMap: Record<string, { x: number; y: number }>;
-
-    if (isMacroModuleMode) {
-      visibleKeys = ["mapping", "repo"];
-      posMap = NODE_POSITIONS_MACRO;
-    } else if (isReportMode) {
-      // Report: same pipeline but Agent UI → Agent Report
-      visibleKeys = ["repo", "service", "logic", "report", "graphview", "test"];
-      posMap = NODE_POSITIONS_REPORT;
-    } else {
-      visibleKeys = ["repo", "service", "logic", "ui", "graphview", "test"];
-      posMap = NODE_POSITIONS_FORM;
-    }
+    const posMap = isMacroModuleMode ? NODE_POSITIONS_MACRO : isReportMode ? NODE_POSITIONS_REPORT : NODE_POSITIONS_FORM;
 
     return AGENTS
-      .filter(agent => visibleKeys.includes(agent.key))
+      .filter(agent => pipelineOrder.includes(agent.key))
       .map(agent => {
-        const isRepo    = agent.key === "repo";
-        const isMapping = agent.key === "mapping";
+        const selectedInput = isMacroModuleMode ? (screenName || "ALL") : screenName;
 
-        const selectedInput = isMacroModuleMode
-          ? (screenName || "ALL")
-          : (screenName || (isRepo ? queryName : ""));
-
-        const isRunnable = isMacroModuleMode ? !!screenName : !!selectedInput;
+        const isRunnable = !!screenName;
         const inputLabel = isMacroModuleMode
           ? (selectedItemType === "macro" ? "Macro" : "Module")
           : isReportMode ? "Report"
-          : (screenName ? "Form" : (isRepo ? "Query" : "Form"));
+          : "Form";
 
         return {
           id: agent.key,
@@ -576,7 +480,7 @@ export default function Layer5Page() {
           },
         };
       });
-  }, [agentStatuses, screenName, queryName, isMacroModuleMode, isReportMode, selectedItemType, runAgent, viewFiles, agentModels, modelList, mappingType, macroModuleList]);
+  }, [agentStatuses, screenName, pipelineOrder, isMacroModuleMode, isReportMode, selectedItemType, runAgent, viewFiles, agentModels, modelList, mappingType, macroModuleList]);
 
   const rfEdges: Edge[] = useMemo(() => {
     const edgeStyle = (src: string) => {
@@ -603,7 +507,6 @@ export default function Layer5Page() {
       { id: "e-service-gv",    source: "service",     sourceHandle: "bottom", target: "graphview",   targetHandle: "top",  animated: isDone("service"),     style: { ...edgeStyle("service"),     strokeDasharray: "5 3" }, type: "smoothstep" },
       { id: "e-logic-gv",      source: "logic",       sourceHandle: "bottom", target: "graphview",   targetHandle: "top",  animated: isDone("logic"),       style: { ...edgeStyle("logic"),       strokeDasharray: "5 3" }, type: "smoothstep" },
       { id: "e-last-gv",       source: lastRowKey,    sourceHandle: "bottom", target: "graphview",   targetHandle: "top",  animated: isDone(lastRowKey),    style: { ...edgeStyle(lastRowKey),    strokeDasharray: "5 3" }, type: "smoothstep" },
-      { id: "e-gv-test",       source: "graphview",   sourceHandle: "bottom", target: "test",        targetHandle: "top",  animated: isDone("graphview"),   style: edgeStyle("graphview") },
     ];
   }, [agentStatuses, isMacroModuleMode, isReportMode]);
 
@@ -634,20 +537,12 @@ export default function Layer5Page() {
   }, [rfEdges, setEdges]);
 
   const pipelineProgress = useMemo(() => {
-    const total = PIPELINE_ORDER.length;
-    const done = PIPELINE_ORDER.filter(k => agentStatuses[k]?.status === "success").length;
+    const total = pipelineOrder.length;
+    const done = pipelineOrder.filter(k => agentStatuses[k]?.status === "success").length;
     return { done, total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
-  }, [agentStatuses]);
+  }, [agentStatuses, pipelineOrder]);
 
   const getAgentColor = (agent?: string) => agent ? AGENTS.find(a => a.key === agent)?.color : undefined;
-  const testSummary = useMemo(() => {
-    const cases = testResult?.cases || [];
-    const passed = cases.filter(c => c.outcome === "Passed").length;
-    const failed = cases.filter(c => c.outcome === "Failed").length;
-    const skipped = cases.filter(c => c.outcome === "NotExecuted" || c.outcome === "Skipped").length;
-    return { total: cases.length, passed, failed, skipped };
-  }, [testResult]);
-  const getTestOutcomeColor = (outcome: string) => outcome === "Passed" ? "var(--success)" : outcome === "Failed" ? "var(--danger)" : "var(--warning)";
 
   return (
     <>
@@ -835,10 +730,6 @@ export default function Layer5Page() {
               onClick={() => setRightTab("preview")}>
               <Eye size={13} /> Preview
             </button>
-            <button className={`ws-tab ${rightTab === "tests" ? "active" : ""}`} style={{ ['--ws-accent' as any]: 'var(--success)' }}
-              onClick={() => setRightTab("tests")}>
-              <BarChart3 size={13} /> Tests
-            </button>
             <button className={`ws-tab ${rightTab === "tokens" ? "active" : ""}`}
               onClick={() => setRightTab("tokens")}>
               <BarChart3 size={13} /> Tokens
@@ -882,110 +773,6 @@ export default function Layer5Page() {
                 <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", marginTop: 40 }}>
                   <Eye size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} /><br />
                   Click 👁 or 📄 on a node to preview files
-                </div>
-              )}
-            </div>
-          )}
-
-          {rightTab === "tests" && (
-            <div className="ws-panel-in" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, overflow: "hidden", gap: 12 }}>
-              {testResult ? (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: testResult.success ? "var(--success)" : "var(--danger)" }}>
-                        {testResult.success ? "PASS" : "FAIL"} - dotnet test
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>
-                        {testResult.formName} - {(testResult.duration / 1000).toFixed(1)}s - {testResult.timestamp}
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: testResult.success ? "var(--success)" : "var(--danger)", background: testResult.success ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${testResult.success ? "var(--success)" : "var(--danger)"}`, borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>
-                      {testResult.success ? "SUCCESS" : "FAILED"}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, fontSize: 11, color: "var(--text-main)" }}>
-                    <div><span style={{ color: "var(--text-muted)" }}>Project:</span> {testResult.project || "vba_brain.Tests"}</div>
-                    <div><span style={{ color: "var(--text-muted)" }}>Filter:</span> {testResult.filter || "all tests"}</div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                    {[
-                      ["Total", testSummary.total, "var(--text-main)"],
-                      ["Passed", testSummary.passed, "var(--success)"],
-                      ["Failed", testSummary.failed, "var(--danger)"],
-                      ["Skipped", testSummary.skipped, "var(--warning)"],
-                    ].map(([label, value, color]) => (
-                      <div key={String(label)} style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", borderRadius: 6, padding: "8px 10px" }}>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase" }}>{label}</div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: String(color) }}>{String(value)}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ flex: 1, minHeight: 220, overflow: "auto", border: "1px solid var(--border-color)", borderRadius: 6, background: "var(--bg-dark)" }}>
-                    {testResult.cases.length > 0 ? (
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-                        <thead style={{ position: "sticky", top: 0, background: "var(--bg-dark)", zIndex: 1 }}>
-                          <tr style={{ textAlign: "left" }}>
-                            <th style={{ padding: "8px 10px", color: "var(--text-muted)", width: 74 }}>Status</th>
-                            <th style={{ padding: "8px 10px", color: "var(--text-muted)" }}>Test case</th>
-                            <th style={{ padding: "8px 10px", color: "var(--text-muted)", width: 88 }}>Duration</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {testResult.cases.map((testCase, idx) => (
-                            <tr key={`${testCase.className}-${testCase.name}-${idx}`} style={{ borderTop: "1px solid var(--border-color)", verticalAlign: "top" }}>
-                              <td style={{ padding: "8px 10px" }}>
-                                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 58, padding: "2px 7px", borderRadius: 999, fontSize: 10, fontWeight: 800, color: getTestOutcomeColor(testCase.outcome), background: testCase.outcome === "Passed" ? "rgba(16, 185, 129, 0.15)" : testCase.outcome === "Failed" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)", border: `1px solid ${getTestOutcomeColor(testCase.outcome)}` }}>
-                                  {testCase.outcome}
-                                </span>
-                              </td>
-                              <td style={{ padding: "8px 10px", color: "var(--text-main)" }}>
-                                <div style={{ fontWeight: 700, lineHeight: 1.4, wordBreak: "break-word" }}>{testCase.name}</div>
-                                {testCase.className && <div style={{ color: "var(--text-muted)", marginTop: 2, wordBreak: "break-word" }}>{testCase.className}</div>}
-                                {testCase.errorMessage && (
-                                  <pre style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", color: "var(--danger)", background: "var(--bg-dark)", border: "1px solid var(--border-color)", borderRadius: 4, padding: 8, fontFamily: "monospace", fontSize: 10 }}>
-                                    {testCase.errorMessage}
-                                  </pre>
-                                )}
-                                {testCase.output && (
-                                  <pre style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", color: "var(--success)", background: "var(--bg-dark)", border: "1px solid var(--border-color)", borderRadius: 4, padding: 8, fontFamily: "monospace", fontSize: 10 }}>
-                                    {testCase.output}
-                                  </pre>
-                                )}
-                              </td>
-                              <td style={{ padding: "8px 10px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{testCase.duration || "-"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div style={{ color: "var(--text-muted)", fontSize: 12, textAlign: "center", padding: 24 }}>
-                        No testcase details found. Build may have failed before test execution.
-                      </div>
-                    )}
-                  </div>
-
-                  {testResult.errors && (
-                    <>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--danger)" }}>Errors</div>
-                      <textarea readOnly value={testResult.errors}
-                        style={{ minHeight: 130, fontFamily: "monospace", fontSize: 11, color: "var(--danger)", background: "var(--bg-dark)", padding: 12, borderRadius: 6, border: "1px solid var(--border-color)", resize: "vertical", whiteSpace: "pre", overflowX: "auto" }} />
-                    </>
-                  )}
-
-                  <details style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                    <summary style={{ cursor: "pointer", color: "var(--success)", fontWeight: 700 }}>Raw dotnet output</summary>
-                    <textarea readOnly value={testResult.output || "No dotnet test output."}
-                      style={{ width: "100%", height: 120, marginTop: 8, fontFamily: "monospace", fontSize: 11, color: "var(--success)", background: "var(--bg-dark)", padding: 12, borderRadius: 6, border: "1px solid var(--border-color)", resize: "vertical", whiteSpace: "pre", overflowX: "auto" }} />
-                  </details>
-                </>
-              ) : (
-                <div style={{ color: "var(--text-muted)", fontSize: 13, textAlign: "center", marginTop: 40 }}>
-                  <BarChart3 size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} /><br />
-                  Run Agent Test to see dotnet test results
                 </div>
               )}
             </div>

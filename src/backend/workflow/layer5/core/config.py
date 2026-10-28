@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 import sys
-import json
 from pathlib import Path
 
 # Ensure backend root is in sys.path
@@ -20,11 +19,9 @@ if str(_BACKEND_DIR) not in sys.path:
 
 # Import unified configuration
 from common.config import (
-    STAGE as _COMMON_STAGE,
+    AVAILABLE_MODELS as _COMMON_AVAILABLE_MODELS,
     MONGO_URI as _COMMON_MONGO_URI,
     MONGO_DB as _COMMON_MONGO_DB,
-    ALIBABA_API_KEY,
-    SOURCE_LANGUAGE,
     TARGET_LANGUAGE,
     ModelConfig,
     QWEN3_CODER_PLUS,
@@ -44,9 +41,10 @@ from common.config import (
 # ──────────────────────────────────────────────
 LAYER5_DIR = _LAYER5_DIR
 WORKFLOW_DIR = _WORKFLOW_DIR
-CONFIG_FILE = Path("config.json")
-if not CONFIG_FILE.exists():
-    CONFIG_FILE = WORKFLOW_DIR / "config.json"
+LAYER4_INPUTS_DIR = LAYER5_DIR.parent / "layer4" / "inputs"          # BD_json/screen, DD_json/form
+UI_EVENT_MAP_PATH = LAYER5_DIR / "agents" / "ui" / "configs" / "ui_event_map.json"   # F-ID registry
+SERVICE_OUTPUTS_DIR = LAYER5_DIR / "agents" / "service" / "outputs"
+SERVICE_CONTRACT_BACKUP_DIR = WORKFLOW_DIR / "data" / "database_json" / "agent_service"
 
 
 def _find_avalonia_project_dir() -> Path:
@@ -71,16 +69,13 @@ VIEWMODELS_DIR = UI_PROJECT_DIR / "ViewModels"
 SERVICES_DIR = UI_PROJECT_DIR / "Services"
 DOMAIN_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Domain"
 APPLICATION_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Application"
-INFRASTRUCTURE_PROJECT_DIR = AVALONIA_PROJECT_DIR / "vba_brain.Infrastructure"
 
 # Back-compat alias (solution root) — used by file_writer / build_verify / orchestrator
 vba_brain_PROJECT_DIR = AVALONIA_PROJECT_DIR
 
 # ──────────────────────────────────────────────
-# Localization
+# Localization (re-exported from common)
 # ──────────────────────────────────────────────
-# Re-exported from common
-SOURCE_LANGUAGE = SOURCE_LANGUAGE
 TARGET_LANGUAGE = TARGET_LANGUAGE
 
 # ──────────────────────────────────────────────
@@ -93,11 +88,15 @@ MONGO_DB: str = _COMMON_MONGO_DB
 COL_FORMS: str = "forms"
 COL_QUERIES: str = "queries_v2"
 COL_MACROS: str = "macros"
-COL_TABLES: str = "tables"
-COL_GRAPH: str = "dependency_graph"
-# Layer 5 — design / agent artifacts stored in the same MongoDB database
+COL_TABLES: str = os.getenv("MONGO_COL_TABLES", "tables")
+COL_MODULES: str = os.getenv("MONGO_COL_MODULES", "modules")
+COL_REPORTS: str = os.getenv("MONGO_COL_REPORTS", "reports")
+# Layer 2 / Layer 5 — design / agent artifacts stored in the same MongoDB database
+COL_BDS: str = os.getenv("MONGO_COL_BDS", "bds")
 COL_DDS: str = os.getenv("MONGO_COL_DDS", "dds")
 COL_AGENT_REPO: str = os.getenv("MONGO_COL_AGENT_REPO", "agent_repo")
+COL_AGENT_SERVICE: str = os.getenv("MONGO_COL_AGENT_SERVICE", "agent_service")
+COL_AGENT_GRAPHVIEW: str = os.getenv("MONGO_COL_AGENT_GRAPHVIEW", "agent_graphview")
 
 # ── Dynamic Model Routing ──────────────────────
 # Allow overriding models dynamically via environment variables or config.json
@@ -119,8 +118,10 @@ L5_ROUTING = {
     "mapper":     get_model(LAYER5_VIEWMODEL_MODEL_NAME, QWEN_PLUS_20250728),
 }
 
-# Available models for explicit selection
+# Available models for explicit selection (--model): everything Layers 2/3 resolve (incl. the
+# config.json llm_providers.<p>.models list), with the Layer 5 entries below as overrides.
 AVAILABLE_MODELS: dict[str, ModelConfig] = {
+    **_COMMON_AVAILABLE_MODELS,
     QWEN3_CODER_PLUS.model_id: QWEN3_CODER_PLUS,
     QWEN3_CODER_480B.model_id: QWEN3_CODER_480B,
     QWEN3_CODER_NEXT.model_id: QWEN3_CODER_NEXT,
@@ -131,9 +132,7 @@ AVAILABLE_MODELS: dict[str, ModelConfig] = {
 # ──────────────────────────────────────────────
 # Output paths
 # ──────────────────────────────────────────────
-OUTPUT_DIR = LAYER5_DIR / "output"
-TEMPLATE_DIR = LAYER5_DIR / "codegen" / "templates"
-LOG_DIR = LAYER5_DIR.parent.parent / "logs"
+OUTPUT_DIR = LAYER5_DIR / "output"      # staging for generated files with no project mapping
 
 # ──────────────────────────────────────────────
 # Retry settings

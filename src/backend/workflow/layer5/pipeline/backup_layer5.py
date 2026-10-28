@@ -1,8 +1,9 @@
 """
 backup_layer5.py — Backup Layer 5 Agent Outputs
 
-Copies the `outputs` directory of the specified agents (ui, logic, service, repo)
-to the corresponding `database_json/agent_<name>` backup directory.
+Copies the `.json` files under `agents/<name>/outputs/` of the specified agents
+(ui, logic, service, repo) to `<repo>/data/agent_<name>/`, keeping their relative paths
+(per-form files such as `<form>/method_outputs.json` must not overwrite each other).
 
 Usage:
     python backup_layer5.py
@@ -45,10 +46,11 @@ def backup_agent(agent_name: str, dry_run: bool = False) -> None:
 
     try:
         dst_dir.mkdir(parents=True, exist_ok=True)
-        # Copy only .json files (flat) — no subfolders, no .cs/.cache/.xaml
+        # Copy only .json files, keeping the outputs/ relative layout (no .cs/.cache/.xaml)
         copied = 0
         for src_file in src_dir.rglob("*.json"):
-            dst_file = dst_dir / src_file.name
+            dst_file = dst_dir / src_file.relative_to(src_dir)
+            dst_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src_file, dst_file)
             copied += 1
         logger.info("   [BACKUP] Copied %d .json files for %s", copied, agent_name)

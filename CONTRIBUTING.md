@@ -19,7 +19,7 @@ expects changes to arrive.
 git clone https://github.com/baoluong2900/vba-to-wpf-migration.git
 cd vba-to-wpf-migration
 
-pip install -r src/backend/requirements.txt
+pip install -r src/backend/requirements.txt -r src/backend/requirements-dev.txt
 (cd src/frontend && yarn install)
 
 cp config.example.json config.json      # fill in your keys
@@ -31,23 +31,35 @@ cp infa/.env.example infa/.env          # change the default passwords
 
 ## 2. Quality gates
 
-Run all three before opening a pull request. CI (`.github/workflows/ci.yml`) runs the same
-commands, so a local pass is the fastest way to a green PR.
+Run them before opening a pull request. CI (`.github/workflows/ci.yml`) runs the same commands,
+so a local pass is the fastest way to a green PR.
 
 ```bash
-# Backend — every Python file must compile
-python -m compileall -q src/backend start.py start_wpf.py clean_generated_files.py
+# Backend — correctness lint (pyflakes rules + syntax, configured in pyproject.toml)
+ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts
 
-# Frontend — lint must be clean
-cd src/frontend && yarn lint
+# Backend — tests (Layer 5 runs in its own session: layer2 and layer5 both have a top-level `agents` package)
+pytest && pytest tests/layer5
 
-# Frontend — production build must succeed
-cd src/frontend && yarn build
+# Frontend — lint, types, unit tests (node --test with TypeScript type stripping), build
+cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build
+
+# Target app — must build, and no vulnerable NuGet package
+dotnet build src/wpf/vba_brain.slnx
+dotnet list src/wpf/vba_brain.slnx package --vulnerable --include-transitive
 ```
 
-If you add Python tests, put them under a `tests/` directory and make them runnable with a bare
-`pytest` from the repo root. Layer 3's `table_converter.py` is a pure function and the best place
-to start; see [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) §2.1.
+Where tests go:
+
+- `tests/backend/` — gateway, config, Layers 1–4. `pyproject.toml` puts `src/backend` and
+  `src/backend/workflow` on `sys.path`, so import modules the way the gateway does
+  (`from layer3.sql_migration.table_converter import …`). Fake MongoDB and the LLM — tests must
+  not need a database, a network or an API key.
+- `tests/layer5/` — Layer 5 (`from agents.repo… import …`; the conftest sets the path).
+- `src/frontend/tests/*.test.ts` — pure TypeScript helpers, run with `yarn test`.
+
+If you edit `src/backend/protos/workflow.proto`, regenerate the stubs (below) with the
+`grpcio-tools` version pinned in `requirements-dev.txt`; CI fails when they drift.
 
 ---
 
@@ -142,13 +154,13 @@ them and adds a feature is very hard to review.
 
 ## 6. Where to start
 
-`docs/UPGRADE_PLAN.md` is the live backlog with severity tags. Good first contributions:
+`docs/UPGRADE_PLAN.md` is the live backlog with severity tags, and
+[`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md) §9 lists the open follow-ups from the last
+full review. Good first contributions:
 
 | Task | Where | Plan ref |
 | --- | --- | --- |
-| Pin `requirements.txt` versions (`>=` → `==`) | `src/backend/requirements.txt` | §1.4 |
-| Add `pytest.ini` + tests for `table_converter.py` | `layer3/sql_migration/` | §2.1 |
-| Add a gRPC auth-token interceptor | `api_gateway/grpc_server.py` | §1.1 |
-| Split `agent_ui.py` (124KB) by responsibility | `layer5/agents/ui/` | §3.4 |
-| Add `--only-layer` / `--from-layer` to `run_all.py` | `layer1/run_all.py` | §4.3 |
-| Delete the empty `vba_brain.UI.WPF/` folder | `src/wpf/` | §3.2 |
+| Standard `grpc.health.v1` service + readiness wait in `start.py` | `api_gateway/`, `start.py` | §2.4 |
+| Index / foreign-key migration and rollback scripts | `layer3/sql_migration/` | §4.1 |
+| Split `agent_ui.py` by responsibility | `layer5/agents/ui/` | §3.4 |
+| Tests for `graphBuilder.ts` / `wpfGraphTransform.ts` | `src/frontend/tests/` | §2.2 |

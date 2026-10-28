@@ -5,13 +5,14 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent))
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
 from core.config import MONGO_URI, MONGO_DB, AVAILABLE_MODELS
+from core.naming import validate_form_name
 
 # Import tool_report functions
 import tool_report as tr
@@ -35,10 +36,15 @@ class ReportAgent(BaseAgent):
         logger.info("[Agent Report] Starting deterministic pixel-perfect pipeline for report form: %s", form_name)
 
         try:
+            validate_form_name(form_name)
+
             # ── Step 1: Load data sources via tool_report ─────────────────
             dd_json = input.dd_json or tr.load_dd_json(form_name, MONGO_URI, MONGO_DB)
             bd_json = input.bd_json or tr.load_bd_json(form_name, MONGO_URI, MONGO_DB)
-            mongo_form = input.mongodb_data or tr.load_mongo_form(form_name, MONGO_URI, MONGO_DB)
+            # mongodb_data carries the forms document under "form" (same convention as Agent Service)
+            mongodb_data = input.mongodb_data or {}
+            mongo_form = mongodb_data.get("form") or (mongodb_data if "items" in mongodb_data else None) \
+                or tr.load_mongo_form(form_name, MONGO_URI, MONGO_DB)
 
             # Extract details
             bd_items = bd_json.get("items")
@@ -67,7 +73,8 @@ class ReportAgent(BaseAgent):
             })
 
             # ── Step 2: Deterministic UserControl & ViewModel Generation ──
-            if form_name.startswith("R"):
+            # Routed on the Layer 1 document type (forms.type "Reports"), not the "R" name prefix
+            if tr.is_report_document(form_name, mongo_form, dd_json):
                 logger.info("[Agent Report] Identified as REPORT. Generating Microsoft RDLC static layout...")
 
                 # ── LLM translation of Japanese control names ───────────────────
@@ -208,7 +215,6 @@ class ReportAgent(BaseAgent):
 # ──────────────────────────────────────────────
 async def main():
     import argparse
-    import asyncio
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 
@@ -228,6 +234,7 @@ async def main():
             print(f"   → {f.path} ({f.generator})")
     else:
         print(f"\n❌ Error: {result.error}")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

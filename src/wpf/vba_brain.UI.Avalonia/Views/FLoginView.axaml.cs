@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using System.Windows.Input;
 
 namespace vba_brain.UI.Avalonia.Views;
 
@@ -8,14 +7,17 @@ namespace vba_brain.UI.Avalonia.Views;
 /// </summary>
 public partial class FLoginView : Window
 {
-    private readonly ViewModels.FLoginViewModel viewModel;
-
-    public FLoginView(ViewModels.FLoginViewModel viewModel)
+    /// <summary>Used by the XAML loader and previewer; the app builds the view with its view model.</summary>
+    public FLoginView()
     {
         InitializeComponent();
-        this.viewModel = viewModel;
+    }
+
+    public FLoginView(ViewModels.FLoginViewModel viewModel) : this()
+    {
         DataContext = viewModel;
         Loaded += (_, _) => viewModel.F000Command.Execute(null);
         KeyDown += (_, e) => viewModel.F001Command.Execute(e);
+        viewModel.CloseRequested += (_, _) => Close();
     }
 }

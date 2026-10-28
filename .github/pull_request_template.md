@@ -23,9 +23,10 @@ Closes #
 
 <!-- Paste the real result. "Should pass" is not a result. -->
 
-- [ ] `python -m compileall -q src/backend start.py start_wpf.py clean_generated_files.py`
-- [ ] `cd src/frontend && yarn lint`
-- [ ] `cd src/frontend && yarn build`
+- [ ] `ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts`
+- [ ] `pytest && pytest tests/layer5`
+- [ ] `cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build`
+- [ ] `dotnet build src/wpf/vba_brain.slnx` (if `src/wpf` or Layer 5 changed)
 - [ ] Ran the affected pipeline layer end to end (say which item / command)
 
 <details>
@@ -49,6 +50,8 @@ paste here
       `bin/`, `obj/`)
 - [ ] Docker port bindings still on `127.0.0.1`
 - [ ] `.proto` changes include regenerated stubs in the same commit
+- [ ] Request data never reaches a shell or an unchecked filesystem path (argv arrays; names
+      validated and paths confined to their base directory)
 
 ## Docs
 

@@ -12,9 +12,6 @@ Ref: agents/ui/control_mapper.py — same deterministic pattern
 from __future__ import annotations
 
 import logging
-import re
-import unicodedata
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -95,12 +92,28 @@ class EventMapper:
         event_id    = bd_event.get("event_id", "")
         module_id   = bd_event.get("module_id", "")
         notes       = bd_event.get("notes", "")           # VBA handler name
-        ctrl_type   = bd_event.get("type", "")
         ctrl_name   = bd_event.get("physical_name", "")
         action_type = bd_event.get("action_type", "")
 
         # Normalize VBA handler name
         vba_event = notes.strip() if notes else ""
+
+        # Step 0: Access macro reference events → SYS (no VBA Sub to translate)
+        # BD notes: "macro.A_メニューバーを表示" / "Macro.M_CloseSystem"; legacy: "参照マクロ: X.xlsx"
+        if vba_event.lower().startswith("macro.") or "参照マクロ" in vba_event:
+            # Use module_id as method name (F006Async etc.) from ui_event_map if available
+            cs_method = f"{module_id}Async" if module_id else f"MacroRef_{event_id}"
+            return {
+                "event_id":      event_id,
+                "module_id":     module_id,
+                "vba_event":     vba_event,
+                "cs_command":    "",
+                "cs_method":     cs_method,
+                "action_type":   "SYS",
+                "is_main_logic": False,
+                "trigger":       "参照マクロ (macro reference)",
+                "macro_ref":     True,
+            }
 
         # Step 1: Try exact match from VBA_EVENT_MAP (form-level events)
         vba_lower = vba_event.lower().replace(" ", "_")
@@ -190,24 +203,6 @@ class EventMapper:
                     "trigger":       "Value changed",
                 }
 
-        # Step 5.5: 参照マクロ (Macro reference events) → SYS
-        # Pattern: notes = "参照マクロ: A_メニューバーを表示.xlsx"
-        # These are Access macro calls — no business logic, map to SYS stub using module_id
-        if vba_event.startswith("参照マクロ") or "参照マクロ" in vba_event:
-            # Use module_id as method name (F006Async etc.) from ui_event_map if available
-            cs_method = f"{module_id}Async" if module_id else f"MacroRef_{event_id}"
-            return {
-                "event_id":      event_id,
-                "module_id":     module_id,
-                "vba_event":     vba_event,
-                "cs_command":    "",
-                "cs_method":     cs_method,
-                "action_type":   "SYS",
-                "is_main_logic": False,
-                "trigger":       "参照マクロ (macro reference)",
-                "macro_ref":     True,
-            }
-
         # Step 6: Fallback — unknown event pattern
         # Prefer module_id-based method name to avoid Japanese in C# identifiers
         final_type = action_type if action_type else "SYS"
@@ -257,48 +252,6 @@ class EventMapper:
             len(mapped), valid_count, len(mapped) - valid_count,
         )
         return mapped
-
-    def classify_action_type(self, event: dict) -> str:
-        """
-        Classify a BD event into SYS / UI / VALID.
-
-        Rules:
-            SYS:   Form_Open, Form_Close, Form_Load, Timer, simple button close
-            UI:    Form_KeyDown, Focus events, UI-only interactions
-            VALID: Has DD steps with actual business logic ⭐
-        
-        Note: The BD JSON usually has action_type pre-classified.
-              This method is a fallback/override mechanism.
-        """
-        notes = event.get("notes", "").lower().replace(" ", "_")
-        event_content = event.get("event_content", "")
-
-        # Form lifecycle → SYS
-        if notes in VBA_EVENT_MAP:
-            _, _, default_type = VBA_EVENT_MAP[notes]
-            return default_type
-
-        # Keyboard events → UI
-        if any(kw in notes for kw in ("keydown", "keyup", "keypress")):
-            return "UI"
-
-        # Focus events → UI
-        if any(notes.endswith(s) for s in FOCUS_SUFFIXES):
-            return "UI"
-
-        # Close/Quit buttons → SYS
-        close_keywords = ("閉じる", "close", "quit", "exit", "終了")
-        if any(kw in notes.lower() for kw in close_keywords):
-            return "SYS"
-        if any(kw in event_content for kw in ("終了する", "閉じる", "Quit")):
-            return "SYS"
-
-        # Has substantial content → likely VALID
-        if len(event_content) > 20:
-            return "VALID"
-
-        # Default → SYS (safe)
-        return "SYS"
 
     # ──────────────────────────────────────────
     # Internal helpers

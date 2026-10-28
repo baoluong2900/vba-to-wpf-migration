@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[5]
-vba_dir = ROOT / "src" / "VBA" / "vba_source"
+vba_dir = ROOT / "src" / "vba" / "vba_source"
 if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 

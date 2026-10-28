@@ -12,7 +12,7 @@ const STATUS_CFG: Record<string, { color: string; bg: string; text: string; Icon
 
 function L3ExcelNodeInner({ data }: { data: any }) {
   const {
-    nodeKey, label, icon, color, description,
+    label, icon, color, description,
     status, outputFile, outputSizeKb, errorMsg, duration,
     onGenerate, onDownload,
     selectedInput, hasData,

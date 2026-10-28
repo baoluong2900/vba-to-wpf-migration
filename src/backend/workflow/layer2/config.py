@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 import sys
-import json
 from pathlib import Path
 
 # Ensure common is in sys.path
@@ -20,24 +19,27 @@ from common.config import (
     STAGE as _COMMON_STAGE,
     MONGO_URI as _COMMON_MONGO_URI,
     MONGO_DB as _COMMON_MONGO_DB,
-    MEGALLM_API_KEY,
-    GROQ_API_KEY,
-    ALIBABA_API_KEY,
-    SOURCE_LANGUAGE,
-    TARGET_LANGUAGE,
     ModelConfig,
     QWEN3_CODER_480B,
     QWEN3_CODER_NEXT,
     QWEN_MAX,
-    QWEN3_VL_235B,
-    QWEN_VL_PLUS,
-    QVQ_MAX,
-    QWEN_PLUS_20250728,
-    QWEN3_VL_30B,
     AVAILABLE_MODELS,
     get_model,
     LAYER2_DEV_MODEL_NAME,
     LAYER2_PILOT_MODEL_NAME,
+)
+# Re-exported for modules that read these through `from config import …`.
+from common.config import (  # noqa: F401
+    ALIBABA_API_KEY,
+    GROQ_API_KEY,
+    MEGALLM_API_KEY,
+    SOURCE_LANGUAGE,
+    TARGET_LANGUAGE,
+    QVQ_MAX,
+    QWEN3_VL_30B,
+    QWEN3_VL_235B,
+    QWEN_PLUS_20250728,
+    QWEN_VL_PLUS,
 )
 
 # ──────────────────────────────────────────────
@@ -86,6 +88,4 @@ MAX_RETRIES: int = 3
 # ──────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-SCHEMA_TEMPLATE_DIR = os.path.join(BASE_DIR, "schema", "template")
-SCHEMA_OUTPUT_DIR = os.path.join(BASE_DIR, "schema", "output")
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "logs")

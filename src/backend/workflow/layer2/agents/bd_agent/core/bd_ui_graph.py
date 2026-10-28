@@ -1,12 +1,19 @@
 import json
-from typing import TypedDict, Any
+from typing import TypedDict
+from langgraph.errors import GraphRecursionError
 from langgraph.graph import StateGraph, END
 
 from utils.logger import get_logger
+from utils.cost_tracker import get_tracker
 from utils.llm_client import LLMClient
-from config import ModelConfig, DEV_MODEL
+from utils.model_router import select_model
+from config import ModelConfig
 
 logger = get_logger(__name__)
+
+_MAX_RETRIES = 2
+# preprocess + (analyze, validate) per attempt + one retry node per retry, with headroom
+_RECURSION_LIMIT = 1 + 2 * (_MAX_RETRIES + 1) + _MAX_RETRIES + 3
 
 class UIFormulaBatchState(TypedDict):
     batch: list[dict]
@@ -24,7 +31,6 @@ def _clean_formula(formula: str) -> str:
     After Python JSON-parsing, still contains:  =Format([受付日],\"yyyy\\年m\\月d\\日\")
     This cleans it to:  =Format([受付日],"yyyy年m月d日")
     """
-    import re
     # Replace \" with " (unescape escaped quotes)
     cleaned = formula.replace('\\"', '"')
     # Replace \\ with empty (remove extra backslashes used as escape in format strings)
@@ -37,6 +43,9 @@ def preprocess_batch_node(state: UIFormulaBatchState):
 def analyze_batch_node(state: UIFormulaBatchState):
     if state["retry_count"] > 0:
         logger.warning(f"UI Batch Analyze: retry #{state['retry_count']}")
+    # Each attempt starts clean; a stale error would make validate skip a good response
+    state["error"] = None
+    state["raw_response"] = None
         
     client = LLMClient()
     
@@ -52,12 +61,21 @@ def analyze_batch_node(state: UIFormulaBatchState):
     user_content = "\n".join(lines)
     
     try:
-        response_text = client.chat(
-            model_cfg=state["model_cfg"],
-            system=_UI_BATCH_SYSTEM_PROMPT,
-            user=f"Formulas to translate:\n{user_content}"
+        cfg = state["model_cfg"]
+        response_text, usage = client.chat_with_usage(
+            cfg, _UI_BATCH_SYSTEM_PROMPT, f"Formulas to translate:\n{user_content}"
         )
         state["raw_response"] = response_text
+
+        batch_label = ",".join(str(i.get("item_no", "?")) for i in state["batch"])
+        get_tracker().record(
+            item_name=f"ui_batch[{batch_label[:60]}]",
+            model_id=cfg.model_id,
+            stage="bd_ui_formula",
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+            flow_type="BD Agent",
+        )
     except Exception as e:
         state["error"] = f"LLM Error: {e}"
         logger.error(f"UI Batch LLM Error: {e}")
@@ -159,26 +177,32 @@ def validate_batch_node(state: UIFormulaBatchState):
         
     return state
 
+def retry_batch_node(state: UIFormulaBatchState):
+    """Increment the retry counter in a node: LangGraph drops state changes made in routing functions."""
+    return {"retry_count": state["retry_count"] + 1}
+
 def should_retry_batch(state: UIFormulaBatchState):
-    if state["error"] and state["retry_count"] < 2:
-        state["retry_count"] += 1
-        return "analyze"
+    """Pure routing function — reads state only."""
+    if state["error"] and state["retry_count"] < _MAX_RETRIES:
+        return "retry"
     return END
 
 workflow = StateGraph(UIFormulaBatchState)
 workflow.add_node("preprocess", preprocess_batch_node)
 workflow.add_node("analyze", analyze_batch_node)
 workflow.add_node("validate", validate_batch_node)
+workflow.add_node("retry", retry_batch_node)
 
 workflow.set_entry_point("preprocess")
 workflow.add_edge("preprocess", "analyze")
 workflow.add_edge("analyze", "validate")
+workflow.add_edge("retry", "analyze")
 
 workflow.add_conditional_edges(
     "validate",
     should_retry_batch,
     {
-        "analyze": "analyze",
+        "retry": "retry",
         END: END
     }
 )
@@ -186,12 +210,18 @@ workflow.add_conditional_edges(
 app = workflow.compile()
 
 class BDUIFormulaGraph:
-    def run_ui_batch(self, batch: list[dict], model_id: str = None) -> list[dict]:
+    def run_ui_batch(
+        self,
+        batch: list[dict],
+        model_id: str = None,
+        *,
+        stage: str | None = None,
+        complexity_level: str = "low",
+    ) -> list[dict]:
         if not batch:
             return []
             
-        from config import AVAILABLE_MODELS
-        model_cfg = AVAILABLE_MODELS.get(model_id, DEV_MODEL) if model_id else DEV_MODEL
+        model_cfg = select_model(complexity_level=complexity_level, stage=stage, model_id=model_id)
         
         initial_state: UIFormulaBatchState = {
             "batch": batch,
@@ -202,7 +232,11 @@ class BDUIFormulaGraph:
             "retry_count": 0
         }
         
-        final_state = app.invoke(initial_state)
+        try:
+            final_state = app.invoke(initial_state, config={"recursion_limit": _RECURSION_LIMIT})
+        except GraphRecursionError as e:
+            logger.error(f"UI Batch graph did not terminate ({e}); keeping original formulas.")
+            return [{**item, "translated_description": item.get("formula", "")} for item in batch]
         
         # Check if translated_batch is explicitly not None (empty list is fine if input was empty)
         if final_state.get("translated_batch") is not None:

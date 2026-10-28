@@ -19,7 +19,6 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,8 @@ INPUTS_DIR   = AGENT_DIR / "inputs"
 # Avalonia Views output dir — single source of truth in core.config
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from core.config import VIEWS_DIR as WPF_VIEWS_DIR, AVALONIA_PROJECT_DIR
+from core.config import VIEWS_DIR as WPF_VIEWS_DIR, AVALONIA_PROJECT_DIR, UI_EVENT_MAP_PATH
+from core.fid_resolver import macro_name
 
 
 class ChunkBuilder:
@@ -142,33 +142,6 @@ class ChunkBuilder:
             c for c in chunks
             if c["mapped_command"].get("action_type") == "SYS"
         ]
-
-    def get_ui_chunks(self, chunks: list[dict]) -> list[dict]:
-        """Get UI-type chunks (skip — handled by XAML)."""
-        return [
-            c for c in chunks
-            if c["mapped_command"].get("action_type") == "UI"
-        ]
-
-    def save_chunks(self, form_name: str, chunks: list[dict]) -> None:
-        """Save chunk JSONs to inputs/ for debug & replay."""
-        INPUTS_DIR.mkdir(parents=True, exist_ok=True)
-
-        for chunk in chunks:
-            idx      = chunk["chunk_idx"]
-            event_id = chunk["bd_event"].get("event_id", f"E{idx:03d}")
-            filename = f"{form_name}_{event_id}.json"
-            filepath = INPUTS_DIR / filename
-
-            filepath.write_text(
-                json.dumps(chunk, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-
-        logger.info(
-            "[ChunkBuilder] Saved %d chunk(s) to inputs/",
-            len(chunks),
-        )
 
     # ──────────────────────────────────────────
     # Event Classification: UI_ONLY vs WITH_SERVICE
@@ -360,9 +333,7 @@ class ChunkBuilder:
         Returns:
             dict: { vba_handler: { "signature": str, "cs_name": str, "module_id": str } }
         """
-        _UI_EVENT_MAP = (
-            Path(__file__).resolve().parent.parent / "ui" / "configs" / "ui_event_map.json"
-        )
+        _UI_EVENT_MAP = UI_EVENT_MAP_PATH
 
         stubs: dict[str, dict] = {}
 
@@ -603,9 +574,9 @@ class ChunkBuilder:
             notes_field = bd_event.get("notes", "")
             macros: list[str] = []
             modules_ref: list[str] = []
-            macro_match = re.match(r'参照マクロ:\s*(.+?)(?:\.xlsx)?$', notes_field.strip())
-            if macro_match:
-                macros.append(macro_match.group(1).strip())
+            macro_ref = macro_name(notes_field)   # "macro.X" / "参照マクロ: X.xlsx"
+            if macro_ref:
+                macros.append(macro_ref)
 
             # ── Priority 1: đọc references trực tiếp từ VBA code trong Mongo ──────
             # forms collection đã được aggregator layer1 phân loại đúng:
@@ -613,7 +584,7 @@ class ChunkBuilder:
             #   macros  = ["AutoExec_Restart", "AutoExec_A"]              (DoCmd.RunMacro "xxx")
             vba_handler_name = mapped.get("vba_event") or notes_field
             raw_vba_refs: dict = {}
-            if vba_handler_name and not macro_match:
+            if vba_handler_name and not macro_ref:
                 # Cache form functions để tránh query Mongo lại mỗi chunk
                 if _form_functions_cache is None:
                     try:
@@ -669,15 +640,15 @@ class ChunkBuilder:
             }
 
             # 4. Extract VBA code
-            # For macro-reference events, notes = "参照マクロ: MacroName.xlsx" — no VBA Sub exists.
+            # For macro-reference events (notes "macro.X" / "参照マクロ: X.xlsx") no VBA Sub exists.
             # Use macro name as the handler key; if not found, build a descriptive comment.
             vba_handler = mapped.get("vba_event") or notes_field
-            is_macro_ref = bool(macro_match)
+            is_macro_ref = bool(macro_ref)
 
             if is_macro_ref:
-                macro_name = macros[0] if macros else notes_field
+                macro_label = macros[0] if macros else notes_field
                 logic_detail["code"] = (
-                    f"// This event runs Access macro: 「{macro_name}」\n"
+                    f"// This event runs Access macro: 「{macro_label}」\n"
                     f"// No VBA Sub — triggered directly via DoCmd.RunMacro or macro action.\n"
                     f"// WPF equivalent: implement the macro logic in the corresponding C# method."
                 )
@@ -714,7 +685,7 @@ class ChunkBuilder:
             if event_class == "SERVICE":
                 service_ctx = self._build_structured_service_context(
                     raw_ctx=chunk.get("service_context", ""),
-                    module_id=event_id,
+                    module_id=module_id,
                     form_name=form_name,
                 )
 
@@ -762,21 +733,9 @@ class ChunkBuilder:
         _form = form_name
         if _form and module_id:
             try:
-                _workflow_root = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
-                _db_dir   = _workflow_root / "data/database_json" / "agent_service"
-                _svc_dir  = Path(__file__).resolve().parent.parent / "service" / "outputs" / _form
-
-                # New name first, then legacy
-                _contract_path = next((
-                    p for p in [
-                        _db_dir / f"{_form}.json",
-                        _svc_dir / f"{_form}.json",
-                        _db_dir / "service_contract.json",
-                        _svc_dir / "service_contract.json",
-                    ] if p.exists()
-                ), None)
-                if _contract_path:
-                    _contract = json.loads(_contract_path.read_text(encoding="utf-8"))
+                from agents.ui.tool_skeleton import load_service_contract
+                _contract = load_service_contract(_form)
+                if _contract:
                     _methods  = _contract.get("methods", {})
                     _entry    = _methods.get(module_id)
                     if _entry:

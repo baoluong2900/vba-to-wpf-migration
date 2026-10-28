@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { FileSpreadsheet, Search, ChevronDown, ChevronRight, Download, Settings2, Eye, DatabaseZap, Bot, Database, Cpu, Sparkles } from "lucide-react";
+import { FileSpreadsheet, Search, ChevronDown, ChevronRight, Download, Settings2, Eye } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 // @ts-ignore
@@ -9,6 +9,7 @@ import { ReactFlow, Controls, Background, Node, Edge, useNodesState, useEdgesSta
 import "@xyflow/react/dist/style.css";
 import { L3ExcelNode } from "../../components/nodes/L3ExcelNode";
 import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
+import { layer4DownloadUrl } from "../../lib/downloadUrl";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface L3Item { name: string; has_bd: boolean; has_dd: boolean; type: string; }
@@ -155,7 +156,7 @@ export default function Layer4Page() {
     }
   }, [selectedName, selectedItem, handleGenBd, handleGenDd]);
 
-  // Download helper — backend already returns the correct /api/v1/layer4/download/... URL
+  // Download helper — callers pass a URL whose path segments are already percent-encoded
   const handleDownload = useCallback((downloadUrl: string, filename: string) => {
     const a = document.createElement("a");
     a.href = downloadUrl;
@@ -426,7 +427,7 @@ export default function Layer4Page() {
                     <div style={{ fontSize: 11, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={f.filename}>{f.filename}</div>
                     <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{f.doc_kind} {f.doc_type} — {f.size_kb} KB</div>
                   </div>
-                  <button onClick={() => handleDownload(f.download_url, f.filename)}
+                  <button onClick={() => handleDownload(layer4DownloadUrl(f.doc_kind, f.doc_type, f.filename), f.filename)}
                     title={`Download ${f.filename}`}
                     style={{ background: "var(--accent-subtle)", border: "1px solid var(--border-color)", color: "var(--accent)", borderRadius: 6, padding: "5px 7px", cursor: "pointer", display: "flex", alignItems: "center" }}>
                     <Download size={12} />

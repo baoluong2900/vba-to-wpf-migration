@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Settings2, Terminal, DatabaseZap, Search, ChevronDown, ChevronRight, BarChart2, Download, Bot, FileSpreadsheet, Database, Cpu, Sparkles, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Settings2, Terminal, DatabaseZap, Search, ChevronDown, ChevronRight, BarChart2, Download, Sparkles, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 // @ts-ignore
@@ -15,6 +15,7 @@ import { DdAgentNode } from "../../components/nodes/DdAgentNode";
 import { OutputNode } from "../../components/nodes/OutputNode";
 import { GraphView } from "../../components/GraphView";
 import { LogEntry, getLogColor, formatLogTime } from "../../lib/logging";
+import { readSseStream } from "../../lib/sse";
 
 
 export default function Layer2Workflow() {
@@ -86,6 +87,26 @@ export default function Layer2Workflow() {
 
   // Model health status: { [modelId]: { status: 'ok'|'error'|'quota_exceeded'|'testing' } }
   const [modelHealth, setModelHealth] = useState<Record<string, {status: string; error?: string}>>({});
+  const healthRequestedRef = useRef(false);
+
+  // The health check sends a test prompt to every configured model, so it only runs
+  // the first time a model dropdown is opened, not on every page load.
+  const loadModelHealth = useCallback(() => {
+    if (healthRequestedRef.current) return;
+    healthRequestedRef.current = true;
+    setModelHealth(Object.fromEntries(models.map((id) => [id, { status: "testing" }])));
+    fetch("/api/v1/layer2/models/health")
+      .then(r => r.json())
+      .then(hd => {
+        if (hd.success) setModelHealth(hd.results);
+        else { healthRequestedRef.current = false; setModelHealth({}); }
+      })
+      .catch(() => { healthRequestedRef.current = false; setModelHealth({}); });
+  }, [models]);
+
+  // Current screen + in-flight DB query, so late responses for another screen are dropped
+  const screenNameRef = useRef("");
+  const dbQueryAbortRef = useRef<AbortController | null>(null);
 
   const [previewMode, setPreviewMode] = useState<"json" | "jsonl" | "xml">("json");
   const [copyStatus, setCopyStatus] = useState<"json" | "jsonl" | "xml" | null>(null);
@@ -139,7 +160,7 @@ export default function Layer2Workflow() {
     ddSelectedModel, setDdSelectedModel,
     ddAgentStatus, ddAgentStep, handleRunDdAgent: () => handleRunDdAgent(),
     models, mockScreens: filteredScreens, resultJson, ddResultJson,
-    viewMode, modelHealth
+    viewMode, modelHealth, loadModelHealth
   };
 
 
@@ -185,13 +206,16 @@ export default function Layer2Workflow() {
       
       return baseNodes.map(node => ({ ...node, data: { ...node.data, ...commonData } }));
     });
-  }, [viewMode, screenName, queryStatus, dbData, selectedModel, agentStatus, resultJson, agentStep, ddSelectedModel, ddAgentStatus, ddAgentStep, ddResultJson, models]);
+  }, [viewMode, screenName, queryStatus, dbData, selectedModel, agentStatus, resultJson, agentStep, ddSelectedModel, ddAgentStatus, ddAgentStep, ddResultJson, models, modelHealth, loadModelHealth]);
 
 
 
 
 
   useEffect(() => {
+    screenNameRef.current = screenName;
+    dbQueryAbortRef.current?.abort();
+
     // Reset trạng thái pipeline khi đổi screen
     setQueryStatus("idle"); setDbData(null); setResultJson("");
     setDdAgentStatus("idle"); setDdAgentStep("d1"); setDdResultJson("");
@@ -243,14 +267,6 @@ export default function Layer2Workflow() {
         setModels(modelIds);
         setSelectedModel(modelIds[0] || "deepseek-v4-flash");
         setDdSelectedModel(modelIds[0] || "deepseek-v4-flash");
-        // Mark all as 'testing' then fetch health
-        const initHealth: Record<string, {status: string}> = {};
-        modelIds.forEach((id: string) => { initHealth[id] = { status: 'testing' }; });
-        setModelHealth(initHealth);
-        fetch("/api/v1/layer2/models/health")
-          .then(r => r.json())
-          .then(hd => { if (hd.success) setModelHealth(hd.results); })
-          .catch(() => {});
       }
 
     })
@@ -309,21 +325,29 @@ export default function Layer2Workflow() {
 
   async function handleQueryDB() {
     if (!screenName) return;
+    const requested = screenName;
+    dbQueryAbortRef.current?.abort();
+    const controller = new AbortController();
+    dbQueryAbortRef.current = controller;
+    const isStale = () => controller.signal.aborted || screenNameRef.current !== requested;
+
     setQueryStatus("running"); setAgentStatus("idle"); setResultJson(""); setDbData(null); setActiveTab("logs");
     addLog("INFO", `--- DATA FETCH ---`);
     addLog("INFO", `Calling \`layer1_repo.py\` to resolve dependencies for screen: ${screenName}`);
-    
+
     try {
       const res = await fetch("/api/v1/layer1/db-query", {
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ 
-          screenName, 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          screenName,
           itemType: "auto",
-          deep: viewMode === "module" || viewMode === "macro" 
-        })
+          deep: viewMode === "module" || viewMode === "macro"
+        }),
+        signal: controller.signal,
       });
       const data = await res.json();
+      if (isStale()) return;
       if (data.success) {
         setQueryStatus("success");
         addLog("SUCCESS", `layer1_repo.py returned exact logical context (bd_code_json).`);
@@ -334,12 +358,22 @@ export default function Layer2Workflow() {
         setQueryStatus("error"); setDbData(null); addLog("ERROR", `Lỗi từ Backend: ${data.error}`);
       }
     } catch (error: any) {
+      if (isStale()) return;
       setQueryStatus("error"); setDbData(null); addLog("ERROR", `Network Exception: ${error.message}`);
     }
   }
 
+  // A BD/DD run keeps going server-side if the user switches screens; its result must not
+  // be shown as the new screen's state.
+  function staleResult(requested: string, flow: string): boolean {
+    if (screenNameRef.current === requested) return false;
+    addLog("WARN", `[${flow}] Result for '${requested}' arrived after switching to '${screenNameRef.current}' — not shown here (output files were still written).`);
+    return true;
+  }
+
   async function handleRunAgent() {
     if (!screenName || queryStatus !== "success" || !dbData) return;
+    const requested = screenName;
     setAgentStatus("running"); setAgentStep("s1"); setResultJson(""); setActiveTab("logs");
     addLog("INFO", `--- LLM EXECUTION ---`);
     addLog("INFO", `Model Triggered: ${selectedModel}`);
@@ -355,12 +389,14 @@ export default function Layer2Workflow() {
       
       clearTimeout(s2Timer);
       clearTimeout(s3Timer);
-      
+
+      const data = await res.json();
+      if (staleResult(requested, "BD")) return;
+
       // Flash S4 quickly for UX before marking done
       setAgentStep("s4");
       setTimeout(() => setAgentStep("done"), 500);
-      
-      const data = await res.json();
+
       if (data.success) {
         setAgentStatus("success"); setResultJson(data.result);
         addLog("SUCCESS", `Full BD Flow (s1->s2->s3->s4) executed successfully.`);
@@ -391,6 +427,7 @@ export default function Layer2Workflow() {
     } catch (error: any) {
       clearTimeout(s2Timer);
       clearTimeout(s3Timer);
+      if (staleResult(requested, "BD")) return;
       setAgentStatus("error"); setResultJson(`Lỗi mạng: ${error.message}`); addLog("ERROR", `Network Exception: ${error.message}`);
     }
   }
@@ -401,7 +438,8 @@ export default function Layer2Workflow() {
     if (!screenName) return;
     if (!isModuleMode && agentStatus !== "success") return;
     if (isModuleMode && queryStatus !== "success") return;
-    
+    const requested = screenName;
+
     setDdAgentStatus("running"); setDdAgentStep("d1"); setDdResultJson(""); setActiveTab("logs");
     addLog("INFO", `--- DD EXECUTION ---`);
     addLog("INFO", `[D1] Fetching DD Source from DB ...`);
@@ -422,10 +460,12 @@ export default function Layer2Workflow() {
       clearTimeout(d2Timer);
       clearTimeout(d3Timer);
 
+      const data = await res.json();
+      if (staleResult(requested, "DD")) return;
+
       setDdAgentStep("d4");
       setTimeout(() => setDdAgentStep("done"), 400);
 
-      const data = await res.json();
       if (data.success) {
         setDdAgentStatus("success"); setDdResultJson(data.result);
         addLog("SUCCESS", `Full DD Flow (D1→D4) executed successfully.`);
@@ -457,6 +497,7 @@ export default function Layer2Workflow() {
     } catch (error: any) {
       clearTimeout(d2Timer);
       clearTimeout(d3Timer);
+      if (staleResult(requested, "DD")) return;
       setDdAgentStatus("error"); setDdResultJson(`Lỗi mạng: ${error.message}`);
       addLog("ERROR", `DD Network Exception: ${error.message}`);
     }
@@ -527,36 +568,27 @@ export default function Layer2Workflow() {
     addLog("INFO", "Calling Backend API to process tables, queries, forms, macros, and modules...");
 
     try {
-      const response = await fetch("/api/v1/layer1/extract?source_path=legacy_db.accdb", {
-        method: "GET"
+      // scope "ast": parse + seed MongoDB only (no Layer 2 LLM generation, no PostgreSQL migration)
+      const response = await fetch("/api/v1/layer1/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "ast" }),
       });
-
-      if (!response.body) throw new Error("No response body received from server");
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const lines = decoder.decode(value).split("\n").filter(Boolean);
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.type === "log") {
-                addLog(data.level as any, data.message);
-              } else if (data.type === "error") {
-                addLog("ERROR", data.message);
-              } else if (data.type === "done") {
-                addLog("SUCCESS", "Layer 1 Source Extraction completed successfully! Data seeded into MongoDB.");
-              }
-            } catch (e) {
-              console.error("Failed to parse SSE", e);
-            }
-          }
-        }
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        throw new Error(err?.error || `HTTP ${response.status}`);
       }
+      if (!response.body) throw new Error("No response body received from server");
+
+      await readSseStream(response.body, (data) => {
+        if (data.type === "log") {
+          addLog(data.level as any, data.message);
+        } else if (data.type === "error") {
+          addLog("ERROR", data.message);
+        } else if (data.type === "done") {
+          addLog("SUCCESS", "Layer 1 Source Extraction completed successfully! Data seeded into MongoDB.");
+        }
+      });
 
       // Refresh explorer items
       addLog("INFO", "Refreshing Explorer Item List...");

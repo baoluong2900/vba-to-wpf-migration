@@ -44,6 +44,9 @@ if sys.stderr.encoding and sys.stderr.encoding.lower() not in ("utf-8", "utf8"):
 # ── Paths ──────────────────────────────────────────────────────────────────
 # Path(__file__).resolve().parent is pipeline/, parent.parent is layer5/
 LAYER5_DIR  = Path(__file__).resolve().parent.parent
+if str(LAYER5_DIR) not in sys.path:
+    sys.path.insert(0, str(LAYER5_DIR))
+from core.naming import form_name_error, validate_form_name  # noqa: E402
 AGENTS_DIR  = LAYER5_DIR / "agents"
 WORKSPACE_ROOT = LAYER5_DIR.parent.parent.parent.parent
 SOURCE_ROOT = WORKSPACE_ROOT / "source"
@@ -152,7 +155,7 @@ def _patch_app_xaml_cs(dry_run: bool = False) -> None:
         return  # nothing changed
 
     rel = target.relative_to(SOURCE_ROOT)
-    print(f"\n  [post-deploy patch]")
+    print("\n  [post-deploy patch]")
     print(f"    🔧 {rel} — qualify Application → global::Avalonia.Application")
     if not dry_run:
         target.write_text(patched, encoding="utf-8")
@@ -375,6 +378,7 @@ def validate_interface_vs_impl() -> list[str]:
 
 
 def deploy(form_name: str, *, force: bool = False, dry_run: bool = False) -> None:
+    validate_form_name(form_name)
     print(f"\n{'[DRY-RUN] ' if dry_run else ''}Deploying outputs for: {form_name}")
     print(f"  Source root: {SOURCE_ROOT}")
 
@@ -420,7 +424,7 @@ def deploy(form_name: str, *, force: bool = False, dry_run: bool = False) -> Non
     # ── Validate interface ↔ implementation contract ───────────────────────
     mismatches = _check_interface_impl_mismatch(dry_run=dry_run)
     if mismatches:
-        print(f"\n⚠  Interface/Implementation mismatch detected — build will fail:")
+        print("\n⚠  Interface/Implementation mismatch detected — build will fail:")
         for msg in mismatches:
             print(msg)
         print(
@@ -439,6 +443,9 @@ def main() -> None:
     parser.add_argument("--force",   action="store_true", help="Overwrite existing source files")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be copied without writing")
     args = parser.parse_args()
+    error = form_name_error(args.form_name)
+    if error:
+        parser.error(error)
     deploy(args.form_name, force=args.force, dry_run=args.dry_run)
 
 

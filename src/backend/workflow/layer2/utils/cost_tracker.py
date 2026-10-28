@@ -1,13 +1,19 @@
 """
-llm/cost_tracker.py — Track token usage and estimated cost.
+utils/cost_tracker.py — Track token usage and estimated cost.
 
-Singleton: get_tracker() returns a shared instance within a session.
+get_tracker() returns the tracker of the current gateway request (see track_request()), or one
+process-wide tracker for CLI runs.
 """
 from __future__ import annotations
 
+import contextvars
 import json
 import logging
 import os
+import threading
+from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +21,9 @@ from pathlib import Path
 from config import LOG_DIR
 
 logger = logging.getLogger(__name__)
+
+# Serialises the read-modify-write of token_log.json / token_log.xlsx (one gateway process, many threads)
+_REPORT_LOCK = threading.Lock()
 
 # Estimated cost in USD / 1M tokens (separate input / output)
 _PRICE_INPUT_PER_1M: dict[str, float] = {
@@ -28,10 +37,15 @@ _PRICE_INPUT_PER_1M: dict[str, float] = {
     "deepseek-chat":        0.14,
     "deepseek-reasoner":    0.55,
     "qwen-max":             2.80,
+    "qwen-max-latest":      2.80,  # approx (= qwen-max)
     "qwen-plus":            0.56,
+    "qwen-plus-2025-07-28": 0.56,  # approx (= qwen-plus)
     "qwen-turbo":           0.04,
     "qwen-long":            0.07,
     "qwen3-coder-instruct": 0.14,
+    "qwen3-coder-480b-a35b-instruct": 2.80,  # approx (= qwen-max)
+    "qwen3-coder-next":     0.14,  # approx (= qwen3-coder-instruct)
+    "qwen3-235b-a22b-instruct-2507": 0.56,  # approx (= qwen-plus)
     "default":              1.00,
 }
 
@@ -46,12 +60,31 @@ _PRICE_OUTPUT_PER_1M: dict[str, float] = {
     "deepseek-chat":        0.28,
     "deepseek-reasoner":    2.19,
     "qwen-max":             8.40,
+    "qwen-max-latest":      8.40,  # approx (= qwen-max)
     "qwen-plus":            1.68,
+    "qwen-plus-2025-07-28": 1.68,  # approx (= qwen-plus)
     "qwen-turbo":           0.11,
     "qwen-long":            0.21,
     "qwen3-coder-instruct": 0.56,
+    "qwen3-coder-480b-a35b-instruct": 8.40,  # approx (= qwen-max)
+    "qwen3-coder-next":     0.56,  # approx (= qwen3-coder-instruct)
+    "qwen3-235b-a22b-instruct-2507": 1.68,  # approx (= qwen-plus)
     "default":              2.00,
 }
+
+
+def _move_aside(path: Path, exc: Exception) -> bool:
+    """Rename an unreadable report file to <name>.<timestamp>.bak so its history is never overwritten."""
+    backup = path.with_name(f"{path.name}.{datetime.now():%Y%m%d_%H%M%S_%f}.bak")
+    try:
+        os.replace(path, backup)
+    except OSError as move_exc:
+        logger.error("[CostTracker] %s is unreadable (%s) and could not be moved aside (%s) — report not saved",
+                     path.name, exc, move_exc)
+        return False
+    logger.warning("[CostTracker] %s was unreadable (%s); kept as %s and started a new file",
+                   path.name, exc, backup.name)
+    return True
 
 
 @dataclass
@@ -144,20 +177,25 @@ class CostTracker:
             ]
         }
 
-        history = []
-        if path.exists():
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    history = json.load(f)
-                    if not isinstance(history, list):
-                        history = [history] # Convert old format
-            except Exception:
-                history = []
+        with _REPORT_LOCK:
+            history = []
+            if path.exists():
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                        if not isinstance(history, list):
+                            history = [history] # Convert old format
+                except Exception as exc:
+                    if not _move_aside(path, exc):
+                        return ""
+                    history = []
 
-        history.append(new_session)
+            history.append(new_session)
 
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(history, f, ensure_ascii=False, indent=2)
+            tmp_path = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(history, f, ensure_ascii=False, indent=2)
+            os.replace(tmp_path, path)
             
         logger.info("[CostTracker] JSON report appended → %s", path)
         return str(path)
@@ -166,7 +204,7 @@ class CostTracker:
         """Export cost report to common Excel file (token_log.xlsx), append new row."""
         try:
             import openpyxl
-            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.styles import PatternFill, Border, Side
         except ImportError:
             logger.warning("[CostTracker] openpyxl not installed — Excel export skipped.")
             return ""
@@ -175,63 +213,62 @@ class CostTracker:
         path = Path(LOG_DIR) / "token_log.xlsx"
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        if path.exists():
-            try:
-                wb = openpyxl.load_workbook(str(path))
-                ws = wb.active
-            except Exception:
+        with _REPORT_LOCK:
+            wb = None
+            if path.exists():
+                try:
+                    wb = openpyxl.load_workbook(str(path))
+                    ws = wb.active
+                except Exception as exc:
+                    if not _move_aside(path, exc):
+                        return ""
+                    wb = None
+            if wb is None:
                 wb = openpyxl.Workbook()
                 ws = wb.active
                 ws.title = "Token Usage History"
                 self._create_excel_header(ws)
-        else:
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = "Token Usage History"
-            self._create_excel_header(ws)
 
-        # ── Styles ────────────────────────────────────────────────────────
-        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), 
-                            top=Side(style='thin'), bottom=Side(style='thin'))
-        center_align = Alignment(horizontal="center", vertical="center")
-        alt_fill = PatternFill("solid", fgColor="F3F4F6")
+            # ── Styles ────────────────────────────────────────────────────────
+            thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                                top=Side(style='thin'), bottom=Side(style='thin'))
+            alt_fill = PatternFill("solid", fgColor="F3F4F6")
 
-        # ── Append Records ────────────────────────────────────────────────
-        start_row = ws.max_row + 1
-        for i, r in enumerate(self.records, 1):
-            total_tok = r.input_tokens + r.output_tokens
-            # Format: ID, Date, Flow, Screen, Item, Model, Stage, In, Out, Total, Cost
-            row = [
-                ws.max_row, 
-                ts,
-                r.flow_type,
-                label,
-                r.item_name,
-                r.model_id,
-                r.stage,
-                r.input_tokens,
-                r.output_tokens,
-                total_tok,
-                round(r.cost_usd, 6)
-            ]
-            ws.append(row)
+            # ── Append Records ────────────────────────────────────────────────
+            for i, r in enumerate(self.records, 1):
+                total_tok = r.input_tokens + r.output_tokens
+                # Format: ID, Date, Flow, Screen, Item, Model, Stage, In, Out, Total, Cost
+                row = [
+                    ws.max_row,
+                    ts,
+                    r.flow_type,
+                    label,
+                    r.item_name,
+                    r.model_id,
+                    r.stage,
+                    r.input_tokens,
+                    r.output_tokens,
+                    total_tok,
+                    round(r.cost_usd, 6)
+                ]
+                ws.append(row)
             
-            # Apply basic styling to the new row
-            for cell in ws[ws.max_row]:
-                cell.border = thin_border
-                if (ws.max_row - 1) % 2 == 0:
-                    cell.fill = alt_fill
+                # Apply basic styling to the new row
+                for cell in ws[ws.max_row]:
+                    cell.border = thin_border
+                    if (ws.max_row - 1) % 2 == 0:
+                        cell.fill = alt_fill
 
-        try:
-            wb.save(str(path))
-            logger.info("[CostTracker] Excel report appended → %s", path)
-        except Exception as e:
-            logger.error("[CostTracker] Failed to save Excel (maybe file is open?): %s", e)
+            try:
+                wb.save(str(path))
+                logger.info("[CostTracker] Excel report appended → %s", path)
+            except Exception as e:
+                logger.error("[CostTracker] Failed to save Excel (maybe file is open?): %s", e)
 
         return str(path)
 
     def _create_excel_header(self, ws):
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.styles import Font, PatternFill, Alignment
         headers = ["ID", "Timestamp", "Flow", "Screen", "Item", "Model", "Stage", "Input", "Output", "Total", "Cost (USD)"]
         ws.append(headers)
         header_fill = PatternFill("solid", fgColor="1E3A5F")
@@ -247,13 +284,52 @@ class CostTracker:
             ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
 
 
-# ── Singleton ──────────────────────────────────────────────────────────────
+# ── Current tracker ────────────────────────────────────────────────────────
+# The gateway serves requests on a thread pool. They used to share one module-level tracker that
+# each request replaced, so concurrent runs recorded into (and reported) each other's tokens and
+# costs. Each request now gets its own tracker through a context variable; CLI runs, which never
+# call track_request(), keep using one process-wide tracker.
+_current: contextvars.ContextVar[CostTracker | None] = contextvars.ContextVar("cost_tracker", default=None)
 _tracker: CostTracker | None = None
+_last_request: CostTracker | None = None
+_tracker_lock = threading.Lock()
 
 
 def get_tracker() -> CostTracker:
-    """Returns the singleton CostTracker for the current session."""
+    """The tracker of the current request, else the process-wide one."""
+    current = _current.get()
+    if current is not None:
+        return current
     global _tracker
-    if _tracker is None:
-        _tracker = CostTracker()
-    return _tracker
+    with _tracker_lock:
+        if _tracker is None:
+            _tracker = CostTracker()
+        return _tracker
+
+
+@contextmanager
+def track_request() -> Iterator[CostTracker]:
+    """
+    Record the LLM calls made inside the block into a new tracker, including calls made by worker
+    threads started through ContextThreadPoolExecutor (plain threads do not see it).
+    """
+    global _last_request
+    tracker = CostTracker()
+    token = _current.set(tracker)
+    try:
+        yield tracker
+    finally:
+        _current.reset(token)
+        _last_request = tracker
+
+
+def last_request_tracker() -> CostTracker:
+    """The tracker of the most recently finished request, else the process-wide one."""
+    return _last_request if _last_request is not None else get_tracker()
+
+
+class ContextThreadPoolExecutor(ThreadPoolExecutor):
+    """ThreadPoolExecutor whose tasks run with the submitter's context variables, so they record into its tracker."""
+
+    def submit(self, fn, /, *args, **kwargs):
+        return super().submit(contextvars.copy_context().run, fn, *args, **kwargs)

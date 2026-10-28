@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
 """
 vba_brain Workflow Launcher
-=======================
-Chạy cả Frontend (Next.js) và Backend (FastAPI) chỉ với 1 lệnh:
+===========================
+Run the web console (Next.js, :3000) and the gRPC gateway (:50051) with one command:
 
     python start.py
 
-Cách dùng:
-    python start.py             # Chạy cả FE + BE
-    python start.py --fe-only   # Chỉ chạy Frontend
-    python start.py --be-only   # Chỉ chạy Backend
-    python start.py --help      # Xem hướng dẫn
+Usage:
+    python start.py             # frontend + gateway
+    python start.py --fe-only   # frontend only
+    python start.py --be-only   # gateway only
+    python start.py --clean     # wipe the .next cache first
 """
 
+import argparse
+import json
+import os
+import re
+import signal
 import subprocess
 import sys
-import os
 import time
-import json
-import argparse
 from pathlib import Path
 from threading import Thread
 
-# Fix Windows console encoding (chấp nhận ký tự Unicode từ Next.js)
+# Fix Windows console encoding (accept Unicode output from Next.js)
 if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore
@@ -37,6 +39,8 @@ CONFIG_FILE  = Path("config.json")
 if not CONFIG_FILE.exists():
     CONFIG_FILE  = WORKFLOW_DIR / "config.json"
 
+IS_WINDOWS = os.name == "nt"
+
 # ───────── Load Config ─────────────────────────────────────────────────────
 def load_config() -> dict:
     if not CONFIG_FILE.exists():
@@ -50,7 +54,6 @@ RESET  = "\033[0m"
 GREEN  = "\033[32m"
 YELLOW = "\033[33m"
 CYAN   = "\033[36m"
-MAGENTA = "\033[35m"
 RED    = "\033[31m"
 BOLD   = "\033[1m"
 
@@ -58,65 +61,105 @@ def log(tag: str, color: str, msg: str):
     ts = time.strftime("%H:%M:%S")
     print(f"{color}{BOLD}[{tag}]{RESET} [{ts}] {msg}", flush=True)
 
+def redact_uri(uri: str) -> str:
+    """mongodb://user:pw@host → mongodb://***@host, for logging."""
+    return re.sub(r"//[^@/]+@", "//***@", uri or "")
+
 def stream_output(proc: subprocess.Popen, tag: str, color: str):
-    """Stream stdout từ subprocess ra console với prefix tag."""
+    """Stream a child's stdout to the console with a tag prefix."""
     for line in iter(proc.stdout.readline, ""):
         if line:
             try:
                 print(f"{color}[{tag}]{RESET} {line}", end="", flush=True)
             except UnicodeEncodeError:
-                # Thay thế ký tự không encode được (e.g. ✓ ▲)
+                # Replace characters the console cannot encode (e.g. ✓ ▲)
                 safe = line.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(sys.stdout.encoding or "utf-8")
                 print(f"{color}[{tag}]{RESET} {safe}", end="", flush=True)
 
+def grpc_settings(cfg: dict) -> tuple[str, int, str]:
+    """(host, port, auth token) — env first, then config.json → grpc, then defaults."""
+    grpc_cfg = cfg.get("grpc", {})
+    host = os.environ.get("GRPC_HOST") or grpc_cfg.get("host") or "localhost"
+    port = int(os.environ.get("GRPC_PORT") or grpc_cfg.get("port") or 50051)
+    token = os.environ.get("GRPC_AUTH_TOKEN") or grpc_cfg.get("auth_token") or ""
+    return host, port, token
+
+def grpc_tls_ca(cfg: dict) -> str:
+    """
+    PEM file the console must trust: GRPC_TLS_CA / grpc.tls_ca, else — when the gateway serves
+    TLS — its own certificate (enough for a self-signed one). Empty when neither applies.
+    Relative paths are resolved from the repo root, as the gateway does.
+    """
+    grpc_cfg = cfg.get("grpc", {})
+    ca = os.environ.get("GRPC_TLS_CA") or grpc_cfg.get("tls_ca") or ""
+    cert = os.environ.get("GRPC_TLS_CERT") or grpc_cfg.get("tls_cert") or ""
+    key = os.environ.get("GRPC_TLS_KEY") or grpc_cfg.get("tls_key") or ""
+    path = ca or (cert if cert and key else "")
+    if not path:
+        return ""
+    return str(Path(path) if Path(path).is_absolute() else WORKFLOW_DIR / path)
+
+def popen_group_kwargs() -> dict:
+    """Start each service in its own process group so stopping it also stops its children."""
+    if IS_WINDOWS:
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+def stop_process_tree(proc: subprocess.Popen) -> None:
+    if proc.poll() is not None:
+        return
+    try:
+        if IS_WINDOWS:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, timeout=10)
+        else:
+            os.killpg(proc.pid, signal.SIGTERM)
+        proc.wait(timeout=5)
+    except Exception:
+        try:
+            if IS_WINDOWS:
+                proc.kill()
+            else:
+                os.killpg(proc.pid, signal.SIGKILL)
+        except Exception:
+            pass
+
 
 # ───────── Port killer ─────────────────────────────────────────────────────
+def listening_pids(port: int) -> set[int]:
+    """PIDs with a socket LISTENING on ``port`` — never clients merely connected to it."""
+    pids: set[int] = set()
+    if not IS_WINDOWS:
+        result = subprocess.run(
+            ["lsof", "-t", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN"],
+            capture_output=True, text=True, timeout=5,
+        )
+        pids.update(int(p) for p in result.stdout.split() if p.strip().isdigit())
+        return pids
+    result = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=5)
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        # Proto  Local-Address  Foreign-Address  State  PID
+        if len(parts) >= 5 and parts[3] == "LISTENING" and parts[1].rsplit(":", 1)[-1] == str(port):
+            if parts[4].isdigit():
+                pids.add(int(parts[4]))
+    return pids
+
 def kill_port(port: int) -> None:
-    """Kill bất kỳ process nào đang chiếm port (hỗ trợ cả Windows và macOS/Linux)."""
-    if os.name != 'nt':
-        # macOS / Linux
+    """Free ``port`` by stopping whatever is listening on it (left over from an earlier run)."""
+    try:
+        pids = {p for p in listening_pids(port) if p > 4 and p != os.getpid()}
+    except Exception as e:
+        log("LAUNCHER", YELLOW, f"Could not inspect port {port}: {e}")
+        return
+    for pid in pids:
         try:
-            result = subprocess.run(
-                ["lsof", "-t", f"-i:{port}"],
-                capture_output=True, text=True, timeout=5
-            )
-            pids = result.stdout.strip().split()
-            for pid_str in pids:
-                if pid_str:
-                    pid = int(pid_str)
-                    subprocess.run(["kill", "-9", str(pid)], timeout=3)
-                    log("LAUNCHER", GREEN, f"Successfully killed process on port {port} (PID {pid})")
+            if IS_WINDOWS:
+                subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, timeout=5)
+            else:
+                os.kill(pid, signal.SIGKILL)
+            log("LAUNCHER", GREEN, f"Stopped the process listening on port {port} (PID {pid})")
         except Exception as e:
-            log("LAUNCHER", YELLOW, f"Could not kill port {port} on macOS/Linux: {e}")
-    else:
-        # Windows
-        try:
-            result = subprocess.run(
-                ["netstat", "-ano"],
-                capture_output=True, text=True, timeout=5
-            )
-            pids = set()
-            for line in result.stdout.splitlines():
-                if f":{port}" in line and ("LISTENING" in line or "ESTABLISHED" in line):
-                    parts = line.split()
-                    if parts:
-                        try:
-                            pids.add(int(parts[-1]))
-                        except ValueError:
-                            pass
-            for pid in pids:
-                if pid > 4:  # Bỏ qua System processes
-                    try:
-                        res = subprocess.run(["taskkill", "/PID", str(pid), "/F"],
-                                             capture_output=True, text=True, timeout=3)
-                        if res.returncode == 0:
-                            log("LAUNCHER", GREEN, f"Successfully killed process on port {port} (PID {pid})")
-                        else:
-                            log("LAUNCHER", YELLOW, f"Taskkill for PID {pid} returned code {res.returncode}: {res.stderr.strip()}")
-                    except Exception as e:
-                        log("LAUNCHER", RED, f"Failed to kill PID {pid}: {e}")
-        except Exception as e:
-            log("LAUNCHER", YELLOW, f"Could not kill port {port}: {e}")
+            log("LAUNCHER", RED, f"Failed to stop PID {pid} on port {port}: {e}")
 
 
 # ───────── Frontend Runner ─────────────────────────────────────────────────
@@ -125,28 +168,33 @@ def run_frontend(cfg: dict) -> subprocess.Popen:
     port    = fe_cfg.get("port", 3000)
     cmd     = fe_cfg.get("dev_command", "yarn dev")
 
-    # Giải phóng port nếu đang bị chiếm
     log("FE", GREEN, f"Checking port {port}...")
     kill_port(port)
-    time.sleep(2)
 
     log("FE", GREEN, f"Starting Next.js → http://localhost:{port}")
     log("FE", GREEN, f"Command: {cmd}  (cwd: {FRONTEND_DIR})")
 
+    # Values already in the environment win over config.json.
     env = os.environ.copy()
     env["PORT"] = str(port)
-    env["BACKEND_URL"] = "http://127.0.0.1:8000"
-    
-    # Tăng giới hạn bộ nhớ (4GB là đủ cho Next.js, 8GB có thể gây lỗi allocation trên một số máy) và bật debug cho Rust/Turbopack
-    env["NODE_OPTIONS"] = "--max-old-space-size=4096"
-    env["RUST_BACKTRACE"] = "1"
+    # 4GB is enough for Next.js (8GB can fail to allocate on some machines); Rust backtraces for Turbopack.
+    env.setdefault("NODE_OPTIONS", "--max-old-space-size=4096")
+    env.setdefault("RUST_BACKTRACE", "1")
 
-    # Inject MongoDB config for child_process fallbacks
+    # Some API routes read MongoDB directly.
     mongo_cfg = cfg.get("mongodb", {})
-    env["MONGO_URI"] = mongo_cfg.get("uri", "mongodb://localhost:27017")
-    env["MONGO_DB"]  = mongo_cfg.get("db", "vba_brain_core")
+    env.setdefault("MONGO_URI", mongo_cfg.get("uri", "mongodb://localhost:27017"))
+    env.setdefault("MONGO_DB", mongo_cfg.get("db", "vba_brain_core"))
 
-    # Clear .next cache if requested via --clean
+    # Where the API routes find the gateway, and the token it expects (if any).
+    host, grpc_port, token = grpc_settings(cfg)
+    client_host = "localhost" if host in ("0.0.0.0", "::", "[::]") else host
+    env.setdefault("GRPC_SERVER_ADDRESS", f"{client_host}:{grpc_port}")
+    if token:
+        env.setdefault("GRPC_AUTH_TOKEN", token)
+    if tls_ca := grpc_tls_ca(cfg):
+        env["GRPC_TLS_CA"] = tls_ca  # your own GRPC_TLS_CA wins; it is only made absolute for the console
+
     if cfg.get("_clean_cache"):
         log("FE", YELLOW, "Cleaning .next cache...")
         dot_next = FRONTEND_DIR / ".next"
@@ -167,7 +215,8 @@ def run_frontend(cfg: dict) -> subprocess.Popen:
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=env
+        env=env,
+        **popen_group_kwargs(),
     )
     Thread(target=stream_output, args=(proc, "FE", GREEN), daemon=True).start()
     return proc
@@ -175,33 +224,22 @@ def run_frontend(cfg: dict) -> subprocess.Popen:
 
 # ───────── Backend Runner ──────────────────────────────────────────────────
 def run_backend(cfg: dict) -> subprocess.Popen | None:
-    port = 50051  # Unified gRPC Server Port
-
-    # Luôn update .env từ config.json
-    env_file = BACKEND_DIR / ".env"
-    mongo_cfg = cfg.get("mongodb", {})
-    mongo_uri = mongo_cfg.get("uri", "mongodb://localhost:27017")
-    mongo_db  = mongo_cfg.get("db", "vba_brain_core")
-    env_content = f"MONGO_URI={mongo_uri}\nMONGO_DB={mongo_db}\nL2_STAGE=dev\n"
-    env_file.write_text(env_content, encoding="utf-8")
-    log("BE", YELLOW, f"MongoDB URI → {mongo_uri}")
-
-    # Kiểm tra xem có grpc_server.py không
     server_file = BACKEND_DIR / "grpc_server.py"
     if not server_file.exists():
         log("BE", YELLOW, "grpc_server.py not found.")
         return None
 
-    # Giải phóng BE port
+    host, port, token = grpc_settings(cfg)
     log("BE", CYAN, f"Checking port {port}...")
     kill_port(port)
-    time.sleep(2)
 
-    log("BE", CYAN, f"Starting Unified gRPC API Gateway on port {port}")
-
+    # Values already in the environment win over config.json.
     env = os.environ.copy()
-    env["MONGO_URI"] = mongo_uri
-    env["MONGO_DB"]  = mongo_db
+    mongo_cfg = cfg.get("mongodb", {})
+    env.setdefault("MONGO_URI", mongo_cfg.get("uri", "mongodb://localhost:27017"))
+    env.setdefault("MONGO_DB", mongo_cfg.get("db", "vba_brain_core"))
+    log("BE", YELLOW, f"MongoDB URI → {redact_uri(env['MONGO_URI'])}")
+    log("BE", CYAN, f"Starting Unified gRPC API Gateway on {host}:{port} (auth: {'token' if token else 'off'})")
 
     proc = subprocess.Popen(
         [sys.executable, "-X", "utf8", "grpc_server.py"],
@@ -211,7 +249,8 @@ def run_backend(cfg: dict) -> subprocess.Popen | None:
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=env
+        env=env,
+        **popen_group_kwargs(),
     )
     Thread(target=stream_output, args=(proc, "BE", CYAN), daemon=True).start()
     return proc
@@ -237,7 +276,7 @@ def main():
 
     procs: list[subprocess.Popen] = []
 
-    # Grace period: số giây đợi trước khi bắt đầu monitor (cho các process thời gian khởi động)
+    # Grace period before monitoring starts (lets the services boot)
     STARTUP_GRACE_SECONDS = 15
 
     try:
@@ -246,7 +285,7 @@ def main():
             fe_proc = run_frontend(cfg)
             if fe_proc:
                 procs.append(fe_proc)
-            time.sleep(3)  # Nhường cho FE khởi động
+            time.sleep(3)  # let the frontend start first
 
         if not args.fe_only:
             be_proc = run_backend(cfg)
@@ -254,11 +293,9 @@ def main():
                 procs.append(be_proc)
 
         log("LAUNCHER", BOLD, f"All services started. Monitoring begins in {STARTUP_GRACE_SECONDS}s. Press Ctrl+C to stop.")
-
-        # Grace period: không monitor trong lúc startup
         time.sleep(STARTUP_GRACE_SECONDS)
 
-        # Monitor vòng lặp — chỉ dừng nếu process chết sau grace period
+        # Stop everything as soon as one service dies after the grace period
         while True:
             time.sleep(2)
             for p in procs:
@@ -272,11 +309,7 @@ def main():
     except KeyboardInterrupt:
         print(f"\n{YELLOW}[LAUNCHER] Shutting down all services...{RESET}")
         for p in procs:
-            try:
-                p.terminate()
-                p.wait(timeout=5)
-            except Exception:
-                p.kill()
+            stop_process_tree(p)
         print(f"{GREEN}[LAUNCHER] All services stopped. Goodbye!{RESET}\n")
 
 

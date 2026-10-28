@@ -34,8 +34,8 @@ Usage (from 02_tools):
         --input    "inputs/BD_json/screen/F_Login.json" ^
         --output   "outputs/BD_Output/screen/F_Login.xlsx"
 
-    # Optional: disable built-in 変更履歴 mock rows
-    python -X utf8 scripts/fill_bd_excel.py ... --no-mock-change-history
+    # Optional: layout preview with built-in 変更履歴 sample rows (never for real docs)
+    python -X utf8 scripts/fill_bd_excel.py ... --mock-change-history
 
     # Batch: override dirs only
     python -X utf8 scripts/fill_bd_excel.py `
@@ -65,6 +65,13 @@ try:
 except ImportError as e:
     raise SystemExit("[ERR] Missing dependency. Run: pip install openpyxl") from e
 
+from excel_translator import (  # noqa: E402
+    get_target_language,
+    restore_japanese_sheet_names,
+    snapshot_template_labels,
+    translate_text,
+    translate_workbook,
+)
 from layer4_output_settings import get_bd_screen_output_filename_prefix  # noqa: E402
 
 
@@ -201,6 +208,7 @@ def _draw_layout_shapes_via_excel_com(
     *,
     template_path: Path | None = None,
     sheet_name: str,
+    template_sheet_name: str | None = None,
     labels: list[str],
 ) -> None:
     """Duplicate template shapes (circle/rectangle) around layout image via COM."""
@@ -238,7 +246,7 @@ def _draw_layout_shapes_via_excel_com(
         for i in range(1, ws.Shapes.Count + 1):
             shp = ws.Shapes(i)
             try:
-                if int(shp.Type) == _MsoPictureTypes:
+                if int(shp.Type) in _MsoPictureTypes:
                     continue
             except Exception:
                 pass
@@ -306,7 +314,7 @@ def _draw_layout_shapes_via_excel_com(
         if (proto_circle is None or proto_rect is None) and template_path is not None and Path(template_path).is_file():
             try:
                 wb_tpl = app.Workbooks.Open(str(Path(template_path).resolve()))
-                ws_tpl = wb_tpl.Worksheets(sheet_name)
+                ws_tpl = wb_tpl.Worksheets(template_sheet_name or sheet_name)
 
                 t_circle = None
                 t_rect = None
@@ -456,23 +464,39 @@ SHEET_FILE_SPEC_PREFIX = "ファイル仕様書（"  # + "E***）"
 # ─────────────────────────────────────────────
 # Cell helpers (merge-aware)
 # ─────────────────────────────────────────────
-def set_cell(ws: Worksheet, coord: str, value: Any) -> None:
+def set_cell(ws: Worksheet, coord: str, value: Any):
     """Write a value to a cell. If the cell is part of a merged range,
-    write to the top-left cell of the merge (the only writable one)."""
+    write to the top-left cell of the merge (the only writable one).
+    Returns the cell written, or None."""
     cell = ws[coord]
     if isinstance(cell, MergedCell):
         for rng in ws.merged_cells.ranges:
             if coord in rng:
-                ws.cell(rng.min_row, rng.min_col).value = value
-                return
-        # Fallback: merged but no range matched (shouldn't happen).
-        return
+                cell = ws.cell(rng.min_row, rng.min_col)
+                break
+        else:
+            # Merged but no range matched (shouldn't happen).
+            return None
     cell.value = value
+    return cell
 
 
-def clear_cells(ws: Worksheet, coords: Iterable[str]) -> None:
-    for c in coords:
-        set_cell(ws, c, None)
+def keep_as_text(cell) -> None:
+    """Store a string starting with ``=`` as plain text instead of a formula.
+
+    BD/DD JSON often contains **Access** expressions (e.g. ``=DLookUp(...)``) which
+    are not valid Excel formulas — Excel would drop them on open (*Removed Records:
+    Formula*). The cell keeps the exact text and gets Excel's quote prefix.
+    """
+    if cell is not None and isinstance(cell.value, str) and cell.value.startswith("="):
+        cell.data_type = "s"
+        cell.quotePrefix = True
+
+
+def write_text(cell, value: Any) -> None:
+    """Assign ``value`` to ``cell``; strings starting with ``=`` stay text."""
+    cell.value = value
+    keep_as_text(cell)
 
 
 def clear_block(ws: Worksheet, row_start: int, row_end: int,
@@ -494,19 +518,8 @@ def _norm(v: Any) -> str:
 
 
 def put(ws: Worksheet, coord: str, value: Any) -> None:
-    """Write normalised value (N/A → '') to a cell.
-
-    Strings that start with ``=`` are interpreted by Excel as worksheet
-    formulas.  BD JSON often contains **Access** expressions (e.g.
-    ``=DLookUp(...)``) which are **not** valid Excel formulas — on open Excel
-    removes them and logs *Removed Records: Formula*.  Prefix with a single
-    ASCII apostrophe so the cell is stored as **plain text** (Excel hides the
-    leading ``'`` in the UI).
-    """
-    s = _norm(value)
-    if s.startswith("=") and not s.startswith("'"):
-        s = "'" + s
-    set_cell(ws, coord, s)
+    """Write normalised value (N/A → '') to a cell as plain text (see ``keep_as_text``)."""
+    keep_as_text(set_cell(ws, coord, _norm(value)))
 
 
 def template_span(ws: Worksheet, template_row: int) -> int:
@@ -693,10 +706,21 @@ def _auto_fit_event_row_height(ws: Worksheet, row: int, item: dict[str, Any]) ->
 # ─────────────────────────────────────────────
 # Template-row auto-locator (robust to inserted/removed rows)
 # ─────────────────────────────────────────────
+def _label_variants(text: str) -> tuple[str, ...]:
+    """A Japanese template label first, then its rendering in an English template."""
+    jp = (text or "").strip()
+    if not jp:
+        return ()
+    en = translate_text(jp).strip()
+    return (jp,) if en == jp else (jp, en)
+
+
 def _cell_value_merge_aware(ws: Worksheet, row: int, col_idx: int) -> Any:
     """Return the value at (row, col) even if the cell is part of a merge
-    (merges store the value only on the top-left cell)."""
-    cell = ws.cell(row, col_idx)
+    (merges store the value only on the top-left cell). Never creates cells."""
+    cell = ws._cells.get((row, col_idx))
+    if cell is None:
+        return None
     if cell.value is not None:
         return cell.value
     if isinstance(cell, MergedCell):
@@ -735,44 +759,51 @@ def put_value_right_of_label(
     col_start: int = 1,
     col_end: int = 45,
 ) -> bool:
-    """Find a cell whose trimmed text equals ``label``; write ``value`` to the
-    first column immediately to the right of that label's merged block (same row
-    as the merge top). Returns True if a label was found and written."""
-    needle = (label or "").strip()
-    if not needle:
-        return False
-    s = _norm(value)
-    if s.startswith("=") and not s.startswith("'"):
-        s = "'" + s
+    """Find a cell whose trimmed text equals ``label`` (Japanese first, then the
+    English template label); write ``value`` to the first column immediately to the
+    right of that label's merged block (same row as the merge top). Returns True if
+    a label was found and written."""
     white = PatternFill(fill_type="solid", fgColor="FFFFFF")
-    for r in range(row_start, row_end + 1):
-        for c in range(col_start, col_end + 1):
-            v = _cell_value_merge_aware(ws, r, c)
-            if v is None:
-                continue
-            if str(v).strip() != needle:
-                continue
-            mr1, _mc1, _mr2, mc2 = _merge_bounds(ws, r, c)
-            tgt_row = mr1
-            tgt_col = mc2 + 1
-            if tgt_col > col_end:
-                return False
-            coord = f"{get_column_letter(tgt_col)}{tgt_row}"
-            set_cell(ws, coord, s)
-            mc = _master_cell(ws, tgt_row, tgt_col)
-            mc.fill = white
-            return True
+    for needle in _label_variants(label):
+        for r in range(row_start, row_end + 1):
+            for c in range(col_start, col_end + 1):
+                v = _cell_value_merge_aware(ws, r, c)
+                if v is None or str(v).strip() != needle:
+                    continue
+                mr1, _mc1, _mr2, mc2 = _merge_bounds(ws, r, c)
+                tgt_row = mr1
+                tgt_col = mc2 + 1
+                if tgt_col > col_end:
+                    return False
+                put(ws, f"{get_column_letter(tgt_col)}{tgt_row}", value)
+                mc = _master_cell(ws, tgt_row, tgt_col)
+                mc.fill = white
+                return True
     return False
 
 
-def fill_branded_header_fields_by_label(ws: Worksheet, author: str = None) -> None:
-    """Fill fixed システム名 / 作成者 / 作成日 values on any sheet that uses the banner."""
-    today = date.today().strftime("%d/%m/%Y")
-    creator = author or os.environ.get("L3_UPDATED_BY", "").strip() or "System"
+def _branded_header_values(data: dict) -> tuple[str, str, str]:
+    """System name / author / created date for the banner: JSON first, then defaults."""
+    system_name = _norm(data.get("system_name")) or "vba_brain"
+    author = (
+        _norm(data.get("author"))
+        or _norm(data.get("updated_by"))
+        or os.environ.get("L3_UPDATED_BY", "").strip()
+        or "System"
+    )
+    created = _norm(data.get("created_date")) or date.today().strftime("%d/%m/%Y")
+    return system_name, author, created
+
+
+def fill_branded_header_fields_by_label(ws: Worksheet, author: str = None, *,
+                                        system_name: str | None = None,
+                                        created_date: str | None = None) -> None:
+    """Fill システム名 / 作成者 / 作成日 values on any sheet whose banner keeps each
+    value to the right of its label (layout / edit / overview / detail sheets)."""
     pairs = (
-        ("システム名", "vba_brain"),
-        ("作成者", creator),
-        ("作成日", today),
+        ("システム名", system_name or "vba_brain"),
+        ("作成者", author or os.environ.get("L3_UPDATED_BY", "").strip() or "System"),
+        ("作成日", created_date or date.today().strftime("%d/%m/%Y")),
     )
     for lbl, val in pairs:
         if not put_value_right_of_label(
@@ -781,34 +812,38 @@ def fill_branded_header_fields_by_label(ws: Worksheet, author: str = None) -> No
             print(f"[WARN] Header label not found ({ws.title}): {lbl}")
 
 
+def fill_branded_header_fields(ws: Worksheet, data: dict) -> None:
+    """``fill_branded_header_fields_by_label`` with the values taken from the JSON."""
+    system_name, author, created = _branded_header_values(data)
+    fill_branded_header_fields_by_label(
+        ws, author, system_name=system_name, created_date=created,
+    )
+
+
 def find_row_by_cell_text(ws: Worksheet, col: str, marker: str,
                           row_start: int = 1, row_end: int = 300) -> int | None:
     """Return the 1-based row of the first cell in `col` whose trimmed text
-    equals `marker`, searching within [row_start..row_end]. None if not found."""
+    equals `marker` (Japanese first, then the English template label), searching
+    within [row_start..row_end]. None if not found."""
     col_idx = _col_to_index(col)
-    needle = marker.strip()
-    for r in range(row_start, row_end + 1):
-        v = _cell_value_merge_aware(ws, r, col_idx)
-        if v is None:
-            continue
-        if str(v).strip() == needle:
-            return r
+    for needle in _label_variants(marker):
+        for r in range(row_start, row_end + 1):
+            v = _cell_value_merge_aware(ws, r, col_idx)
+            if v is not None and str(v).strip() == needle:
+                return r
     return None
 
 
 def find_row_by_cell_contains(ws: Worksheet, col: str, substring: str,
                               row_start: int = 1, row_end: int = 300) -> int | None:
-    """First row in [row_start..row_end] where `col` cell text contains `substring`."""
+    """First row in [row_start..row_end] where `col` cell text contains `substring`
+    (Japanese first, then the English template label)."""
     col_idx = _col_to_index(col)
-    sub = substring.strip()
-    if not sub:
-        return None
-    for r in range(row_start, row_end + 1):
-        v = _cell_value_merge_aware(ws, r, col_idx)
-        if v is None:
-            continue
-        if sub in str(v).strip():
-            return r
+    for sub in _label_variants(substring):
+        for r in range(row_start, row_end + 1):
+            v = _cell_value_merge_aware(ws, r, col_idx)
+            if v is not None and sub in str(v).strip():
+                return r
     return None
 
 
@@ -886,7 +921,7 @@ def locate_template_row(ws: Worksheet,
 # ─────────────────────────────────────────────
 def fill_common_header_layout(ws: Worksheet, bd: dict) -> None:
     """Header block on Layout sheet (rows 1-4)."""
-    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
+    fill_branded_header_fields(ws, bd)
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "W4", bd.get("screen_name"))
@@ -896,7 +931,7 @@ def fill_common_header_layout(ws: Worksheet, bd: dict) -> None:
 
 def fill_common_header_edit(ws: Worksheet, bd: dict) -> None:
     """Header block on Edit sheet (rows 1-4)."""
-    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
+    fill_branded_header_fields(ws, bd)
     put(ws, "G2", bd.get("subsystem_name"))
     put(ws, "G4", bd.get("screen_id"))
     put(ws, "W4", bd.get("screen_name"))
@@ -905,8 +940,16 @@ def fill_common_header_edit(ws: Worksheet, bd: dict) -> None:
 
 
 def fill_common_header_event(ws: Worksheet, bd: dict) -> None:
-    """Header block on Event (Table Update) sheet."""
-    fill_branded_header_fields_by_label(ws, author=bd.get("author") or bd.get("updated_by"))
+    """Header block on Event (Table Update) sheet.
+
+    Labels sit on row 2 with their values below on row 3, so the values go to fixed
+    cells (writing "right of the label" would overwrite the neighbouring label).
+    """
+    system_name, author, created = _branded_header_values(bd)
+    put(ws, "A3", bd.get("project_name"))   # template ships a sample project name
+    put(ws, "G3", system_name)
+    put(ws, "AJ3", author)
+    put(ws, "AN3", created)
     put(ws, "N3", bd.get("subsystem_name"))
     put(ws, "G6", bd.get("screen_id"))
     put(ws, "T6", bd.get("screen_name"))
@@ -931,22 +974,46 @@ CH_COL = {
     "approver":   "AI",  # merged AI:AM
 }
 
+# Header labels of the 変更履歴 table (row above the data template row).
+CH_LABELS = {
+    "revision":   "改訂",
+    "date":       "更新日",
+    "content":    "更新内容",
+    "reason":     "更新理由/案件番号",
+    "updated_by": "更新者",
+    "approver":   "承認者",
+}
+
 # Minimum number of data rows rendered on 変更履歴 (checklist / layout).
 CH_MIN_DATA_ROWS = 10
 
 
+def ensure_change_history_labels(ws: Worksheet) -> None:
+    """Write the 変更履歴 title / column headers when the loaded template lacks them.
+
+    Some templates lost them (an output was saved back as template). Merge-aware;
+    run before ``snapshot_template_labels`` so they are translated like template text.
+    """
+    template_row = locate_template_row(
+        ws, CH_TEMPLATE_MARKERS, offset=1, fallback=CH_TEMPLATE_FALLBACK,
+    )
+    hdr_row = template_row - 1
+    if hdr_row < 1:
+        return
+    for key, col in CH_COL.items():
+        if _cell_value_merge_aware(ws, hdr_row, _col_to_index(col)) in (None, ""):
+            set_cell(ws, f"{col}{hdr_row}", CH_LABELS[key])
+    if hdr_row > 1 and _cell_value_merge_aware(ws, hdr_row - 1, 1) in (None, ""):
+        set_cell(ws, f"A{hdr_row - 1}", SHEET_CHANGE_HISTORY)
+
+
 def build_mock_change_history(bd: dict) -> list[dict]:
-    """Sample rows for 変更履歴 when JSON `data` is empty (dev / layout preview).
+    """Sample rows for 変更履歴 (layout preview only — never for delivered documents).
 
     Returns ``CH_MIN_DATA_ROWS`` items so the sheet always shows a full stub block.
     Column keys match `CH_COL`: revision, date, content, reason, updated_by, approver.
     """
-    try:
-        from config import TARGET_LANGUAGE
-    except ImportError:
-        TARGET_LANGUAGE = "en"
-    
-    is_english = TARGET_LANGUAGE.lower() in ("en", "english")
+    is_english = get_target_language().lower() in ("en", "english")
 
     sid = (bd.get("screen_id") or bd.get("form_id") or "SCREEN").strip()
     sname = (bd.get("screen_name") or bd.get("form_name") or sid).strip()
@@ -1171,8 +1238,8 @@ def fill_change_history(ws: Worksheet, data: list[dict]) -> None:
 # ─────────────────────────────────────────────
 # All template-row positions are auto-located from header text so the script
 # survives row-shifts when the user edits the template (adds/removes rows).
-LAYOUT_EVENT_MARKERS  = [("A", "イベントID")]
-LAYOUT_EVENT_FALLBACK = 63
+LAYOUT_EVENT_MARKERS  = [("A", "イベントID")]   # also matches "Event ID"
+LAYOUT_EVENT_FALLBACK = 41                        # first (styled) data row of the template
 
 LAYOUT_EVENT_COL = {
     "event_id":       "A",   # merged A:C
@@ -1190,6 +1257,14 @@ LAYOUT_EVENT_COL = {
 LAYOUT_RECSRC_COL        = "AN"
 LAYOUT_RECSRC_MARKERS    = [("AM", "＜レコードソース＞")]
 LAYOUT_RECSRC_FALLBACK   = 10
+
+
+def record_source_label(src: Any) -> Any:
+    """Record-source cell text: ``query_display`` (query sheet name), else ``query_name``."""
+    if isinstance(src, dict):
+        return src.get("query_display") or src.get("query_name")
+    return src
+
 
 # Process Overview — section title "【処理概要】" in column AM; data below.
 LAYOUT_PROC_COL          = "AM"
@@ -1234,8 +1309,7 @@ def fill_layout(ws: Worksheet, bd: dict,
         rows = expand_table(ws, recsrc_row, len(rec_sources))
         for src, r in zip(rec_sources, rows):
             clear_row_cells(ws, r, [LAYOUT_RECSRC_COL])
-            val = src.get("query_display") if isinstance(src, dict) else src
-            put(ws, f"{LAYOUT_RECSRC_COL}{r}", val)
+            put(ws, f"{LAYOUT_RECSRC_COL}{r}", record_source_label(src))
 
     # ── Process Overview list (1 template row → expand) ──
     proc_row = locate_template_row(
@@ -1276,7 +1350,7 @@ def fill_layout(ws: Worksheet, bd: dict,
 # ─────────────────────────────────────────────
 # Data template row is resolved at runtime via ``locate_edit_template_row``
 # (supports both "フォームヘッダー" divider templates and compact 3-row headers).
-EDIT_FALLBACK = 10
+EDIT_FALLBACK = 9   # first data row of the bundled (compact) template
 EDIT_COL = {
     "item_no":                     "A",   # merged A:B
     "io":                          "M",   # merged M:N
@@ -1385,10 +1459,11 @@ def fill_event_style_table_sheet(ws: Worksheet, bd: dict,
     """
     fill_common_header_event(ws, bd)
 
-    if header:
-        put(ws, "G8",  header.get("table_physical_name") or header.get("file_name"))
-        put(ws, "Y8",  header.get("table_logical_name") or header.get("file_type"))
-        put(ws, "AO8", header.get("update_type") or "")
+    # Always written: the template ships sample table names in G8 / Y8.
+    header = header or {}
+    put(ws, "G8",  header.get("table_physical_name") or header.get("file_name"))
+    put(ws, "Y8",  header.get("table_logical_name") or header.get("file_type"))
+    put(ws, "AO8", header.get("update_type"))
 
     template_row = locate_template_row(
         ws, EVENT_MARKERS, offset=1, fallback=EVENT_FALLBACK,
@@ -1583,7 +1658,7 @@ def fill_excel(
     bd: dict,
     output_path: Path,
     *,
-    mock_change_history: bool = True,
+    mock_change_history: bool = False,
     image_search_dirs: list[Path] | None = None,
     draw_layout_shapes: bool = True,
 ) -> None:
@@ -1591,17 +1666,10 @@ def fill_excel(
     shutil.copyfile(template_path, output_path)
 
     wb = load_workbook(output_path)
-
-    try:
-        import sys
-        from pathlib import Path
-        _scripts_dir = Path(__file__).resolve().parent
-        if str(_scripts_dir) not in sys.path:
-            sys.path.insert(0, str(_scripts_dir))
-        from excel_translator import restore_japanese_sheet_names
-        restore_japanese_sheet_names(wb)
-    except Exception as e:
-        print(f"[WARN] Failed to restore Japanese sheet names: {e}")
+    restore_japanese_sheet_names(wb)
+    if SHEET_CHANGE_HISTORY in wb.sheetnames:
+        ensure_change_history_labels(wb[SHEET_CHANGE_HISTORY])
+    labels = snapshot_template_labels(wb)
 
     if SHEET_CHANGE_HISTORY in wb.sheetnames:
         ch_data = (bd.get("sheet_1_change_history", {}) or {}).get("data", []) or []
@@ -1612,9 +1680,9 @@ def fill_excel(
     else:
         print(f"[WARN] Sheet not found: {SHEET_CHANGE_HISTORY}")
 
-    if SHEET_LAYOUT in wb.sheetnames:
-        fill_layout(wb[SHEET_LAYOUT], bd,
-                    image_search_dirs=image_search_dirs)
+    layout_ws = wb[SHEET_LAYOUT] if SHEET_LAYOUT in wb.sheetnames else None
+    if layout_ws is not None:
+        fill_layout(layout_ws, bd, image_search_dirs=image_search_dirs)
     else:
         print(f"[WARN] Sheet not found: {SHEET_LAYOUT}")
 
@@ -1628,28 +1696,38 @@ def fill_excel(
     handle_file_spec_sheets(wb, bd)
     handle_event_sheets(wb, bd)
 
-    try:
-        import sys
-        from pathlib import Path
-        _scripts_dir = Path(__file__).resolve().parent
-        if str(_scripts_dir) not in sys.path:
-            sys.path.insert(0, str(_scripts_dir))
-        from excel_translator import translate_workbook
-        translate_workbook(wb)
-    except Exception as e:
-        print(f"[WARN] Failed to translate workbook: {e}")
-
+    translate_workbook(wb, labels)
     wb.save(output_path)
 
-    if draw_layout_shapes and SHEET_LAYOUT in wb.sheetnames:
-        labels = _collect_layout_shape_labels(bd)
-        if labels:
+    if draw_layout_shapes and layout_ws is not None:
+        shape_labels = _collect_layout_shape_labels(bd)
+        if shape_labels:
             _draw_layout_shapes_via_excel_com(
                 output_path,
                 template_path=template_path,
-                sheet_name=SHEET_LAYOUT,
-                labels=labels,
+                sheet_name=layout_ws.title,          # title after translation
+                template_sheet_name=SHEET_LAYOUT,
+                labels=shape_labels,
             )
+
+
+def add_mock_change_history_args(parser: argparse.ArgumentParser) -> None:
+    """Opt-in ``--mock-change-history`` (layout preview only); the old
+    ``--no-mock-change-history`` stays accepted as a no-op."""
+    parser.add_argument(
+        "--mock-change-history",
+        dest="mock_change_history",
+        action="store_true",
+        default=False,
+        help="Fill an empty 変更履歴 with built-in sample rows (layout preview only; "
+             "never for delivered documents).",
+    )
+    parser.add_argument(
+        "--no-mock-change-history",
+        dest="mock_change_history",
+        action="store_false",
+        help=argparse.SUPPRESS,
+    )
 
 
 def main() -> None:
@@ -1684,19 +1762,13 @@ def main() -> None:
         default=None,
         help=f"Batch: output folder for .xlsx (default: {DEFAULT_OUTPUT_DIR})",
     )
-    parser.add_argument(
-        "--no-mock-change-history",
-        dest="mock_change_history",
-        action="store_false",
-        default=True,
-        help="Disable auto-fill of 変更履歴 mock rows when JSON data is empty.",
-    )
+    add_mock_change_history_args(parser)
     parser.add_argument(
         "--image-dir",
         action="append",
         default=None,
         help="Directory to search for screen images (can be repeated). "
-             "Default: 02_tools/Access_DesignView/Form.",
+             f"Default: {DEFAULT_IMAGE_DIR} (optional; skipped when missing).",
     )
     parser.add_argument(
         "--no-layout-shapes",
@@ -1737,6 +1809,9 @@ def main() -> None:
             try:
                 with open(input_path, "r", encoding="utf-8") as f:
                     bd = json.load(f)
+                if isinstance(bd, dict) and bd.get("type") == "report":
+                    print(f"[SKIP]  {input_path.name}: report JSON — use fill_bd_report_excel.py")
+                    continue
                 fill_excel(
                     template_path,
                     bd,

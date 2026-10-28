@@ -15,16 +15,16 @@ Tài liệu mô tả cách API **`GET /api/graph-wpf`** chuyển đồ thị dep
 
 ## 2. Nguồn dữ liệu mapping (JSON)
 
-Đường dẫn tính từ thư mục **`workflow/frontend`** (`process.cwd()` khi chạy Next):
+Đường dẫn tính từ `GRAPHVIEW_DIR` = **`src/backend/workflow/layer5/agents/graphview`** (xem `src/lib/paths.ts`; override gốc workflow bằng `VBA_BRAIN_ROOT`):
 
 | File (relative) | Khóa | Dùng cho |
 |-----------------|------|----------|
-| `../backend/layer5/agents/graphview/outputs/forms/listFormJpToEn.json` | `access_form_name` → `wpf_view_name`, `wpf_viewmodel_name` | Nhãn View / ViewModel (form & report dùng chung map này nếu có tên trùng) |
-| `../backend/layer5/agents/graphview/outputs/events/listEventJpToEn.json` | `access_form_name` + `handler_hint` → `suggested_dotnet_handler_name` | Nhãn node **handler** |
-| `../backend/layer5/agents/graphview/outputs/queries/listQueryJpToEn.json` | `access_query_name` → `suggested_dotnet_type_name` | Suy ra tên **Repository** |
-| `../backend/layer5/agents/graphview/outputs/macros/listMacroJpToEn.json` | `access_macro_name` → `suggested_dotnet_type_name` | Nhãn node **workflow** |
+| `outputs/forms/listFormJpToEn.json` | `access_form_name` → `wpf_view_name`, `wpf_viewmodel_name` | Nhãn View / ViewModel (form & report dùng chung map này nếu có tên trùng) |
+| `outputs/events/listEventJpToEn.json` | `access_form_name` + `handler_hint` → `suggested_dotnet_handler_name` | Nhãn node **handler** |
+| `outputs/queries/listQueryJpToEn.json` | `access_query_name` → `suggested_dotnet_type_name` | Suy ra tên **Repository** |
+| `outputs/macros/listMacroJpToEn.json` | `access_macro_name` → `suggested_dotnet_type_name` | Nhãn node **workflow** |
 
-JSON được đọc một lần và cache trong bộ nhớ process (biến `cache` trong `loadWpfMaps()`).
+JSON được cache trong bộ nhớ process (biến `cache` trong `loadWpfMaps()`) chỉ khi đọc đủ cả 4 file; thiếu file nào thì log cảnh báo một lần và lần gọi sau đọc lại.
 
 ---
 

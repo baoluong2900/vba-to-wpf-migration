@@ -6,19 +6,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const response = await promisifyGrpcCall<any, any>(
       layer3Client.ConvertQuery.bind(layer3Client),
-      {
-        name: body.name,
-        model: body.model || "qwen-max",
-        fast_mode: body.fast_mode || false,
-        use_cache: body.use_cache || true
-      }
+      // An empty model lets the gateway use llm_settings.layer3_migration_model.
+      { name: body.name, model: body.model || '' }
     );
 
     if (!response.success) {
       return NextResponse.json({ success: false, error: response.error }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, query: JSON.parse(response.query_json || '{}') });
+    return NextResponse.json({ success: true, result: JSON.parse(response.query_json || '{}') });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

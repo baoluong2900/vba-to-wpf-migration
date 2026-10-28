@@ -5,10 +5,13 @@ Runs `dotnet build` on the solution, parses errors, sends them to LLM for fix,
 then retries. Max 3 attempts per build cycle.
 
 Flow:
-    1. dotnet build vba_brain.sln --no-restore
+    1. dotnet build vba_brain.slnx --no-restore
     2. Parse stderr → list of CompileError
-    3. If errors → LLM fix → rewrite file → goto 1
+    3. If errors in files we generated → LLM fix (fed the file as it is on disk) → rewrite → goto 1
     4. If clean build → return success
+
+Generated files are matched to errors by resolved absolute path, after de-duplicating by target
+(the last agent wins: Logic's patched ViewModel, not UI's skeleton).
 """
 from __future__ import annotations
 
@@ -134,11 +137,14 @@ class BuildVerifier:
         Returns:
             Final BuildResult after all attempts.
         """
-        from pipeline.file_writer import SolutionWriter
+        from pipeline.file_writer import SolutionWriter, dedupe_generated_files, is_code_file
 
-        retries = max_retries or MAX_RETRIES
+        retries = max(1, MAX_RETRIES if max_retries is None else max_retries)
         llm = L5LLMClient()
         writer = SolutionWriter(self.solution_dir)
+        targets = self._targets_by_path(
+            [gf for gf in dedupe_generated_files(generated_files, writer) if is_code_file(gf)], writer
+        )
 
         for attempt in range(1, retries + 1):
             result = self.build()
@@ -151,25 +157,24 @@ class BuildVerifier:
                 logger.error("[Build] Max retries (%d) reached. Giving up.", retries)
                 return result
 
-            # Collect errors for files we generated
-            fixable_errors = self._filter_fixable_errors(result.errors, generated_files)
+            # Group errors by the generated file they belong to (resolved absolute path)
+            errors_by_target: dict[Path, list[CompileError]] = {}
+            seen: set[tuple] = set()  # MSBuild repeats every error in its summary
+            for err in result.errors:
+                target = self._error_target(err.file_path)
+                key = (target, err.line, err.column, err.error_code, err.message)
+                if target in targets and key not in seen:
+                    seen.add(key)
+                    errors_by_target.setdefault(target, []).append(err)
 
-            if not fixable_errors:
+            if not errors_by_target:
                 logger.warning("[Build] Errors in files we didn't generate. Cannot auto-fix.")
                 return result
 
-            # Group errors by file
-            errors_by_file: dict[str, list[CompileError]] = {}
-            for err in fixable_errors:
-                errors_by_file.setdefault(err.file_path, []).append(err)
-
-            # Fix each file
-            for file_path, file_errors in errors_by_file.items():
-                gen_file = self._find_gen_file(file_path, generated_files)
-                if not gen_file:
-                    continue
-
-                fixed_code = self._llm_fix(llm, gen_file, file_errors)
+            for target, file_errors in errors_by_target.items():
+                gen_file = targets[target]
+                current = target.read_text(encoding="utf-8") if target.exists() else gen_file.content
+                fixed_code = self._llm_fix(llm, gen_file, file_errors, current)
                 if fixed_code:
                     gen_file.content = fixed_code
                     writer.write(gen_file, overwrite=True)
@@ -209,37 +214,30 @@ class BuildVerifier:
 
         return errors, warnings
 
-    def _filter_fixable_errors(
-        self,
-        errors: list[CompileError],
-        generated_files: list[GeneratedFile],
-    ) -> list[CompileError]:
-        """Filter errors to only those in files we generated."""
-        gen_names = {Path(gf.path).name for gf in generated_files}
-        fixable = []
-        for err in errors:
-            err_name = Path(err.file_path).name
-            if err_name in gen_names:
-                fixable.append(err)
-        return fixable
-
-    def _find_gen_file(
-        self,
-        error_file_path: str,
-        generated_files: list[GeneratedFile],
-    ) -> Optional[GeneratedFile]:
-        """Find the GeneratedFile matching an error file path."""
-        err_name = Path(error_file_path).name
+    @staticmethod
+    def _targets_by_path(generated_files: list[GeneratedFile], writer) -> dict[Path, GeneratedFile]:
+        """Resolved solution path → GeneratedFile (unresolvable paths are skipped)."""
+        targets: dict[Path, GeneratedFile] = {}
         for gf in generated_files:
-            if Path(gf.path).name == err_name:
-                return gf
-        return None
+            try:
+                targets[writer.resolve_path(gf).resolve()] = gf
+            except ValueError:
+                continue
+        return targets
+
+    def _error_target(self, error_file_path: str) -> Path:
+        """Absolute path of the file an MSBuild error points at (relative paths are solution-relative)."""
+        path = Path(error_file_path.strip())
+        if not path.is_absolute():
+            path = self.solution_dir / path
+        return path.resolve()
 
     def _llm_fix(
         self,
         llm: "L5LLMClient",
         gen_file: GeneratedFile,
         errors: list[CompileError],
+        current_code: str,
     ) -> Optional[str]:
         """Ask LLM to fix compile errors in a generated file."""
         error_text = "\n".join(
@@ -257,7 +255,7 @@ class BuildVerifier:
         user = (
             f"## File: {gen_file.path}\n\n"
             f"## Compile Errors:\n{error_text}\n\n"
-            f"## Current Code:\n```csharp\n{gen_file.content}\n```\n\n"
+            f"## Current Code:\n```csharp\n{current_code}\n```\n\n"
             f"Fix all errors and return the complete fixed code."
         )
 

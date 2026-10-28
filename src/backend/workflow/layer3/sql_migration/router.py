@@ -1,263 +1,232 @@
-import os
-import sys
+"""
+sql_migration/router.py — Layer 3 SQL-migration operations behind the gRPC Layer4Service.
+
+Every function returns a plain dict: ``{"success": True, ...}`` or ``{"success": False, "error": str}``.
+Queries under review live in the ``queries_v2`` collection (seeded from Layer 1's ``queries``
+by seed_queries_v2.py); table schemas come from Layer 1's ``tables`` collection.
+"""
+from __future__ import annotations
+
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
-from pymongo import MongoClient
 
-# Add necessary paths to sys.path
 L3_DIR = Path(__file__).resolve().parent.parent
 BACKEND_DIR = L3_DIR.parent.parent
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
-if str(BACKEND_DIR / "workflow" / "layer2") not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR / "workflow" / "layer2"))
+for _path in (BACKEND_DIR, BACKEND_DIR / "workflow", BACKEND_DIR / "workflow" / "layer2"):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
-from common.config import get_model, QWEN_MAX, ModelConfig, LAYER3_MIGRATION_MODEL_NAME
-from utils.llm_client import LLMClient
+from common.config import get_model, QWEN_MAX, LAYER3_MIGRATION_MODEL_NAME
 from common.llm.llm_client import parse_json_response
+from db.mongo_client import get_db
+from utils.llm_client import LLMClient
 
-def _get_db():
-    mongo_uri = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
-    client = MongoClient(mongo_uri)
-    db_name = os.environ.get("MONGO_DB", "vba_brain_core")
-    db = client[db_name]
-    
-    # Fallback to vba_brain_core if queries_v2 exists there or queries collection exists there
-    if "queries_v2" not in db.list_collection_names() and "queries" not in db.list_collection_names():
-        if "vba_brain_core" in client.list_database_names():
-            db = client["vba_brain_core"]
-    return db
+from layer3.sql_migration.query_utils import build_sql_from_parts, extract_bind_variables
 
-def _enrich_query_raw_sql(q: dict | None) -> dict | None:
+QUERIES_COLLECTION = "queries_v2"
+TABLES_COLLECTION = "tables"
+
+_CONVERT_SYSTEM_PROMPT = (
+    "You are an expert database administrator specialized in migrating database queries from MS Access dialect to PostgreSQL.\n"
+    "Translate the input query into valid PostgreSQL syntax.\n\n"
+    "Follow these strict rules:\n"
+    "1. Maintain all bind variables (parameters) exactly as they are in the original query (e.g. :txt工事名称, :txt店所コード, etc.). Keep the colons and variable names identical.\n"
+    "2. Convert dialect-specific functions to PostgreSQL equivalents:\n"
+    "   - IIF() -> CASE WHEN ... THEN ... ELSE ... END\n"
+    "   - NVL() / Nz() -> COALESCE()\n"
+    "   - Mid() / Mid$() -> SUBSTRING()\n"
+    "   - Len() -> LENGTH()\n"
+    "   - InStr() -> POSITION() or STRPOS()\n"
+    "   - Date() / Now() -> CURRENT_DATE / CURRENT_TIMESTAMP\n"
+    "   - Format() -> TO_CHAR()\n"
+    "3. Return a JSON response containing:\n"
+    "   - \"target_sql\": The translated PostgreSQL query.\n"
+    "   - \"target_query_json\": A JSON representation of the query structure (keys: \"select\", \"from\", \"where\", \"group_by\", \"order_by\" if applicable).\n"
+    "   - \"explanation\": Brief explanation of the changes made (in English).\n\n"
+    "Return ONLY a valid JSON block, without markdown formatting if possible, or inside a ```json ``` block."
+)
+
+_CODE_FENCE_RE = re.compile(r"^\s*```[\w-]*\s*\n?(.*?)\n?```\s*$", re.DOTALL)
+_SQL_START_RE = re.compile(r"^\s*(select|with|insert|update|delete)\b", re.IGNORECASE)
+
+
+def _now() -> str:
+    return datetime.now().isoformat()
+
+
+def _queries():
+    return get_db()[QUERIES_COLLECTION]
+
+
+def _with_raw_sql(q: dict | None) -> dict | None:
+    """Older documents only carry ``sql``; the review UI reads ``raw_sql``."""
     if q and "sql" in q and "raw_sql" not in q:
         q["raw_sql"] = q["sql"]
     return q
 
-def _parse_sql_components(sql: str) -> list[str]:
-    """Helper used by verify_fix.py to simulate bind variable extraction."""
-    # Matches :var_name including Japanese characters and Roman numerals
-    pattern = r':\s*([a-zA-Z0-9_＿\u4e00-\u9fa5\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u2160-\u216B]+)'
-    return list(set(re.findall(pattern, sql)))
+
+def _target_sql_from_response(response_text: str) -> tuple[str, dict, str]:
+    """Return (target_sql, target_query_json, explanation) from the model's reply."""
+    try:
+        parsed = parse_json_response(response_text)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, dict) and str(parsed.get("target_sql") or "").strip():
+        return (
+            str(parsed["target_sql"]).strip(),
+            parsed.get("target_query_json") or {},
+            parsed.get("explanation") or "",
+        )
+    # Some models ignore the JSON instruction and answer with bare (often fenced) SQL.
+    fenced = _CODE_FENCE_RE.match(response_text or "")
+    bare = (fenced.group(1) if fenced else response_text or "").strip()
+    if _SQL_START_RE.match(bare):
+        return bare, {}, ""
+    return "", {}, ""
+
+
+# --- Query review endpoints ---------------------------------------------------------------
 
 def list_queries():
     try:
-        db = _get_db()
-        col = db["queries_v2"]
-        queries = list(col.find({}, {"_id": 0}))
-        for q in queries:
-            _enrich_query_raw_sql(q)
+        queries = [_with_raw_sql(q) for q in _queries().find({}, {"_id": 0})]
         return {"success": True, "result": queries}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 def get_query(name):
     try:
-        db = _get_db()
-        col = db["queries_v2"]
-        q = col.find_one({"name": name}, {"_id": 0})
+        q = _queries().find_one({"name": name}, {"_id": 0})
         if q:
-            _enrich_query_raw_sql(q)
-            return {"success": True, "result": q}
+            return {"success": True, "result": _with_raw_sql(q)}
         return {"success": False, "error": "Query not found"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 def update_query(name, req):
+    """
+    Save a reviewed conversion. ``req`` is the gRPC UpdateQueryRequest (or any object with the
+    same attributes). proto3 cannot tell "not sent" from "", so empty optional fields are left
+    as stored instead of being wiped; ``target_sql`` — the edited SQL itself — is always written.
+    """
     try:
-        db = _get_db()
-        col = db["queries_v2"]
-        
-        # Resolve target query json safely
-        target_query_json = req.target_query_json
-        if isinstance(target_query_json, str):
-            try:
-                target_query_json = json.loads(target_query_json)
-            except Exception:
-                target_query_json = {}
-                
-        # Simulate bind variable extraction if target_sql changes
-        bind_vars = _parse_sql_components(req.target_sql or "")
-        
+        target_sql = req.target_sql or ""
         update_data = {
-            "target_sql": req.target_sql,
-            "target_query_json": target_query_json,
-            "notes": req.notes,
-            "conversion_status": req.status,
-            "reviewer": req.reviewer,
-            "description": req.description,
-            "bind_variables": bind_vars,
-            "updated_at": datetime.now().isoformat()
+            "target_sql": target_sql,
+            "bind_variables": extract_bind_variables(target_sql),
+            "updated_at": _now(),
         }
-        
-        result = col.update_one({"name": name}, {"$set": update_data})
-        if result.matched_count > 0:
-            updated = col.find_one({"name": name}, {"_id": 0})
-            _enrich_query_raw_sql(updated)
-            return {"success": True, "result": updated}
-        return {"success": False, "error": "Query not found"}
+        if req.target_query_json:
+            target_query_json = req.target_query_json
+            if isinstance(target_query_json, str):
+                try:
+                    target_query_json = json.loads(target_query_json)
+                except json.JSONDecodeError:
+                    return {"success": False, "error": "target_query_json is not valid JSON"}
+            update_data["target_query_json"] = target_query_json
+        for field, value in (
+            ("notes", req.notes),
+            ("conversion_status", req.status),
+            ("reviewer", req.reviewer),
+            ("description", req.description),
+        ):
+            if value:
+                update_data[field] = value
+
+        col = _queries()
+        if col.update_one({"name": name}, {"$set": update_data}).matched_count == 0:
+            return {"success": False, "error": "Query not found"}
+        return {"success": True, "result": _with_raw_sql(col.find_one({"name": name}, {"_id": 0}))}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 def convert_query(req):
+    """LLM-convert one Access query (``req.name``) to PostgreSQL and store it for review."""
     try:
-        db = _get_db()
-        col = db["queries_v2"]
+        col = _queries()
         q = col.find_one({"name": req.name})
         if not q:
             return {"success": False, "error": "Query not found"}
-            
-        raw_sql = q.get("sql") or ""
-        if not raw_sql:
-            # Build from query field if sql is empty
-            q_dict = q.get("query", {}) or {}
-            sql_parts = []
-            if q_dict.get("select") and q_dict["select"] != "なし":
-                sql_parts.append(f"SELECT {q_dict['select']}")
-            if q_dict.get("from") and q_dict["from"] != "なし":
-                sql_parts.append(f"FROM {q_dict['from']}")
-            if q_dict.get("where") and q_dict["where"] != "なし":
-                sql_parts.append(f"WHERE {q_dict['where']}")
-            if q_dict.get("group_by") and q_dict["group_by"] != "なし":
-                sql_parts.append(f"GROUP BY {q_dict['group_by']}")
-            if q_dict.get("order_by") and q_dict["order_by"] != "なし":
-                sql_parts.append(f"ORDER BY {q_dict['order_by']}")
-            raw_sql = "\n".join(sql_parts)
-            
-        # Call LLM for translation
-        model_name = req.model if req.model else LAYER3_MIGRATION_MODEL_NAME
-        model_cfg = get_model(model_name, QWEN_MAX)
-        
-        system_prompt = (
-            "You are an expert database administrator specialized in migrating database queries from MS Access dialect to PostgreSQL.\n"
-            "Translate the input query into valid PostgreSQL syntax.\n\n"
-            "Follow these strict rules:\n"
-            "1. Maintain all bind variables (parameters) exactly as they are in the original query (e.g. :txt工事名称, :txt店所コード, etc.). Keep the colons and variable names identical.\n"
-            "2. Convert dialect-specific functions to PostgreSQL equivalents:\n"
-            "   - IIF() -> CASE WHEN ... THEN ... ELSE ... END\n"
-            "   - NVL() / Nz() -> COALESCE()\n"
-            "   - Mid() / Mid$() -> SUBSTRING()\n"
-            "   - Len() -> LENGTH()\n"
-            "   - InStr() -> POSITION() or STRPOS()\n"
-            "   - Date() / Now() -> CURRENT_DATE / CURRENT_TIMESTAMP\n"
-            "   - Format() -> TO_CHAR()\n"
-            "3. Return a JSON response containing:\n"
-            "   - \"target_sql\": The translated PostgreSQL query.\n"
-            "   - \"target_query_json\": A JSON representation of the query structure (keys: \"select\", \"from\", \"where\", \"group_by\", \"order_by\" if applicable).\n"
-            "   - \"explanation\": Brief explanation of the changes made (in English).\n\n"
-            "Return ONLY a valid JSON block, without markdown formatting if possible, or inside a ```json ``` block."
-        )
-        
+
+        raw_sql = q.get("sql") or build_sql_from_parts(q.get("query"))
+        model_name = req.model or LAYER3_MIGRATION_MODEL_NAME
         user_prompt = (
             f"Original Query Name: {req.name}\n"
             f"Original SQL Dialect:\n{raw_sql}\n\n"
             "Translate to PostgreSQL."
         )
-        
-        client = LLMClient()
-        response_text = client.chat(model_cfg, system_prompt, user_prompt)
-        
-        # Parse response JSON
-        parsed = {}
-        try:
-            parsed = parse_json_response(response_text)
-        except Exception:
-            # Fallback regex extraction of json if custom parser fails
-            match = re.search(r'\{.*\}', response_text, re.DOTALL)
-            if match:
-                try:
-                    parsed = json.loads(match.group(0))
-                except Exception:
-                    pass
-                    
-        target_sql = parsed.get("target_sql") or response_text
-        target_query_json = parsed.get("target_query_json") or {}
-        explanation = parsed.get("explanation") or ""
-        
-        # Extract bind variables
-        bind_vars = _parse_sql_components(target_sql)
-        
-        update_data = {
+        response_text = LLMClient().chat(get_model(model_name, QWEN_MAX), _CONVERT_SYSTEM_PROMPT, user_prompt)
+
+        target_sql, target_query_json, explanation = _target_sql_from_response(response_text)
+        if not target_sql:
+            raise ValueError(f"model {model_name} returned no target_sql")
+
+        col.update_one({"name": req.name}, {"$set": {
             "target_sql": target_sql,
             "target_query_json": target_query_json,
             "conversion_status": "converted",
-            "notes": f"Converted using model: {model_name}. {explanation}",
-            "bind_variables": bind_vars,
-            "updated_at": datetime.now().isoformat()
-        }
-        
-        col.update_one({"name": req.name}, {"$set": update_data})
-        updated = col.find_one({"name": req.name}, {"_id": 0})
-        _enrich_query_raw_sql(updated)
-        return {"success": True, "result": updated}
-        
+            "notes": f"Converted using model: {model_name}. {explanation}".strip(),
+            "bind_variables": extract_bind_variables(target_sql),
+            "updated_at": _now(),
+        }})
+        return {"success": True, "result": _with_raw_sql(col.find_one({"name": req.name}, {"_id": 0}))}
     except Exception as e:
-        # Save error status and rollback target_sql dynamically to raw_sql to avoid hardcoding
+        # Record the failure for the review UI, but keep the stored target_sql untouched:
+        # it may already hold a reviewer's hand-corrected SQL.
         try:
-            db = _get_db()
-            col = db["queries_v2"]
-            fallback_sql = raw_sql if 'raw_sql' in locals() else ""
-            col.update_one(
-                {"name": req.name},
-                {"$set": {
-                    "target_sql": fallback_sql,
-                    "conversion_status": "error",
-                    "notes": f"Conversion error: {str(e)}",
-                    "updated_at": datetime.now().isoformat()
-                }}
-            )
+            _queries().update_one({"name": req.name}, {"$set": {
+                "conversion_status": "error",
+                "notes": f"Conversion error: {e}",
+                "updated_at": _now(),
+            }})
         except Exception:
             pass
-        return {"success": False, "error": f"Lỗi chuyển đổi SQL: {str(e)}"}
+        return {"success": False, "error": f"SQL conversion failed: {e}"}
+
 
 def get_stats():
     try:
-        db = _get_db()
-        col = db["queries_v2"]
-        total = col.count_documents({})
-        pending = col.count_documents({"conversion_status": "pending"})
-        converted = col.count_documents({"conversion_status": "converted"})
-        error_count = col.count_documents({"conversion_status": "error"})
+        col = _queries()
         return {
             "success": True,
-            "total": total,
-            "pending": pending,
-            "converted": converted,
-            "error_count": error_count
+            "total": col.count_documents({}),
+            "pending": col.count_documents({"conversion_status": "pending"}),
+            "converted": col.count_documents({"conversion_status": "converted"}),
+            "error_count": col.count_documents({"conversion_status": "error"}),
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 def seed_queries():
     try:
-        from sql_migration.seed_queries_v2 import seed_v2
-        count = seed_v2()
-        return {"success": True, "count": count}
+        from layer3.sql_migration.seed_queries_v2 import seed_v2
+        return {"success": True, "count": seed_v2()}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
-# --- Table Explorer Endpoints ---
+# --- Table explorer endpoints -------------------------------------------------------------
+
 def list_tables():
-    from db.mongo_client import get_db
-    db = get_db()
-    col = db["tables"]
-    # Return all tables as a list of dicts
-    tables = list(col.find({}, {"_id": 0}))
-    return {"success": True, "result": tables}
+    try:
+        return {"success": True, "result": list(get_db()[TABLES_COLLECTION].find({}, {"_id": 0}))}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 def convert_table_schema(table_name: str, target_db: str):
-    from db.mongo_client import get_db
     from layer3.sql_migration.table_converter import convert_table_to_ddl
-    db = get_db()
-    col = db["tables"]
-    table = col.find_one({"table_name": table_name}, {"_id": 0})
-    if not table:
-        return {"success": False, "error": f"Table '{table_name}' not found."}
-    
     try:
-        ddl = convert_table_to_ddl(table, target_db)
-        return {"success": True, "ddl": ddl}
+        table = get_db()[TABLES_COLLECTION].find_one({"table_name": table_name}, {"_id": 0})
+        if not table:
+            return {"success": False, "error": f"Table '{table_name}' not found."}
+        return {"success": True, "ddl": convert_table_to_ddl(table, target_db)}
     except Exception as e:
         return {"success": False, "error": str(e)}

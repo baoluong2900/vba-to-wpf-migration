@@ -815,7 +815,6 @@ def _fill_query_sheets(
             # Always try to fetch description if missing in q_data
             if not q_data.get("description") and q_name_str != "UnknownQuery" and repo:
                 try:
-                    from db.query_dd import get_dd_code_json_query_raw
                     q_doc = get_dd_code_json_query_raw(repo, q_name_str)
                     if q_doc:
                         if not q_data.get("description"):
@@ -944,18 +943,6 @@ def _fill_query_sheets(
             detailed_str, param_list, param_display_lines = get_params_info(sql_obj, q_data, screen_id)
             is_select = not ("update" in sql_obj or "insert_into" in sql_obj or "delete" in sql_obj)
 
-            # Extract output columns for SELECT queries to show in table
-            output_cols = []
-            if is_select:
-                try:
-                    # Resolve table names for column extraction
-                    joins = parse_joins(sql_obj.get("from", ""))
-                    a_map = _get_full_alias_map(sql_obj, joins)
-                    default_src = get_table_names_from_from(sql_obj.get("from", ""))
-                    cols = parse_select_columns(sql_obj.get("select", ""), default_src, param_list, table_resolver, a_map)
-                    output_cols = [c.get("alias") or c.get("column_name") for c in cols if c.get("alias") or c.get("column_name")]
-                except: pass
-
             # Original simple parameters
             parameters_simple = ", ".join([str(p.get("key", "")) for p in param_list if p.get("key")])
 
@@ -1014,7 +1001,7 @@ def _fill_query_sheets(
                     "raw_sql": ("\n".join(ctes) + "\n" if ctes else "") + (format_raw_query(reconstruct_select(sql_obj)) if (ctes or "raw_sql" in sql_obj) else "")
                 })
             else:
-                sheet_name, set_columns = "Upd", []
+                set_columns = []
                 joins = parse_joins(sql_obj.get("from", ""))
                 a_map = _get_full_alias_map(sql_obj, joins)
                 if sql_obj.get("update"):
@@ -1031,12 +1018,12 @@ def _fill_query_sheets(
                         src_tbl, src_fld, _ = extract_source_info(replace_query_parameters(val_expr, param_list), default_src_table, param_list, table_resolver, a_map)
                         set_columns.append({"no": len(set_columns)+1, "column": expr, "source_table": src_tbl, "source_field_or_fixed_value": src_fld, "notes": format_notes(val_expr)})
                 elif sql_obj.get("insert_into"):
-                    sheet_name, target_table = "Ins", _get_target_table(sql_obj)
+                    target_table = _get_target_table(sql_obj)
                     for val_item in normalize_parameters(sql_obj.get("values", "")):
                         src_tbl, src_fld, _ = extract_source_info(val_item["value"], get_table_names_from_from(sql_obj.get("from", "")), param_list, table_resolver, a_map)
                         set_columns.append({"no": len(set_columns)+1, "column": val_item["key"], "source_table": src_tbl, "source_field_or_fixed_value": src_fld, "notes": format_notes(val_item["value"])})
                 elif sql_obj.get("into") or (sql_obj.get("select") and isinstance(sql_obj["select"], str) and " INTO " in sql_obj["select"].upper()):
-                    sheet_name, target_table = "Make", _get_target_table(sql_obj)
+                    target_table = _get_target_table(sql_obj)
                     sel_str = sql_obj.get("select", "")
                     sel_str_clean = re.sub(r'(?i)\s+INTO\s+.*$', '', sel_str).strip()
                     sql_obj["select"] = sel_str_clean
@@ -1047,7 +1034,6 @@ def _fill_query_sheets(
                     for sc in parse_select_columns(sel_str_clean, default_src_table, param_list, table_resolver, a_map):
                         set_columns.append({"no": sc["no"], "column": sc["alias"] or sc["column_name"], "source_table": sc["table_name"], "source_field_or_fixed_value": sc["column_name"], "notes": sc["notes"]})
                 else:
-                    sheet_name = "Del"
                     delete_clause = sql_obj.get("delete", "").strip()
                     if delete_clause.upper().startswith("FROM"):
                         delete_clause = delete_clause[4:].strip()

@@ -1,10 +1,5 @@
 from __future__ import annotations
-import argparse
-import json
 import re
-from copy import deepcopy
-from pathlib import Path
-from typing import Any
 
 EVENT_TRIGGER_JA: dict[str, str] = {
     "onopen": "On Open",
@@ -122,6 +117,9 @@ ATTR_PREFIX = {
     "PageBreak": "pagebreak",
     "Chart": "chart",
 }
+
+# Hungarian prefixes already carried by Access control names; such names are kept as-is
+KNOWN_CTRL_PREFIXES = frozenset(ATTR_PREFIX.values()) | {"cbo", "btn", "fra", "frm", "sfr", "tgl", "opg"}
 
 ACTION_TYPES = [
     {"key": "READ", "description": "Read data from DB, search."},

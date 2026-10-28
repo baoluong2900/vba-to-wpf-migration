@@ -2,13 +2,6 @@ import { Handle, Position } from '@xyflow/react';
 import { FileJson, Copy } from 'lucide-react';
 
 export const OutputNode = ({ data }: any) => {
-  const handleCopy = () => {
-    if (data.resultJson) {
-      navigator.clipboard.writeText(data.resultJson);
-      alert("Đã copy JSON output vào Clipboard!");
-    }
-  };
-
   const displayResult = data.ddResultJson || data.resultJson;
 
   return (

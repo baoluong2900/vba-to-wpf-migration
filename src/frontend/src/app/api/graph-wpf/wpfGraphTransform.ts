@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import type { CyEdge, CyNode } from '../graph/graphBuilder';
+import { GRAPHVIEW_DIR } from '../../../lib/paths';
 
 type FormRow = { access_form_name: string; wpf_view_name: string; wpf_viewmodel_name: string };
 type EventRow = { access_form_name: string; handler_hint: string; suggested_dotnet_handler_name: string };
@@ -8,36 +9,39 @@ type QueryRow = { access_query_name: string; suggested_dotnet_type_name: string 
 type MacroRow = { access_macro_name: string; suggested_dotnet_type_name: string };
 type MappingStatus = 'mapped' | 'fallback' | 'trace';
 
-function readJson<T>(relFromWorkflow: string): T | null {
-  const candidates = [
-    path.resolve(process.cwd(), relFromWorkflow),
-    path.resolve(process.cwd(), '03_agents/workflow/frontend', relFromWorkflow),
-    path.resolve(process.cwd(), 'frontend', relFromWorkflow),
-  ];
+const warnedMaps = new Set<string>();
+
+/** Read a Layer 5 graphview export (path relative to agents/graphview/); null when unavailable. */
+function readJson<T>(relPath: string): T | null {
+  const file = path.join(GRAPHVIEW_DIR, relPath);
   try {
-    const p = candidates.find((candidate) => fs.existsSync(candidate));
-    if (!p) return null;
-    return JSON.parse(fs.readFileSync(p, 'utf-8')) as T;
-  } catch {
+    return JSON.parse(fs.readFileSync(file, 'utf-8')) as T;
+  } catch (err: any) {
+    if (!warnedMaps.has(file)) {
+      warnedMaps.add(file);
+      console.warn(`[wpfGraphTransform] name map unavailable, using fallback names: ${file} (${err?.code ?? err?.message ?? err})`);
+    }
     return null;
   }
 }
 
-let cache: {
+type WpfMaps = {
   forms: Map<string, { view: string; vm: string }>;
   events: Map<string, string>;
   queries: Map<string, string>;
   macros: Map<string, string>;
-} | null = null;
+};
 
-export function loadWpfMaps() {
+let cache: WpfMaps | null = null;
+
+export function loadWpfMaps(): WpfMaps {
   if (cache) return cache;
   const forms = new Map<string, { view: string; vm: string }>();
   const events = new Map<string, string>();
   const queries = new Map<string, string>();
   const macros = new Map<string, string>();
 
-  const f = readJson<{ items?: FormRow[] }>('../backend/layer5/agents/graphview/outputs/forms/listFormJpToEn.json');
+  const f = readJson<{ items?: FormRow[] }>('outputs/forms/listFormJpToEn.json');
   for (const row of f?.items || []) {
     if (row.access_form_name && row.wpf_view_name) {
       forms.set(row.access_form_name, { view: row.wpf_view_name, vm: row.wpf_viewmodel_name || '' });
@@ -45,7 +49,7 @@ export function loadWpfMaps() {
     }
   }
 
-  const e = readJson<{ items?: EventRow[] }>('../backend/layer5/agents/graphview/outputs/events/listEventJpToEn.json');
+  const e = readJson<{ items?: EventRow[] }>('outputs/events/listEventJpToEn.json');
   for (const row of e?.items || []) {
     if (row.access_form_name && row.handler_hint && row.suggested_dotnet_handler_name) {
       events.set(`${row.access_form_name}::${row.handler_hint}`, row.suggested_dotnet_handler_name);
@@ -53,7 +57,7 @@ export function loadWpfMaps() {
     }
   }
 
-  const q = readJson<{ items?: QueryRow[] }>('../backend/layer5/agents/graphview/outputs/queries/listQueryJpToEn.json');
+  const q = readJson<{ items?: QueryRow[] }>('outputs/queries/listQueryJpToEn.json');
   for (const row of q?.items || []) {
     if (row.access_query_name && row.suggested_dotnet_type_name) {
       queries.set(row.access_query_name, row.suggested_dotnet_type_name);
@@ -61,7 +65,7 @@ export function loadWpfMaps() {
     }
   }
 
-  const m = readJson<{ items?: MacroRow[] }>('../backend/layer5/agents/graphview/outputs/macros/listMacroJpToEn.json');
+  const m = readJson<{ items?: MacroRow[] }>('outputs/macros/listMacroJpToEn.json');
   for (const row of m?.items || []) {
     if (row.access_macro_name && row.suggested_dotnet_type_name) {
       macros.set(row.access_macro_name, row.suggested_dotnet_type_name);
@@ -69,8 +73,15 @@ export function loadWpfMaps() {
     }
   }
 
-  cache = { forms, events, queries, macros };
-  return cache;
+  const maps = { forms, events, queries, macros };
+  // Cache only a complete load, so a map exported later is picked up without a restart.
+  if (f && e && q && m) cache = maps;
+  return maps;
+}
+
+/** WPF View / ViewModel class names for an Access form (listFormJpToEn), if mapped. */
+export function lookupFormView(accessForm: string): { view: string; vm: string } | undefined {
+  return mapLookup(loadWpfMaps().forms, accessForm);
 }
 
 function parseEventId(id: string): { form: string; handler: string } | null {

@@ -1,6 +1,4 @@
-import os
 import json
-import argparse
 import uuid
 from pathlib import Path
 
@@ -85,7 +83,6 @@ def extract_formulas(s2_dir_path, output_path, target_screen=None):
 
 if __name__ == "__main__":
     import sys
-    from pathlib import Path
     
     # Resolve Layer 2 directory dynamically
     _LAYER2_DIR = Path(__file__).resolve().parent.parent

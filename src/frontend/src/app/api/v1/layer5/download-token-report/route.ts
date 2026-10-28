@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
+import { NextResponse } from "next/server";
 import fs from "fs";
+import { LAYER5_TOKEN_REPORT_XLSX } from "../../../../../lib/tokenReport";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "layer5");
-    const filePath = path.join(LAYER5_DIR, "logs", "token_report.xlsx");
-
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ success: false, error: "Token report file not found. Run an agent first." }, { status: 404 });
+    if (!fs.existsSync(LAYER5_TOKEN_REPORT_XLSX)) {
+      return NextResponse.json(
+        { success: false, error: "Layer 5 token report (logs/token_report.xlsx) not found. Run an agent first." },
+        { status: 404 }
+      );
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
-    
+    const fileBuffer = fs.readFileSync(LAYER5_TOKEN_REPORT_XLSX);
+
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {

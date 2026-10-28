@@ -92,14 +92,17 @@ def get_bd_code_json_report(repo: Any, report_name: str) -> dict[str, Any]:
         "report": {
             "name": report.get("name"),
             "file": report.get("file"),
+            "type": report.get("type", "report"),
             "report_type": report.get("report_type", "report"),
             "record_source": report.get("record_source"),
+            "properties": report.get("properties", {}),
+            "controls": repo._sanitize_items(report.get("controls", report.get("items", []))),
             "grouping": report.get("grouping", []),
             "sorting": report.get("sorting", []),
             "sections": report.get("sections", []),
             "subreports": report.get("subreports", []),
             "has_vba": report.get("has_vba", False),
-            "vba_procedures": report.get("vba_procedures", []),
+            "vba_procedures": report.get("vba_procedures", report.get("functions", [])),
             "dependencies": report.get("dependencies", {}),
         },
         "related_queries": related_queries,
@@ -173,46 +176,6 @@ def get_bd_code_json_query(repo: Any, query_name: str) -> dict[str, Any]:
         },
     }
     return repo._remove_empty(payload)
-
-
-def get_bd_code_json_selective(
-    repo: Any, 
-    form_name: str, 
-    function_names: list[str]
-) -> dict[str, Any]:
-    """
-    Get the AST data of a form but only return the form name and the list of functions 
-    matching the provided list of names (event/handler).
-    """
-    from db.layer1_repo import L1_COLLECTION_FORMS
-    
-    # 1. Get form data
-    form = repo._find_one(L1_COLLECTION_FORMS, form_name)
-    if not form:
-        raise ValueError(f"Form not found in Layer 1: {form_name}")
-
-    # 2. Get all procedures (VBA code)
-    all_procedures = form.get("vba_procedures", form.get("functions", []))
-    
-    # 3. Filter: Match the list of function_names (event/handler name) with the procedure name
-    filtered_procedures = []
-    if function_names:
-        # Convert function_names to set for fast search and normalization (if needed)
-        search_set = set(function_names)
-        filtered_procedures = [
-            p for p in all_procedures 
-            if (p.get("name") in search_set or p.get("handler") in search_set)
-        ]
-    else:
-        filtered_procedures = all_procedures
-
-    # 4. Return maximum reduced payload
-    payload = {
-        "form_name": form.get("name"),
-        "vba_procedures": filtered_procedures
-    }
-
-    return payload
 
 
 def get_bd_code_json_table(repo: Any, table_name: str) -> dict[str, Any]:

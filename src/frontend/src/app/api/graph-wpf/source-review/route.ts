@@ -2,10 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { parseActualSourceGraph } from './sourceGraphParser';
-
-function workflowRoot() {
-  return path.resolve(process.cwd(), '..');
-}
+import { WPF_DIR, WPF_GRAPH_REPORTS_DIR } from '../../../../lib/paths';
+import { isSafeName } from '../../../../lib/pathSafety';
 
 function normalizeKind(id: string) {
   if (id.startsWith('view:')) return 'view';
@@ -141,8 +139,11 @@ function diffGraphs(expected: any, actual: any) {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name') || 'F_Login';
-  const sourceRoot = path.resolve(workflowRoot(), 'wpf');
-  const expectedPath = path.resolve(process.cwd(), 'reports', 'wpf-graph', `${name}.expected.json`);
+  if (!isSafeName(name)) {
+    return NextResponse.json({ success: false, error: 'Invalid name param' }, { status: 400 });
+  }
+  const sourceRoot = WPF_DIR;
+  const expectedPath = path.join(WPF_GRAPH_REPORTS_DIR, `${name}.expected.json`);
 
   if (!fs.existsSync(expectedPath)) {
     return NextResponse.json({

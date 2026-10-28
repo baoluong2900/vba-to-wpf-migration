@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[5]
-vba_dir = ROOT / "src" / "VBA" / "vba_source"
+vba_dir = ROOT / "src" / "vba" / "vba_source"
 if not vba_dir.exists():
     vba_dir = ROOT / "VBA_Export_All"
 
@@ -953,6 +953,9 @@ def parse_query_file(path: Path, name_override: str | None = None) -> dict:
         "tables": [],
         "parameters": [],
         "query": {},
+        # Original Access SQL (comments stripped, PARAMETERS kept): Layer 3 converts this text,
+        # since rebuilding it from the structured "query" cannot round-trip every statement.
+        "sql": text,
     }
     params: dict[str, str] = {}
 
@@ -1051,8 +1054,8 @@ def main() -> int:
     if inp.is_dir():
         sql_paths = collect_sql_sql_paths(inp, args.recursive)
         if not sql_paths:
-            print(f"No .sql.sql files under {inp}", file=sys.stderr)
-            return 1
+            print(f"[WARN] No .sql.sql files under {inp} — nothing to parse.", file=sys.stderr)
+            return 0
         if args.stdout:
             print("--stdout requires a single .sql.sql file, not a folder", file=sys.stderr)
             return 2

@@ -14,16 +14,18 @@ started by `python start.py` (or `python start.py --be-only`). There is no publi
 the Next.js console reaches the gateway through its own API routes under
 `src/frontend/src/app/api/`.
 
-**Data flow is one-directional through MongoDB.** No layer reads another layer's files directly —
-each one reads MongoDB and writes back to it. That is what makes any single layer re-runnable in
-isolation.
+**Data flow is one-directional through MongoDB.** Layers 1–4 read MongoDB and write back to it,
+which is what makes any single layer re-runnable in isolation. Layer 5 is the exception: it also
+reads BD/DD JSON from `layer4/inputs/` and the contracts / name maps earlier Layer 5 agents left in
+`agents/*/outputs/`.
 
 ```
 Access JSON exports (data/)
-   → L1 parsers        → MongoDB: forms, reports, queries_v2, modules, macros, tables,
-                                  dependency_graph
+   → L1 parsers        → MongoDB: forms, reports, queries, modules, macros, tables,
+                                  reference_map, dependency_graph
+   → L3 query seeding  → MongoDB: queries_v2      (read by L2 for query context)
    → L2 BD/DD agents   → MongoDB: bds, dds        + layer2/output/**.json
-   → L3 SQL migration  → PostgreSQL DDL
+   → L3 SQL migration  → PostgreSQL DDL + reviewed target_sql in queries_v2
    → L4 Excel export   → src/excel_outputs/**
    → L5 code gen       → src/wpf/vba_brain.*/ (deployed) + dotnet build verify
 ```
@@ -40,8 +42,10 @@ Access JSON exports (data/)
   string literals: `DoCmd.OpenForm/OpenReport/OpenQuery/RunMacro/OutputTo`,
   `DLookup`/`DCount`/`DSum` targets, `Form_X.Proc()`, `[Forms]![Name]`, `Module.Procedure()`,
   `CallSub`, and `Application.Run`.
-- `seed_db.py` pushes parsed JSON into MongoDB; `run_all.py` is the batch CLI that chains
-  parse → aggregate → seed → Layer 2 → Layer 3.
+- `seed_db.py` pushes parsed JSON into MongoDB and flattens `reference_map.json` into one
+  `dependency_graph` document per item; `run_all.py` is the batch CLI that chains
+  parse → aggregate → seed → `queries_v2` seed → Layer 2 → Layer 3 (`--list`, `--from`, `--only`,
+  `--skip`, `--dry-run`, `--keep-going`).
 - Graph output also lands on disk in `data/graphs/` for the web console.
 
 ## Layer 2 — AI design specification
@@ -57,21 +61,23 @@ Access JSON exports (data/)
 - Reads source data from **MongoDB** via `db/layer1_repo.py`, never from Layer 1 files.
 - Output is always structured JSON under `layer2/output/{bd_flow,dd_flow}/…`, then pushed to the
   `bds` / `dds` collections by `runners/push_to_mongo.py`.
-- `utils/`: `llm_client.py` (provider wrapper with `call_with_fallback`), `model_router.py`
-  (stage → model plus quota fallback chains), `cost_tracker.py` (token and USD accounting),
-  `vba_utils.py`.
-- CLI: `runners/main.py --item / --all / --all-forms / --dry-run --stage dev|pilot|production`.
+- `utils/`: `llm_client.py` (provider wrapper; `chat_with_usage` walks the quota fallback chain),
+  `model_router.py` (`select_model(complexity, stage, model_id)` plus fallback chains),
+  `cost_tracker.py` (token and USD accounting), `paths.py` (safe output paths), `vba_utils.py`.
+- CLI: `runners/main.py --item / --all / --all-forms / --all-reports / --all-modules /
+  --all-macros / --dry-run --stage dev|pilot|production`.
 
 ## Layer 3 — SQL migration
 
 `src/backend/workflow/layer3/sql_migration/`
 
-- `table_converter.py` — Access data types → PostgreSQL DDL. Pure function; the easiest module to
-  unit-test.
-- `postgres_migrator.py` — LLM-assisted runner: read table metadata → generate `CREATE TABLE` →
-  execute against the target database.
-- `seed_queries_v2.py` — seeds Access queries into MongoDB, preserving both `raw_sql` and `sql`.
-- `router.py` — list / get / update / convert query, convert table schema, migration stats.
+- `table_converter.py` — Access schema → `CREATE TABLE` (pure, table-driven type map, minimal
+  identifier quoting). See `layer3.md`.
+- `postgres_migrator.py` — deterministic (no LLM): `DROP` + `CREATE` per table through `psql`;
+  `--dry-run` / `--table` / `--output`.
+- `seed_queries_v2.py` — syncs Layer 1 `queries` into the review collection `queries_v2` without
+  touching review fields.
+- `router.py` — list / get / update / convert (LLM) query, convert table schema, migration stats.
 - PostgreSQL is the **only** supported target dialect; Oracle support was removed deliberately.
 
 ## Layer 4 — Excel specification export
@@ -101,8 +107,7 @@ Access JSON exports (data/)
   `file_writer.py` (safe write with backup), `build_verify.py` (`dotnet build`, then LLM auto-fix
   for up to `MAX_RETRIES = 3` iterations).
 - Generated code targets `src/wpf/vba_brain.UI.Avalonia`, `.Application`, `.Infrastructure`, and
-  `.Domain`. Avalonia is the sole UI target — `vba_brain.UI.WPF/` is an empty leftover and is not
-  in `vba_brain.slnx`.
+  `.Domain`. Avalonia is the sole UI target.
 
 ---
 
@@ -142,10 +147,13 @@ model *list*, via `Layer2Service.GetConfig`.
 ## Constraints to respect
 
 - **Python 3.10+.** Some modules use PEP 604 `X | None` without
-  `from __future__ import annotations` (`layer1/parser/frm_parser.py`,
-  `layer3/sql_migration/router.py`), so 3.9 raises `SyntaxError`. Add the `__future__` import to
-  any new module using those unions.
-- **The gateway is unauthenticated** (`add_insecure_port`, `grpc_server.py:595`). Do not expose
-  port 50051 beyond localhost — see `SECURITY.md`.
+  `from __future__ import annotations` (e.g. `layer1/parser/frm_parser.py`), so 3.9 raises
+  `SyntaxError`. Add the `__future__` import to any new module using those unions.
+- **TLS and auth are opt-in on the gateway.** It binds `GRPC_HOST` (default `localhost`), enforces
+  a bearer token only when `GRPC_AUTH_TOKEN` is set, and serves TLS only when `GRPC_TLS_CERT` and
+  `GRPC_TLS_KEY` are set. Do not expose port 50051 beyond localhost without both — see
+  `SECURITY.md`.
+- **Request data is untrusted:** names that become path components are validated
+  (`grpc_server._bad_name`, `layer2/utils/paths.py`); never pass them to a shell.
 - **Use the module `logger`, not `print`,** in library code.
 - **Windows:** run Python with `python -X utf8` to avoid console encoding failures.

@@ -1,27 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  DatabaseZap, Bot, FileSpreadsheet, Database, Cpu, 
-  Play, CheckCircle2, Clock, Terminal, FolderOpen, Sparkles, AlertCircle,
-  FileCode, Layers, Info, Check, Server
-} from "lucide-react";
+import { DatabaseZap, Cpu, Play, Clock, Terminal, Check, Server } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { LogEntry, formatLogTime } from "../../lib/logging";
+import { readSseStream } from "../../lib/sse";
 
 const STEPS = [
   { id: 1, title: 'Initialize Workspace', desc: 'Verify paths & DB connections' },
   { id: 2, title: 'AST UI Parsing', desc: 'Convert raw VBA/UI to structured JSON' },
   { id: 3, title: 'Reference Mapping', desc: 'Build macro/module cross-references' },
   { id: 4, title: 'MongoDB Ingestion', desc: 'Seed variables into MongoDB core' },
-  { id: 5, title: 'Migration Complete', desc: 'Generate BD/DD & PostgreSQL schemas' },
+  { id: 5, title: 'Migration Complete', desc: 'Generate BD/DD specifications' },
 ];
+
+// The Layer 1 parsers read this folder (relative to the workflow root); it is not configurable here.
+const SOURCE_DIR = "src/vba/vba_source";
 
 export default function Layer1Parser() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [dbPath, setDbPath] = useState("src/vba/vba_source");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [logFilter, setLogFilter] = useState<'all' | 'info' | 'success' | 'error'>('all');
 
@@ -44,43 +43,33 @@ export default function Layer1Parser() {
     setIsExtracting(true);
     setActiveStep(1);
     setLogs([]);
-    addLog("INFO", `Initializing Source Extraction for: ${dbPath}`);
+    addLog("INFO", `Initializing Source Extraction for: ${SOURCE_DIR}`);
 
     try {
-      const response = await fetch(`/api/v1/layer1/extract?source_path=${encodeURIComponent(dbPath)}`, {
-        method: 'GET'
+      const response = await fetch("/api/v1/layer1/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "full" }),
       });
-
-      if (!response.body) throw new Error("No response body received from server");
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const lines = decoder.decode(value).split('\n').filter(Boolean);
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.type === 'log') {
-                addLog(data.level as any, data.message);
-                if (data.step) {
-                  setActiveStep(data.step);
-                }
-              } else if (data.type === 'error') {
-                addLog("ERROR", data.message);
-              } else if (data.type === 'done') {
-                setActiveStep(5);
-                addLog("SUCCESS", "Pipeline completed successfully! BD/DD specs generated & PostgreSQL tables migrated.");
-              }
-            } catch (e) {
-              console.error("Failed to parse SSE", e);
-            }
-          }
-        }
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        throw new Error(err?.error || `HTTP ${response.status}`);
       }
+      if (!response.body) throw new Error("No response body received from server");
+
+      await readSseStream(response.body, (data) => {
+        if (data.type === 'log') {
+          addLog(data.level as any, data.message);
+          if (data.step) {
+            setActiveStep(data.step);
+          }
+        } else if (data.type === 'error') {
+          addLog("ERROR", data.message);
+        } else if (data.type === 'done') {
+          setActiveStep(5);
+          addLog("SUCCESS", "Pipeline completed successfully! BD/DD specs generated (PostgreSQL table migration is a separate step).");
+        }
+      });
     } catch (err: any) {
       addLog("ERROR", `Extraction failed: ${err.message}`);
     } finally {
@@ -232,7 +221,8 @@ export default function Layer1Parser() {
               )}
             </button>
             <p className="text-[11px] text-neutral-500 dark:text-gray-500 font-semibold uppercase tracking-wider select-none">
-              Source: <code className="font-mono bg-neutral-200/50 dark:bg-white/5 px-2 py-0.5 rounded text-neutral-600 dark:text-gray-400 ml-1">{dbPath}</code>
+              Source: <code className="font-mono bg-neutral-200/50 dark:bg-white/5 px-2 py-0.5 rounded text-neutral-600 dark:text-gray-400 ml-1">{SOURCE_DIR}</code>
+              <span className="normal-case tracking-normal font-normal ml-2">(fixed by the Layer 1 parsers)</span>
             </p>
           </div>
 

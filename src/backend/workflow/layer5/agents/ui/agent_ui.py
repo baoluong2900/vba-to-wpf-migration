@@ -11,12 +11,14 @@ Flow:
   1. Query MongoDB forms collection by form_name
   2. Map items[] → WPF controls (control_mapper.py)
   3. Infer ViewModel bindings from control events
-  4. Build prompt → LLM → XAML only (saves tokens — no CS generation via LLM)
-  5. tool_skeleton.py gen .cs/.xaml.cs deterministically (zero token cost)
-  6. Save output to outputs/ + copy to WPF source
+  4. Resolve F-IDs once per run (core.fid_resolver: BD module_id → ui_event_map → `_auto`)
+  5. Build prompt → LLM → XAML only (saves tokens — no CS generation via LLM)
+  6. tool_skeleton.py gen .cs/.axaml.cs deterministically (zero token cost)
+  7. Save output to outputs/ + copy to the Avalonia source
 """
 from __future__ import annotations
 
+import html
 import json
 import logging
 import re
@@ -45,15 +47,18 @@ class UIChunkState(TypedDict):
     
     # Output: We use Annotated[list[dict], operator.add] to append to the list across steps
     partial_specs: Annotated[list[dict], operator.add]
+    failed_chunks: Annotated[list[int], operator.add]
     final_spec: dict
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
-from core.config import MONGO_URI, MONGO_DB, L5_ROUTING, AVAILABLE_MODELS, DEFAULT_MODEL
+from core.config import MONGO_URI, MONGO_DB, AVAILABLE_MODELS
+from core.fid_resolver import HandlerRef, bd_events_of, load_bd_events_from_file, resolve_and_sync
+from core.naming import form_name_error, validate_form_name
 from llm.llm_client import L5LLMClient, extract_code_block
 from agents.ui.control_mapper import map_all_controls, map_sections, twips_to_px, sanitize_xaml_name, sanitize_class_name
-from agents.ui.tool_skeleton import SkeletonTool
+from agents.ui.tool_skeleton import SkeletonTool, get_cs_handler_name
 from agents.ui.tool_query_stubs import QueryStubTool
 
 logger = logging.getLogger(__name__)
@@ -134,6 +139,14 @@ def _resolve_wpf_names(form_name: str, name_map: dict[str, dict]) -> tuple[str, 
 CONTROLS_PER_CHUNK = 120  # max controls per single LLM call
 CHUNK_THRESHOLD    = 150  # forms with more controls than this → auto-chunk
 
+# WPF trigger event (InvokeCommandAction) → Avalonia control event wired in the code-behind
+_AVALONIA_CONTROL_EVENTS: dict[str, str] = {
+    "MouseLeftButtonUp": "PointerReleased",
+    "MouseDoubleClick":  "DoubleTapped",
+    "LostFocus":         "LostFocus",
+    "GotFocus":          "GotFocus",
+}
+
 
 class UIAgent(BaseAgent):
     """
@@ -147,7 +160,10 @@ class UIAgent(BaseAgent):
 
     async def run(self, input: AgentInput) -> AgentOutput:
         form_name = input.form_name
-        
+        name_error = form_name_error(form_name)
+        if name_error:
+            return AgentOutput(agent="ui", form_name=form_name or "", status="error", error=name_error)
+
         # ── Resolve WPF class names (EN) from JP form name ──────────────────
         _name_map = _load_form_name_map()
         wpf_view_name, wpf_viewmodel_name = _resolve_wpf_names(form_name, _name_map)
@@ -195,10 +211,18 @@ class UIAgent(BaseAgent):
                 input, form_name, wpf_controls, form_events, _query_stubs
             )
 
+            # ── Step 4a: One F-ID map for the whole run (XAML, ViewModel, code-behind agree) ──
+            # BD module_id first (= Agent Service contract + Agent Logic), then ui_event_map.json.
+            fid_map = resolve_and_sync(
+                form_name,
+                [HandlerRef.from_binding(h) for h in vm_bindings.get("event_handlers", [])],
+                self._load_bd_events(form_name, input.bd_json),
+            )
+
             # ── Step 4b: Remap command names to F-ID (e.g. 閉じるCommand → F004Command) ──
             # This ensures XAML binding names match the ViewModel property names generated
             # by tool_skeleton.py (which uses F-ID naming for all commands).
-            vm_bindings = self._remap_commands_to_fid(form_name, vm_bindings)
+            vm_bindings = self._remap_commands_to_fid(form_name, vm_bindings, fid_map)
 
             # ── Step 5: Build form-level config from MongoDB ────────────
             form_config = self._build_form_config(form_props, wpf_sections)
@@ -343,20 +367,12 @@ class UIAgent(BaseAgent):
 
             # ── Step 8b: Save preview JSON for user review ───────────────
             self._save_preview_json(form_name, ui_spec, view_file_stem=view_file_stem)
-            logger.info("[Agent UI] Preview JSON saved → outputs/%s_preview.json", form_name)
 
             # ── Step 8c: Assemble XAML from JSON (deterministic) ─────────
             # Build event_handler_map: ctrl_name → {vba_event: cs_method_fid}
             # cs_method phải dùng F-ID naming (F005_DblClick) để khớp với code-behind.
             # KHÔNG dùng tên VBA gốc (施工店情報_DblClick) — gây lỗi compiler.
-            from agents.ui.tool_skeleton import _resolve_vba_to_module_id_map, get_cs_handler_name
-
-            _all_handlers = [
-                h.get("method", "")
-                for h in vm_bindings.get("event_handlers", [])
-                if h.get("method") and not h.get("synthetic")
-            ]
-            _vba_mid_map = _resolve_vba_to_module_id_map(form_name, _all_handlers)
+            _vba_mid_map = fid_map
 
             event_handler_map: dict[str, dict[str, str]] = {}
             for hdlr in vm_bindings.get("event_handlers", []):
@@ -382,6 +398,8 @@ class UIAgent(BaseAgent):
             grid_content = self._jsonl_to_grid_content(
                 ui_spec.get("controls", []), form_name, event_handler_map, _vba_mid_map
             )
+            # Non-Button command triggers → Avalonia control events wired in the code-behind
+            control_events = self._collect_control_events(ui_spec.get("controls", []), fid_map)
 
             # ── Step 9: Inject into existing skeleton .xaml ───────────────
             # Đọc skeleton từ tên gốc (JP) nếu tồn tại, fallback về tên EN mới
@@ -397,7 +415,13 @@ class UIAgent(BaseAgent):
             # so XAML and code-behind partial class always match.
             xaml_code = self._fix_xaml_class(xaml_code, view_file_stem)
             # ── Convert WPF XAML → Avalonia AXAML (centralized post-process) ──
-            xaml_code = self._to_avalonia_xaml(xaml_code, view_file_stem)
+            # The PasswordBox-bound ViewModel property is always "TxtPass" (tool_skeleton).
+            xaml_code = self._to_avalonia_xaml(
+                xaml_code, view_file_stem,
+                password_binding="TxtPass" if vm_bindings.get("password_property") else None,
+            )
+
+            self._sync_bound_properties(vm_bindings, ui_spec.get("controls", []))
 
             # ── Step 8d: Generate Code-behind and ViewModel (deterministic — zero LLM token) ──
             # Pass wpf_view_name/wpf_viewmodel_name so generated class names are English
@@ -406,8 +430,12 @@ class UIAgent(BaseAgent):
                 form_name, vm_bindings,
                 class_name_override=view_file_stem,
                 vm_class_name_override=vm_file_stem,
+                fid_map=fid_map,
+                control_events=control_events,
             )
-            vm_code   = _skeleton.gen_viewmodel(form_name, vm_bindings, class_name_override=vm_file_stem)
+            vm_code   = _skeleton.gen_viewmodel(
+                form_name, vm_bindings, class_name_override=vm_file_stem, fid_map=fid_map,
+            )
 
             # ── Convert generated C# (code-behind + ViewModel) WPF → Avalonia ──
             from pipeline.avalonia_cs import to_avalonia_cs
@@ -506,6 +534,31 @@ class UIAgent(BaseAgent):
     # MongoDB Data Loader
     # ──────────────────────────────────────────
 
+    def _load_bd_events(self, form_name: str, bd_json: dict | None = None) -> list[dict]:
+        """
+        BD events (F-ID source of truth, shared with Agent Service / Logic): the orchestrator's
+        bd_json, else MongoDB `bds` (same source as Agent Logic), else the layer4 BD JSON file.
+        """
+        events = bd_events_of(bd_json)
+        if events:
+            return events
+        try:
+            from pymongo import MongoClient
+
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
+            try:
+                doc = client[MONGO_DB]["bds"].find_one({"name": form_name}, {"_id": 0})
+            finally:
+                client.close()
+            events = bd_events_of(doc)
+        except Exception as exc:
+            logger.warning("[Agent UI] BD lookup in MongoDB failed for %s: %s", form_name, exc)
+        if not events:
+            events = load_bd_events_from_file(form_name)
+        if not events:
+            logger.warning("[Agent UI] No BD events for %s — F-IDs come from ui_event_map.json only", form_name)
+        return events
+
     def _load_mongo_form(self, form_name: str) -> dict:
         """Query form data from MongoDB `forms` collection."""
         from pymongo import MongoClient
@@ -596,10 +649,10 @@ class UIAgent(BaseAgent):
 
         # Fallback: infer from wpf_controls events + form-level events (MongoDB data)
         return self._infer_bindings_from_controls(
-            wpf_controls, form_events or {}, query_stubs or {}
+            wpf_controls, form_events or {}, query_stubs or {}, form_name=form_name,
         )
 
-    def _remap_commands_to_fid(self, form_name: str, vm_bindings: dict) -> dict:
+    def _remap_commands_to_fid(self, form_name: str, vm_bindings: dict, fid_map: dict[str, str] | None = None) -> dict:
         """
         Remap command names in vm_bindings from JP/VBA-based names to F-ID names.
         e.g. 閉じるCommand → F004Command, LoginCommand → F006Command
@@ -617,9 +670,11 @@ class UIAgent(BaseAgent):
         if not commands or not event_handlers:
             return vm_bindings
 
-        # Resolve vba_handler → module_id via ui_event_map.json
+        # vba_handler → module_id (the run's map; resolved here only for legacy callers)
         all_handlers = [h.get("method", "") for h in event_handlers if h.get("method")]
-        vba_mid_map: dict[str, str] = _resolve_vba_to_module_id_map(form_name, all_handlers)
+        vba_mid_map: dict[str, str] = (
+            fid_map if fid_map is not None else _resolve_vba_to_module_id_map(form_name, all_handlers)
+        )
 
         # Build old_cmd_key → fid_cmd mapping (same logic as tool_skeleton.gen_viewmodel)
         old_to_fid: dict[str, str] = {}
@@ -685,13 +740,15 @@ class UIAgent(BaseAgent):
         wpf_controls: list[dict],
         form_events: dict | None = None,
         query_stubs: dict[str, dict] | None = None,
+        form_name: str = "",
     ) -> dict:
         """
         Infer ViewModel bindings from wpf_controls events + form-level events (MongoDB data).
         No BD JSON needed.
-        Returns: {properties, commands, event_handlers, query_stubs}
-          event_handlers: list of {"method": str, "event": str, "control": str}
+        Returns: {properties, commands, event_handlers, query_stubs, password_property}
+          event_handlers: list of {"method", "event", "control", "raw"} ("raw" = event property value)
           query_stubs:    dict[control_name → stub] từ tool_query_stubs.py
+          password_property: ViewModel property bound to the PasswordBox (renamed TxtPass by tool_skeleton)
 
         form_events:  dict from forms.properties.event e.g. {"onopen": "Form_Open", ...}
         query_stubs:  dict từ QueryStubTool.extract() — suggested_property per control
@@ -703,31 +760,42 @@ class UIAgent(BaseAgent):
         seen_cmds:  set[str] = set()
         seen_hdlrs: set[str] = set()
         _stubs = query_stubs or {}
+        password_property = ""
 
         # ── Form-level events first (F000, F001, F002...) ───────────────────
-        # VBA form event → WPF event name + C# EventArgs type
+        # VBA form event → window event (WPF spelling where pipeline.avalonia_cs converts it:
+        # ContentRendered → Loaded, PreviewKeyDown → KeyDown) + C# EventArgs type.
+        # Events with no Avalonia equivalent (Current, BeforeUpdate, Timer, ...) get no event
+        # name: the code-behind emits a TODO comment instead of an invalid subscription.
         FORM_EVENT_ARGS: dict[str, tuple[str, str]] = {
-            "onopen":    ("Loaded",          "RoutedEventArgs"),
-            "onload":    ("ContentRendered",  "EventArgs"),
-            "onclose":   ("Closed",           "EventArgs"),
-            "onkeydown": ("PreviewKeyDown",   "KeyEventArgs"),
-            "onkeyup":   ("PreviewKeyUp",     "KeyEventArgs"),
-            "onresize":  ("SizeChanged",      "SizeChangedEventArgs"),
-            "onactivate":("Activated",        "EventArgs"),
+            "onopen":       ("Loaded",          "RoutedEventArgs"),
+            "onload":       ("ContentRendered", "EventArgs"),
+            "onclose":      ("Closed",          "EventArgs"),
+            "onunload":     ("Closing",         "EventArgs"),
+            "onkeydown":    ("PreviewKeyDown",  "KeyEventArgs"),
+            "onkeyup":      ("KeyUp",           "KeyEventArgs"),
+            "onresize":     ("SizeChanged",     "SizeChangedEventArgs"),
+            "onactivate":   ("Activated",       "EventArgs"),
+            "ondeactivate": ("Deactivated",     "EventArgs"),
+            "ongotfocus":   ("GotFocus",        "RoutedEventArgs"),
+            "onlostfocus":  ("LostFocus",       "RoutedEventArgs"),
+            "onclick":      ("Tapped",          "RoutedEventArgs"),
+            "ondblclick":   ("DoubleTapped",    "RoutedEventArgs"),
         }
         for vba_evt, handler_name in (form_events or {}).items():
             if not handler_name:
                 continue
             evt_key = vba_evt.lower()
-            wpf_event, args = FORM_EVENT_ARGS.get(evt_key, (vba_evt, "RoutedEventArgs"))
+            wpf_event, args = FORM_EVENT_ARGS.get(evt_key, ("", "EventArgs"))
             if handler_name not in seen_hdlrs:
                 event_handlers.append({
                     "method":       handler_name,
                     "event":        vba_evt,         # e.g. "onopen"
-                    "wpf_event":    wpf_event,        # e.g. "Loaded"
+                    "wpf_event":    wpf_event,        # e.g. "Loaded" ("" = no Avalonia equivalent)
                     "control":      "__form__",       # sentinel: form-level, not a control
                     "args":         args,
                     "todo":         "",
+                    "raw":          handler_name,
                 })
                 seen_hdlrs.add(handler_name)
 
@@ -793,14 +861,11 @@ class UIAgent(BaseAgent):
                 # PasswordBox → derive property name from control name (e.g. txtPass -> Pass)
                 prop = (name.replace("txt", "", 1) if name.startswith("txt") else name)
                 if not prop: prop = "Password"
-                
+
                 if prop not in seen_props:
                     properties.append(prop)
                     seen_props.add(prop)
-                
-                # Store mapping for tool_skeleton to generate unique handlers
-                if "password_mappings" not in locals(): # This won't work in a loop, need to init outside
-                    pass 
+                password_property = password_property or prop
 
 
             # Button → Command binding
@@ -866,7 +931,7 @@ class UIAgent(BaseAgent):
 
                 # Macro reference events: vẫn cần gen event_handler
                 # để tool_skeleton tạo stub trong code-behind và cs_stub trong input JSON
-                is_macro = evt_val.startswith("macro.")
+                is_macro = evt_val.lower().startswith("macro.")
                 if is_macro:
                     # Dùng physical_name để gen method name — KHÔNG dùng tên Nhật (name)
                     method = f"{physical_name}_{evt_type.replace('on','',1).capitalize()}"
@@ -896,6 +961,7 @@ class UIAgent(BaseAgent):
                         "wpf_type": wpf_type,   # needed by gen_codebehind has_pw detection
                         "args":     args,
                         "todo":     "",
+                        "raw":      evt_val,    # e.g. "macro.A_メニューバーを表示" (F-ID matching)
                     })
                     seen_hdlrs.add(method)
 
@@ -916,10 +982,11 @@ class UIAgent(BaseAgent):
                         seen_cmds.add(cmd)
 
         return {
-            "properties":     properties,
-            "commands":       commands,
-            "event_handlers": event_handlers,
-            "query_stubs":    _stubs,   # contract cho Logic Agent
+            "properties":        properties,
+            "commands":          commands,
+            "event_handlers":    event_handlers,
+            "query_stubs":       _stubs,   # contract cho Logic Agent
+            "password_property": password_property,
         }
 
     # ──────────────────────────────────────────
@@ -946,15 +1013,10 @@ class UIAgent(BaseAgent):
         the parent-child hierarchy (nodekey="" = section parent, nodekey=parent = child).
         Falls back to flat controls list if no sections available.
         """
-        # Background from first section's section_format
-        bg_color = "#FFFFFF"
-        if sections:
-            bg_color = sections[0].get("section_format", {}).get("background", "#FFFFFF")
-
         # ── Header ──────────────────────────────────────────────────────────
         prompt  = f"Generate WPF JSONL for form: {form_name}\n"
         prompt += f"WindowName: {window_name}\n"
-        prompt += f"Instructions: Output ONLY the list of UI controls (JSONL). The tool will handle the Window and ViewModel skeleton. Ensure all bindings match the 'ViewModel Bindings' section below.\n\n"
+        prompt += "Instructions: Output ONLY the list of UI controls (JSONL). The tool will handle the Window and ViewModel skeleton. Ensure all bindings match the 'ViewModel Bindings' section below.\n\n"
 
         # ── Form properties ──────────────────────────────────────────────────
         prompt += f"## Form Properties:\n```json\n{json.dumps(form_config, ensure_ascii=False, indent=2)}\n```\n\n"
@@ -968,7 +1030,6 @@ class UIAgent(BaseAgent):
                 sec_fmt    = sec.get("section_format", {})
                 sec_height = sec_fmt.get("height", "")
                 sec_bg     = sec_fmt.get("background", "")
-                sec_type   = sec.get("section_type", "section")
 
                 # Section header line
                 prompt += f"### Section: {sec_name}"
@@ -1004,7 +1065,7 @@ class UIAgent(BaseAgent):
             prompt += f"## UI Controls ({len(controls)} items — JSONL):\n```jsonl\n{controls_jsonl}\n```\n\n"
 
         # ── ViewModel bindings ───────────────────────────────────────────────
-        prompt += f"## ViewModel Bindings:\n"
+        prompt += "## ViewModel Bindings:\n"
         prompt += f"Properties: {', '.join(bindings.get('properties', []))}\n"
         prompt += f"Commands: {', '.join(bindings.get('commands', []))}\n"
         return prompt
@@ -1012,19 +1073,6 @@ class UIAgent(BaseAgent):
     # ──────────────────────────────────────────
     # Token-Aware Chunking (Map-Reduce)
     # ──────────────────────────────────────────
-
-    @staticmethod
-    def _estimate_prompt_tokens(sections: list[dict]) -> int:
-        """
-        Rough token estimate for a list of sections.
-        Rule of thumb: 1 token ≈ 3 chars of JSON.
-        """
-        total_chars = sum(
-            len(json.dumps(ctrl, ensure_ascii=False))
-            for sec in sections
-            for ctrl in sec.get("controls", [])
-        )
-        return total_chars // 3
 
     @staticmethod
     def _chunk_sections(sections: list[dict], max_controls: int = CONTROLS_PER_CHUNK) -> list[list[dict]]:
@@ -1239,14 +1287,19 @@ class UIAgent(BaseAgent):
             except Exception as e:
                 logger.error("[Agent UI][LangGraph] Chunk %d/%d failed: %s", idx + 1, state["total_chunks"], e)
                 return {
-                    "current_idx": idx + 1
+                    "current_idx": idx + 1,
+                    "failed_chunks": [idx + 1],
                 }
 
         def merge_node(state: UIChunkState) -> dict:
-            partial_specs = state["partial_specs"]
-            if not partial_specs:
-                raise RuntimeError(f"[Agent UI][LangGraph] All chunks failed for form {state['form_name']}")
-            final_spec = self._merge_ui_specs(partial_specs)
+            # A missing chunk silently drops its controls from the AXAML — fail the run instead.
+            failed = state.get("failed_chunks") or []
+            if failed:
+                raise RuntimeError(
+                    f"[Agent UI][LangGraph] {len(failed)}/{state['total_chunks']} chunk(s) failed for form "
+                    f"{state['form_name']}: {failed}"
+                )
+            final_spec = self._merge_ui_specs(state["partial_specs"])
             return {"final_spec": final_spec}
 
         def should_continue(state: UIChunkState) -> str:
@@ -1282,24 +1335,15 @@ class UIAgent(BaseAgent):
             "total_chunks": 0,
             "current_idx": 0,
             "partial_specs": [],
+            "failed_chunks": [],
             "final_spec": {}
         }
 
         logger.info("[Agent UI][LangGraph] Invoking map-reduce graph for %s...", form_name)
-        final_state = graph.invoke(initial_state)
+        # One superstep per chunk (+ split/merge): never let langgraph's default limit cut a form short
+        n_chunks = len(self._chunk_sections(wpf_sections, max_controls=CONTROLS_PER_CHUNK))
+        final_state = graph.invoke(initial_state, config={"recursion_limit": n_chunks + 10})
         return final_state["final_spec"]
-
-    # ──────────────────────────────────────────
-    # Naming
-    # ──────────────────────────────────────────
-
-    @staticmethod
-    def _form_to_window_name(form_name: str) -> str:
-        """F_Login → LoginWindow,  F001_社員マスタ → F001Window"""
-        name = form_name
-        if name.startswith("F_"):
-            name = name[2:]
-        return f"{name}Window"
 
     # ──────────────────────────────────────────
     # JSONL Pipeline: Parse → Assemble → Preview
@@ -1331,6 +1375,8 @@ class UIAgent(BaseAgent):
                 obj = json.loads(line)
             except json.JSONDecodeError:
                 logger.warning("[Agent UI] JSONL parse error on line: %s", line[:80])
+                continue
+            if not isinstance(obj, dict):
                 continue
 
             t = obj.get("type", "")
@@ -1469,12 +1515,15 @@ class UIAgent(BaseAgent):
         return {"window": window, "controls": controls}
 
     @staticmethod
-    def _to_avalonia_xaml(xaml: str, view_class: str) -> str:
+    def _to_avalonia_xaml(xaml: str, view_class: str, password_binding: str | None = None) -> str:
         """
         Post-process a WPF XAML string into an Avalonia .axaml string.
 
         Centralized converter — applied at the single output chokepoint so it
         covers whatever the skeleton-injection path produced. Deterministic.
+
+        password_binding: ViewModel property for the converted PasswordBox's Text (Avalonia's
+        TextBox+PasswordChar binds directly; WPF needed a PasswordChanged code-behind handler).
         """
         # 1. Root namespaces: WPF presentation NS → Avalonia NS
         xaml = xaml.replace(
@@ -1519,7 +1568,13 @@ class UIAgent(BaseAgent):
             )
 
         # 5. PasswordBox → TextBox with PasswordChar (Avalonia has no PasswordBox)
-        xaml = xaml.replace('<PasswordBox', '<TextBox PasswordChar="*"').replace('</PasswordBox>', '</TextBox>')
+        def _password_box(m: re.Match) -> str:
+            attrs = m.group(1)
+            if password_binding and not re.search(r'\sText\s*=', attrs):
+                attrs = f' Text="{{Binding {password_binding}}}"' + attrs
+            return f'<TextBox PasswordChar="*"{attrs}'
+        xaml = re.sub(r'<PasswordBox\b([^>]*?)(?=/?>)', _password_box, xaml)
+        xaml = xaml.replace('</PasswordBox>', '</TextBox>')
         # Drop WPF-only PasswordChanged handler attribute
         xaml = re.sub(r'\s*PasswordChanged\s*=\s*"[^"]*"', '', xaml)
 
@@ -1531,8 +1586,8 @@ class UIAgent(BaseAgent):
         xaml = re.sub(r'\s*RenderOptions\.BitmapScalingMode\s*=\s*"[^"]*"', '', xaml)
 
         # 8. Remove WPF behaviors trigger blocks (Microsoft.Xaml.Behaviors has no Avalonia 12
-        #    equivalent). Button Command bindings are preserved natively; non-button (Label)
-        #    command triggers are dropped so the AXAML compiles.
+        #    equivalent). Button Command bindings are preserved natively; non-button command
+        #    triggers are wired in the code-behind instead (see _collect_control_events).
         xaml = re.sub(
             r'\s*<i:Interaction\.Triggers>[\s\S]*?</i:Interaction\.Triggers>',
             '', xaml,
@@ -1540,164 +1595,6 @@ class UIAgent(BaseAgent):
 
         # 9. Root element <Window> stays (Avalonia has Window).
         return xaml
-
-    @staticmethod
-    def _jsonl_to_xaml(ui_spec: dict, window_name: str) -> str:
-        """
-        Assemble final WPF XAML from ui_spec dict (deterministic — no LLM).
-
-        Fixed by agent (NOT by LLM):
-          - xmlns declarations (always correct)
-          - x:Class format
-          - PasswordChanged event wiring
-          - Grid layout with HorizontalAlignment/VerticalAlignment/Margin
-        """
-        win = ui_spec.get("window", {})
-        controls = ui_spec.get("controls", [])
-
-        # ── Window attributes ───────────────────────────────────────────
-        # xmlns are HARDCODED here — LLM never touches these
-        w_class   = win.get("class", f"vba_brain.UI.WPF.Views.{sanitize_class_name(window_name)}")
-        import html
-        w_title   = html.escape(win.get("title") or form_config.get("caption") or window_name)
-        w_width   = win.get("width", 600) + 16  # Compensation for Win10 borders
-        w_height  = win.get("height", 400) + 39 # Compensation for title bar
-        w_bg      = win.get("background") or win.get("format", {}).get("background", "#FFFFFF")
-        w_style   = win.get("window_style", "SingleBorderWindow")
-        w_resize  = win.get("resize_mode", "CanResize")
-        w_taskbar = str(win.get("show_in_taskbar", True)).lower()
-        w_topmost = str(win.get("topmost", False)).lower()
-        w_transp  = "false"  # Default to false for stability (VBA migration)
-        w_startup = win.get("startup_location", "CenterScreen")
-
-        # AllowsTransparency requires WindowStyle=None
-        if w_transp == "true" and w_style != "None":
-            w_style = "None"
-
-        lines: list[str] = [
-            f'<Window x:Class="{w_class}"',
-            f'        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"',
-            f'        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"',
-            f'        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"',
-            f'        xmlns:vm="clr-namespace:vba_brain.UI.WPF.ViewModels"',
-            f'        Title="{w_title}"',
-            f'        Width="{w_width}"',
-            f'        Height="{w_height}"',
-            f'        Background="{w_bg}"',
-            f'        WindowStyle="{w_style}"',
-            f'        ResizeMode="{w_resize}"',
-            f'        ShowInTaskbar="{w_taskbar.capitalize()}"',
-            f'        Topmost="{w_topmost.capitalize()}"',
-            f'        AllowsTransparency="{w_transp.capitalize()}"',
-            f'        WindowStartupLocation="{w_startup}">',
-            f'    <Grid>',
-        ]
-
-        # ── Controls ────────────────────────────────────────────────────
-        BOOL_ATTRS: dict[str, str] = {
-            "is_readonly": "IsReadOnly",
-        }
-
-        for ctrl in controls:
-            ctype  = ctrl.get("type", "TextBlock")
-            name   = ctrl.get("name", "")
-            ml     = ctrl.get("margin_left", 0)
-            mt     = ctrl.get("margin_top", 0)
-            width  = ctrl.get("width")
-            height = ctrl.get("height")
-            picture = ctrl.get("picture", "")
-
-            comment = ctrl.get("comment", "")
-
-            # Optional comment before element
-            if comment:
-                lines.append(f'        <!-- {comment} -->')
-
-            # Opening tag
-            tag_attrs: list[str] = []
-            if name:
-                tag_attrs.append(f'x:Name="{name}"')
-            tag_attrs.append('HorizontalAlignment="Left"')
-            tag_attrs.append('VerticalAlignment="Top"')
-            tag_attrs.append(f'Margin="{ml},{mt},0,0"')
-            if width  is not None: tag_attrs.append(f'Width="{width}"')
-            if height is not None: tag_attrs.append(f'Height="{height}"')
-
-            # Content / binding / command
-            content = ctrl.get("content")
-            binding = ctrl.get("binding")
-            command = ctrl.get("command")
-
-            if ctype in ("TextBox",) and binding:
-                tag_attrs.append(f'Text="{{Binding {binding}}}"')
-            
-            inner_content = ""
-            if ctype == "Image" and picture:
-                # Image control: add Source directly as attribute, not as inner content
-                img_path = f"/Resources/img/{window_name}/{picture}"
-                tag_attrs.append(f'Source="{img_path}"')
-                tag_attrs.append('Stretch="Uniform"')
-                tag_attrs.append('RenderOptions.BitmapScalingMode="HighQuality"')
-            elif picture:
-                # Button/Label with picture: use inner StackPanel
-                img_path = f"/Resources/img/{window_name}/{picture}"
-                if content:
-                    inner_content = f'<StackPanel Orientation="Horizontal"><Image Source="{img_path}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" /><TextBlock Text="{content}" VerticalAlignment="Center" Margin="5,0,0,0"/></StackPanel>'
-                else:
-                    inner_content = f'<Image Source="{img_path}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />'
-            elif ctype in ("Label", "Button") and content is not None:
-                tag_attrs.append(f'Content="{content}"')
-
-            if command and ctype in ("Button", "RadioButton", "CheckBox", "ToggleButton", "MenuItem", "Hyperlink"):
-                tag_attrs.append(f'Command="{{Binding {command}}}"')
-
-            # Font
-            ff = ctrl.get("font_family")
-            fs = ctrl.get("font_size")
-            fw = ctrl.get("font_weight")
-            if ff: tag_attrs.append(f'FontFamily="{ff}"')
-            if fs: tag_attrs.append(f'FontSize="{fs}"')
-            if fw: tag_attrs.append(f'FontWeight="{fw}"')
-
-            # Colors
-            fg = ctrl.get("foreground")
-            bg = ctrl.get("background")
-            bb = ctrl.get("border_brush")
-            if fg: tag_attrs.append(f'Foreground="{fg}"')
-            if bg and bg != "Transparent": tag_attrs.append(f'Background="{bg}"')
-            if bb: tag_attrs.append(f'BorderBrush="{bb}"')
-
-            # Bool attributes
-            for key, xaml_attr in BOOL_ATTRS.items():
-                if ctrl.get(key):
-                    tag_attrs.append(f'{xaml_attr}="True"')
-
-            # Visibility
-            if ctrl.get("visible") is False:
-                tag_attrs.append('Visibility="Collapsed"')
-
-            # Alignment (Label)
-            ha = ctrl.get("horizontal_content_alignment")
-            va = ctrl.get("vertical_content_alignment")
-            if ha: tag_attrs.append(f'HorizontalContentAlignment="{ha}"')
-            if va: tag_attrs.append(f'VerticalContentAlignment="{va}"')
-
-            # Render element (indent attrs for readability)
-            first = tag_attrs[0]
-            rest  = tag_attrs[1:]
-            indent = " " * (8 + len(ctype) + 2)   # align after <Type_name_
-            body  = f'\n{indent}'.join([first] + rest)
-            
-            if inner_content:
-                lines.append(f'        <{ctype} {body}>')
-                lines.append(f'            {inner_content}')
-                lines.append(f'        </{ctype}>')
-            else:
-                lines.append(f'        <{ctype} {body} />')
-
-        lines.append('    </Grid>')
-        lines.append('</Window>')
-        return "\n".join(lines)
 
     def _save_preview_json(self, form_name: str, ui_spec: dict, view_file_stem: str | None = None) -> None:
         """
@@ -1932,7 +1829,7 @@ class UIAgent(BaseAgent):
                 ctrl_eh = event_handler_map.get(name, {})
                 for vba_evt, cs_method in ctrl_eh.items():
                     # Skip macro handlers (no code-behind stub)
-                    if cs_method.startswith("macro."):
+                    if cs_method.lower().startswith("macro."):
                         continue
                     # Skip afterupdate for PasswordBox — handled by password_event flag above
                     if vba_evt == "afterupdate" and ctype == "PasswordBox" and ctrl.get("password_event"):
@@ -1958,7 +1855,7 @@ class UIAgent(BaseAgent):
             for vba_evt, handler_val in (ctrl.get("events") or {}).items():
                 if vba_evt in ctrl_events_wired:
                     continue
-                if not handler_val or handler_val.startswith("macro."):
+                if not handler_val or handler_val.lower().startswith("macro."):
                     continue
                 if vba_evt == "afterupdate" and ctype == "PasswordBox" and ctrl.get("password_event"):
                     continue
@@ -1990,9 +1887,12 @@ class UIAgent(BaseAgent):
                     # ctrl["events"] = {"onclick": "F006_Click", "ondblclick": "F007_DblClick"} (LLM-provided names)
                     # vm_bindings đã remap sang F-ID Command names qua fid_cmd_map
                     _VBA_TO_XAML = {
-                        "onclick":    "MouseLeftButtonUp",
-                        "ondblclick": "MouseDoubleClick",
-                        "dblclick":   "MouseDoubleClick",
+                        "onclick":     "MouseLeftButtonUp",
+                        "ondblclick":  "MouseDoubleClick",
+                        "dblclick":    "MouseDoubleClick",
+                        "afterupdate": "LostFocus",      # Access AfterUpdate fires when leaving the control
+                        "onlostfocus": "LostFocus",
+                        "ongotfocus":  "GotFocus",
                     }
                     # Build list of (xaml_event, fid_command) for this control
                     _beh_triggers: list[tuple[str, str]] = []
@@ -2100,18 +2000,79 @@ class UIAgent(BaseAgent):
                 if beh_triggers:
                     # InvokeCommandAction — MVVM pattern cho non-Button controls
                     # Hỗ trợ nhiều events trên cùng một control (onclick + ondblclick)
-                    lines.append(f'            <i:Interaction.Triggers>')
+                    lines.append('            <i:Interaction.Triggers>')
                     for _xaml_evt, _fid_cmd in beh_triggers:
                         lines.append(f'                <i:EventTrigger EventName="{_xaml_evt}">')
                         lines.append(f'                    <i:InvokeCommandAction Command="{{Binding {_fid_cmd}}}" />')
-                        lines.append(f'                </i:EventTrigger>')
-                    lines.append(f'            </i:Interaction.Triggers>')
+                        lines.append('                </i:EventTrigger>')
+                    lines.append('            </i:Interaction.Triggers>')
                 lines.append(f'        </{ctype}>')
             else:
                 lines.append(f'        <{ctype} {body} />')
 
         return "\n".join(lines)
 
+
+    @staticmethod
+    def _bound_property_names(controls: list) -> list[str]:
+        """Plain `binding` names referenced by the controls (nested included), in document order."""
+        names: list[str] = []
+        for ctrl in controls or []:
+            binding = str(ctrl.get("binding") or "").strip()
+            if re.fullmatch(r"[A-Za-z_]\w*", binding) and binding not in names:
+                names.append(binding)
+            for nested in UIAgent._bound_property_names(ctrl.get("controls", [])):
+                if nested not in names:
+                    names.append(nested)
+        return names
+
+    @staticmethod
+    def _sync_bound_properties(vm_bindings: dict, controls: list) -> None:
+        """
+        Make every property the AXAML binds exist on the ViewModel skeleton, spelled exactly the
+        same — compiled bindings are case-sensitive and a miss is a build error (AVLN2000).
+        Unbound Access text boxes that VBA fills (txtID) are never inferred from the controls,
+        and inferred names keep the control's casing (txtProductID) while the AXAML binds
+        PascalCase (TxtProductID). The PasswordBox property is left alone (tool_skeleton renames
+        it to TxtPass, which is what the converted PasswordBox binds).
+        """
+        props = vm_bindings.setdefault("properties", [])
+        for name in UIAgent._bound_property_names(controls):
+            same = next((i for i, p in enumerate(props) if p.lower() == name.lower()), None)
+            if same is None:
+                props.append(name)
+            elif props[same] != vm_bindings.get("password_property"):
+                props[same] = name
+
+    @staticmethod
+    def _collect_control_events(
+        controls: list[dict], fid_map: dict[str, str] | None,
+    ) -> list[tuple[str, str, str]]:
+        """
+        (x:Name, Avalonia event, F###Command) for the non-Button command triggers that
+        _jsonl_to_grid_content recorded. Avalonia has no Interaction.Triggers, so the code-behind
+        subscribes the control event instead. Only commands the ViewModel defines are wired.
+        """
+        known_cmds = {f"{fid}Command" for fid in (fid_map or {}).values()}
+        wiring: list[tuple[str, str, str]] = []
+        seen: set[tuple[str, str]] = set()
+
+        def walk(ctrls: list[dict]) -> None:
+            for ctrl in ctrls:
+                if ctrl.get("controls"):
+                    walk(ctrl["controls"])
+                name = ctrl.get("name", "")
+                if not name:
+                    continue
+                field = sanitize_xaml_name(name)
+                for xaml_evt, cmd in ctrl.get("_behaviors_triggers", []) or []:
+                    event = _AVALONIA_CONTROL_EVENTS.get(xaml_evt)
+                    if event and cmd in known_cmds and (field, event) not in seen:
+                        seen.add((field, event))
+                        wiring.append((field, event, cmd))
+
+        walk(controls or [])
+        return wiring
 
     @staticmethod
     def _inject_into_skeleton(
@@ -2175,18 +2136,18 @@ class UIAgent(BaseAgent):
                     tag_content = re.sub(pattern, '', tag_content)
                     continue
 
+                # Access captions may contain & < " — escape for XML; lambda = no regex escapes
+                attr_text = f'{attr}="{html.escape(str(value), quote=True)}"'
                 if re.search(pattern, tag_content):
-                    tag_content = re.sub(pattern, f' {attr}="{value}"', tag_content)
+                    tag_content = re.sub(pattern, lambda _m, t=attr_text: f' {t}', tag_content)
                 else:
-                    # Append before the closing >
-                    tag_content = tag_content.replace('>', f'\n        {attr}="{value}">')
-            
+                    # Append before the tag's closing >
+                    tag_content = f'{tag_content[:-1]}\n        {attr_text}>'
+
             return xaml[:match.start()] + tag_content + xaml[match.end():]
 
-        # Use SizeToContent for popups/modals to ensure the window fits the Section grid perfectly.
-        # This eliminates white gaps at the bottom/right and ensures centering is relative to the content.
-        is_popup = win.get("allows_transparency") or win.get("window_style") == "None" or not win.get("resize_mode", "CanResize") == "CanResize"
-        
+        # SizeToContent ensures the window fits the Section grid perfectly (no white gaps, centering
+        # relative to the content).
         attrs_to_set: dict[str, Any] = {
             "Title":                   win.get("title", form_name),
             "Background":              win.get("background") or win.get("format", {}).get("background", "#FFFFFF"),
@@ -2323,160 +2284,6 @@ class UIAgent(BaseAgent):
                       xaml)
         return xaml
 
-    def _generate_codebehind(self, form_name: str, vm_bindings: dict) -> str:
-        """
-        Generate code-behind .xaml.cs:
-        - Wire DataContext to ViewModel
-        - Generate event handler stubs from VBA events (method name only, no body)
-        """
-        class_name = sanitize_class_name(form_name)
-        event_handlers: list[dict] = vm_bindings.get("event_handlers", [])
-
-        handler_lines: list[str] = []
-        for hdlr in event_handlers:
-            method  = hdlr.get("method", "")
-            args    = hdlr.get("args", "RoutedEventArgs")
-
-            # All VBA event handlers — empty stub, Logic Agent fills later
-            handler_lines.append(
-                    f"    private void {method}(object sender, {args} e)\n"
-                    f"    {{\n"
-                    f"        throw new System.NotImplementedException();\n"
-                    f"    }}\n"
-                )
-
-        handlers_block = "\n".join(handler_lines)
-        has_handlers   = bool(handler_lines)
-
-        # Extra usings for KeyEventArgs / MouseButtonEventArgs
-        extra_usings = ""
-        arg_types = {h.get("args", "") for h in event_handlers}
-        if "KeyEventArgs" in arg_types or "MouseButtonEventArgs" in arg_types:
-            extra_usings = "using System.Windows.Input;\n"
-
-        handlers_section = (
-            f"\n    // ── VBA Event Handler Stubs (tên giữ nguyên — Logic Agent sẽ implement) ──\n"
-            f"{handlers_block}"
-        ) if has_handlers else ""
-
-        return f"""using System.Windows;
-{extra_usings}
-namespace vba_brain.UI.WPF.Views;
-
-public partial class {class_name} : Window
-{{
-    public {class_name}(ViewModels.{class_name} viewModel)
-    {{
-        InitializeComponent();
-        DataContext = viewModel;
-    }}
-{handlers_section}}}
-"""
-
-    @staticmethod
-    def _to_camel_field(prop_name: str) -> str:
-        """
-        Convert property name to camelCase backing field.
-        C# convention: ALL-CAPS words go fully lowercase.
-          ID   → _id   (not _iD)
-          Pass → _pass
-          UserName → _userName
-        """
-        import re as _re
-        # If the whole name is uppercase (e.g. "ID", "UI") → all lowercase
-        if prop_name.isupper():
-            return f"_{prop_name.lower()}"
-        # Replace leading uppercase sequence with lowercase (e.g. "UserName" → "_userName")
-        # PascalCase → camelCase: only lowercase the FIRST character
-        camel = prop_name[0].lower() + prop_name[1:]
-        return f"_{camel}"
-
-    def _generate_viewmodel_stub(self, form_name: str, vm_bindings: dict) -> str:
-        """
-        Generate ViewModel skeleton (Giai đoạn 2 — MVVM):
-        - Class name = form_name (e.g. F_Login)
-        - Properties: full INPC get/set stubs (backing field naming chuẩn C#)
-        - Commands: { get; set; } = default! với VBA annotation comment
-          → Logic Agent đọc comment để biết context implement
-        - Không embed RelayCommand — để Infrastructure/Logic Agent xử lý
-        """
-        vm_class        = sanitize_class_name(form_name)
-        props           = vm_bindings.get("properties", [])
-        commands        = vm_bindings.get("commands", [])
-        event_handlers  = vm_bindings.get("event_handlers", [])
-
-        # Build VBA origin map: CommandName → {control, event, vba_handler}
-        # Dùng để annotate command với context cho Logic Agent
-        cmd_vba_map: dict[str, dict] = {}
-        for hdlr in event_handlers:
-            method  = hdlr.get("method", "")
-            ctrl    = hdlr.get("control", "")
-            evt     = hdlr.get("event", "")
-            # Match handler to command: "閉じる_Click" → "閉じるCommand"
-            base    = method.replace("_Click", "").replace("_DblClick", "").replace("_AfterUpdate", "")
-            cmd_key = base + "Command"
-            if cmd_key in commands:
-                cmd_vba_map[cmd_key] = {
-                    "control": ctrl,
-                    "event":   evt,
-                    "handler": method,
-                }
-
-        # ── Properties ──────────────────────────────────────────
-        prop_lines: list[str] = []
-        for p in props:
-            field = self._to_camel_field(p)
-            prop_lines.append(f"    private string {field} = string.Empty;")
-            prop_lines.append(f"    public string {p}")
-            prop_lines.append( "    {")
-            prop_lines.append(f"        get => {field};")
-            prop_lines.append(f"        set {{ {field} = value; OnPropertyChanged(); }}")
-            prop_lines.append( "    }")
-            prop_lines.append("")
-
-        # ── Commands ────────────────────────────────────────────
-        cmd_lines: list[str] = []
-        for c in commands:
-            # Thêm VBA annotation comment để Logic Agent biết context
-            vba = cmd_vba_map.get(c)
-            if vba:
-                ctrl_info = f"{vba['control']}[{vba['event']}]"
-                cmd_lines.append(
-                    f"    // VBA: {ctrl_info} → {vba['handler']}"
-                )
-            cmd_lines.append(
-                f"    public System.Windows.Input.ICommand {c} {{ get; set; }} = default!;"
-            )
-
-        props_block    = "\n".join(prop_lines)
-        commands_block = "\n".join(cmd_lines)
-
-        props_section = (
-            f"    // ─ Properties ────────────────────────────────────────────────\n"
-            f"{props_block}\n"
-        ) if props else ""
-
-        commands_section = (
-            f"\n    // ─ Commands (TODO: Logic Agent inject via constructor) ──────\n"
-            f"{commands_block}\n"
-        ) if commands else ""
-
-        return f"""using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace vba_brain.UI.WPF.ViewModels;
-
-public class {vm_class} : INotifyPropertyChanged
-{{
-{props_section}{commands_section}
-    // ─ INotifyPropertyChanged ────────────────────────────────────
-    public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-}}
-"""
-    # ──────────────────────────────────────────
-
     # ──────────────────────────────────────────
     # I/O — inputs/ & outputs/
     # ──────────────────────────────────────────
@@ -2556,52 +2363,64 @@ public class {vm_class} : INotifyPropertyChanged
             vm_path.write_text(vm, encoding="utf-8")
             logger.info("[Agent UI] Saved: ViewModels/%s", vm_path.name)
 
-    def fix_build_errors(self, window_name: str, build_errors: str) -> dict[str, str]:
+    def fix_build_errors(self, form_name: str, build_errors: str) -> dict[str, str]:
         """
-        AI-powered build error fixer.
-        Reads current outputs/, sends to LLM with errors, returns fixed file contents.
-        Returns: {"xaml": fixed_xaml, "cs": fixed_cs}
+        AI-powered build error fixer (`--fix`, called by the frontend's build loop).
+        Reads outputs/{form}/Views/{View}.axaml(.cs) — what run() writes — sends them to the LLM
+        with the errors, writes the fixed files back (and into the Avalonia source when present).
+        Returns: {"xaml": fixed_axaml, "cs": fixed_cs}
         """
-        xaml_path = OUTPUTS_DIR / f"{window_name}.xaml"
-        cs_path   = OUTPUTS_DIR / f"{window_name}.xaml.cs"
+        from pipeline.avalonia_cs import to_avalonia_cs
+
+        validate_form_name(form_name)
+        view_stem, _ = _resolve_wpf_names(form_name, _load_form_name_map())
+        views_dir = OUTPUTS_DIR / form_name / "Views"
+        xaml_path = views_dir / f"{view_stem}.axaml"
+        cs_path   = views_dir / f"{view_stem}.axaml.cs"
 
         current_xaml = xaml_path.read_text(encoding="utf-8") if xaml_path.exists() else ""
         current_cs   = cs_path.read_text(encoding="utf-8")   if cs_path.exists()   else ""
 
-        has_cs_err = ".xaml.cs" in build_errors or "CS0" in build_errors
+        has_cs_err   = bool(re.search(r"\berror CS\d{4}\b", build_errors))
+        has_xaml_err = "AVLN" in build_errors or ".axaml(" in build_errors or not has_cs_err
 
         system_prompt = self.load_prompt("agent_ui_fix.md")
         llm = L5LLMClient()
         result: dict[str, str] = {}
 
-        # Fix XAML
-        if current_xaml and not has_cs_err:
+        def _save(path: Path, text: str) -> None:
+            path.write_text(text, encoding="utf-8")
+            source = WPF_VIEWS_DIR / path.name
+            if WPF_VIEWS_DIR.exists():
+                source.write_text(text, encoding="utf-8")
+            logger.info("[Agent UI] Fixed %s", path.name)
+
+        # Fix AXAML
+        if current_xaml and has_xaml_err:
             user_prompt = (
                 f"## Build Errors:\n```\n{build_errors}\n```\n\n"
-                f"## Current {window_name}.xaml:\n```xml\n{current_xaml}\n```\n\n"
-                "Fix ONLY the errors above. Return the complete fixed XAML."
+                f"## Current {xaml_path.name}:\n```xml\n{current_xaml}\n```\n\n"
+                "Fix ONLY the errors above. Return the complete fixed AXAML."
             )
-            raw = llm.generate_code(task_type="view_xaml", system_prompt=system_prompt, user_prompt=user_prompt, agent="ui", form_name=window_name)
+            raw = llm.generate_code(task_type="view_xaml", system_prompt=system_prompt, user_prompt=user_prompt, agent="ui", form_name=form_name)
             fixed_xaml = extract_code_block(raw, language="xml")
-            fixed_xaml = self._fix_xaml_class(fixed_xaml, window_name)
-            fixed_xaml = self._fix_xaml_properties(fixed_xaml)
             fixed_xaml = self._fix_xaml_canvas_to_grid(fixed_xaml)
-            xaml_path.write_text(fixed_xaml, encoding="utf-8")
+            fixed_xaml = self._fix_xaml_properties(fixed_xaml)
+            fixed_xaml = self._to_avalonia_xaml(fixed_xaml, view_stem)
+            _save(xaml_path, fixed_xaml)
             result["xaml"] = fixed_xaml
-            logger.info("[Agent UI] Fixed XAML: %s", xaml_path.name)
 
-        # Fix CS
+        # Fix code-behind
         if current_cs and has_cs_err:
             user_prompt = (
                 f"## Build Errors:\n```\n{build_errors}\n```\n\n"
-                f"## Current {window_name}.xaml.cs:\n```csharp\n{current_cs}\n```\n\n"
+                f"## Current {cs_path.name}:\n```csharp\n{current_cs}\n```\n\n"
                 "Fix ONLY the errors above. Return the complete fixed C# code."
             )
-            raw = llm.generate_code(task_type="view_xaml", system_prompt=system_prompt, user_prompt=user_prompt, agent="ui", form_name=window_name)
-            fixed_cs = extract_code_block(raw, language="csharp")
-            cs_path.write_text(fixed_cs, encoding="utf-8")
+            raw = llm.generate_code(task_type="view_xaml", system_prompt=system_prompt, user_prompt=user_prompt, agent="ui", form_name=form_name)
+            fixed_cs = to_avalonia_cs(extract_code_block(raw, language="csharp"))
+            _save(cs_path, fixed_cs)
             result["cs"] = fixed_cs
-            logger.info("[Agent UI] Fixed CS: %s", cs_path.name)
 
         return result
 
@@ -2618,24 +2437,26 @@ async def main():
         format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
     )
 
-    parser = argparse.ArgumentParser(description="Agent UI — Generate WPF XAML from MongoDB")
+    parser = argparse.ArgumentParser(description="Agent UI — Generate Avalonia AXAML from MongoDB")
     parser.add_argument("form_name", help="Form name (e.g., F_Login)")
     parser.add_argument("--model", default=None, help="Override LLM model ID")
     parser.add_argument("--fix", default=None, metavar="ERRORS",
                         help="Fix mode: pass dotnet build error text to AI fixer")
     args = parser.parse_args()
+    name_error = form_name_error(args.form_name)
+    if name_error:
+        parser.error(name_error)
 
     agent = UIAgent()
     model_override = AVAILABLE_MODELS.get(args.model) if args.model else None
 
     if args.fix:
-        window_name = UIAgent._form_to_window_name(args.form_name)
-        logger.info("[Agent UI] Fix mode for %s", window_name)
-        result = agent.fix_build_errors(window_name, args.fix)
+        logger.info("[Agent UI] Fix mode for %s", args.form_name)
+        result = agent.fix_build_errors(args.form_name, args.fix)
         if result:
             print(f"\n[OK] Fixed {len(result)} file(s):")
             for k in result:
-                print(f"   -> {window_name}.xaml{'.cs' if k == 'cs' else ''}")
+                print(f"   -> {'code-behind (.axaml.cs)' if k == 'cs' else 'view (.axaml)'}")
         else:
             print("\n[ERR] Nothing to fix")
     else:

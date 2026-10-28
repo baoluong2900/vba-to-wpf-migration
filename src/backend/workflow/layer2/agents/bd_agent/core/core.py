@@ -19,9 +19,11 @@ def generate_bd(
     table_index: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     out = build_skeleton(sample)
-    form_name = str((data_root.get("form") or {}).get("name") or data_root.get("name") or "")
-    form_type = str((data_root.get("form") or {}).get("type") or data_root.get("type") or "").strip()
-    is_report = form_type.lower() == "reports"
+    root = item_root(data_root)
+    form_name = str(root.get("name") or data_root.get("name") or "")
+    form_type = str(root.get("type") or data_root.get("type") or "").strip()
+    # Reports from the `reports` collection nest under "report"; older L1 data stores them as forms of type "Reports"
+    is_report = "report" in data_root or form_type.lower() in ("reports", "report")
     recordsource = str(((root_properties(data_root).get("data") or {}).get("recordsource") or ""))
     query_meta = None
     if query_index and recordsource:
@@ -81,8 +83,8 @@ def generate_bd(
 
     out["sheet_2_layout"]["record_sources"] = rs_list
     out["sheet_2_layout"]["process_overview"] = [
-        {"summary_line": f""},
-        {"summary_line": f""},
+        {"summary_line": ""},
+        {"summary_line": ""},
     ]
 
     if is_report:
@@ -260,9 +262,8 @@ def generate_bd(
 def get_bd_mapping_dict(repo: Any, form_name: str, bd_code_json: dict[str, Any]) -> dict[str, Any]:
     """
     Returns the BD mapping dictionary (skeleton) without writing to file.
+    The caller (BDService._process_bd2_mapping) persists it under output/bd_flow/bd2_bd_mapping.
     """
-    proj_root = Path(__file__).resolve().parent.parent.parent
-
     # 1. Load sample using template_loader
     try:
         from utils.template_loader import load_template
@@ -275,7 +276,7 @@ def get_bd_mapping_dict(repo: Any, form_name: str, bd_code_json: dict[str, Any])
     # 2. Fetch queries
     from db.query_bd import get_bd_code_json_query_raw
     q_index = {}
-    form_data = bd_code_json.get("form", {})
+    form_data = item_root(bd_code_json)
     query_names = set(form_data.get("dependencies", {}).get("queries", []))
 
     # Resolve recordsource: check multiple possible key locations
@@ -367,18 +368,7 @@ def get_bd_mapping_dict(repo: Any, form_name: str, bd_code_json: dict[str, Any])
         except:
             continue
 
-    res = generate_bd(bd_code_json, sample_json, q_index, t_index)
-
-    # 4. Save output
-    try:
-        output_dir = proj_root / "output" / "bd_flow" / "bd2_bd_mapping"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / f"{form_name}.json"
-        output_file.write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")
-    except Exception as e:
-        print(f"Warning: Failed to save mapping output to file: {e}")
-
-    return res
+    return generate_bd(bd_code_json, sample_json, q_index, t_index)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build BD JSON from form+analysis JSON.")

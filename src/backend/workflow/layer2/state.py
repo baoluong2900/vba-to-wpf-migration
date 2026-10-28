@@ -20,7 +20,7 @@ class PipelineState(TypedDict, total=False):
     # ── Input identifiers ─────────────────────────────────────────────────
     item_name: str              # e.g. "C000_MAINⅡ"  or  "R005_…"  or  "Common"
     screen_name: str            # alias of item_name, used by BDService
-    item_type: str              # "form" | "report" | "module"
+    item_type: str              # "form" | "report" | "module" | "macro"
     complexity_level: str       # "low" | "medium" | "high" | "critical"
 
     # ── Layer 1 payloads (raw from MongoDB) ───────────────────────────────

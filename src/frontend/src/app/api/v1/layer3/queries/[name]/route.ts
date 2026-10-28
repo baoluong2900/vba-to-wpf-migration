@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: response.error }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, query: JSON.parse(response.query_json || '{}') });
+    return NextResponse.json({ success: true, result: JSON.parse(response.query_json || '{}') });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -47,7 +47,7 @@ export async function PUT(
       return NextResponse.json({ success: false, error: response.error }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, query: JSON.parse(response.query_json || '{}') });
+    return NextResponse.json({ success: true, result: JSON.parse(response.query_json || '{}') });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

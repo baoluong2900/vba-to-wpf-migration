@@ -25,6 +25,9 @@ public class RelayCommand : ICommand
 
     public event EventHandler? CanExecuteChanged;
 
+    /// <summary>Receives exceptions thrown by any command's delegate (logged to stderr when unset).</summary>
+    public static event Action<Exception>? UnhandledException;
+
     public bool CanExecute(object? parameter)
     {
         return !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
@@ -40,6 +43,13 @@ public class RelayCommand : ICommand
         try
         {
             await _executeAsync(parameter);
+        }
+        catch (Exception ex)
+        {
+            // ICommand.Execute is async void: an escaping exception (e.g. the database is down)
+            // would be rethrown on the UI thread and terminate the app.
+            if (UnhandledException is { } handler) handler(ex);
+            else Console.Error.WriteLine($"[RelayCommand] Unhandled exception: {ex}");
         }
         finally
         {

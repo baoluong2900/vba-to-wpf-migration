@@ -1,10 +1,10 @@
 import json
 import re
-import unicodedata
 from pathlib import Path
 from typing import Any
 
-from utils.vba_utils import strip_vba_comments, normalize_query_name, normalize_vba_name
+from utils.vba_utils import strip_vba_comments, normalize_query_name
+from utils.vba_utils import normalize_vba_name  # noqa: F401  (re-exported to the DD modules)
 
 # VBA calls to external macros/modules → mark as [refer:xxx]
 REFER_PATTERNS = [

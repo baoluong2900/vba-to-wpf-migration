@@ -35,8 +35,13 @@ outputs/macro_access_to_dotnet.json
 outputs/module_access_to_dotnet.json
     │
     ▼
-docs/mappings/                        ← copy for documentation
+<repo>/docs/mappings/                 ← copy for documentation (resolved from WORKFLOW_DIR)
 ```
+
+The `outputs/*.json` tables are regenerated per run and git-ignored; macro/module class names are
+read from `agents/graphview/outputs/{macros,modules}/list*JpToEn.json` (both key spellings), and
+fallback names get a short hash when characters had to be dropped, so two macros never share a
+class name.
 
 ## Key Files
 

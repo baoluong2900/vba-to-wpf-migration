@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { layer4Client, promisifyGrpcCall } from '../../../../../../grpcClient';
+import { contentDisposition } from '../../../../../../../../lib/contentDisposition';
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +23,7 @@ export async function GET(
 
     const headers = new Headers();
     headers.set('Content-Type', response.content_type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    headers.set('Content-Disposition', `attachment; filename="${resolvedParams.filename}"`);
+    headers.set('Content-Disposition', contentDisposition(resolvedParams.filename));
 
     return new NextResponse(response.file_content, { status: 200, headers });
   } catch (error: any) {

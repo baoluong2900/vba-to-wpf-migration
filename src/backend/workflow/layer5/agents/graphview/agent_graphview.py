@@ -14,42 +14,29 @@ It features dynamic AI mapping, deterministic C# parsing, and MongoDB persistenc
 from __future__ import annotations
 
 import argparse
-import asyncio
 import json
 import logging
-import os
 import re
+import sys
 import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from pymongo import MongoClient
 
-try:
-    from core.models import AgentInput, AgentOutput, BaseAgent, GeneratedFile
-    from core.config import MONGO_URI, MONGO_DB, vba_brain_PROJECT_DIR
-    from llm.llm_client import L5LLMClient, parse_json_response
-except Exception:  # pragma: no cover - allows direct script execution
-    AgentInput = AgentOutput = BaseAgent = GeneratedFile = None  # type: ignore
-    # Resolve config.json from workflow/ root
-    workflow_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-    config_file = workflow_dir / "config.json"
-    MONGO_URI = "mongodb://localhost:27017"
-    MONGO_DB = "vba_brain_core"
-    if config_file.exists():
-        try:
-            cfg = json.loads(config_file.read_text(encoding="utf-8"))
-            mongo_cfg = cfg.get("mongodb", {})
-            MONGO_URI = mongo_cfg.get("uri", MONGO_URI)
-            MONGO_DB = mongo_cfg.get("db", MONGO_DB)
-        except Exception:
-            pass
-    vba_brain_PROJECT_DIR = next(
-        (b / "src" / "wpf" for b in Path(__file__).resolve().parents
-         if (b / "src" / "wpf" / "vba_brain.slnx").exists()),
-        Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "wpf",
-    )
+# Script mode (python agents/graphview/agent_graphview.py …) only puts this folder on sys.path
+_LAYER5_DIR = Path(__file__).resolve().parents[2]
+if str(_LAYER5_DIR) not in sys.path:
+    sys.path.insert(0, str(_LAYER5_DIR))
+
+from pymongo import MongoClient  # noqa: E402
+
+from core.models import AgentInput, AgentOutput, BaseAgent, GeneratedFile  # noqa: E402
+from core.config import (  # noqa: E402
+    COL_AGENT_GRAPHVIEW, COL_FORMS, COL_MACROS, COL_REPORTS, MONGO_DB, MONGO_URI, vba_brain_PROJECT_DIR,
+)
+from core.naming import validate_form_name  # noqa: E402
+from llm.llm_client import L5LLMClient, parse_json_response  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AgentGraphView")
@@ -505,9 +492,11 @@ def build_vba_graph(form_name: str) -> dict[str, Any]:
     # Load all macros
     all_macros = {}
     try:
-        macro_docs = list(db["macros"].find({}, {"macro_name": 1, "steps": 1, "references": 1}))
+        macro_docs = list(db[COL_MACROS].find({}, {"name": 1, "macro_name": 1, "steps": 1, "references": 1}))
         for m in macro_docs:
-            all_macros[m["macro_name"]] = m
+            macro_name = m.get("macro_name") or m.get("name")
+            if macro_name:
+                all_macros[macro_name] = m
     except Exception as e:
         logger.warning("Failed to load macros: %s", e)
 
@@ -535,10 +524,10 @@ def build_vba_graph(form_name: str) -> dict[str, Any]:
                 resolve_macro(step["macro_name"], macro_id, depth + 1)
 
     # Load the form
-    doc = db["forms"].find_one({"name": form_name})
+    doc = db[COL_FORMS].find_one({"name": form_name})
     if not doc:
         # Fallback to reports
-        doc = db["reports"].find_one({"name": form_name})
+        doc = db[COL_REPORTS].find_one({"name": form_name})
         if not doc:
             raise ValueError(f"Form or Report '{form_name}' not found in MongoDB")
         type_str = "report"
@@ -903,7 +892,7 @@ def load_jp_to_en_mappings() -> dict[str, Any]:
             m_data = json.loads(m_path.read_text(encoding="utf-8-sig"))
             for row in m_data.get("items", []):
                 acc = row.get("access_macro_name")
-                dotnet = row.get("suggested_dotnet_type_name")
+                dotnet = row.get("suggested_dotnet_type_name") or row.get("wpf_service_ui_name")
                 if acc and dotnet:
                     macros[acc] = dotnet
                     macros[normalize_key(acc)] = dotnet
@@ -917,7 +906,7 @@ def load_jp_to_en_mappings() -> dict[str, Any]:
             mod_data = json.loads(mod_path.read_text(encoding="utf-8-sig"))
             for row in mod_data.get("items", []):
                 acc = row.get("access_module_name")
-                dotnet = row.get("suggested_dotnet_type_name")
+                dotnet = row.get("suggested_dotnet_type_name") or row.get("wpf_common_name")
                 if acc and dotnet:
                     modules[acc] = dotnet
                     modules[normalize_key(acc)] = dotnet
@@ -933,7 +922,7 @@ def seed_files_to_mongo(form_name: str, mapping: dict, dependency: dict, review:
     try:
         client = MongoClient(MONGO_URI)
         db = client[MONGO_DB]
-        col = db["agent_graphview"]
+        col = db[COL_AGENT_GRAPHVIEW]
         now = datetime.now()
         
         files_to_save = [
@@ -958,12 +947,13 @@ def seed_files_to_mongo(form_name: str, mapping: dict, dependency: dict, review:
                 upsert=True
             )
         client.close()
-        logger.info(f"Successfully seeded GraphView files for {form_name} into MongoDB collection 'agent_graphview'")
+        logger.info(f"Successfully seeded GraphView files for {form_name} into MongoDB collection '{COL_AGENT_GRAPHVIEW}'")
     except Exception as e:
         logger.error(f"Failed to seed GraphView files into MongoDB: {e}")
 
 
 def run_graphview_review(form_name: str, inputs_dir: Path = INPUTS_DIR, outputs_dir: Path = OUTPUTS_DIR) -> dict[str, Any]:
+    validate_form_name(form_name)
     mapping_path = inputs_dir / f"mapping_{form_name}.json"
     dependency_path = inputs_dir / f"dependency_{form_name}.json"
     review_path = outputs_dir / f"review_{form_name}.json"
@@ -1033,89 +1023,88 @@ def run_graphview_review(form_name: str, inputs_dir: Path = INPUTS_DIR, outputs_
     return review
 
 
-if BaseAgent is not None:
+class AgentGraphView(BaseAgent):
+    @property
+    def name(self) -> str:
+        return "graphview"
 
-    class AgentGraphView(BaseAgent):
-        @property
-        def name(self) -> str:
-            return "graphview"
-
-        async def run(self, input: AgentInput) -> AgentOutput:
-            try:
-                # 1. VBA Graph Extractor
-                vba_graph = build_vba_graph(input.form_name)
-                
-                # 2. Dynamic AI mapping generator
-                jp_maps = load_jp_to_en_mappings()
-                user_prompt = {
-                    "form_name": input.form_name,
-                    "vba_graph": vba_graph["elements"],
-                    "translation_hints": {
-                        "forms": {k: v for k, v in jp_maps["forms"].items() if k.lower() == input.form_name.lower()},
-                        "events": {k: v for k, v in jp_maps["events"].items() if k.lower().startswith(input.form_name.lower() + "::")},
-                        "queries": {k: v for k, v in jp_maps["queries"].items()},
-                        "macros": {k: v for k, v in jp_maps["macros"].items()},
-                        "modules": {k: v for k, v in jp_maps["modules"].items()}
-                    },
-                    "generated_files": [f.path for f in input.upstream_files] if input.upstream_files else []
-                }
-                
-                system_prompt = self.load_prompt("agent_graphview.md")
-                llm = L5LLMClient()
-                raw_response = llm.generate_code(
-                    task_type="viewmodel",
-                    system_prompt=system_prompt,
-                    user_prompt=json.dumps(user_prompt, ensure_ascii=False, indent=2),
-                    agent=self.name,
-                    form_name=input.form_name,
-                )
-                mapping = parse_json_response(raw_response)
-                
-                # 3. Deterministic WPF static parser
-                dependency = parse_actual_source_graph(vba_brain_PROJECT_DIR, input.form_name, input.upstream_files)
-                
-                dep_content = {
-                    "formName": input.form_name,
-                    "phase": 1,
-                    "sourceRoot": str(vba_brain_PROJECT_DIR),
-                    "elements": {"nodes": dependency["nodes"], "edges": dependency["edges"]},
-                    "nodes": dependency["nodes"],
-                    "edges": dependency["edges"],
-                    "stats": dependency["stats"],
-                    "files": dependency["files"],
-                }
-                
-                INPUTS_DIR.mkdir(parents=True, exist_ok=True)
-                OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-                
-                _write_json(INPUTS_DIR / f"mapping_{input.form_name}.json", mapping)
-                _write_json(INPUTS_DIR / f"dependency_{input.form_name}.json", dep_content)
-                
-                # 4. Review & validation
-                review = build_review(mapping, dependency, input.form_name)
-                _write_json(OUTPUTS_DIR / f"review_{input.form_name}.json", review)
-                
-                # 5. Seed to MongoDB
-                seed_files_to_mongo(input.form_name, mapping, dep_content, review)
-                
-                content = json.dumps(review, ensure_ascii=False, indent=2)
-                return AgentOutput(
-                    agent=self.name,
-                    form_name=input.form_name,
-                    files=[
-                        GeneratedFile(
-                            path=f"review_{input.form_name}.json",
-                            content=content,
-                            generator="deterministic",
-                            agent=self.name,
-                        )
-                    ],
-                    status="success" if review["status"] == "PASS" else "error",
-                    metadata={"summary": review["summary"], "review_path": str(OUTPUTS_DIR / f"review_{input.form_name}.json")},
-                )
-            except Exception as exc:
-                logger.error(f"Agent GraphView failed: {exc}", exc_info=True)
-                return AgentOutput(agent=self.name, form_name=input.form_name, status="error", error=str(exc))
+    async def run(self, input: AgentInput) -> AgentOutput:
+        try:
+            validate_form_name(input.form_name)
+            # 1. VBA Graph Extractor
+            vba_graph = build_vba_graph(input.form_name)
+            
+            # 2. Dynamic AI mapping generator
+            jp_maps = load_jp_to_en_mappings()
+            user_prompt = {
+                "form_name": input.form_name,
+                "vba_graph": vba_graph["elements"],
+                "translation_hints": {
+                    "forms": {k: v for k, v in jp_maps["forms"].items() if k.lower() == input.form_name.lower()},
+                    "events": {k: v for k, v in jp_maps["events"].items() if k.lower().startswith(input.form_name.lower() + "::")},
+                    "queries": {k: v for k, v in jp_maps["queries"].items()},
+                    "macros": {k: v for k, v in jp_maps["macros"].items()},
+                    "modules": {k: v for k, v in jp_maps["modules"].items()}
+                },
+                "generated_files": [f.path for f in input.upstream_files] if input.upstream_files else []
+            }
+            
+            system_prompt = self.load_prompt("agent_graphview.md")
+            llm = L5LLMClient()
+            raw_response = llm.generate_code(
+                task_type="viewmodel",
+                system_prompt=system_prompt,
+                user_prompt=json.dumps(user_prompt, ensure_ascii=False, indent=2),
+                agent=self.name,
+                form_name=input.form_name,
+            )
+            mapping = parse_json_response(raw_response)
+            
+            # 3. Deterministic WPF static parser
+            dependency = parse_actual_source_graph(vba_brain_PROJECT_DIR, input.form_name, input.upstream_files)
+            
+            dep_content = {
+                "formName": input.form_name,
+                "phase": 1,
+                "sourceRoot": str(vba_brain_PROJECT_DIR),
+                "elements": {"nodes": dependency["nodes"], "edges": dependency["edges"]},
+                "nodes": dependency["nodes"],
+                "edges": dependency["edges"],
+                "stats": dependency["stats"],
+                "files": dependency["files"],
+            }
+            
+            INPUTS_DIR.mkdir(parents=True, exist_ok=True)
+            OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+            
+            _write_json(INPUTS_DIR / f"mapping_{input.form_name}.json", mapping)
+            _write_json(INPUTS_DIR / f"dependency_{input.form_name}.json", dep_content)
+            
+            # 4. Review & validation
+            review = build_review(mapping, dependency, input.form_name)
+            _write_json(OUTPUTS_DIR / f"review_{input.form_name}.json", review)
+            
+            # 5. Seed to MongoDB
+            seed_files_to_mongo(input.form_name, mapping, dep_content, review)
+            
+            content = json.dumps(review, ensure_ascii=False, indent=2)
+            return AgentOutput(
+                agent=self.name,
+                form_name=input.form_name,
+                files=[
+                    GeneratedFile(
+                        path=f"review_{input.form_name}.json",
+                        content=content,
+                        generator="deterministic",
+                        agent=self.name,
+                    )
+                ],
+                status="success" if review["status"] == "PASS" else "error",
+                metadata={"summary": review["summary"], "review_path": str(OUTPUTS_DIR / f"review_{input.form_name}.json")},
+            )
+        except Exception as exc:
+            logger.error(f"Agent GraphView failed: {exc}", exc_info=True)
+            return AgentOutput(agent=self.name, form_name=input.form_name, status="error", error=str(exc))
 
 
 def _main() -> int:

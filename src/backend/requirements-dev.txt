@@ -1,0 +1,5 @@
+# Development / CI tooling — on top of requirements.txt
+# Install: pip install -r src/backend/requirements.txt -r src/backend/requirements-dev.txt
+pytest>=8.4,<10
+ruff==0.17.3            # exact: lint results must not change between machines
+grpcio-tools==1.71.2    # exact: the version api_gateway/workflow_pb2*.py were generated with (CI diffs them)

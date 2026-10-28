@@ -45,7 +45,7 @@ public class FLoginViewModel : ViewModelBase
         F001Command = Cmd(async _ => await F001Async());
         F003Command = Cmd(async _ => await F003Async());
         F010Command = Cmd(async _ => await F010Async());
-        F011Command = Cmd(_ => { });
+        F011Command = Cmd(_ => CloseRequested?.Invoke(this, EventArgs.Empty));
     }
 
     #region Methods (Logic Agent implements)

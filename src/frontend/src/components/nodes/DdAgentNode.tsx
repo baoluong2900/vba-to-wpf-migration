@@ -93,6 +93,7 @@ export const DdAgentNode = ({ data }: any) => {
           <select 
             className="input-field nodrag" 
             value={data.ddSelectedModel}
+            onFocus={() => data.loadModelHealth?.()}
             onChange={(e) => data.setDdSelectedModel(e.target.value)}
             disabled={data.ddAgentStatus === "running"}
             style={{ marginBottom: 12, fontSize: 13 }}

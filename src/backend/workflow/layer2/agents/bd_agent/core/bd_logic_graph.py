@@ -1,18 +1,43 @@
 import json
-import os
-from typing import TypedDict, Annotated, List, Optional
+from typing import TypedDict, List, Optional
 from langgraph.graph import StateGraph, END
 from config import (
-    GROQ_API_KEY,
-    MEGALLM_API_KEY,
     ModelConfig,
     TARGET_LANGUAGE
 )
 from utils.logger import get_logger
 from utils.cost_tracker import get_tracker
 from utils.llm_client import LLMClient
+from utils.model_router import select_model
+from utils.paths import BD3_LOGIC_DIR, safe_child_path
 
 logger = get_logger(__name__)
+
+
+def _as_text(obj) -> str:
+    """Flatten an LLM field (str / list / dict / None) to plain text."""
+    if obj is None:
+        return ""
+    if isinstance(obj, str):
+        return obj
+    if isinstance(obj, list):
+        return " ".join(_as_text(x) for x in obj if x)
+    if isinstance(obj, dict):
+        return " ".join(_as_text(v) for v in obj.values() if v)
+    return str(obj)
+
+
+def _normalize_result(module_id: str, data: dict) -> dict:
+    """Coerce one LLM analysis object to {module_id, event_content, action_type, notes} strings."""
+    event_content = data.get("event_content")
+    if event_content is None:
+        event_content = data.get("summary") or data.get("notes") or data.get("behavior") or ""
+    return {
+        "module_id": module_id,
+        "event_content": _as_text(event_content).strip(),
+        "action_type": _as_text(data.get("action_type")).strip(),
+        "notes": _as_text(data.get("notes")).strip(),
+    }
 
 # --- State Definition ---
 class LogicState(TypedDict):
@@ -130,31 +155,7 @@ def validate_node(state: LogicState) -> LogicState:
             raw = raw.split("```")[1].split("```")[0].strip()
         
         data = json.loads(raw.strip())
-        
-        # Fallback if field name is different
-        event_content = data.get("event_content")
-        if event_content is None:
-            event_content = data.get("summary") or data.get("notes") or data.get("behavior") or ""
-            
-        def _flatten(obj):
-            if isinstance(obj, str):
-                return obj
-            elif isinstance(obj, list):
-                return " ".join([_flatten(x) for x in obj if x])
-            elif isinstance(obj, dict):
-                return " ".join([_flatten(v) for v in obj.values() if v])
-            return str(obj)
-            
-        event_content = _flatten(event_content).strip()
-        action_type = _flatten(data.get("action_type", "")).strip()
-        notes = _flatten(data.get("notes", "")).strip()
-        
-        state["analysis_result"] = {
-            "module_id": state["module_id"],
-            "event_content": event_content,
-            "action_type": action_type,
-            "notes": notes
-        }
+        state["analysis_result"] = _normalize_result(state["module_id"], data)
         state["error"] = None
     except Exception as e:
         state["error"] = f"JSON Parse Error: {e}"
@@ -227,9 +228,10 @@ RULES:
 # --- Public API ---
 
 class BDLogicGraph:
-    def run_logic(self, logic_item: dict, model_id: str = None) -> dict:
-        from config import AVAILABLE_MODELS, DEV_MODEL
-        model_cfg = AVAILABLE_MODELS.get(model_id, DEV_MODEL) if model_id else DEV_MODEL
+    def run_logic(
+        self, logic_item: dict, model_id: str = None, *, stage: str | None = None, complexity_level: str = "low"
+    ) -> dict:
+        model_cfg = select_model(complexity_level=complexity_level, stage=stage, model_id=model_id)
         
         initial_state: LogicState = {
             "module_id": logic_item.get("module_id", "unknown"),
@@ -262,10 +264,15 @@ class BDLogicGraph:
             "notes": f"[自動生成] LLM分析失敗のためタイトルから生成。エラー: {final_state['error']}"
         }
 
-    def run_logic_batch(self, logic_items: list[dict], model_id: str = None) -> list[dict]:
-        """Process multiple logic items in a single LLM call for efficiency."""
-        from config import AVAILABLE_MODELS, DEV_MODEL
-        model_cfg = AVAILABLE_MODELS.get(model_id, DEV_MODEL) if model_id else DEV_MODEL
+    def run_logic_batch(
+        self, logic_items: list[dict], model_id: str = None, *, stage: str | None = None, complexity_level: str = "low"
+    ) -> list[dict]:
+        """
+        Process multiple logic items in a single LLM call for efficiency.
+        Returns exactly one normalised result per input item, in input order; items the batch
+        response misses (or garbles) are re-run one by one.
+        """
+        model_cfg = select_model(complexity_level=complexity_level, stage=stage, model_id=model_id)
         
         # Build combined user prompt in JSONL format
         items_block = []
@@ -281,6 +288,8 @@ class BDLogicGraph:
 
         user_content = "\n".join(items_block) + "\n\n上記すべての項目の分析結果をJSONL形式で出力してください。"
 
+        expected_ids = {item.get("module_id") for item in logic_items}
+        by_id: dict[str, dict] = {}
         try:
             client = LLMClient()
             raw, usage = client.chat_with_usage(model_cfg, _get_batch_system_prompt(), user_content)
@@ -296,8 +305,7 @@ class BDLogicGraph:
                 output_tokens=usage.get("output_tokens", 0),
                 flow_type="BD Agent",
             )
-            # Parse JSONL
-            results = []
+            # Parse JSONL, keyed by module_id (the LLM may reorder, drop or duplicate lines)
             for line in raw.splitlines():
                 line = line.strip()
                 if not line: continue
@@ -306,19 +314,25 @@ class BDLogicGraph:
                     if line.startswith("```"): continue
                     if line.endswith("```"): continue
                     
-                    results.append(json.loads(line))
+                    data = json.loads(line)
                 except Exception as e:
                     logger.warning(f"Failed to parse JSONL line: {line}. Error: {e}")
                     continue
-            
-            if not results:
-                raise ValueError("No valid JSONL results parsed")
-            return results
+                mid = data.get("module_id") if isinstance(data, dict) else None
+                if isinstance(mid, str) and mid in expected_ids and mid not in by_id:
+                    by_id[mid] = _normalize_result(mid, data)
         except Exception as e:
             logger.error(f"Batch Analysis Error: {e}")
-            # Fallback to one-by-one if batch failed
-            logger.info("Falling back to one-by-one processing for this batch.")
-            return [self.run_logic(item, model_id) for item in logic_items]
+
+        missing = [item for item in logic_items if item.get("module_id") not in by_id]
+        if missing:
+            # Fallback to one-by-one for whatever the batch did not answer
+            logger.info(f"Falling back to one-by-one processing for {len(missing)} item(s) of this batch.")
+            for item in missing:
+                by_id[item.get("module_id")] = self.run_logic(
+                    item, model_id, stage=stage, complexity_level=complexity_level
+                )
+        return [by_id[item.get("module_id")] for item in logic_items]
 
 
 # --- Screen Summary API ---
@@ -355,15 +369,22 @@ RULES:
 
 
 class BDScreenSummaryGraph:
-    def run_summary(self, screen_name: str, logic_results: list, model_id: str = None, mapped_data: dict = None, ui_formulas_translated: list = None) -> dict:
-        from config import AVAILABLE_MODELS, DEV_MODEL
-        from pathlib import Path
-        
-        proj_root = Path(__file__).resolve().parent.parent.parent.parent
-        bd3_dir = proj_root / "output" / "bd_flow" / "bd3_bd_logic"
+    def run_summary(
+        self,
+        screen_name: str,
+        logic_results: list,
+        model_id: str = None,
+        mapped_data: dict = None,
+        ui_formulas_translated: list = None,
+        *,
+        stage: str | None = None,
+        complexity_level: str = "low",
+    ) -> dict:
+        """Screen overview. On failure returns empty fields plus an "error" key (never error text as content)."""
+        bd3_dir = BD3_LOGIC_DIR
         bd3_dir.mkdir(parents=True, exist_ok=True)
         
-        model_cfg = AVAILABLE_MODELS.get(model_id, DEV_MODEL) if model_id else DEV_MODEL
+        model_cfg = select_model(complexity_level=complexity_level, stage=stage, model_id=model_id)
         
         # (Using LLMClient instead of direct build)
 
@@ -381,7 +402,6 @@ class BDScreenSummaryGraph:
 
         ui_elements_text = "なし"
         if mapped_data:
-            items = []
             seen_nos = set()
             raw_items = []
             
@@ -444,7 +464,7 @@ class BDScreenSummaryGraph:
                 
             # Dump raw_items grouped by source_table to JSONL in bd3_bd_logic to save tokens for the user
             try:
-                jsonl_path = bd3_dir / f"ui_items_{screen_name}.jsonl"
+                jsonl_path = safe_child_path(bd3_dir, screen_name, ".jsonl", prefix="ui_items_")
                 with open(jsonl_path, "w", encoding="utf-8") as f:
                     for tbl, tbl_items in table_groups.items():
                         grouped_items = []
@@ -501,7 +521,7 @@ class BDScreenSummaryGraph:
             
             # Dump parsed_result to JSONL in bd3_bd_logic
             try:
-                result_jsonl_path = bd3_dir / f"ui_items_{screen_name}_result.jsonl"
+                result_jsonl_path = safe_child_path(bd3_dir, screen_name, "_result.jsonl", prefix="ui_items_")
                 with open(result_jsonl_path, "w", encoding="utf-8") as f:
                     f.write(json.dumps(parsed_result, ensure_ascii=False) + "\n")
             except Exception as e:
@@ -511,13 +531,14 @@ class BDScreenSummaryGraph:
         except Exception as e:
             logger.error(f"Screen Summary Error: {e}")
             err_result = {
-                "description": f"Error generating summary: {e}",
+                "description": "",
                 "timing": "",
                 "constraints": "",
-                "process_overview": []
+                "process_overview": [],
+                "error": str(e),
             }
             try:
-                result_jsonl_path = bd3_dir / f"ui_items_{screen_name}_result.jsonl"
+                result_jsonl_path = safe_child_path(bd3_dir, screen_name, "_result.jsonl", prefix="ui_items_")
                 with open(result_jsonl_path, "w", encoding="utf-8") as f:
                     f.write(json.dumps(err_result, ensure_ascii=False) + "\n")
             except Exception:

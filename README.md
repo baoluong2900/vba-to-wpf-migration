@@ -46,9 +46,10 @@ replacement it actually compiles.
 Everything is driven from a Next.js web console, or headlessly from the CLI.
 
 > [!NOTE]
-> **Status: working prototype, not hardened for production.** The gRPC gateway is
-> unauthenticated (`add_insecure_port`, `grpc_server.py:595`) and automated test coverage is
-> still thin. See [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) for the tracked backlog and
+> **Status: working prototype, not hardened for production.** The gRPC gateway binds to
+> `localhost` by default; a shared bearer token (`GRPC_AUTH_TOKEN`) and TLS (`GRPC_TLS_CERT` /
+> `GRPC_TLS_KEY`) are available but off by default. See [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md) for the latest full-source
+> review, [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) for the backlog, and
 > [SECURITY.md](SECURITY.md) before exposing any port beyond `localhost`.
 
 ---
@@ -82,9 +83,10 @@ Everything is driven from a Next.js web console, or headlessly from the CLI.
 | Tool | Version | Required for |
 | --- | --- | --- |
 | Python | **3.10+** (3.11+ recommended) | Backend pipeline — the source uses PEP 604 `X \| None` syntax without `from __future__ import annotations` in some modules |
-| Node.js | **≥ 20.9** (Next.js 16 `engines`) | Web console |
+| Node.js | **≥ 22.6** (22 LTS recommended) | Web console — Next.js 16 needs ≥ 20.9; `yarn test` runs TypeScript directly with Node's type stripping |
 | Yarn | 1.x — `npm install -g yarn` | Frontend package manager (**do not use npm**) |
 | Docker Desktop | latest | MongoDB + PostgreSQL |
+| PostgreSQL client (`psql`) | 16 | Layer 3 table migration (`postgres_migrator.py`) |
 | .NET SDK | 10 | Layer 5 build-verify / running the Avalonia app |
 
 ### Five commands
@@ -110,6 +112,14 @@ python start.py
 ```
 
 Open **<http://localhost:3000>** — it redirects to `/layer1`.
+
+Working on the code? Install the dev tools and run the tests:
+
+```bash
+pip install -r src/backend/requirements.txt -r src/backend/requirements-dev.txt
+pytest && pytest tests/layer5        # backend (two sessions — see tests/layer5/conftest.py)
+(cd src/frontend && yarn test)       # frontend unit tests
+```
 
 > [!IMPORTANT]
 > `config.json` and every `.env` are git-ignored and hold real secrets. Never commit them.
@@ -163,16 +173,23 @@ files, so any layer can be re-run in isolation without replaying the whole pipel
 workflow/
 ├── start.py                     Launcher: frontend :3000 + gRPC gateway :50051
 ├── start_wpf.py                 Launcher: Avalonia desktop app (dotnet build + run)
-├── clean_generated_files.py     Utility: wipe Layer 5 generated output
+├── clean_generated_files.py     Utility: delete Layer 5 files deployed into src/wpf (--dry-run first)
+├── pyproject.toml               pytest + ruff configuration
 ├── config.example.json          ✅ tracked template
 ├── config.json                  ⚠️ git-ignored — real secrets
 │
+├── tests/
+│   ├── backend/                 pytest — gateway, config, Layer 1–4
+│   └── layer5/                  pytest — Layer 5 (own session: `pytest tests/layer5`)
+│
 ├── src/backend/
-│   ├── requirements.txt
+│   ├── requirements.txt         Runtime deps (floor + next-major ceiling)
+│   ├── requirements-dev.txt     pytest · ruff · grpcio-tools (stub regeneration)
 │   ├── common/config.py         Single config resolver: env → config.json → default
 │   ├── protos/workflow.proto    Protobuf service + message contracts
 │   ├── api_gateway/
-│   │   └── grpc_server.py       ⭐ entry point, port 50051
+│   │   ├── grpc_server.py       ⭐ entry point, port 50051
+│   │   └── auth.py              Optional bearer-token interceptor
 │   └── workflow/
 │       ├── layer1/              AST extraction
 │       │   ├── parser/          frm · query · macro · modules · table
@@ -186,8 +203,10 @@ workflow/
 │       │   ├── runners/main.py  CLI: --item / --all / --all-forms / --dry-run
 │       │   └── pipeline.py      LangGraph StateGraph: BD → DD → END
 │       ├── layer3/sql_migration/
-│       │   ├── table_converter.py     Access DDL → PostgreSQL DDL
-│       │   ├── postgres_migrator.py   LLM-assisted migration runner
+│       │   ├── table_converter.py     Access schema → CREATE TABLE (pure function)
+│       │   ├── query_utils.py         SQL rebuild · query type · bind variables (pure)
+│       │   ├── seed_queries_v2.py     queries → queries_v2 sync (keeps review work)
+│       │   ├── postgres_migrator.py   psql runner (--dry-run / --table / --output)
 │       │   └── router.py              list/get/update/convert endpoints
 │       ├── layer4/              Excel specification export
 │       │   ├── server.py        gen_bd / gen_dd / download
@@ -232,10 +251,10 @@ workflow/
 <tr><td>API gateway</td><td>gRPC (<code>grpcio</code>)</td><td><code>≥1.62</code></td></tr>
 <tr><td>AI orchestration</td><td>LangGraph + LangChain Core</td><td><code>≥0.2</code></td></tr>
 <tr><td>MongoDB client</td><td>PyMongo</td><td><code>≥4.8</code></td></tr>
-<tr><td>PostgreSQL driver</td><td>psycopg2-binary</td><td><code>≥2.9</code></td></tr>
-<tr><td>Excel</td><td>openpyxl</td><td><code>≥3.1</code></td></tr>
+<tr><td>PostgreSQL</td><td><code>psql</code> CLI (Layer 3 runs DDL through it)</td><td><code>16</code></td></tr>
+<tr><td>Excel / Word</td><td>openpyxl · python-docx</td><td><code>≥3.1</code> / <code>≥1.1</code></td></tr>
 <tr><td>Templating</td><td>Jinja2</td><td><code>≥3.1</code></td></tr>
-<tr><td>HTTP (aux)</td><td>FastAPI + uvicorn</td><td><code>≥0.111</code></td></tr>
+<tr><td>Tests / lint</td><td>pytest · ruff</td><td><code>requirements-dev.txt</code></td></tr>
 </table>
 
 <table>
@@ -278,7 +297,7 @@ workflow/
 | --- | --- | --- | --- |
 | `frm_parser.py` | `data/forms/*.json` | `forms` | Controls, events, VBA procedures, form properties |
 | `frm_parser.py` | `data/reports/*.json` | `reports` | Report sections, fields, embedded queries |
-| `query_parser.py` | `data/queries/*.json` | `queries_v2` | SQL text, parameters, join type, `raw_sql` |
+| `query_parser.py` | `data/queries/*.json` | `queries` | Structured query, tables, parameters, and the original Access SQL as `sql` |
 | `macro_parser.py` | `data/macros/*.json` | `macros` | Action sequences, conditions, arguments |
 | `modules_parser.py` | `data/modules/*.json` | `modules` | Public subs/functions, constants, `Declare` |
 | `table_parser.py` | `data/tables/*.json` | `tables` | Columns, data types, PK/FK, indexes |
@@ -292,7 +311,11 @@ hides in string literals:
 - Standard-module calls: `Module.Procedure()`
 - Dynamic dispatch: `CallSub`, `Application.Run`
 
-Results land in `data/graphs/` and the `dependency_graph` collection.
+Results land in `data/reference_map.json` and `data/graphs/` (Cytoscape views). `seed_db.py`
+flattens the reference map into one `dependency_graph` document per item (`opens_forms`,
+`opened_by`, `uses_queries`, `calls_modules`, `direct_macros`, `uses_tables`) — the context Layer 2
+reads for every BD/DD. An export without some object type (no macros, no reports) is fine:
+parsers exit 0 on an empty folder and the seeder skips missing folders.
 
 ---
 
@@ -323,18 +346,21 @@ skeleton         queries →        logic, pseudo-     + persist
 from BD          sheet 4/5        code
 ```
 
-Output `layer2/output/dd_flow/{screen|macro|common}/dd4_dd_final/<name>.json`
+Output `layer2/output/dd_flow/{screen|report|macro|common}/dd4_dd_final/<name>.json`
 
 #### CLI
 
 ```bash
 cd src/backend/workflow/layer2/runners
 
-python main.py --item F_Login --type form --stage dev   # one item
-python main.py --all-forms --stage dev                  # every form
+python main.py --item F_Login --type form --stage dev   # one item (form | report | module | macro)
+python main.py --all-forms --stage dev                  # every form (also --all-reports / --all-modules)
+python main.py --all-macros                             # every macro (DD only)
 python main.py --all --stage production                 # forms + reports + modules
 python main.py --all --dry-run                          # list work, call no LLM
 ```
+
+After each item only that item is pushed to MongoDB (`bds` / `dds`).
 
 `--stage` selects the model tier:
 
@@ -356,33 +382,42 @@ Every LLM call is recorded by the `CostTracker` singleton
 | `gpt-4o` | $2.50 | $10.00 |
 | `gpt-4o-mini` | $0.15 | $0.60 |
 
-Reports are written after each run to `layer2/output/token_reports/<name>_<timestamp>.json`
-and `src/excel_outputs/<name>_cost.xlsx`.
+Reports are appended after each run to `src/backend/logs/token_log.json` and
+`src/backend/logs/token_log.xlsx` (written under a lock; an unreadable log is kept as `.bak`
+rather than overwritten). The console's Layer 2 page downloads the workbook.
 
 ---
 
 ### Layer 3 — SQL migration
 
-**Input** `queries_v2` + `tables` · **Output** PostgreSQL DDL and converted SQL
+**Input** `queries` + `tables` (Layer 1) · **Working collection** `queries_v2` · **Output**
+PostgreSQL DDL and reviewed, converted SQL
 
 | Module | Responsibility |
 | --- | --- |
-| `table_converter.py` | Access data types → PostgreSQL DDL (pure function — the easiest place to add tests) |
-| `postgres_migrator.py` | LLM-assisted runner: read table → generate `CREATE TABLE` → execute |
-| `seed_queries_v2.py` | Seed Access queries (keeping both `raw_sql` and `sql`) into MongoDB |
-| `router.py` | list / get / update / convert query, convert table schema, stats |
+| `table_converter.py` | Access types → DDL (pure, table-driven). PostgreSQL target; SQL Server / MySQL / ANSI for comparison. Identifiers are quoted only when required, so PostgreSQL's lower-case folding stays what generated code expects; optional `PRIMARY KEY` |
+| `query_utils.py` | Rebuild SQL from the structured query (SELECT / UPDATE / DELETE / INSERT / TRANSFORM), query type, target table, bind variables |
+| `seed_queries_v2.py` | Sync `queries` → `queries_v2`: new queries start `pending`; re-seeding refreshes source fields and never touches review fields |
+| `router.py` | list / get / update / convert query, stats, list tables, convert table schema |
+| `postgres_migrator.py` | Create tables through `psql` — `--dry-run`, `--table NAME`, `--output schema.sql`; exits 1 if any table failed |
 
 ```
-MongoDB (queries_v2 · tables)
-        │
-        ├─ table_converter.py       Access DDL  → PostgreSQL DDL
-        ├─ postgres_migrator.py     execute DDL → target PostgreSQL
-        └─ router.py::convert_query LLM: Access SQL → PostgreSQL dialect
+MongoDB (queries · tables) ──seed──► queries_v2 ◄── review UI (/layer3)
+        │                               │
+        ├─ table_converter.py           └─ router.py::convert_query   LLM: Access SQL → PostgreSQL
+        └─ postgres_migrator.py   DROP + CREATE per table (one transaction each)
 ```
+
+Review workflow guarantees: a failed or unparseable LLM answer marks the query `error` and keeps
+the stored `target_sql`; saving only overwrites the fields the client sent. The console's
+**Test** button runs a *static* check (`api/v1/layer3/staticSqlCheck.ts` — leftover Access
+functions, `TOP n`, `#date#` literals, form references, quoting, parentheses) and says so; it
+never executes SQL.
 
 > [!WARNING]
-> Layer 3 currently focuses on `CREATE TABLE`. Index / FK / constraint migration, dry-run diff,
-> and rollback scripts are open items in [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) §4.1.
+> Layer 3 covers `CREATE TABLE` (+ optional primary keys). Index / FK migration and rollback
+> scripts are open items in [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) §4.1. Always review
+> `postgres_migrator.py --dry-run` output first: it drops existing tables.
 
 ---
 
@@ -399,14 +434,21 @@ MongoDB (queries_v2 · tables)
 | DD Macro | `DD_Screen/dd_template_macro.xlsx` | Macros — Detailed Design |
 | DD Module | `DD_Screen/dd_template_module.xlsx` | Modules — Detailed Design |
 
-**Translation engine** (`excel_translator.py`) — when
-`config.json → localization.target_language = "en"`:
+The templates are **Japanese** and every label locator is bilingual, so filling works with either
+language. The four DD fillers share `scripts/dd_common.py`.
 
-- Cell values translated Japanese → English via the `JP_EN_MAPPING` dictionary
-- Sheet names translated (e.g. `変更履歴` → `Change History`)
-- `restore_japanese_sheet_names()` reverses the sheet renaming after export
+**Translation engine** (`excel_translator.py`) — when `TARGET_LANGUAGE` /
+`config.json → localization.target_language` is `"en"`:
 
-Alongside `.xlsx`, `layer4/server.py` can emit a `.docx` rendition of the same document.
+- Template **label** cells (recorded before filling) are translated via `JP_EN_MAPPING`; values
+  that come from the BD/DD JSON and formula cells are left exactly as generated
+- Sheet names translated (e.g. `変更履歴` → `Change History`), with formula references rewritten
+- `restore_japanese_sheet_names()` reverses the sheet renaming
+
+Alongside `.xlsx`, `layer4/server.py` emits a `.docx` rendition (needs `python-docx`); a Word
+failure is reported as `docx_error` instead of a dead link. If an item has no Layer 2 output yet,
+generation fails with "not generated yet" rather than rendering template samples, and no
+fabricated change history is added.
 
 ---
 
@@ -456,11 +498,13 @@ generated *text*:
 | --- | --- | --- |
 | `forms` | L1 | Form metadata, controls, VBA procedures, resolved references |
 | `reports` | L1 | Report metadata, sections, fields |
-| `queries_v2` | L1 | Access query definitions (`sql`, `raw_sql`, params) |
+| `queries` | L1 | Access query definitions (structured `query`, original `sql`, params) |
 | `modules` | L1 | VBA standard modules — procedures, functions, constants |
 | `macros` | L1 | Macro action sequences |
 | `tables` | L1 | Table schemas — columns, types, constraints |
-| `dependency_graph` | L1 | Cross-reference graph from `aggregator.py` |
+| `reference_map` | L1 | The whole cross-reference map from `aggregator.py` (one document) |
+| `dependency_graph` | L1 | One document per item: what it opens / is opened by / uses |
+| `queries_v2` | L3 (read by L2, L5) | Queries under migration review: source fields + `target_sql`, `conversion_status`, … |
 | `bds` | L2 | Business Design documents |
 | `dds` | L2 | Detailed Design documents |
 | `agent_repo` | L5 | Repository contract artifacts consumed by `agent_service` |
@@ -474,6 +518,22 @@ Collection names are configurable — see `layer2/config.py` and `layer5/core/co
 
 **Port** `50051` · **Entry** `src/backend/api_gateway/grpc_server.py` · **Contract**
 `src/backend/protos/workflow.proto`
+
+- **Bind address** — `GRPC_HOST` (default `localhost`, i.e. not reachable from the network) and
+  `GRPC_PORT`, or `config.json → grpc.host / grpc.port`.
+- **Authentication** — set `GRPC_AUTH_TOKEN` (or `config.json → grpc.auth_token`) and every RPC
+  must carry `authorization: Bearer <token>`, otherwise it fails with `UNAUTHENTICATED`. The
+  console's API routes attach the header when they see the same variable; `start.py` passes it to
+  them.
+- **TLS** — set `GRPC_TLS_CERT` and `GRPC_TLS_KEY` (PEM files, or `config.json → grpc.tls_cert /
+  tls_key`; relative paths start at the repo root) and the gateway serves TLS only; setting just
+  one of them stops it at startup. The console then needs `GRPC_TLS_CA`, the PEM file to trust
+  (the gateway certificate itself when it is self-signed), or `GRPC_TLS=1` for a publicly trusted
+  certificate — `start.py` sets `GRPC_TLS_CA` for you. The certificate must name the host the
+  console connects to (`localhost` by default). Without TLS the token crosses the network in
+  clear text, so keep a plaintext gateway on loopback.
+- **Input validation** — item names, document kinds and file names that become path components
+  are rejected if they contain `/`, `\`, NUL, `..` or a drive prefix.
 
 > [!CAUTION]
 > **Service names do not match layer numbers.** `Layer3Service` serves Excel export (pipeline
@@ -539,7 +599,8 @@ Collection names are configurable — see `layer2/config.py` and `layer5/core/co
 
 </details>
 
-Regenerate the Python stubs after editing the `.proto`:
+Regenerate the Python stubs after editing the `.proto` (with `grpcio-tools==1.71.2` from
+`requirements-dev.txt` — CI regenerates them and fails if the committed stubs differ):
 
 ```bash
 python -m grpc_tools.protoc \
@@ -593,8 +654,9 @@ export MODEL_OVERRIDE_QWEN_MAX=qwen3-coder-480b-a35b-instruct     # alias remap 
 
 ### Quota exhaustion & fallback
 
-When a model returns HTTP 403 `AllocationQuota.FreeTierOnly`, Layer 2 walks a fallback chain
-defined in `layer2/utils/model_router.py`:
+When a model returns HTTP 403 `AllocationQuota.FreeTierOnly`, Layer 2 fails fast (no retry
+sleeps) and walks the requested model's whole fallback chain from `layer2/utils/model_router.py`,
+skipping models it already tried:
 
 ```
 qwen3-coder-480b-a35b-instruct → qwen3-coder-next → qwen3-coder-plus → qwen-max → qwen-plus
@@ -602,16 +664,15 @@ qwen3-coder-next               → qwen3-coder-480b → qwen3-coder-plus → qwe
 ```
 
 ```python
-from layer2.utils.llm_client import LLMClient
-from layer2.config import DEV_MODEL
+from utils.llm_client import LLMClient        # with src/backend/workflow/layer2 on sys.path
+from config import DEV_MODEL
 
-client = LLMClient()
-text, usage = client.call_with_fallback(DEV_MODEL, system_prompt, user_prompt)
+text, usage = LLMClient().chat_with_usage(DEV_MODEL, system_prompt, user_prompt)
 ```
 
 To resolve quota problems: disable *"use free tier only"* in the
 [DashScope console](https://dashscope.console.aliyun.com/), swap in another key, or wait for the
-monthly reset. Track spend in `layer2/output/token_reports/` and `src/excel_outputs/*_cost.xlsx`.
+monthly reset. Track spend in `src/backend/logs/token_log.xlsx`.
 
 ---
 
@@ -629,7 +690,13 @@ Minimum fields to fill in `config.json`:
 
 - `llm_providers.alibaba.api_key` — DashScope API key
 - `mongodb.uri` — e.g. `mongodb://vba_brain:<pw>@localhost:27017/vba_brain_core?authSource=admin`
-- `postgresql.connection_string` — ADO.NET-style string used by both Python and the Avalonia app
+- `postgresql.*` — host / port / database / username / password (Layer 3) and
+  `connection_string` (ADO.NET-style, used by the Avalonia app)
+- `grpc.auth_token` — optional; set a long random string before the gateway leaves `localhost`
+
+Every model listed under `llm_providers.<provider>.models` (for the providers the client supports:
+alibaba, openai, anthropic, groq, deepseek, megallm) is selectable at runtime — the console's model
+dropdown lists exactly these.
 
 Default local credentials (from `infa/.env.example` — **change these before sharing a host**):
 
@@ -652,33 +719,51 @@ python start.py --be-only    # gateway only
 python start.py --clean      # wipe .next cache first (Turbopack/OOM recovery)
 ```
 
+`start.py` frees the two ports by stopping only the process *listening* on them, passes
+`GRPC_SERVER_ADDRESS` / `GRPC_AUTH_TOKEN` / `GRPC_TLS_CA` to the console, never overrides variables you already
+exported, and stops each service's whole process tree on Ctrl+C. The dev server listens on
+`127.0.0.1` only.
+
 ### Full batch pipeline
 
 ```bash
 cd src/backend/workflow/layer1
-python run_all.py            # parse → seed → Layer 2 BD/DD → Layer 3 PostgreSQL migrate
+python run_all.py                    # everything below, in order
+python run_all.py --list             # step keys
+python run_all.py --from seed        # resume from a step
+python run_all.py --only tables,queries
+python run_all.py --skip layer3      # what the web console runs (no DROP/CREATE in PostgreSQL)
+python run_all.py --dry-run          # print the plan
+python run_all.py --keep-going       # don't stop at the first failed step
 ```
 
-Execution order, from `SCRIPTS` in `run_all.py`:
+| # | Key | Script | Step |
+| --- | --- | --- | --- |
+| 1 | `tables` | `parser/table_parser.py` | Parse tables |
+| 2 | `queries` | `parser/query_parser.py` | Parse queries |
+| 3 | `forms` | `parser/frm_parser.py` | Parse forms & reports |
+| 4 | `macros` | `parser/macro_parser.py` | Parse macros |
+| 5 | `modules` | `parser/modules_parser.py` | Parse modules |
+| 6 | `aggregate` | `aggregator.py` | Aggregate cross-references |
+| 7 | `seed` | `seed_db.py` | Seed everything → MongoDB (+ `dependency_graph`) |
+| 8 | `seed-queries` | `layer3/sql_migration/seed_queries_v2.py` | `queries` → `queries_v2` (Layer 2 reads it) |
+| 9 | `layer2` | `layer2/runners/main.py --all --stage dev` | Generate BD + DD |
+| 10 | `layer3` | `layer3/sql_migration/postgres_migrator.py` | Create tables in PostgreSQL |
 
-| # | Script | Step |
-| --- | --- | --- |
-| 1 | `parser/table_parser.py` | Parse tables |
-| 2 | `parser/query_parser.py` | Parse queries |
-| 3 | `parser/frm_parser.py` | Parse forms & reports |
-| 4 | `parser/macro_parser.py` | Parse macros |
-| 5 | `parser/modules_parser.py` | Parse modules |
-| 6 | `aggregator.py` | Aggregate cross-references |
-| 7 | `seed_db.py` | Seed everything → MongoDB |
-| 8 | `layer2/runners/main.py --all --stage dev` | Generate BD + DD |
-| 9 | `layer3/sql_migration/postgres_migrator.py` | Migrate → PostgreSQL |
+### Layer 3 table migration on its own
+
+```bash
+cd src/backend/workflow/layer3/sql_migration
+python postgres_migrator.py --dry-run --output schema.sql   # review first
+python postgres_migrator.py                                 # DROP + CREATE every table
+```
 
 ### Layer 5 code generation
 
 ```bash
 cd src/backend/workflow/layer5
 python run_codegen_all.py    # generate for every mapped item
-python run_codegen_test.py   # single-item smoke run
+python run_codegen_all.py --form F_Login   # selected forms only (repeatable)
 ```
 
 ### Avalonia desktop app
@@ -715,16 +800,17 @@ paint. Frontend conventions live in [`src/frontend/README.md`](src/frontend/READ
 | Artifact | Path | Format |
 | --- | --- | --- |
 | BD JSON | `layer2/output/bd_flow/bd4_bd_final/<name>.json` | JSON |
-| DD JSON | `layer2/output/dd_flow/{screen\|macro\|common}/dd4_dd_final/<name>.json` | JSON |
+| DD JSON | `layer2/output/dd_flow/{screen\|report\|macro\|common}/dd4_dd_final/<name>.json` | JSON |
 | BD workbook | `src/excel_outputs/BD/<type>/<name>.xlsx` | XLSX (+ `.docx`) |
 | DD workbook | `src/excel_outputs/DD/<type>/<name>.xlsx` | XLSX (+ `.docx`) |
-| Token report | `layer2/output/token_reports/<name>_<ts>.json` | JSON |
-| Cost workbook | `src/excel_outputs/<name>_cost.xlsx` | XLSX |
+| Token / cost log (Layer 2) | `src/backend/logs/token_log.json` / `.xlsx` | JSON / XLSX |
+| Token report (Layer 5) | `src/backend/workflow/layer5/logs/token_report.json` | JSON |
 | Generated C#/AXAML | `layer5/output/` → deployed into `src/wpf/vba_brain.*/` | `.cs` / `.axaml` |
 | Dependency graph | `data/graphs/<name>.json` | JSON |
 
-All of these are runtime artifacts and git-ignored. `clean_generated_files.py` clears Layer 5
-output when you want a fresh generation.
+All of these are runtime artifacts and git-ignored. `clean_generated_files.py --dry-run` lists
+(and without the flag deletes) the Layer 5 files deployed into `src/wpf` when you want a fresh
+generation; hand-written infrastructure there and the shared `ViewModelBase.cs` are left alone.
 
 ---
 
@@ -740,6 +826,12 @@ Every variable below overrides `config.json`. Names verified against
 | --- | --- | --- |
 | `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` |
 | `MONGO_DB` | MongoDB database name | `vba_brain_core` |
+| `GRPC_HOST` / `GRPC_PORT` | Gateway bind address | `localhost` / `50051` |
+| `GRPC_AUTH_TOKEN` | Shared bearer token for every RPC (gateway and console) | unset = auth off |
+| `GRPC_TLS_CERT` / `GRPC_TLS_KEY` | Gateway: PEM certificate chain / private key — both set = TLS only | unset = plaintext |
+| `GRPC_TLS_CA` / `GRPC_TLS` | Console: PEM file to trust / `1` to trust the system roots | unset = plaintext |
+| `GRPC_SERVER_ADDRESS` | Where the console's API routes reach the gateway | `localhost:50051` |
+| `PYTHON_BIN` | Python interpreter the console's API routes spawn | `python3`, then `python` |
 | `MONGO_COL_DDS` / `MONGO_COL_AGENT_REPO` | Layer 5 collection-name overrides | `dds` / `agent_repo` |
 | `POSTGRES_CONN` | Full ADO.NET-style connection string | built from the parts below |
 | `POSTGRES_HOST` / `POSTGRES_PORT` | PostgreSQL host / port | `localhost` / `5432` |
@@ -801,6 +893,27 @@ python start.py --be-only             # start it standalone
 The frontend reaches the gateway only through the API routes under
 `src/frontend/src/app/api/` — a browser cannot speak gRPC directly.
 
+With TLS on (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`), the console must use TLS too and trust the
+certificate: set `GRPC_TLS_CA` to it (or start both with `python start.py`, which does), and make
+sure the certificate names the host in `GRPC_SERVER_ADDRESS` (`localhost` by default).
+
+</details>
+
+<details>
+<summary><b>gRPC calls fail with UNAUTHENTICATED</b></summary>
+
+The gateway has `GRPC_AUTH_TOKEN` set but the console doesn't (or has a different value). Start
+both with `python start.py` (it passes the token on), or export the same `GRPC_AUTH_TOKEN` in the
+shell that runs `yarn dev`.
+
+</details>
+
+<details>
+<summary><b>Console routes fail with "python: command not found"</b></summary>
+
+The API routes that spawn Python try `python3` before `python`. Point them at a specific
+interpreter (e.g. a virtualenv) with `PYTHON_BIN=/path/to/python`.
+
 </details>
 
 <details>
@@ -851,6 +964,7 @@ Layer 4 reads BD/DD JSON, not raw AST. Generate the design documents first
 
 | Document | Contents |
 | --- | --- |
+| [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md) | Full-source review (2026-10): findings by layer, what was fixed, follow-ups (Vietnamese) |
 | [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) | Gap analysis + phased backlog (security, tests, CI, refactors) |
 | [`docs/ai-md/backend/`](docs/ai-md/backend/) | Per-layer engineering notes, agent detail specs |
 | [`docs/ai-md/frontend/architecture.md`](docs/ai-md/frontend/architecture.md) | Web console architecture |
@@ -868,9 +982,10 @@ Layer 4 reads BD/DD JSON, not raw AST. Generate the design documents first
 Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Short version:
 
 ```bash
-python -m compileall -q src/backend        # backend must compile
-(cd src/frontend && yarn lint)             # frontend must lint clean
-(cd src/frontend && yarn build)            # frontend must build
+ruff check src/backend tests start.py start_wpf.py clean_generated_files.py infa/scripts
+pytest && pytest tests/layer5              # backend tests (two sessions)
+(cd src/frontend && yarn lint && yarn typecheck && yarn test && yarn build)
+dotnet build src/wpf/vba_brain.slnx        # target app
 ```
 
 Hard rules: no secrets in tracked files, no hard-coded API keys or hosts (everything goes through

@@ -31,9 +31,9 @@ def build_dd_prompt(
 ) -> str:
     """
     Build user prompt for D3: LLM generates detail steps for one module.
-    category: 'screen', 'macro', 'common' (module)
+    category: 'screen' / 'report' (screen prompt), 'macro', 'common' (module)
     """
-    if category == "screen":
+    if category in ("screen", "report"):
         return _build_screen_prompt(logic_item, bd_event, retry_context)
     elif category == "macro":
         return _build_macro_prompt(logic_item, retry_context)
@@ -536,66 +536,3 @@ Notes: {bd_notes}
 {retry_block}
 {instruction}
 """
-
-
-import re
-
-def clean_step_detail(detail: str) -> str:
-    """
-    Clean up detail string to 'なし' if it represents a no-op placeholder.
-    """
-    if not detail or not isinstance(detail, str):
-        return "なし"
-    
-    val = detail.strip()
-    if val in ["なし", "特になし", "特に処理はありません。"]:
-        return "なし"
-        
-    # Remove numbering prefix if exists (e.g., "1.1. ", "3.1. ")
-    cleaned_val = re.sub(r'^\d+(\.\d+)*\.?\s*', '', val).strip()
-    
-    # Remove leading/trailing quotes or punctuation
-    cleaned_val = cleaned_val.strip('"\'「」.。. ')
-    
-    if cleaned_val in ["なし", "特になし", "特に処理はありません", "特に対象となる処理はありません", "該当なし"]:
-        return "なし"
-
-    # Phrases/patterns indicating no-op
-    no_op_phrases = [
-        "初期化処理は不要",
-        "初期処理は不要",
-        "初期処理は実行されません",
-        "初期処理は行われません",
-        "終了処理は不要",
-        "終了処理は実行されません",
-        "終了処理は行われません",
-        "後始末処理は発生しない",
-        "後始末処理は行われません",
-        "特に終了処理は実行されません",
-        "特に終了処理は行われません",
-        "特に初期処理は実行されません",
-        "特に初期処理は行われません",
-        "特に対象となる処理はありません",
-        "特に対象となる処理は存在しません",
-        "特に処理は行われません",
-        "特に処理は実行されません",
-        "処理は実行されません",
-        "処理は行われません",
-        "処理は不要",
-        "処理不要",
-        "不要です"
-    ]
-    
-    for phrase in no_op_phrases:
-        if phrase in cleaned_val:
-            return "なし"
-            
-    # Regular expression checks for patterns like "本イベントは...起動するため、初期処理は不要です"
-    if ("本イベントは" in cleaned_val or "このイベントは" in cleaned_val) and ("不要" in cleaned_val or "実行されません" in cleaned_val or "ありません" in cleaned_val or "発生しません" in cleaned_val):
-        return "ignore" if "ignore" in detail else "なし"
-        
-    if not cleaned_val:
-        return "なし"
-
-    return val
-

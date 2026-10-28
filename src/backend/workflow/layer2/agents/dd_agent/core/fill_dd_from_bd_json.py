@@ -18,16 +18,15 @@ import json
 import re
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .fill_utils import (
-    extract_vba_dim_vars,
     collect_pending_refers,
     build_event_map,
     build_steps_placeholder,
-    parse_dd_source,
-    convert_macro_actions_to_pseudo_code
+    parse_dd_source
 )
+from utils.paths import safe_child_path
 
 # ── Parse DD Source (D1) ────────────────────────────────────────────────────────
 
@@ -241,7 +240,6 @@ def _build_dd_skeleton(
     category: str = "screen",
 ) -> dict[str, Any]:
     """Build full DD skeleton closely following the dd_form.json structure."""
-    from copy import deepcopy
 
     out = deepcopy(sample)
     screen_id = bd_final.get("screen_id", "")
@@ -740,7 +738,7 @@ def get_dd_skeleton(
 
     if output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
-        out_file = output_dir / f"{screen_name}.json"
+        out_file = safe_child_path(output_dir, screen_name)
 
         out_file.write_text(
             json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8"

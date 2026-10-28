@@ -1,9 +1,6 @@
 from __future__ import annotations
-import argparse
-import json
 import re
 from copy import deepcopy
-from pathlib import Path
 from typing import Any
 
 from ..core.constants import *
@@ -86,9 +83,6 @@ def collect_sheet5(
 
         if not all_matches:
             continue
-
-        refs = (p.get("references") or {})
-        ref_forms = {str(x) for x in (refs.get("forms") or [])}
 
         for idx, (m_type, m) in enumerate(all_matches, start=1):
             if m_type == "outputto":

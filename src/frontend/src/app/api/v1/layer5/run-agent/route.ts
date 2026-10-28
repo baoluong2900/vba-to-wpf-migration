@@ -1,32 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import fs from "fs";
 import { getDb, buildAccessGraph } from "../../../graph/graphBuilder";
-import { buildWpfMappingFromVbaGraph } from "../../../graph-wpf/wpfGraphTransform";
+import { buildWpfMappingFromVbaGraph, lookupFormView } from "../../../graph-wpf/wpfGraphTransform";
 import { parseActualSourceGraph } from "../../../graph-wpf/source-review/sourceGraphParser";
+import { LAYER5_DIR, WPF_DIR } from "../../../../../lib/paths";
+import { pythonExecutable } from "../../../../../lib/python";
+import { isSafeCliValue, isSafeName } from "../../../../../lib/pathSafety";
+import { readLayer5TokenReport } from "../../../../../lib/tokenReport";
 
-const execAsync = promisify(exec);
-const LAYER5_DIR = path.resolve(process.cwd(), "..", "backend", "workflow", "layer5");
-const SOURCE_DIR = path.resolve(process.cwd(), "..", "wpf");   // Avalonia solution root (src/wpf)
-const GRAPHVIEW_SOURCE_DIR = path.resolve(process.cwd(), "..", "wpf");
+const execFileAsync = promisify(execFile);
+const SOURCE_DIR = WPF_DIR;   // Avalonia solution root (src/wpf)
 const SLN_PATH = path.join(SOURCE_DIR, "vba_brain.slnx");
-const TEST_PROJECT_PATH = path.join(GRAPHVIEW_SOURCE_DIR, "vba_brain.Tests", "vba_brain.Tests.csproj");
 const GRAPHVIEW_INPUTS_DIR = path.join(LAYER5_DIR, "agents", "graphview", "inputs");
 const GRAPHVIEW_OUTPUTS_DIR = path.join(LAYER5_DIR, "agents", "graphview", "outputs");
-const TEST_RESULTS_DIR = path.join(LAYER5_DIR, "agents", "test", "test-results");
 const BUILD_FIX_MAX_ITER = 3;   // max AI fix attempts
+const MAX_BUFFER = 32 * 1024 * 1024;
+const VALID_AGENTS = ["ui", "logic", "service", "repo", "report", "graphview", "mapping"];
+const AGENTS_WITH_FIX = new Set(["ui"]);   // only agent_ui.py implements --fix
+const LOGIC_PHASES = ["all", "ui", "service"];
 
-type DotnetTestCase = {
-  name: string;
-  className: string;
-  outcome: string;
-  duration: string;
-  output: string;
-  errorMessage: string;
-  stackTrace: string;
-};
+type ExecError = Error & { stdout?: string; stderr?: string };
+
+// No shell anywhere: every argument goes to the child process verbatim.
+function runPython(args: string[], timeout: number) {
+  return execFileAsync(pythonExecutable(), args, {
+    cwd: LAYER5_DIR,
+    env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+    encoding: "utf8",
+    timeout,
+    maxBuffer: MAX_BUFFER,
+    windowsHide: true,
+  });
+}
 
 // ── Map generated file path → WPF source project folder ──────────────────
 function resolveDestination(generatedRelPath: string): string | null {
@@ -56,8 +64,8 @@ function resolveDestination(generatedRelPath: string): string | null {
   return null;
 }
 
-// ── Copy all files from agent outputs/form_name/ → WPF source ──────────────────────
-function copyOutputsToSource(agent: string, formName: string): { path: string; size: number; dest?: string; copied: boolean }[] {
+// ── List agent outputs/form_name/ and (when `copy`) copy them into the WPF source ──
+function copyOutputsToSource(agent: string, formName: string, copy = true): { path: string; size: number; dest?: string; copied: boolean }[] {
   const outputDir = path.join(LAYER5_DIR, "agents", agent, "outputs", formName);
   const files: { path: string; size: number; dest?: string; copied: boolean }[] = [];
 
@@ -66,18 +74,10 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
     return files;
   }
 
-  // Resolve EN names for this form (for fallback matching)
-  let enViewName = formName;
-  let enVmName = formName;
-  const jpToEnPath = path.join(LAYER5_DIR, "agents", "graphview", "outputs", "forms", "listFormJpToEn.json");
-  if (fs.existsSync(jpToEnPath)) {
-    try {
-      const jpToEn = JSON.parse(fs.readFileSync(jpToEnPath, "utf-8"));
-      const entry = (jpToEn.items || []).find((i: any) => i.access_form_name === formName);
-      if (entry?.wpf_view_name)      enViewName = entry.wpf_view_name;
-      if (entry?.wpf_viewmodel_name) enVmName   = entry.wpf_viewmodel_name;
-    } catch { /* fallback */ }
-  }
+  // EN names for this form (fallback matching of flat output files)
+  const mapped = lookupFormView(formName);
+  const enViewName = mapped?.view || formName;
+  const enVmName = mapped?.vm || formName;
 
   const walk = (dir: string, base: string): string[] => {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -99,7 +99,8 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
     const fname = path.basename(rel);
 
     // Skip non-code files (debug snapshots, json outputs)
-    if (fname.endsWith(".json")) continue;    let destPath: string | null = resolveDestination(relNorm);
+    if (fname.endsWith(".json")) continue;
+    let destPath: string | null = resolveDestination(relNorm);
 
     // Fallback: flat file in outputs root
     if (!destPath) {
@@ -137,7 +138,7 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
     }
 
     let copied = false;
-    if (destPath) {
+    if (destPath && copy) {
       try {
         fs.mkdirSync(path.dirname(destPath), { recursive: true });
         fs.copyFileSync(srcFull, destPath);
@@ -150,7 +151,7 @@ function copyOutputsToSource(agent: string, formName: string): { path: string; s
     files.push({
       path: `agents/${agent}/outputs/${formName}/${relNorm}`,
       size: fileSize,
-      dest: destPath ? path.relative(SOURCE_DIR, destPath).replace(/\\/g, "/") : undefined,
+      dest: destPath && copy ? path.relative(SOURCE_DIR, destPath).replace(/\\/g, "/") : undefined,
       copied,
     });
   }
@@ -312,7 +313,7 @@ async function prepareGraphviewInputs(formName: string): Promise<{ path: string;
     "form",
     formName
   );
-  const dependency = parseActualSourceGraph(GRAPHVIEW_SOURCE_DIR, formName);
+  const dependency = parseActualSourceGraph(SOURCE_DIR, formName);
 
   const mappingPath = path.join(GRAPHVIEW_INPUTS_DIR, `mapping_${formName}.json`);
   const dependencyPath = path.join(GRAPHVIEW_INPUTS_DIR, `dependency_${formName}.json`);
@@ -320,7 +321,7 @@ async function prepareGraphviewInputs(formName: string): Promise<{ path: string;
   fs.writeFileSync(dependencyPath, JSON.stringify({
     formName,
     phase: 1,
-    sourceRoot: GRAPHVIEW_SOURCE_DIR,
+    sourceRoot: SOURCE_DIR,
     elements: { nodes: dependency.nodes, edges: dependency.edges },
     nodes: dependency.nodes,
     edges: dependency.edges,
@@ -338,16 +339,18 @@ async function prepareGraphviewInputs(formName: string): Promise<{ path: string;
 // ── dotnet build → return errors if any ──────────────────────────────────
 async function buildSolution(): Promise<{ success: boolean; errors: string; output: string }> {
   try {
-    const { stdout, stderr } = await execAsync(
-      `dotnet build "${SLN_PATH}" --no-restore -v minimal`,
-      { timeout: 60000 }
+    const { stdout, stderr } = await execFileAsync(
+      "dotnet",
+      ["build", SLN_PATH, "--no-restore", "-v", "minimal"],
+      { encoding: "utf8", timeout: 60000, maxBuffer: MAX_BUFFER, windowsHide: true }
     );
     const combined = stdout + stderr;
     const failed = combined.includes("Build FAILED") || (combined.includes("Error(s)") && !combined.includes("0 Error(s)"));
     return { success: !failed, errors: failed ? combined : "", output: combined };
-  } catch (err: any) {
+  } catch (err) {
     // dotnet build exits with non-0 on failure
-    const combined = (err.stdout || "") + (err.stderr || "");
+    const e = err as ExecError;
+    const combined = (e.stdout || "") + (e.stderr || "") || e.message;
     return { success: false, errors: combined, output: combined };
   }
 }
@@ -362,181 +365,59 @@ function parseErrors(buildOutput: string): string {
   return errorLines.slice(0, 50).join("\n") || buildOutput.slice(-1000);
 }
 
-function buildDotnetTestFilter(testAgents: string[] = []): string {
-  const selected = testAgents.map(a => a.toLowerCase()).filter(Boolean);
-  if (selected.length === 0 || selected.includes("all")) return "";
-
-  const classNames: string[] = [];
-  if (selected.includes("ui")) classNames.push("FLoginControlTests", "FLoginBindingTests");
-  if (selected.includes("logic")) classNames.push("FLoginViewModelTests", "FLoginCommandTests", "FLoginFlowTests");
-  if (selected.includes("service")) classNames.push("FLoginServiceTests");
-  if (selected.includes("repo")) classNames.push("Integration.Repositories");
-  if (selected.includes("graphview") || selected.includes("graph") || selected.includes("gv")) classNames.push("FLoginGraphViewTests");
-
-  return classNames.map(name => `FullyQualifiedName~${name}`).join("|");
-}
-
-function xmlDecode(value: string): string {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&");
-}
-
-function attr(block: string, name: string): string {
-  const match = block.match(new RegExp(`${name}="([^"]*)"`, "i"));
-  return match ? xmlDecode(match[1]) : "";
-}
-
-function tag(block: string, name: string): string {
-  const match = block.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`, "i"));
-  return match ? xmlDecode(match[1].trim()) : "";
-}
-
-function parseTrxResults(trxPath: string): DotnetTestCase[] {
-  if (!fs.existsSync(trxPath)) return [];
-
-  const trx = fs.readFileSync(trxPath, "utf-8");
-  const unitTests = new Map<string, { name: string; className: string }>();
-  for (const match of trx.matchAll(/<UnitTest\b[\s\S]*?<\/UnitTest>/g)) {
-    const block = match[0];
-    const executionMatch = block.match(/<Execution\b[^>]*id="([^"]*)"/i);
-    const executionId = executionMatch ? xmlDecode(executionMatch[1]) : "";
-    const name = attr(block, "name");
-    const className = attr(block, "className");
-    if (executionId) unitTests.set(executionId, { name, className });
-  }
-
-  const cases: DotnetTestCase[] = [];
-  for (const match of trx.matchAll(/<UnitTestResult\b[\s\S]*?(?:<\/UnitTestResult>|\/>)/g)) {
-    const block = match[0];
-    const executionId = attr(block, "executionId");
-    const meta = unitTests.get(executionId);
-    cases.push({
-      name: meta?.name || attr(block, "testName"),
-      className: meta?.className || "",
-      outcome: attr(block, "outcome") || "Unknown",
-      duration: attr(block, "duration"),
-      output: tag(block, "StdOut"),
-      errorMessage: tag(block, "Message"),
-      stackTrace: tag(block, "StackTrace"),
-    });
-  }
-
-  return cases;
-}
-
-async function runDotnetTests(testAgents: string[] = []): Promise<{ ran: boolean; success: boolean; errors: string; output: string; filter: string; cases: DotnetTestCase[] }> {
-  if (!fs.existsSync(TEST_PROJECT_PATH)) {
-    return {
-      ran: false,
-      success: false,
-      errors: `Test project not found: ${TEST_PROJECT_PATH}`,
-      output: "",
-      filter: "",
-      cases: [],
-    };
-  }
-
-  const filter = buildDotnetTestFilter(testAgents);
-  const filterArg = filter ? ` --filter "${filter}"` : "";
-  fs.mkdirSync(TEST_RESULTS_DIR, { recursive: true });
-  const trxName = `agent-test-${Date.now()}.trx`;
-  const trxPath = path.join(TEST_RESULTS_DIR, trxName);
-  const loggerArg = ` --logger "trx;LogFileName=${trxName}" --results-directory "${TEST_RESULTS_DIR}"`;
-  try {
-    const { stdout, stderr } = await execAsync(
-      `dotnet test "${TEST_PROJECT_PATH}" -v minimal -m:1 /nr:false${filterArg}${loggerArg}`,
-      {
-        cwd: GRAPHVIEW_SOURCE_DIR,
-        env: { ...process.env, LAYER5_DIR },
-        timeout: 120000,
-      }
-    );
-    const combined = stdout + stderr;
-    const failed = combined.includes("Failed!") || combined.includes("Test Run Failed") || combined.includes(": error ");
-    return { ran: true, success: !failed, errors: failed ? parseErrors(combined) : "", output: combined, filter, cases: parseTrxResults(trxPath) };
-  } catch (err: any) {
-    const combined = (err.stdout || "") + (err.stderr || "");
-    return { ran: true, success: false, errors: parseErrors(combined), output: combined, filter, cases: parseTrxResults(trxPath) };
-  }
-}
-
-// ── AI fix: call agent --fix mode ─────────────────────────────────────────
+// ── AI fix: call agent --fix mode (build errors passed as one argv value) ─
 async function aiFixErrors(agent: string, formName: string, errors: string): Promise<void> {
-  const escapedErrors = errors.replace(/"/g, '\\"').replace(/\n/g, "\\n");
   const agentScriptPath = path.join(LAYER5_DIR, "agents", agent, `agent_${agent}.py`);
-  const cmd = `python "${agentScriptPath}" "${formName}" --fix "${escapedErrors}"`;
-  const env = { ...process.env, PYTHONIOENCODING: "utf-8" };
   try {
-    await execAsync(cmd, { cwd: LAYER5_DIR, env, timeout: 120000 });
-  } catch (err: any) {
-    console.error(`[run-agent] AI fix error: ${err.message}`);
+    await runPython([agentScriptPath, formName, `--fix=${errors}`], 120000);
+  } catch (err) {
+    console.error(`[run-agent] AI fix error: ${(err as Error).message}`);
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { agent, form_name: form_name_raw, model, query_name } = body;
-    const form_name = (agent === "mapping") ? (form_name_raw || "ALL") : form_name_raw;
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ success: false, error: "Invalid JSON body" }, { status: 400 });
+    }
+    const agent = body.agent;
+    const form_name = agent === "mapping" ? (body.form_name || "ALL") : body.form_name;
+    const model = body.model || "";
+    const dryRun = Boolean(body.dry_run);
 
     if (!agent || !form_name) {
       return NextResponse.json({ success: false, error: "Missing agent or form_name" }, { status: 400 });
     }
-
-    const validAgents = ["ui", "logic", "service", "repo", "report", "graphview", "test", "mapping"];
-    if (!validAgents.includes(agent)) {
+    if (!VALID_AGENTS.includes(agent)) {
       return NextResponse.json({ success: false, error: `Invalid agent: ${agent}` }, { status: 400 });
     }
-
-    // Reject shell metacharacters — form_name/model are interpolated into shell command strings below.
-    const SAFE = /^[A-Za-z0-9._\-]+$/;
-    if (!SAFE.test(form_name) || (model && !SAFE.test(model))) {
-      return NextResponse.json({ success: false, error: "Invalid form_name or model" }, { status: 400 });
+    if (!isSafeName(form_name)) {
+      return NextResponse.json({ success: false, error: "Invalid form_name" }, { status: 400 });
+    }
+    if (model && !isSafeCliValue(model)) {
+      return NextResponse.json({ success: false, error: "Invalid model" }, { status: 400 });
+    }
+    if (dryRun && agent !== "logic") {
+      return NextResponse.json({ success: false, error: "dry_run is only supported by the logic agent" }, { status: 400 });
     }
 
-    // ── Step 1: Run Agent (generate files) ──────────────────────────────
-    const preparedInputs = agent === "graphview" ? await prepareGraphviewInputs(form_name) : [];
-    const modelArg = model ? ` --model "${model}"` : "";
-    const dryRunArg = body.dry_run ? " --input-only" : "";
-
-    // ── Special flow for logic agent: ViewModel patching pipeline ────────
-    // We execute agent_logic.py which generates the method bodies and patches
-    // them directly into the ViewModel (*ViewModel.cs) under pure MVVM guidelines.
+    // ── Logic agent: generates the method bodies and patches them into the ViewModel ──
     if (agent === "logic") {
-      const phase = (body.phase as string) || "all";   // default: all events (ui + service)
-      const logicEnv = { ...process.env, PYTHONIOENCODING: "utf-8" };
-
-      const logicScript = path.join(LAYER5_DIR, "agents", "logic", "agent_logic.py");
-      const logicArgs: string[] = [`"${form_name}"`, "--event-class", `"${phase}"` || "all"];
-      if (model) logicArgs.push("--model", `"${model}"`);
-      if (body.dry_run) logicArgs.push("--input-only");
-      
-      const logicCmd = `python "${logicScript}" ${logicArgs.join(" ")}`;
-      console.log(`[run-agent] Logic execution: ${logicCmd}`);
-
-      const { stdout: genOut, stderr: genErr } = await execAsync(logicCmd, {
-        cwd: LAYER5_DIR, env: logicEnv, timeout: 300_000,
-      });
-
-      // Try to resolve EN name from listFormJpToEn.json for ViewModel
-      let vmFileName = `${form_name}ViewModel.cs`;
-      const jpToEnPath = path.join(LAYER5_DIR, "agents", "graphview", "outputs", "forms", "listFormJpToEn.json");
-      if (fs.existsSync(jpToEnPath)) {
-        try {
-          const jpToEn = JSON.parse(fs.readFileSync(jpToEnPath, "utf-8"));
-          const entry = (jpToEn.items || []).find((i: any) => i.access_form_name === form_name);
-          if (entry?.wpf_viewmodel_name) {
-            vmFileName = `${entry.wpf_viewmodel_name}.cs`;
-          }
-        } catch { /* fallback to JP name */ }
+      const phase = body.phase ?? "all";   // default: all events (ui + service)
+      if (!LOGIC_PHASES.includes(phase)) {
+        return NextResponse.json({ success: false, error: `Invalid phase: ${phase}` }, { status: 400 });
       }
+      const logicScript = path.join(LAYER5_DIR, "agents", "logic", "agent_logic.py");
+      const logicArgs = [logicScript, form_name, "--event-class", phase];
+      if (model) logicArgs.push("--model", model);
+      if (dryRun) logicArgs.push("--input-only");
 
-      // Automatically copy ViewModel outputs to WPF source just to make sure they are synced
+      const { stdout: genOut, stderr: genErr } = await runPython(logicArgs, 300_000);
+
+      const vmFileName = `${lookupFormView(form_name)?.vm || `${form_name}ViewModel`}.cs`;
+      // Copy ViewModel outputs to the WPF source to keep them in sync
       const filesCopied = copyOutputsToSource("logic", form_name);
 
       const vmPath = path.join(SOURCE_DIR, "vba_brain.UI.Avalonia", "ViewModels", vmFileName);
@@ -556,79 +437,54 @@ export async function POST(req: NextRequest) {
         files,
         copied: files.length,
         stdout: (genOut + genErr).slice(-800),
-        token_stats: (() => {
-          try {
-            const p = path.join(LAYER5_DIR, "logs", "token_report.json");
-            return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf-8")) : null;
-          } catch { return null; }
-        })(),
+        token_stats: readLayer5TokenReport(),
       });
     }
-    const testAgents = Array.isArray(body.test_agents)
-      ? body.test_agents.map((a: any) => String(a))
-      : (typeof body.test_agents === "string" ? body.test_agents.split(",").map((a: string) => a.trim()) : []);
-    const testAgentsArg = agent === "test" && testAgents.length > 0 ? ` --agents "${testAgents.join(",")}"` : "";
 
+    // ── Step 1: Run Agent (generate files) ──────────────────────────────
+    const preparedInputs = agent === "graphview" ? await prepareGraphviewInputs(form_name) : [];
     const agentScriptPath = path.join(LAYER5_DIR, "agents", agent, `agent_${agent}.py`);
-    const cmd = `python "${agentScriptPath}" "${form_name}"${modelArg}${dryRunArg}${testAgentsArg}`;
-    const env = { ...process.env, PYTHONIOENCODING: "utf-8" };
-
-    const { stdout, stderr } = await execAsync(cmd, {
-      cwd: LAYER5_DIR,
-      env,
-      timeout: 180000,
-    });
+    const agentArgs = [agentScriptPath, form_name];
+    if (model) agentArgs.push("--model", model);
+    const { stdout } = await runPython(agentArgs, 180000);
 
     // ── Step 2: Copy generated files → WPF source ───────────────────────
+    // agent_repo.py merges and deploys repositories across forms itself, so its
+    // per-form snapshots are only listed, never copied over the shared files.
     let files = agent === "graphview"
       ? listFlatGraphviewOutputs(form_name)
       : agent === "mapping"
         ? listMappingOutputs(form_name)
-        : copyOutputsToSource(agent, form_name);
+        : copyOutputsToSource(agent, form_name, agent !== "repo");
 
-    // ── Step 3: Build + AI Fix Loop (UI agent only, when solution exists) ──
+    // ── Step 3: Build (+ AI fix loop for agents that support --fix) ──────
     const buildLog: { iter: number; success: boolean; errors?: string }[] = [];
+    const buildRan = (agent === "ui" || agent === "report") && fs.existsSync(SLN_PATH);
     let buildSuccess = true;
 
-    if ((agent === "ui" || agent === "report") && fs.existsSync(SLN_PATH)) {
-      for (let iter = 1; iter <= BUILD_FIX_MAX_ITER; iter++) {
-        console.log(`[run-agent] Build attempt ${iter}/${BUILD_FIX_MAX_ITER}...`);
+    if (buildRan) {
+      const maxIter = AGENTS_WITH_FIX.has(agent) ? BUILD_FIX_MAX_ITER : 1;
+      for (let iter = 1; iter <= maxIter; iter++) {
+        console.log(`[run-agent] Build attempt ${iter}/${maxIter}...`);
         const build = await buildSolution();
         buildSuccess = build.success;
-
         buildLog.push({ iter, success: build.success, errors: build.success ? undefined : parseErrors(build.errors) });
+        if (build.success || iter === maxIter) break;
 
-        if (build.success) {
-          console.log(`[run-agent] Build SUCCESS on attempt ${iter}`);
-          break;
-        }
-
-        if (iter < BUILD_FIX_MAX_ITER) {
-          console.log(`[run-agent] Build FAILED — calling AI fix (attempt ${iter})...`);
-          const errors = parseErrors(build.errors);
-          await aiFixErrors(agent, form_name, errors);
-
-          // Re-copy fixed files
-          files = copyOutputsToSource(agent, form_name);
-        }
+        console.log(`[run-agent] Build FAILED — calling AI fix (attempt ${iter})...`);
+        await aiFixErrors(agent, form_name, parseErrors(build.errors));
+        files = copyOutputsToSource(agent, form_name);
       }
     }
 
     const graphviewReview = agent === "graphview" ? readGraphviewReview(form_name) : null;
     const mongoSaved = agent === "graphview" ? await saveGraphviewJsonToMongo(form_name) : [];
-    const testRun = agent === "test" && !body.dry_run
-      ? await runDotnetTests(testAgents)
-      : { ran: false, success: true, errors: "", output: "", filter: "", cases: [] };
-    const agentSuccess = !(agent === "test" && testRun.ran && !testRun.success);
-    const agentError = agent === "test" && testRun.ran && !testRun.success
-      ? `dotnet test FAILED. ${testRun.errors || "See test output for details."}`
-      : undefined;
 
     return NextResponse.json({
-      success: agentSuccess,
+      success: buildSuccess,
       agent,
       form_name,
-      error: agentError,
+      error: buildSuccess ? undefined : `dotnet build failed (${buildLog.length} attempt${buildLog.length === 1 ? "" : "s"})`,
       files,
       copied: files.filter(f => f.copied).length,
       prepared_inputs: preparedInputs,
@@ -640,36 +496,18 @@ export async function POST(req: NextRequest) {
       } : null,
       mongo_saved: mongoSaved,
       build: {
-        ran: agent === "ui" && fs.existsSync(SLN_PATH),
+        ran: buildRan,
         success: buildSuccess,
         iterations: buildLog.length,
         log: buildLog,
       },
-      tests: {
-        ran: testRun.ran,
-        success: testRun.success,
-        errors: testRun.errors ? testRun.errors.slice(0, 2000) : "",
-        output: testRun.output ? testRun.output.slice(-2000) : "",
-        filter: testRun.filter,
-        project: path.relative(GRAPHVIEW_SOURCE_DIR, TEST_PROJECT_PATH).replace(/\\/g, "/"),
-        cases: testRun.cases,
-      },
       stdout: stdout.slice(-500),
-      token_stats: (() => {
-        try {
-          const reportPath = path.join(LAYER5_DIR, "logs", "token_report.json");
-          if (fs.existsSync(reportPath)) {
-            return JSON.parse(fs.readFileSync(reportPath, "utf-8"));
-          }
-        } catch (e) {
-          console.error("[run-agent] Failed to read token stats:", e);
-        }
-        return null;
-      })(),
+      token_stats: readLayer5TokenReport(),
     });
 
-  } catch (err: any) {
-    const errorMsg = err.stderr || err.message || "Unknown error";
-    return NextResponse.json({ success: false, error: errorMsg.slice(0, 500) }, { status: 500 });
+  } catch (err) {
+    const e = err as ExecError;
+    const errorMsg = e.stderr || e.message || "Unknown error";
+    return NextResponse.json({ success: false, error: String(errorMsg).slice(-800) }, { status: 500 });
   }
 }

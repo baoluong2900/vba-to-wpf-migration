@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, ChevronDown, ChevronRight, Database, Zap, CheckCircle, Clock, AlertCircle, Copy, Save, RefreshCw, Code2, Wand2, Play, DatabaseZap, Table, Bot, FileSpreadsheet, Cpu, Sparkles } from "lucide-react";
+import { Search, ChevronRight, CheckCircle, AlertCircle, Copy, Save, RefreshCw, Code2, Wand2, Play, DatabaseZap, Table } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { format } from "sql-formatter";
@@ -119,7 +119,6 @@ interface QueryItem {
   target_sql?: string;
   target_query?: Record<string, string>;
   description?: string;
-  conversion_notes?: string;
   conversion_errors?: string[];
   test_result?: any;
   test_history?: any[];
@@ -605,8 +604,9 @@ export default function Layer3Page() {
   const [saving, setSaving]             = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
   const [editedTarget, setEditedTarget] = useState("");
-  const [models, setModels]             = useState(["deepseek-v4-pro", "qwen3-vl-235b-a22b-thinking", "qwen-vl-plus-latest", "qwen-max", "qvq-max-2025-03-25"]);
-  const [selectedModel, setSelectedModel] = useState("deepseek-v4-pro");
+  const [models, setModels]             = useState<string[]>([]);
+  // "" = let the gateway use llm_settings.layer3_migration_model from config.json
+  const [selectedModel, setSelectedModel] = useState("");
   const [selectedDialect, setSelectedDialect] = useState("PostgreSQL");
   const [toast, setToast]               = useState<{ msg: string; ok: boolean } | null>(null);
   const [runningTest, setRunningTest]   = useState(false);
@@ -671,7 +671,9 @@ export default function Layer3Page() {
     try {
       const r = await fetch(`/api/v1/layer3/migration_errors`);
       const d = await r.json();
-      setErrorLogs(d || []);
+      // The route returns an array on success and { success: false, error } otherwise
+      setErrorLogs(Array.isArray(d) ? d : []);
+      if (!Array.isArray(d)) showToast(`❌ ${d?.error || "Failed to fetch migration error logs"}`, false);
     } catch {
       setErrorLogs([]);
       showToast("❌ Failed to fetch migration error logs", false);
@@ -790,7 +792,7 @@ export default function Layer3Page() {
         }, 15);
       } else {
         setConverting(false);
-        showToast(d.detail || "Conversion failed", false);
+        showToast(d.error || d.detail || "Conversion failed", false);
       }
     } catch (e: any) {
       setConverting(false);
@@ -849,7 +851,7 @@ export default function Layer3Page() {
         }, 15);
       } else {
         setConvertingAndTesting(false);
-        showToast(d.detail || "Convert & Test failed", false);
+        showToast(d.error || d.detail || "Convert & Test failed", false);
       }
     } catch (e: any) {
       setConvertingAndTesting(false);
@@ -869,7 +871,6 @@ export default function Layer3Page() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           target_sql: finalTarget,
-          notes: selected.conversion_notes || "",
           description: editedDescription,
           model: selectedModel
         }),
@@ -879,7 +880,7 @@ export default function Layer3Page() {
         showToast("💾 Saved successfully!");
         await loadQueries();
       } else {
-        showToast(d.detail || "Save failed", false);
+        showToast(d.error || d.detail || "Save failed", false);
       }
     } catch (e: any) {
       showToast(`Error: ${e.message}`, false);
@@ -904,27 +905,20 @@ export default function Layer3Page() {
       const d = await r.json();
       setTestResult(d);
 
-      const updatedQuery = {
-        ...selected,
-        test_result: d,
-        conversion_status: d.success ? ("converted" as const) : ("error" as const)
-      };
+      // A static check (d.preview) runs nothing, so it never changes conversion_status.
+      const updatedQuery = { ...selected, test_result: d };
       setSelected(updatedQuery);
       setQueries(prev => prev.map(q => q.name === selected.name ? updatedQuery : q));
 
       if (d.success) {
-        showToast("🚀 Query test run executed successfully!");
+        showToast(d.preview ? "Static check passed — not executed" : "Query test passed");
       } else {
-        showToast("❌ Query test run failed!", false);
+        showToast(`❌ ${d.preview ? "Static check failed" : "Query test failed"}${d.error_message ? `: ${d.error_message}` : ""}`, false);
       }
     } catch (e: any) {
       const errRes = { success: false, error_message: e.message };
       setTestResult(errRes);
-      const updatedQuery = {
-        ...selected,
-        test_result: errRes,
-        conversion_status: "error" as const
-      };
+      const updatedQuery = { ...selected, test_result: errRes };
       setSelected(updatedQuery);
       setQueries(prev => prev.map(q => q.name === selected.name ? updatedQuery : q));
       showToast(`Error: ${e.message}`, false);
@@ -981,6 +975,7 @@ export default function Layer3Page() {
                 {/* Model selector */}
                 <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)}
                   style={{ background: "var(--bg-panel)", border: "1px solid var(--border-color)", color: "var(--text-muted)", borderRadius: 6, padding: "4px 8px", fontSize: 12, outline: "none" }}>
+                  <option value="">Default model (config.json)</option>
                   {models.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
 

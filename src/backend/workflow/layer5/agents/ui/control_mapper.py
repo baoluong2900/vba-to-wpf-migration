@@ -14,6 +14,8 @@ import logging
 import unicodedata
 from typing import Any
 
+from core.naming import cs_identifier
+
 logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────
@@ -110,44 +112,10 @@ def sanitize_xaml_name(name: str) -> str:
 
 def sanitize_class_name(name: str) -> str:
     """
-    Ensure a window/class name is a valid C# class identifier.
-    Replaces any invalid characters (like parentheses, spaces, hyphens, dots) with underscores,
-    collapses multiple underscores, and ensures it doesn't start with a digit.
-    Keep Japanese/Unicode letters intact since C# fully supports them in class names.
+    Ensure a window/class name is a valid C# class identifier (same rule as the DTO namespace
+    segment Agent Service derives from the form name — see core.naming.cs_identifier).
     """
-    import unicodedata
-    import re
-    if not name:
-        return "Window"
-
-    chars = []
-    for i, ch in enumerate(name):
-        cat = unicodedata.category(ch)
-        is_letter = cat.startswith('L') or cat == 'Nl' or ch == '_'
-        is_digit = cat == 'Nd'
-        
-        if i == 0:
-            if is_letter:
-                chars.append(ch)
-            elif is_digit:
-                chars.append('_' + ch)
-            else:
-                chars.append('_')
-        else:
-            if is_letter or is_digit:
-                chars.append(ch)
-            else:
-                chars.append('_')
-                
-    sanitized = "".join(chars)
-    sanitized = re.sub(r'_+', '_', sanitized)
-    if len(sanitized) > 1 and sanitized.endswith('_'):
-        sanitized = sanitized[:-1]
-    return sanitized
-
-
-
-
+    return cs_identifier(name)
 
 
 def _fmt_to_wpf(fmt: dict) -> dict:

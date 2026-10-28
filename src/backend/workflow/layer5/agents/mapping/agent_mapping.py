@@ -3,11 +3,12 @@ agents/mapping/agent_mapping.py — Agent Mapping: Gen Common Forms/Queries/Macr
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import os
 import subprocess
 import sys
-import shutil
 from pathlib import Path
 
 # Insert layer5 root to sys.path
@@ -15,12 +16,45 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent))
 
 from core.models import BaseAgent, AgentInput, AgentOutput, GeneratedFile
-from core.config import SERVICES_DIR, DOMAIN_PROJECT_DIR
+from core.config import COL_MODULES, DOMAIN_PROJECT_DIR, SERVICES_DIR, WORKFLOW_DIR
+from core.naming import cs_identifier, validate_form_name
 
 logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).parent
 OUTPUTS_DIR = AGENT_DIR / "outputs"
+GRAPHVIEW_OUTPUTS_DIR = AGENT_DIR.parent / "graphview" / "outputs"
+DOCS_MAPPINGS_DIR = WORKFLOW_DIR / "docs" / "mappings"
+
+
+def _mapped_type_name(relative_path: str, name_key: str, access_name: str) -> str:
+    """Suggested .NET type for an Access macro/module from graphview outputs (old and new key names)."""
+    path = GRAPHVIEW_OUTPUTS_DIR / relative_path
+    if not path.exists():
+        return ""
+    try:
+        items = json.loads(path.read_text(encoding="utf-8")).get("items", [])
+    except (OSError, ValueError) as ex:
+        logger.warning("[Agent Mapping] Error parsing %s: %s", path.name, ex)
+        return ""
+    for item in items:
+        if item.get(name_key) == access_name:
+            mapped = (item.get("suggested_dotnet_type_name") or item.get("wpf_service_ui_name")
+                      or item.get("wpf_common_name") or "")
+            return cs_identifier(mapped, fallback="") if mapped else ""
+    return ""
+
+
+def _fallback_type_name(access_name: str, suffix: str) -> str:
+    """Class name from the Access name; a short hash keeps names unique when characters had to be dropped."""
+    ident = cs_identifier(access_name, fallback="Generic")
+    if ident != access_name:
+        ident += "_" + hashlib.sha1(access_name.encode("utf-8")).hexdigest()[:6]
+    return ident + suffix
+
+
+def _relpath(path: Path) -> str:
+    return os.path.relpath(path, WORKFLOW_DIR)
 
 
 class MappingAgent(BaseAgent):
@@ -37,8 +71,9 @@ class MappingAgent(BaseAgent):
         logger.info(f"[Agent Mapping] Starting mapping execution for target: {form_name}")
 
         try:
-            workflow_root = AGENT_DIR.parents[3] # 03_agents/workflow
-            docs_mappings_dir = workflow_root / "docs" / "mappings"
+            if form_name != "ALL":
+                validate_form_name(form_name)
+            docs_mappings_dir = DOCS_MAPPINGS_DIR
             docs_mappings_dir.mkdir(parents=True, exist_ok=True)
             OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -70,7 +105,7 @@ class MappingAgent(BaseAgent):
 
                 # ── Step 2: Establish paths and copy outputs to docs/mappings/ ──
                 # Paths to generated files in graphview outputs
-                gv_outputs_dir = AGENT_DIR.parent / "graphview" / "outputs"
+                gv_outputs_dir = GRAPHVIEW_OUTPUTS_DIR
                 
                 map_configs = [
                     # (source file in gv_outputs, dest filename in docs/mappings)
@@ -140,25 +175,9 @@ class MappingAgent(BaseAgent):
                 if macro_doc:
                     logger.info(f"[Agent Mapping] Found macro: {form_name}. Generating WPF C# service code...")
 
-                    # Get suggested type name
-                    jp_to_en_path = docs_mappings_dir / "macro_access_to_dotnet.json"
-                    class_name = None
-                    if jp_to_en_path.exists():
-                        try:
-                            jp_to_en = json.loads(jp_to_en_path.read_text(encoding="utf-8"))
-                            for item in jp_to_en.get("items", []):
-                                if item.get("access_macro_name") == form_name:
-                                    class_name = item.get("suggested_dotnet_type_name")
-                                    break
-                        except Exception as ex:
-                            logger.warning(f"Error parsing macro mapping file: {ex}")
-
-                    if not class_name:
-                        import re
-                        clean_name = re.sub(r'[^a-zA-Z0-9]', '', form_name)
-                        if not clean_name:
-                            clean_name = "GenericMacro"
-                        class_name = f"{clean_name}MacroWorkflow"
+                    # Suggested type name (graphview macros map), else a collision-free fallback
+                    class_name = (_mapped_type_name("macros/listMacroJpToEn.json", "access_macro_name", form_name)
+                                  or _fallback_type_name(form_name, "MacroWorkflow"))
 
                     # Generate macro code using LLM
                     system_prompt = self.load_prompt("agent_mapping_macro.md")
@@ -233,25 +252,22 @@ Raw XML Definition:
                         metadata={
                             "type": "macro",
                             "class_name": class_name,
-                            "dest": str(dest_path_wpf.relative_to(workflow_root)),
+                            "dest": _relpath(dest_path_wpf),
                         },
                     )
                     logger.info(f"[Agent Mapping] ✅ Successfully generated and deployed Macro service: {class_name}")
                     return output
 
                 # Check if it's a Module
-                module_doc = db["modules"].find_one({"name": form_name})
+                module_doc = db[COL_MODULES].find_one({"name": form_name})
                 if not module_doc:
-                    module_doc = db["modules"].find_one({"module_name": form_name})
+                    module_doc = db[COL_MODULES].find_one({"module_name": form_name})
 
                 if module_doc:
                     logger.info(f"[Agent Mapping] Found module: {form_name}. Generating Domain Common service code...")
 
-                    import re
-                    clean_name = re.sub(r'[^a-zA-Z0-9]', '', form_name)
-                    if not clean_name:
-                        clean_name = "GenericModule"
-                    class_name = f"{clean_name}Service"
+                    class_name = (_mapped_type_name("modules/listModuleJpToEn.json", "access_module_name", form_name)
+                                  or _fallback_type_name(form_name, "Service"))
 
                     # Generate module code using LLM
                     system_prompt = self.load_prompt("agent_mapping_module.md")
@@ -312,7 +328,7 @@ Functions and Procedures:
                         metadata={
                             "type": "module",
                             "class_name": class_name,
-                            "dest": str(dest_path_domain.relative_to(workflow_root)),
+                            "dest": _relpath(dest_path_domain),
                         },
                     )
                     logger.info(f"[Agent Mapping] ✅ Successfully generated and deployed Module service: {class_name}")

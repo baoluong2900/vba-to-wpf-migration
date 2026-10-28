@@ -15,15 +15,24 @@ Usage:
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from core.fsutil import atomic_write_text, file_lock
+
 logger = logging.getLogger(__name__)
+
+
+def _default_report_path() -> Path:
+    from core.config import LAYER5_DIR
+    return LAYER5_DIR / "logs" / "token_report.json"
 
 # ──────────────────────────────────────────────
 # Pricing: USD per 1M tokens (input/output separate)
@@ -74,10 +83,9 @@ class TokenTracker:
         """Load existing report from disk if it exists."""
         self.load()
 
-    def load(self) -> None:
+    def load(self, report_path: Optional[Path] = None) -> None:
         """Load records from token_report.json."""
-        from core.config import LAYER5_DIR
-        report_path = LAYER5_DIR / "logs" / "token_report.json"
+        report_path = report_path or _default_report_path()
         if not report_path.exists():
             return
 
@@ -146,12 +154,17 @@ class TokenTracker:
             cost_output_usd=cost_out,
             cost_usd=cost,
         )
-        self.records.append(rec)
-        
-        # Persist immediately since script might exit soon
+        # Persist immediately since script might exit soon. Re-read under the lock first: other
+        # agent processes append to the same report concurrently.
+        path = _default_report_path()
         try:
-            self.save_report()
+            with file_lock(path):
+                self.load(path)
+                self.records.append(rec)
+                self._write_report(path)
         except Exception as e:
+            if rec not in self.records:
+                self.records.append(rec)
             logger.warning("[TokenTracker] Auto-save failed: %s", e)
 
         logger.info(
@@ -229,7 +242,6 @@ class TokenTracker:
             logger.info("[TokenTracker] No records — no LLM calls tracked.")
             return
 
-        sep = "─" * 72
         logger.info("")
         logger.info("┌%s┐", "─" * 70)
         logger.info("│  📊 TOKEN USAGE SUMMARY — %s%s│", title, " " * max(0, 42 - len(title)))
@@ -317,12 +329,14 @@ class TokenTracker:
     # ── Persist report ────────────────────────────────────────────
 
     def save_report(self, output_dir: Optional[Path] = None) -> str:
-        """Save full token report to JSON file (append session)."""
-        from core.config import LAYER5_DIR
-        out_dir = output_dir or LAYER5_DIR / "logs"
-        os.makedirs(out_dir, exist_ok=True)
+        """Save full token report to JSON file (latest state, written atomically)."""
+        path = Path(output_dir) / "token_report.json" if output_dir else _default_report_path()
+        with file_lock(path):
+            self._write_report(path)
+        return str(path)
 
-        path = Path(out_dir) / "token_report.json"
+    def _write_report(self, path: Path) -> None:
+        os.makedirs(path.parent, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # New session data (current memory)
@@ -357,27 +371,29 @@ class TokenTracker:
             ],
         }
 
-        # For simplicity in Layer 5 (since it's per-agent exec), 
-        # we keep the full session in memory and overwrite the json 
-        # with the "latest" state. In Next.js we will read this latest state.
-        path.write_text(json.dumps(new_session, indent=2, ensure_ascii=False), encoding="utf-8")
+        # The frontend reads this "latest state" file; temp + replace so it never sees a torn write.
+        atomic_write_text(path, json.dumps(new_session, indent=2, ensure_ascii=False))
         logger.debug("[TokenTracker] JSON report saved → %s", path)
-        return str(path)
+        # Console "Download Excel" serves logs/token_report.xlsx — keep it in step with the JSON
+        self._write_excel(path.with_suffix(".xlsx"))
 
     def save_excel_report(self, output_dir: Optional[Path] = None) -> str:
-        """Export session to Excel. Similar to Layer 2."""
+        """Export session to Excel (also refreshed on every save_report / record)."""
+        json_path = Path(output_dir) / "token_report.json" if output_dir else _default_report_path()
+        path = json_path.with_suffix(".xlsx")
+        with file_lock(json_path):
+            return str(path) if self._write_excel(path) else ""
+
+    def _write_excel(self, path: Path) -> bool:
+        """Write the records to `path` atomically; False (warning only) when openpyxl is missing or fails."""
         try:
             import openpyxl
-            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.styles import Font, PatternFill, Alignment
         except ImportError:
             logger.warning("[TokenTracker] openpyxl not installed — Excel export skipped.")
-            return ""
+            return False
 
-        from core.config import LAYER5_DIR
-        out_dir = output_dir or LAYER5_DIR / "logs"
-        os.makedirs(out_dir, exist_ok=True)
-        path = Path(out_dir) / "token_report.xlsx"
-        
+        os.makedirs(path.parent, exist_ok=True)
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Layer 5 Token Usage"
@@ -406,9 +422,19 @@ class TokenTracker:
         for i, w in enumerate([10, 20, 12, 15, 25, 10, 10, 10, 12], 1):
             ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
 
-        wb.save(str(path))
-        logger.info("[TokenTracker] Excel report saved → %s", path)
-        return str(path)
+        # Same temp + replace scheme as the JSON (the download route may read it any time)
+        fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+        os.close(fd)
+        try:
+            wb.save(tmp)
+            os.replace(tmp, path)
+        except Exception as exc:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
+            logger.warning("[TokenTracker] Excel export failed: %s", exc)
+            return False
+        logger.debug("[TokenTracker] Excel report saved → %s", path)
+        return True
 
     def reset(self) -> None:
         """Reset all records (start fresh for a new run)."""

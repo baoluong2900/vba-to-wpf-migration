@@ -56,11 +56,13 @@ sys.path.insert(0, str(LAYER5_ROOT))
 from core.config import (  # noqa: E402
     COL_FORMS,
     COL_MACROS,
+    COL_MODULES,
     COL_QUERIES,
     MONGO_DB,
     MONGO_URI,
 )
 from pymongo import MongoClient  # noqa: E402
+
 
 
 def _fetch_forms(db) -> list[dict]:
@@ -81,7 +83,7 @@ def _fetch_macro_names(db) -> list[str]:
 
 
 def _fetch_module_names(db) -> list[str]:
-    return [d["name"] for d in db["modules"].find({}, {"name": 1}) if d.get("name") is not None]
+    return [d["name"] for d in db[COL_MODULES].find({}, {"name": 1}) if d.get("name") is not None]
 
 
 def _normalize_event_key_display(key: str) -> str:

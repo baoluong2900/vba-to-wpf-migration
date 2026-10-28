@@ -1,72 +1,77 @@
 """
 seed_queries_v2.py
 ------------------
-Seeds raw queries from Layer 1 MongoDB collection ("queries") into Layer 3 SQL Migration collection ("queries_v2").
-Supports both 'vba_brain_core' and 'vba_brain_core' databases.
+Seed Layer 1's raw Access queries (MongoDB ``queries``) into ``queries_v2`` — the collection
+Layer 2 reads for query context and Layer 3 uses for SQL review.
+
+New queries are inserted with review fields reset; queries already present get their source
+fields (SQL text, structured query, tables, parameters) refreshed while every review field
+(target_sql, conversion_status, reviewer, notes, description, …) is left untouched.
+
+Usage:
+    python seed_queries_v2.py
 """
 from __future__ import annotations
-import os
+
 import sys
 from datetime import datetime
 from pathlib import Path
-from pymongo import MongoClient
+
+BACKEND_DIR = Path(__file__).resolve().parents[3]
+for _path in (BACKEND_DIR, BACKEND_DIR / "workflow", BACKEND_DIR / "workflow" / "layer2"):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
+from common.config import MONGO_DB
+from db.mongo_client import get_db
+
+from layer3.sql_migration.query_utils import build_sql_from_parts, query_type_of, target_table_of
+
+SOURCE_COLLECTION = "queries"
+TARGET_COLLECTION = "queries_v2"
+
+
+def source_fields(doc: dict) -> dict:
+    """The queries_v2 fields derived from one Layer 1 query document."""
+    query = doc.get("query") or {}
+    # query_parser stores the original text as "sql"; older imports only have the structure.
+    sql = doc.get("sql") or build_sql_from_parts(query)
+    return {
+        "sql": sql,
+        "raw_sql": sql,
+        "query": query,
+        "query_type": query_type_of(query),
+        "tables": doc.get("tables") or [],
+        "target_table": target_table_of(query),
+        "parameters": doc.get("parameters") or [],
+    }
+
 
 def seed_v2() -> int:
-    # Resolve MongoDB connection
-    mongo_uri = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
-    client = MongoClient(mongo_uri)
-    
-    # Auto-detect DB containing L1 data
-    db_name = os.environ.get("MONGO_DB", "vba_brain_core")
-    db = client[db_name]
-    
-    # If the configured db doesn't have queries, check 'vba_brain_core'
-    if "queries" not in db.list_collection_names() and "vba_brain_core" in client.list_database_names():
-        print(f"[INFO] Collection 'queries' not found in db '{db_name}'. Falling back to 'vba_brain_core'.")
-        db = client["vba_brain_core"]
-        db_name = "vba_brain_core"
-        
-    if "queries" not in db.list_collection_names():
-        print("[WARN] No 'queries' collection found in any database. Seeding aborted.")
+    """Sync ``queries`` → ``queries_v2``; return how many new queries were inserted."""
+    db = get_db()
+    if SOURCE_COLLECTION not in db.list_collection_names():
+        print(f"[WARN] No '{SOURCE_COLLECTION}' collection in database '{MONGO_DB}' — run Layer 1 seeding first.")
         return 0
-        
-    raw_queries_col = db["queries"]
-    target_queries_col = db["queries_v2"]
-    
-    count = 0
+
+    target = db[TARGET_COLLECTION]
+    inserted = refreshed = 0
     now_iso = datetime.now().isoformat()
-    
-    for doc in raw_queries_col.find():
+
+    for doc in db[SOURCE_COLLECTION].find():
         name = doc.get("name") or doc.get("query_name")
         if not name:
             continue
-            
-        # Check if already exists in queries_v2 to avoid duplicate seeds
-        if target_queries_col.find_one({"name": name}):
+        fields = source_fields(doc)
+
+        if target.find_one({"name": name}, {"_id": 1}):
+            target.update_one({"name": name}, {"$set": {**fields, "updated_at": now_iso}})
+            refreshed += 1
             continue
-            
-        # Rebuild raw SQL from structured select/from/where/etc.
-        q_dict = doc.get("query", {}) or {}
-        sql_parts = []
-        if q_dict.get("select") and q_dict["select"] != "なし":
-            sql_parts.append(f"SELECT {q_dict['select']}")
-        if q_dict.get("from") and q_dict["from"] != "なし":
-            sql_parts.append(f"FROM {q_dict['from']}")
-        if q_dict.get("where") and q_dict["where"] != "なし":
-            sql_parts.append(f"WHERE {q_dict['where']}")
-        if q_dict.get("group_by") and q_dict["group_by"] != "なし":
-            sql_parts.append(f"GROUP BY {q_dict['group_by']}")
-        if q_dict.get("order_by") and q_dict["order_by"] != "なし":
-            sql_parts.append(f"ORDER BY {q_dict['order_by']}")
-            
-        raw_sql = "\n".join(sql_parts) if sql_parts else ""
-        
-        # Build entry
-        new_doc = {
+
+        target.insert_one({
             "name": name,
-            "sql": raw_sql,
-            "raw_sql": raw_sql,
-            "parameters": doc.get("parameters") or [],
+            **fields,
             "target_sql": "",
             "target_query_json": {},
             "conversion_status": "pending",
@@ -74,15 +79,13 @@ def seed_v2() -> int:
             "notes": "",
             "description": doc.get("description", ""),
             "created_at": now_iso,
-            "updated_at": now_iso
-        }
-        
-        target_queries_col.insert_one(new_doc)
-        count += 1
-        
-    print(f"[INFO] Seeded {count} queries into database '{db_name}' collection 'queries_v2'.")
-    client.close()
-    return count
+            "updated_at": now_iso,
+        })
+        inserted += 1
+
+    print(f"[INFO] queries_v2 in '{MONGO_DB}': {inserted} inserted, {refreshed} refreshed.")
+    return inserted
+
 
 if __name__ == "__main__":
     seed_v2()

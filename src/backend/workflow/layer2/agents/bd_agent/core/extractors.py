@@ -1,15 +1,15 @@
 from __future__ import annotations
-import argparse
-import json
-import re
-from copy import deepcopy
-from pathlib import Path
 from typing import Any
 
 from .constants import *
 from .utils import *
+def item_root(data_root: dict[str, Any]) -> dict[str, Any]:
+    """The form or report block of a bd_code_json payload (reports nest under "report")."""
+    return data_root.get("form") or data_root.get("report") or {}
+
+
 def extract_procedures(data_root: dict[str, Any]) -> list[dict[str, Any]]:
-    form = data_root.get("form") or {}
+    form = item_root(data_root)
     procs = form.get("vba_procedures") or data_root.get("vba_procedures")
     if isinstance(procs, list):
         return procs
@@ -32,7 +32,7 @@ def root_properties(data_root: dict[str, Any]) -> dict[str, Any]:
     root_props = data_root.get("properties")
     if isinstance(root_props, dict):
         return root_props
-    form = data_root.get("form") or {}
+    form = item_root(data_root)
     form_props = form.get("properties")
     if isinstance(form_props, dict):
         return form_props
@@ -55,7 +55,7 @@ def root_properties(data_root: dict[str, Any]) -> dict[str, Any]:
 
 
 def extract_controls(data_root: dict[str, Any]) -> list[dict[str, Any]]:
-    form = data_root.get("form") or {}
+    form = item_root(data_root)
     controls = form.get("controls") or data_root.get("controls")
     if isinstance(controls, list):
         return controls
@@ -103,9 +103,9 @@ def collect_events(
 ) -> tuple[list[dict[str, str]], dict[str, str]]:
     rows: list[dict[str, str]] = []
     handler_to_event_id: dict[str, str] = {}
-    form_name = str((data_root.get("form") or {}).get("name") or data_root.get("name") or "")
+    form_name = str(item_root(data_root).get("name") or data_root.get("name") or "")
     root_events = (root_properties(data_root).get("event")) or {}
-    form_prop_events = (((data_root.get("form") or {}).get("properties") or {}).get("event")) or {}
+    form_prop_events = ((item_root(data_root).get("properties") or {}).get("event")) or {}
     form_events_merged: dict[str, Any] = {}
     form_events_merged.update(root_events)
     form_events_merged.update(form_prop_events)
@@ -154,8 +154,8 @@ def collect_events(
         ctype = str(c.get("type") or "")
         logical = logical_name_for_ctrl(c, label_caption_map, optiongroup_label_map)
         cleaned_logical = clean_value(logical)
-        final_physical, final_logical = resolve_names(cleaned_logical, ctype)
         desc_title = descriptive_title_for_ctrl(c, label_caption_map, optiongroup_label_map)
+        final_physical, final_logical = resolve_names(cleaned_logical, ctype, desc_title)
         for trigger, handler_val in events.items():
             handler = str(handler_val or "").strip()
             if not handler:
