@@ -16,9 +16,11 @@ hidden — read them before you run this anywhere but `localhost`.
 | S2 | Mongo Express ships with `admin` / `admin123` from `infa/.env.example` | `infa/.env.example` | 🔴 High if reachable |
 | S3 | Default database credentials (`vba_brain` / `vba_brain2024`) are committed as example values | `infa/.env.example` | 🟡 Medium |
 | S4 | `postgres_migrator.py` drops and recreates every table it migrates. The DDL is deterministic (no LLM) and `--dry-run` exists, but nothing forces you to use it | `layer3/sql_migration/postgres_migrator.py` | 🟢 Low |
-| S5 | Python dependencies are range-pinned (floor + next-major ceiling) but there is no lockfile, so two installs can differ in minor versions | `src/backend/requirements.txt` | 🟢 Low |
-| S6 | The web console has no user authentication; it relies on binding `127.0.0.1` and on rejecting cross-site requests | `src/frontend/src/proxy.ts`, `package.json` (`next dev -H 127.0.0.1`) | 🟡 Medium |
+| S5 | Python dependencies are range-pinned (a floor, and an upper bound for every package except `typing_extensions`) but there is no lockfile, so two installs can differ in minor versions | `src/backend/requirements.txt` | 🟢 Low |
+| S6 | The web console has no user authentication; it relies on binding `127.0.0.1` and on rejecting cross-site requests | `src/frontend/src/proxy.ts`, `package.json` (`next dev` / `next start` with `-H 127.0.0.1`) | 🟡 Medium |
 | S7 | LLM-generated C# is deployed into `src/wpf` and built; treat it as untrusted code until reviewed | `layer5/pipeline/` | 🟡 Medium |
+| S8 | **A real PostgreSQL password is in the public git history.** `src/wpf/vba_brain.UI.Avalonia/appsettings.json` (connection string for user `postgres`) was committed in `85a0e7f` and deleted in `691ae04`; deleting a file does not remove it from history, and the repository is public. Rotate that password wherever it is used. Rewriting history (`git-filter-repo` + force-push) only protects future clones, not copies already made | git history | 🔴 High until the password is rotated |
+| S9 | The parsers read the raw Access export from `src/vba/vba_source/`, which is tracked (it holds a small sample). A real export copied there shows up as changes to commit | `layer1/parser/*.py` | 🟡 Medium |
 
 Remediation for each is tracked in [`docs/UPGRADE_PLAN.md`](docs/UPGRADE_PLAN.md) Phase 1–2.
 
@@ -37,6 +39,9 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
 - **Network exposure:** the gateway listened on all interfaces with no authentication.
 - **Vulnerable dependency:** `System.Security.Cryptography.Pkcs` 9.0.x (high + moderate).
 - **Hard-coded root account** in `infa/mongo-init/01_init_user.js`.
+- **Cross-site GET with a cost:** any page could make the console run the paid model health check
+  (one LLM call per configured model) with an `<img>` tag pointing at
+  `/api/v1/layer2/models/health`.
 
 ---
 
@@ -51,8 +56,9 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
   the console's routes do the same for their own file access.
 - **No request data reaches a shell.** The console spawns Python and `dotnet` with argument
   arrays (`spawn`/`execFile`), never `exec` with a command string.
-- **Cross-site requests are refused:** state-changing calls to `/api/**` must come from the
-  console's own origin, and the dev server binds `127.0.0.1`.
+- **Cross-site requests are refused:** a browser request to `/api/**` whose `Sec-Fetch-Site` is
+  not `same-origin` or `none` is rejected whatever its method; without that header, state-changing
+  calls must carry an `Origin` equal to the host. `yarn dev` and `yarn start` bind `127.0.0.1`.
 - **Credentials are never logged:** connection strings go through `redact_uri()` first.
 - **CI gates:** no secret-bearing file tracked, no vulnerable NuGet package
   (`dotnet list package --vulnerable`), gRPC stubs in sync with the `.proto`.
@@ -60,13 +66,14 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
   Mongo Express `8082`, and PostgreSQL `5432` are not reachable from the network.
 - **MongoDB requires authentication** — root credentials are supplied via environment variables
   and clients must pass `authSource=admin`.
-- **Secrets are never committed.** `.gitignore` excludes `config.json`, `.env`, `.env.*`,
+- **Secret files are kept out of git.** `.gitignore` excludes `config.json`, `.env`, `.env.*`,
   `**/.env`, `appsettings.json`, and the entire `data/` tree, while allowing `.env.example` and
-  `**/appsettings.example.json` templates through.
+  `**/appsettings.example.json` templates through, and the CI hygiene job fails if one of them is
+  tracked. This came after S8: the history still holds one real password.
 - **No API key ever reaches the browser.** The web console receives the *model list* through
   `Layer2Service.GetConfig`; keys are resolved server-side by `src/backend/common/config.py`.
-- **Raw database exports stay local.** `data/` (Access exports, MongoDB and PostgreSQL volumes)
-  is git-ignored at the top level.
+- **Parsed data stays local.** `data/` (Layer 1 JSON output, MongoDB and PostgreSQL volumes) is
+  git-ignored at the top level. The raw Access export is not: see S9.
 - **Configuration is centralized.** A single resolver (`get_setting`: env → `config.json` →
   default) means there is one place to audit for credential handling.
 
@@ -88,12 +95,14 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
       unauthenticated gateway is also an unauthenticated way to spend money.
 - [ ] **Lock dependencies** for production builds (`pip-compile` / `pip freeze` into a lockfile on the target Python version); `requirements.txt` only bounds the ranges.
 - [ ] **Scan git history for leaked keys** before making a repository public (last scan
-      2026-10-28: clean — no `config.json`/`.env` ever committed, no key patterns):
+      2026-10-29: no API-key patterns, no `config.json` / `.env` ever committed, but one real
+      PostgreSQL password — S8):
       ```bash
       git log --all -S "sk-" --oneline
-      git log --all -p -- config.json
+      git log --all --oneline -- config.json '**/.env' '**/appsettings.json'
+      git log --all -p | grep -inE "(password|pwd)[\"' ]*[=:]" | grep -viE "example|your_|change_?me|redacted"
       ```
-      If anything surfaces: rotate the key first, then rewrite history with `git-filter-repo`.
+      If anything surfaces: rotate the secret first, then rewrite history with `git-filter-repo`.
 
 ---
 
@@ -102,15 +111,17 @@ Details and reproduction notes are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPO
 This pipeline processes real business applications. Assume that parsed output is as sensitive as
 the source database:
 
-- **Access exports** in `data/` may contain production schemas, embedded SQL, and business rules.
+- **Access exports** (`src/vba/vba_source/`) and the JSON parsed from them (`data/`) may contain
+  production schemas, embedded SQL, and business rules.
 - **BD/DD documents** and **Excel workbooks** restate that logic in readable prose.
 - **LLM calls transmit source code and schema fragments to a third-party provider.** Confirm this
   is acceptable under your data-handling policy before running against production artifacts, and
   prefer a provider agreement that excludes your traffic from training.
 - **Token/cost reports** record item names, which can leak internal naming conventions.
 
-None of these paths are tracked by git, but they do sit inside the working tree — take care with
-backups, screen shares, and archive uploads.
+Apart from the sample export in `src/vba/vba_source/` (S9), none of these paths are tracked by git,
+but they do sit inside the working tree — take care with backups, screen shares, and archive
+uploads.
 
 ---
 

@@ -13,6 +13,14 @@ Full-source review and cleanup (2026-10-28) — the findings, the reasoning behi
 open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
 
 ### Security
+- **Leaked credential in git history:** `src/wpf/vba_brain.UI.Avalonia/appsettings.json`, added in
+  `85a0e7f` and deleted in `691ae04`, holds a real PostgreSQL password and the repository is
+  public. Recorded as S8 in `SECURITY.md`; the password must be rotated. CI already fails when an
+  `appsettings.json` is tracked.
+- **Console proxy** now rejects cross-site requests to `/api/**` for every method when the browser
+  sends `Sec-Fetch-Site` — a plain `GET /api/v1/layer2/models/health` (one paid LLM call per
+  configured model) could be triggered by an `<img>` on any page. `yarn start` binds `127.0.0.1`
+  like `yarn dev`.
 - **gRPC gateway** binds `localhost` by default instead of `[::]` (all interfaces); optional
   TLS (`GRPC_TLS_CERT` + `GRPC_TLS_KEY`; the console trusts `GRPC_TLS_CA` or, with `GRPC_TLS=1`,
   the system roots — setting only one of cert/key stops the gateway at startup); optional
@@ -52,7 +60,7 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   new step `seed-queries` (`queries` → `queries_v2`) before Layer 2.
 - `postgres_migrator.py`: `--dry-run`, `--table`, `--output`; exit code 1 when a table fails.
 - Layer 1 writes the `dependency_graph` collection (one document per item: `opens_forms`,
-  `opened_by`, `uses_queries`, `calls_modules`, `direct_macros`, `uses_tables`) — Layer 2 reads it,
+  `opens_reports`, `opened_by`, `uses_queries`, `calls_modules`, `direct_macros`, `uses_tables`) — Layer 2 reads it,
   but nothing wrote it, so every BD/DD had an empty dependency context.
 - `query_parser.py` keeps the original Access SQL as `sql`; Layer 3 converts that text.
 - Every model listed under `config.json → llm_providers.<provider>.models` (supported providers) is
@@ -76,7 +84,7 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   `reviewer` and `notes` (proto3 empty strings) — now only sent fields are written; AI conversion
   succeeded server-side but the page always showed "Conversion failed" (`query` vs `result`
   response key); the query detail never loaded; the stats route read fields that `StatsResponse`
-  does not have; an unparseable LLM answer was stored as `target_sql` with status `converted`;
+  does not have (route removed); an unparseable LLM answer was stored as `target_sql` with status `converted`;
   a failed conversion overwrote hand-reviewed SQL with the Access source.
 - Layer 3 `table_converter.py`: `Long Text` → `VARCHAR(255)` (now `TEXT`), `LongBinary` →
   `BIGINT` (now `BYTEA`), `AutoNumber` / `Decimal` / `GUID` → `VARCHAR(255)` (now identity /
@@ -100,7 +108,8 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   Linux/CI); an export without macros or reports aborted the batch pipeline.
 - `common/config.py`: fallback workspace root pointed at `src/` instead of the repo root; LLM
   usage callbacks leaked when a call raised.
-- `start.py` no longer overrides variables you exported, no longer rewrites
+- `start.py` no longer overrides variables you exported (except `PORT`, taken from
+  `config.json → frontend.port`), no longer rewrites
   `api_gateway/.env`, and stops each service's whole process tree on Ctrl+C.
 - Frontend: custom `Cache-Control` rule forced `no-store` onto hashed `/_next/static` assets;
   Layer 3 page used a hard-coded model id that does not exist (`deepseek-v4-pro`).
@@ -165,6 +174,10 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   run replaced, so each reported (and logged) the other's tokens and costs. Each request now has
   its own tracker (`cost_tracker.track_request()`, a context variable), the BD3/DD3 worker pools
   pass it on (`ContextThreadPoolExecutor`), and `GetTokenReport` returns the last finished run.
+- `layer2/runners/push_to_mongo.py` read MongoDB settings only from the environment (and
+  `layer2/.env`) and otherwise pushed to an unauthenticated localhost, so CLI runs whose credentials
+  live in `config.json` failed to push; it now falls back to `config.json → mongodb` like the rest
+  of Layer 2.
 - Avalonia app: 10 build warnings → 0 (`RelayCommand` exceptions no longer crash the app, login
   view gets the public constructor the XAML loader needs, Close raises `CloseRequested`).
 - `src/backend/requirements.txt`: floors below what the generated gRPC stubs require
@@ -203,14 +216,20 @@ open follow-ups are in [`docs/REVIEW_REPORT.md`](docs/REVIEW_REPORT.md).
   `layer3/scratch/*`, `layer5/logs/token_report.json`, `src/frontend/reports/`.
 
 ### Changed
+- **Docs checked against the code** (2026-10-29): about 70 corrections across README,
+  CONTRIBUTING, SECURITY, `docs/UPGRADE_PLAN.md`, `docs/ai-md/**`, the frontend docs and
+  `docs/REVIEW_REPORT.md` — e.g. Layer 1 reads the text export in `src/vba/vba_source/` (not JSON
+  in `data/`), the real model routing, the Node ≥ 22.18 requirement of the frontend tests, and
+  the generated file names.
 - Layer 4 no longer invents a revision history (`mock_change_history` defaults to off; the CLI
   has `--mock-change-history`), and Japanese text that comes from the BD/DD JSON is no longer
   partially translated — only template labels are.
 - **README rewritten** and corrected against the source tree:
   - Python floor raised from 3.9 to **3.10+** — several modules use PEP 604 `X | None` without
     `from __future__ import annotations` (`layer1/parser/frm_parser.py`,
-    `layer3/sql_migration/router.py`).
-  - Node floor documented as **≥ 20.9** (Next.js 16 `engines.node`).
+    `api_gateway/grpc_server.py`); Python 3.9 fails at import with a `TypeError`.
+  - Node floor documented: Next.js 16 needs **≥ 20.9**, the frontend tests **≥ 22.18** (built-in
+    TypeScript type stripping).
   - Frontend stack corrected to the installed versions: Next.js 16.2.4, React 19.2.4,
     TypeScript 6, Tailwind 4.
   - The `Layer3Service` (Excel) / `Layer4Service` (SQL migration) naming swap is now called out

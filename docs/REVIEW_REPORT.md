@@ -16,13 +16,16 @@
   ghép sai handler khiến bấm Login chạy `taskkill`.
 - **Đã sửa:** toàn bộ mức 🔴/🟠 và đa số 🟡/🟢. Phần còn lại là thay đổi kiến trúc lớn, được ghi
   ở mục 9 kèm lý do.
-- **Phát triển thêm:** xác thực token và TLS tuỳ chọn cho gRPC, chống cross-site, bộ test (437 test
+- **Phát triển thêm:** xác thực token và TLS tuỳ chọn cho gRPC, chống cross-site, bộ test (438 test
   backend + 36 frontend, trước đó gần như bằng 0), CI 4 job, các cờ `--from/--only/--skip/--dry-run` cho
   pipeline, `--dry-run` cho migration PostgreSQL, collection `dependency_graph`, kiểm tra SQL
   tĩnh, đăng ký model từ `config.json`, và các mục khác ở mục 6.
 - **Dọn dẹp:** gom code trùng lặp ở Layer 4 (8.031 → 3.022 dòng), xoá 43 file/route chết hoặc hỏng,
   bỏ 9 dependency không dùng, ~330 cảnh báo pyflakes → 0, gỡ 95 file sinh ra khỏi git. Tổng cộng
-  repo gọn hơn ~4.800 dòng dù có thêm 473 test và tài liệu mới.
+  repo gọn hơn ~4.500 dòng dù có thêm 474 test và tài liệu mới.
+- **Soát lại tài liệu (2026-10-29):** khoảng 70 chỗ trong các file `.md` không khớp code (phần lớn có
+  từ trước đợt review) đã được sửa. Lượt soát tìm ra **một mật khẩu PostgreSQL thật trong lịch sử
+  git của repo public** (#33) — cần đổi mật khẩu — và một GET tốn tiền gọi được từ trang khác (#34, đã sửa).
 
 ---
 
@@ -53,6 +56,12 @@
    - 95 file sinh ra vẫn còn trong git index dù đã có trong `.gitignore`, nên job hygiene sẽ fail;
    - bước type-check của frontend luôn lỗi TS2882 vì thiếu `next-env.d.ts` (file sinh ra, bị
      gitignore). Nay dùng `yarn typecheck`, chạy `next typegen` trước `tsc`.
+8. **Soát lại toàn bộ tài liệu `.md` với code (2026-10-29):** kiểm cơ học (link, anchor, bảng,
+   code block, đường dẫn, biến môi trường); chạy thử các lệnh tài liệu hướng dẫn (`run_all.py`
+   `--list` / `--dry-run` / `--only …`, `postgres_migrator.py --dry-run --output`, `--help` của các
+   CLI); rồi 4 agent đối chiếu từng khẳng định với code. Các chỗ sai đã được sửa trong README,
+   CONTRIBUTING, SECURITY, UPGRADE_PLAN, `docs/ai-md/**`, tài liệu frontend và báo cáo này. Lượt
+   soát cũng phát hiện #33 và #34.
 
 ---
 
@@ -62,7 +71,7 @@
 | --- | --- | --- |
 | `python -m compileall` | OK | OK |
 | `ruff` (E9 + pyflakes) | ~330 cảnh báo, trong đó 3 tên **chưa định nghĩa** (crash khi chạy) và 1 module bị dán trùng toàn bộ | **0** (ruff). Pyflakes chỉ còn ghi chú star-import cố ý của `bd_agent` và 13 re-export đã đánh dấu `noqa` |
-| pytest | 0 test (chỉ có vài script in ra màn hình) | **437 test** (266 `tests/backend` + 171 `tests/layer5`), pass trên Python 3.10 / 3.11 / 3.12 / 3.14, không cần Mongo/LLM/mạng |
+| pytest | 0 test (chỉ có vài script in ra màn hình) | **438 test** (267 `tests/backend` + 171 `tests/layer5`), pass trên Python 3.10 / 3.11 / 3.12 / 3.14, không cần Mongo/LLM/mạng |
 | `yarn lint` / `tsc --noEmit` | OK / OK | OK / OK. Trên clone sạch cần `yarn typecheck` (chạy `next typegen` trước), nếu không sẽ lỗi TS2882 |
 | Test frontend | không có | 36 test (`yarn test`) |
 | `next build` | OK, 2 cảnh báo (Cache-Control, NFT trace) | OK, 1 cảnh báo NFT trace (có từ trước) |
@@ -70,7 +79,7 @@
 | Layer 5 sinh code cho 5 form rồi `dotnet build` (không LLM, mục 5.6) | chưa kiểm | 5/5 form sinh thành công; build **0 lỗi, 0 cảnh báo** |
 | CI chạy lại trên clone sạch (backend ×3 bản Python, frontend, .NET, hygiene) | — | pass hết, sau khi sửa 2 lỗi chỉ lộ ra trên clone sạch (mục 2, bước 7) |
 | NuGet có lỗ hổng | `System.Security.Cryptography.Pkcs` 9.0.x (high + moderate) | không còn |
-| Secret trong lịch sử git | chưa kiểm | sạch: không `config.json`/`.env` nào từng commit, không có key `sk-`/`gsk_`/`AKIA`/`ghp_` |
+| Secret trong lịch sử git | chưa kiểm | **Có 1 mật khẩu thật** (#33): `src/wpf/vba_brain.UI.Avalonia/appsettings.json` (commit `85a0e7f`, xoá ở `691ae04`) chứa connection string PostgreSQL của user `postgres`, và repo đang public. Không có key `sk-`/`gsk_`/`AKIA`/`ghp_`, không `config.json`/`.env` nào từng commit. Lần quét đầu (2026-10-28) chỉ tìm `config.json`/`.env` nên bỏ sót file này |
 
 ---
 
@@ -110,6 +119,8 @@
 | 30 | Layer 5 | `agent_ui.py` dùng `form_name`/`form_config` chưa định nghĩa | 🟠 NameError bị nuốt, nên phần tra cứu event map không bao giờ chạy | Truyền tham số; xoá hàm không ai gọi |
 | 31 | Layer 5 | AXAML bind những thuộc tính mà ViewModel sinh ra không khai báo. Ví dụ text box không bound mà VBA tự điền (`txtID`), hoặc tên chỉ khác hoa/thường (`txtProductID` ↔ `TxtProductID`) | 🟠 Build Avalonia lỗi AVLN2000, vì compiled binding phân biệt hoa thường | ViewModel nhận đủ mọi tên mà AXAML bind, đúng chính tả trong AXAML (`UIAgent._sync_bound_properties`) |
 | 32 | Gateway, Layer 2 | Các lượt BD/DD chạy song song dùng chung một tracker chi phí toàn cục, mà mỗi lượt lại thay bằng tracker mới | 🟠 Token và chi phí trả về cho console, cũng như file log, bị lẫn giữa các request | Mỗi request có tracker riêng (`track_request`, contextvars); pool BD3/DD3 dùng `ContextThreadPoolExecutor` để lời gọi LLM trong worker vẫn ghi đúng tracker |
+| 33 | Lịch sử git | Commit `85a0e7f` thêm `appsettings.json` chứa mật khẩu PostgreSQL thật (user `postgres`); `691ae04` xoá file nhưng lịch sử vẫn giữ | 🔴 Mật khẩu nằm công khai trên GitHub | Ghi vào SECURITY.md (S8); CI đã chặn `appsettings.json` bị track. **Chủ repo cần đổi mật khẩu** (mục 9) |
+| 34 | Frontend | Proxy cho mọi GET đi qua, trong khi `GET /api/v1/layer2/models/health` gọi LLM tính phí cho từng model | 🟠 Một thẻ `<img>` trên trang bất kỳ kích hoạt được lượt health check tốn tiền | Proxy chặn mọi request có `Sec-Fetch-Site` khác `same-origin`/`none`, kể cả GET; `yarn start` cũng bind `127.0.0.1` |
 
 ---
 
@@ -132,7 +143,7 @@
   - Trước đây hết timeout là vứt bỏ mọi kết quả đã có.
   - Dùng client có fallback, nên model hết quota vẫn báo "ok".
   - Gọi LLM tính phí cho mọi model ở mỗi lần tải trang.
-  - Nay timeout từng model, dùng client không fallback, cache 5 phút.
+  - Nay một hạn 30 s cho cả lượt; model chưa trả lời kịp được báo `timeout`. Dùng client không fallback, cache 5 phút.
 
 ### 5.2 Layer 1
 - Parser tìm `src/VBA/…`, nên chỉ chạy được trên filesystem không phân biệt hoa thường (macOS) và hỏng trên Linux/CI.
@@ -174,7 +185,7 @@ Sửa 21 mục:
 - **`postgres_migrator.py`:** sửa đường dẫn config; thêm `--dry-run/--table/--output`; báo rõ khi thiếu `psql`; exit 1 khi có bảng lỗi.
 - **Frontend:**
   - Các route trả về đúng cấu trúc trang cần.
-  - Route `stats` đọc `stats_json`.
+  - Xoá route `stats` (chết: đọc những field mà `StatsResponse` không có).
   - Bỏ model gán cứng `deepseek-v4-pro` (không tồn tại).
   - "Test query" giả lập trước đây trả mã lỗi **Oracle** `ORA-xxxxx` và **dữ liệu mẫu bịa** ("Sample Data A"), lại báo "executed successfully". Nay là bộ kiểm tra tĩnh trung thực (`staticSqlCheck.ts`): mã SQLSTATE của PostgreSQL, ghi rõ là không thực thi.
 - Có 4 file test Layer 3 (router chạy trên Mongo giả lập, LLM giả lập).
@@ -212,7 +223,7 @@ Sửa 21 mục:
 - **Template sinh code** (`RelayCommand`, code-behind, `CloseRequested`) đã được sửa giống các file đã sửa tay trong `src/wpf`, để lượt deploy sau không quay lại lỗi cũ.
 
 **Repo / service / report / mapping / graphview:**
-- Sửa 20 mục ở bảng mục 4 (#22, #25–#28).
+- Sửa 20 mục, trong đó 5 mục có trong bảng mục 4 (#22, #25–#28).
 - **Repo:** contract của form được tổng hợp từ JSON theo từng bảng; tách `AS` bằng regex; chặn query tự tham chiếu; tra bảng theo khớp chính xác/NFKC; thêm hậu tố khi trùng tên; ánh xạ kiểu Access → C# đúng (Long → `int`, Currency → `decimal`, Yes/No → `bool`, …).
 - **Service:** nhận diện trigger cả tiếng Nhật lẫn tiếng Anh.
 - **Graphview:** chạy được ở script mode.
@@ -263,13 +274,13 @@ Sửa 21 mục:
 - **`infa/mongo-init/01_init_user.js`:** tạo thêm tài khoản root với mật khẩu cứng trong git, và xung đột với user root mặc định ngay lần khởi tạo đầu. Nay không chứa thông tin đăng nhập.
 - **`start.py`:**
   - `kill_port` chỉ dừng tiến trình LISTEN; trước đây `lsof -i:PORT` trả cả client, nên **trình duyệt bị `kill -9`**.
-  - Không ghi đè biến môi trường của bạn; không ghi lại `api_gateway/.env`.
+  - Không ghi đè biến môi trường của bạn (trừ `PORT`, lấy từ `config.json → frontend.port`); không ghi lại `api_gateway/.env`.
   - Che mật khẩu khi log; truyền `GRPC_*` sang console.
   - Dừng cả cây tiến trình khi Ctrl+C.
 - **`clean_generated_files.py`:**
   - Trước dùng đường dẫn tương đối theo thư mục đang đứng và không xoá được file trong thư mục con.
   - Nay có `--dry-run`, khử trùng lặp, và giữ lại `ViewModelBase.cs`.
-- **`requirements.txt`:** mức sàn thấp hơn mức mà stub gRPC đòi (`grpcio>=1.71.2`), thiếu `python-docx` và `protobuf`, thừa 9 gói không ai import. Nay có trần major cho mọi gói.
+- **`requirements.txt`:** mức sàn thấp hơn mức mà stub gRPC đòi (`grpcio>=1.71.2`), thiếu `python-docx` và `protobuf`, thừa 9 gói không ai import. Nay mọi gói có mức sàn, và mọi gói trừ `typing_extensions` có mức trần.
 - **CI 4 job:**
   - backend: ruff, 2 phiên pytest, kiểm tra stub gRPC khớp `.proto`;
   - frontend: lint, `yarn typecheck` (`next typegen` rồi `tsc`), test, build;
@@ -298,7 +309,7 @@ Sửa 21 mục:
 | API token-stats Layer 5 | `GET /api/v1/layer5/token-stats` | Trang `/layer5` |
 | F-ID dùng chung cho UI / Logic / Service | `layer5/core/fid_resolver.py` | Tự động |
 | Thân sự kiện hệ thống không cần LLM (quit/close/kill process/phím) | `layer5/agents/logic/sys_bodies.py` | Tự động |
-| Kiểm tra đăng nhập an toàn (`VerifyCredentialsAsync`) | `agents/service/tool_service_gen.py` | Tự động cho sự kiện kiểu login |
+| Kiểm tra đăng nhập an toàn (`VerifyCredentialsAsync`) | `agents/repo/tool_repo.py` (sinh method), `agents/service/tool_service_gen.py` (gọi) | Tự động cho sự kiện kiểu login |
 | Chọn form khi sinh code | `layer5/run_codegen_all.py --form NAME` | Lặp được; exit 1 nếu có form lỗi |
 | Báo cáo token Layer 5 dạng Excel | `layer5/llm/token_tracker.py` | `logs/token_report.xlsx` |
 
@@ -318,12 +329,12 @@ Sửa 21 mục:
 - **Gỡ khỏi git index** (file vẫn giữ trên máy, nay đã gitignore): `layer2/agents/output/`, `layer3/scratch/*` (có script chứa tên dữ liệu khách hàng), `layer5/logs/token_report.json`, `src/frontend/reports/`.
 - **Dependency:** bỏ FastAPI, uvicorn, google-generativeai, langchain-core/-groq/-openai, jsonschema, psycopg2-binary, requests; `grpcio-tools` chuyển sang `requirements-dev.txt`.
 - **Layer 5:**
-  - Xoá 13 module/template/prompt chết: `tool_method_merger`, `sync_vm_stubs`, `gen_code_behind`, `gen_vm_methods`, `patch_vm_from_output`, `core/utils`, 3 template Jinja, 4 prompt/template không dùng, `run_codegen_test.py`. Kèm nhiều hàm không ai gọi.
+  - Xoá 16 file chết: `tool_method_merger`, `sync_vm_stubs`, `gen_code_behind`, `gen_vm_methods`, `patch_vm_from_output`, `core/utils`, 3 template Jinja, 6 prompt/template không dùng (`repository_template.json`, `repository_ref_template.json`, `agent_repo.md`, `agent_service{,_macro,_module}.md`), `run_codegen_test.py`. Kèm nhiều hàm không ai gọi.
   - Gỡ khỏi git các artifact sinh lại mỗi lượt: contract cũ, 4 snapshot hỏng, review/mapping theo lượt, `list*Jp.json` không ai đọc. Giữ lại bản đồ tên, config, prompt.
-- **Tổng cộng (so với `main`):**
-  - 274 file thay đổi, trong đó 68 file mới và 43 file xoá hẳn.
+- **Tổng cộng (so với `7ba8a05`, trước review):**
+  - 277 file thay đổi, trong đó 68 file mới và 43 file xoá hẳn.
   - Thêm 95 file sinh ra được gỡ khỏi git (~62.600 dòng, vẫn giữ trên máy).
-  - Khoảng **+16.400 / −21.200 dòng** (không tính 95 file trên), đã gồm 473 test mới
+  - Khoảng **+16.900 / −21.500 dòng** (không tính 95 file trên), đã gồm 474 test mới
     (~3.600 dòng) và tài liệu.
 
 ---
@@ -331,7 +342,7 @@ Sửa 21 mục:
 ## 8. Thay đổi hành vi cần biết
 
 1. **Gateway chỉ nghe `localhost`.** Muốn mở ra mạng, đặt `GRPC_HOST=0.0.0.0` **và**
-   `GRPC_AUTH_TOKEN`, rồi để sau một proxy TLS.
+   `GRPC_AUTH_TOKEN`, và bật TLS (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`) hoặc đặt sau một proxy TLS.
 2. **Console web không còn tự chạy migration PostgreSQL** (`run_all.py --skip layer3`). Chạy tay:
    `postgres_migrator.py --dry-run` trước, rồi bỏ `--dry-run`. Lưu ý: trước đây bước này thực tế
    luôn thất bại do sai đường dẫn config; giờ nó chạy thật và sẽ `DROP` + `CREATE` bảng.
@@ -360,10 +371,13 @@ Sửa 21 mục:
     - `AuthRepository` → `TIDPassRepository` (không còn khớp chuỗi con `T_ID_Pass` ~ `T101_ID_PASS`).
     - `F003Response.AuthEntity` → `Authenticated`.
     - `OnF000Async` → `GetInitialDataAsync` (giờ đã nhận diện trigger tiếng Anh).
-14. **Mã thoát CLI:** repo/report/logic trả exit 1 khi lỗi, tên không an toàn trả exit 2. Console
-    giờ hiển thị đúng là thất bại, thay vì "success".
+14. **Mã thoát CLI:** repo/report/logic trả exit 1 khi lỗi. Tên không an toàn: Logic, UI,
+    `run_codegen_all.py`, `deploy_to_source.py` trả exit 2 (argparse từ chối), còn repo/report trả
+    exit 1. Console giờ hiển thị đúng là thất bại, thay vì "success".
 15. **TLS của gateway:** chỉ đặt một trong `GRPC_TLS_CERT` / `GRPC_TLS_KEY` thì gateway không khởi
     động. Khi bật TLS, console cần `GRPC_TLS_CA` hoặc `GRPC_TLS=1` (`python start.py` tự lo).
+16. **Request cross-site vào `/api/**` bị chặn với mọi method,** kể cả GET, khi trình duyệt gửi
+    `Sec-Fetch-Site` khác `same-origin` / `none`. `yarn start` giờ cũng chỉ bind `127.0.0.1`.
 
 ---
 
@@ -371,9 +385,11 @@ Sửa 21 mục:
 
 | Ưu tiên | Việc | Lý do chưa làm |
 | --- | --- | --- |
+| 🔴 | Đổi mật khẩu PostgreSQL bị lộ trong lịch sử git (#33, SECURITY.md S8) | Việc của chủ repo. Viết lại lịch sử (`git-filter-repo` + force-push) là tuỳ chọn, phá huỷ, và không thu hồi được các bản đã clone |
+| 🟠 | Orchestrator Layer 5 chỉ đọc BD/DD từ thư mục mẫu `layer4/inputs/BD_json/screen` và `DD_json/form`, mà không bước nào ghi vào đó | Với dự án mới phải chép tay output Layer 2 vào đó. Cần nối orchestrator với `layer2/output` hoặc Mongo `bds`/`dds` (thay đổi luồng dữ liệu, cần xác nhận) |
 | 🟡 | Chạy một lượt Layer 5 thật có LLM, gồm Agent Logic và vòng build-fix, rồi `dotnet build` | Phần sinh code tất định (Repo → Service → UI) đã được chạy thử cho 5 form và build sạch (mục 5.6). Thân method do Agent Logic viết và vòng build-fix cần gọi LLM tính phí |
 | 🟡 | Health service chuẩn `grpc.health.v1` + `start.py` chờ backend sẵn sàng | Thêm dependency `grpcio-health-checking` |
-| 🟡 | Ô chọn `source_path` ở `/layer1` chưa có tác dụng | Nối vào parser sẽ cho trình duyệt đọc thư mục tuỳ ý; cần quyết định chính sách (allow-list thư mục) |
+| 🟡 | Cho cấu hình thư mục nguồn của Layer 1 (hiện cố định `src/vba/vba_source`) | Cho trình duyệt chọn thư mục tuỳ ý là rủi ro; cần quyết định chính sách (allow-list thư mục) |
 | 🟡 | Migration index / FK / rollback cho Layer 3 | Dữ liệu `AllColumns.csv` hiện không có thông tin PK/FK/index |
 | 🟡 | Test query thật trên PostgreSQL (`EXPLAIN` trong transaction read-only, một câu lệnh, role giới hạn) | Cần thiết kế an toàn: nhiều câu lệnh trong một chuỗi có thể thoát khỏi transaction |
 | 🟡 | `query_mapper.py` tìm `layer2/schema/table_config.json` (chưa bao giờ tồn tại) | Trỏ sang file của Layer 5 sẽ thay đổi output DD, cần xác nhận |
@@ -382,12 +398,15 @@ Sửa 21 mục:
 | 🟡 | Cột "attribute_digits" của BD sheet 3 chỉ có độ dài | Code từng tính sẵn chuỗi "kiểu(độ dài)" nhưng không dùng; cần xác nhận định dạng mong muốn |
 | 🟡 | Sinh lại `graphview/outputs/{macros,modules}/list*JpToEn.json` bằng `agent_mapping ALL` | Bản đang track dùng key cũ (code đã đọc được cả hai) |
 | 🟡 | Quyết định có untrack `agents/ui/outputs` và `agents/logic/{inputs,outputs}` hay không | Sinh lại mỗi lượt, nhưng console đang đọc trực tiếp |
+| 🟡 | Layer 1 không đọc thư mục `Reports/` riêng: `frm_parser.py` chỉ quét `Forms/` (report export dạng `.frm` trong đó vẫn vào `data/reports/`) | Cần biết export thật đặt report ở đâu |
+| 🟡 | `chunk_builder._build_formatted_events` luôn ghi đè `logic_detail.code` bằng code VBA, nên `<F>_output.json` của Agent Logic không chứa code sinh ra | Phát hiện khi soát tài liệu; cần xác minh có phải chủ ý không |
 | 🟢 | Đổi tên `Layer3Service`/`Layer4Service` cho khớp số layer | Thay đổi phá vỡ tương thích (proto + frontend) |
 | 🟢 | Tách `agent_ui.py`, `layer3/page.tsx`, `layer5/page.tsx` | Refactor lớn, nên làm sau khi có test giao diện |
 | 🟢 | Lockfile Python | Phụ thuộc phiên bản Python đích |
 | 🟢 | `deploy_to_source.py` chỉ copy `*.cs`, không copy `.axaml` | Cần quyết định luồng deploy view |
 | 🟢 | Prompt `agents/logic/prompts/agent_vm_methods.md` không còn được dùng | Giữ lại để tham khảo |
 | 🟢 | Đưa lượt chạy thử Layer 5 không LLM (mục 5.6) vào CI | Cần Mongo trong CI và bộ spec UI cố định làm fixture |
+| 🟢 | Agent Service bỏ qua `--model` nếu không kèm `--llm` | Hành vi CLI; tài liệu đã ghi đúng hiện trạng |
 
 ---
 
