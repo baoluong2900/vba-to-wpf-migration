@@ -492,7 +492,7 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Agent Repo — Gen Entity + DTO + Repository using tool_repo")
     parser.add_argument("form_name", help="Form name (e.g., F_Login)")
-    parser.add_argument("--model", default=None, help="Unused, legacy override support")
+    parser.add_argument("--model", default=None, help="Model for translating names in name_config.json (default: Layer 5 default)")
     args = parser.parse_args()
 
     model_override = AVAILABLE_MODELS.get(args.model) if args.model else None
