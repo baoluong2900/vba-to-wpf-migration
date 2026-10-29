@@ -14,7 +14,8 @@ Usage:
     python push_to_mongo.py --only bd           # push bd only
     python push_to_mongo.py --dry-run           # list files without writing
 
-Environment (reads .env in this directory):
+Settings (mongo_settings): MONGO_URI / MONGO_DB from the environment (layer2/.env is loaded into
+it), else config.json → mongodb (common.config), else mongodb://localhost:27017 / vba_brain_core.
     MONGO_URI  — e.g. mongodb://vba_brain:vba_brain2024@:27017/vba_brain_core?authSource=admin
     MONGO_DB   — e.g. vba_brain_core
 """
@@ -49,8 +50,20 @@ if _ENV_FILE.exists():
             _k, _, _v = _line.partition("=")
             os.environ.setdefault(_k.strip(), _v.strip())
 
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
-MONGO_DB  = os.environ.get("MONGO_DB",  "vba_brain_core")
+
+
+def mongo_settings() -> tuple[str, str]:
+    """
+    (uri, db): the environment first, then config.json → mongodb via common.config. Reading only the
+    environment sent a CLI run whose credentials live in config.json to an unauthenticated
+    localhost, so the push failed while the rest of Layer 2 used the configured database.
+    """
+    from config import MONGO_DB as cfg_db, MONGO_URI as cfg_uri
+
+    return os.environ.get("MONGO_URI") or cfg_uri, os.environ.get("MONGO_DB") or cfg_db
+
+
+MONGO_URI, MONGO_DB = mongo_settings()
 
 # ── Directories ───────────────────────────────────────────────────────────────
 BASE_DIR = Path(_LAYER2_DIR)
