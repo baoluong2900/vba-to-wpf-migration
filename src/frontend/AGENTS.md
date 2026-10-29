@@ -31,9 +31,9 @@ workflow/
 
 ## Config System (QUAN TRỌNG)
 - **KHÔNG hardcode** API keys hay URLs vào source code.
-- Tất cả config (API keys, MongoDB URI, model list, ports) nằm ở `workflow/config.json`.
+- Tất cả config (API keys, MongoDB URI, model list, ports) nằm ở `config.json` ở thư mục gốc repo (tạo từ `config.example.json`).
 - Backend đọc key từ `config.json` (xem `src/backend/common/config.py`); FE nhận model list an toàn qua gRPC (`Layer2Service.GetConfig`), không expose key.
-- Khi thêm provider LLM mới, **chỉ sửa `config.json`** — không cần sửa source code.
+- Khi thêm model mới cho provider đã hỗ trợ, **chỉ sửa `config.json`** (`llm_providers.<provider>.models`) — không cần sửa source code. Provider LLM mới thì phải sửa code: `SUPPORTED_PROVIDERS` + API key trong `src/backend/common/config.py`, và `src/backend/common/llm/llm_client.py`.
 
 ## Common Commands
 ```bash

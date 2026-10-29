@@ -1,7 +1,7 @@
 # WPF Expected Graph Plan
 
 > Mục tiêu trước mắt: mapping đúng từ VBA/BD/DD sang **Expected WPF Graph**.
-> Graph này là kế hoạch migrate trước khi generate code. Về sau sẽ dùng để diff với **Actual Graph** parse từ source `src/wpf/vba_brain.UI.Avalonia`.
+> Graph này là kế hoạch migrate trước khi generate code, và dùng để diff với **Actual Graph** parse từ source `src/wpf` (solution chứa `vba_brain.UI.Avalonia`); bản đầu đã có ở `/api/graph-wpf/source-review`.
 
 ---
 
@@ -32,7 +32,7 @@ Pha hiện tại chỉ tập trung làm **Expected graph** cho đúng.
 Định hướng dài hạn:
 
 - Review toàn bộ solution.
-- Source review nằm trong `src/wpf/vba_brain.UI.Avalonia`.
+- Source review nằm trong `src/wpf` (cả solution `vba_brain.slnx`: `vba_brain.UI.Avalonia`, `vba_brain.Application`, `vba_brain.Infrastructure`, `vba_brain.Domain`).
 - Agent đọc tất cả file liên quan: XAML, ViewModel, Service, Repository, DTO, Entity, DI config, test nếu có.
 - Output review gồm 3 dạng:
   - Graph hiển thị.
@@ -41,8 +41,8 @@ Pha hiện tại chỉ tập trung làm **Expected graph** cho đúng.
 
 Nhưng trước mắt:
 
-- Chưa parse WPF code thật.
-- Chỉ xây dựng graph chuẩn từ VBA/BD/DD.
+- Đã parse WPF code thật ở mức heuristic (regex, chưa phải agent review đầy đủ): `GET /api/graph-wpf/source-review?name={form}` đọc expected graph `src/frontend/reports/wpf-graph/{name}.expected.json` (do `POST /api/graph-wpf/export` ghi ra), dùng `parseActualSourceGraph` (`source-review/sourceGraphParser.ts`) parse source trong `src/wpf` (View/ViewModel của màn hình, command, Service, Repository, NavigationService) rồi diff Expected vs Actual. Nút **Run Source Review** trên tab WPF Graph gọi lần lượt hai endpoint này và tô đỏ node/cạnh lỗi.
+- Graph chuẩn vẫn chỉ xây từ VBA graph + mapping JSON (chưa dùng BD/DD, xem Gap 3 ở mục 8).
 - Output của `/api/graph-wpf` được coi là **expected flow**.
 
 ---
@@ -163,7 +163,7 @@ Expected WPF Graph cần các node type chính:
 |---|---|---|
 | `view` | `view:{accessName}` | WPF XAML View. |
 | `viewmodel` | `viewmodel:{accessName}` | ViewModel tương ứng View. |
-| `handler` | `handler:{form}|{event}` | ICommand tương ứng Access event. |
+| `handler` | `handler:{form}\|{event}` | ICommand tương ứng Access event. |
 | `service` | `service:{accessName}` | Application service/use-case service. |
 | `repository` | `repository:{queryName}` | Repository bọc Access query/data access. |
 | `module_service` hoặc `service` | `service:module:{moduleName}` | Service/helper migrate từ VBA module. |
@@ -205,8 +205,9 @@ Navigation:
 ```text
 Handler / ViewModel
   -> NavigationService
-  -> Target View
 ```
+
+Target View không vẽ thành cạnh (xem Rule 6); source review coi cạnh `NavigationService -> View` là lỗi `navigation-target-detail`.
 
 Module/helper:
 
@@ -419,7 +420,7 @@ Khi đã có Actual WPF Graph, cạnh/node cần có trạng thái:
 | `mismatch` | Đỏ/cam | Có node/cạnh tương ứng nhưng sai target, sai layer, sai mapping. |
 | `warning` | Vàng | Flow có thể đúng nhưng mapping/name chưa chắc chắn. |
 
-Pha hiện tại `/api/graph-wpf` chưa cần trả status này, nhưng nên thiết kế node/edge để sau này dễ diff.
+Pha hiện tại `/api/graph-wpf` chưa cần trả status này, nhưng nên thiết kế node/edge để sau này dễ diff. Hiện `/api/graph-wpf` chỉ gán `status: warning` cho node/cạnh `trace:` (dependency VBA chưa map được); kiểu `CyNode` / `CyEdge` trong `graphBuilder.ts` đã có trường `status` với đủ 5 giá trị trên.
 
 ---
 
@@ -444,11 +445,11 @@ Khi Actual Graph đã có, agent cần bắt các lỗi:
 
 Các điểm cần chỉnh để expected graph đúng với mục tiêu mới:
 
-1. Macro hiện đang map thành `workflow`. Cần đổi hoặc bổ sung mode để macro map thành `handler/command` trong ViewModel.
-2. Chưa có node `NavigationService`; edge navigation đang đi trực tiếp `handler -> view`.
+1. ~~Macro hiện đang map thành `workflow`. Cần đổi hoặc bổ sung mode để macro map thành `handler/command` trong ViewModel.~~ ✅ Đã làm trong `wpfGraphTransform.ts`: macro → command `handler:macro:{macroName}` (`ensureMacroCommand`), không còn node `workflow`.
+2. ~~Chưa có node `NavigationService`; edge navigation đang đi trực tiếp `handler -> view`.~~ ✅ Đã làm trong `wpfGraphTransform.ts`: event/macro → form/report thành cạnh `uses navigation` tới node `service:navigation`.
 3. Chưa dùng BD/DD để bổ sung expected flow; hiện chủ yếu dựa vào VBA graph + mapping JSON.
-4. Chưa đánh dấu fallback mapping, nên UI chưa biết node nào là chắc chắn và node nào là tên tự sinh.
-5. Chưa có status `ok/missing/extra/mismatch` vì chưa có Actual Graph.
+4. ~~Chưa đánh dấu fallback mapping, nên UI chưa biết node nào là chắc chắn và node nào là tên tự sinh.~~ ✅ Đã làm trong `wpfGraphTransform.ts`: mỗi node có `mappingStatus` (`mapped` / `fallback` / `trace`), panel chi tiết của `GraphView` hiển thị ở mục MAPPING.
+5. Chưa có status `ok/missing/extra/mismatch` trên từng node/cạnh. Actual Graph đã có (`/api/graph-wpf/source-review`), nhưng diff hiện chỉ trả danh sách `errors` / `warnings` theo rule (`missing-node-kind`, `missing-flow`, `direct-repository-call`, `navigation-target-detail`, `extra-node-kind`) và UI chỉ tô đỏ node/cạnh lỗi.
 6. Query mapping hiện chưa đủ toàn bộ query, nhiều Repository sẽ fallback.
 7. Report đang dùng chung logic View/ViewModel với Form; về sau có thể cần `ReportService`.
 
@@ -493,15 +494,17 @@ Trong ngắn hạn có thể giữ `/api/graph-wpf` là expected graph, nhưng U
 WPF Graph = Expected WPF Graph, không phải actual code graph.
 ```
 
+Hiện trạng: phần actual + review đã có bản đầu nhưng chưa tách endpoint riêng: `POST /api/graph-wpf/export` ghi expected graph ra file, `GET /api/graph-wpf/source-review` parse source `src/wpf` rồi diff (xem mục 2).
+
 ---
 
 ## 11. Checklist khi sửa mapping hiện tại
 
-- [ ] Đổi macro mapping từ `workflow` sang command/handler theo mục tiêu mới.
-- [ ] Thêm `NavigationService` node và gom open/close form/report vào node này, không show từng `DoCmd.OpenForm` / `DoCmd.Close`.
-- [ ] Thêm `mappingStatus`: `mapped` hoặc `fallback`.
-- [ ] Giữ `vbaLabel` cho mọi node WPF.
-- [ ] Không bỏ edge VBA nếu chưa map được; đưa vào warning/fallback edge.
-- [ ] Chuẩn hóa Unicode tên Access (`Ⅱ`, `II`, `2`, full-width number).
+- [x] Đổi macro mapping từ `workflow` sang command/handler theo mục tiêu mới. (✅ đã làm trong `wpfGraphTransform.ts`: `handler:macro:{macroName}`)
+- [x] Thêm `NavigationService` node và gom open/close form/report vào node này, không show từng `DoCmd.OpenForm` / `DoCmd.Close`. (✅ đã làm trong `wpfGraphTransform.ts`: `service:navigation`)
+- [x] Thêm `mappingStatus`: `mapped` hoặc `fallback`. (✅ đã làm trong `wpfGraphTransform.ts`, thêm `trace` cho node warning)
+- [x] Giữ `vbaLabel` cho mọi node WPF. (✅ đã làm trong `wpfGraphTransform.ts`)
+- [x] Không bỏ edge VBA nếu chưa map được; đưa vào warning/fallback edge. (✅ đã làm trong `wpfGraphTransform.ts`: node `trace:` + cạnh `status: warning`)
+- [ ] Chuẩn hóa Unicode tên Access (`Ⅱ`, `II`, `2`, full-width number). Đã làm một phần: tra JSON map qua `normalizeLookupKey` (NFKC, số full-width → ASCII, `II` ≡ `Ⅱ`); tên fallback đổi `Ⅱ` / số full-width thành số ASCII; `2` chưa được coi là `Ⅱ` khi tra map.
 - [ ] Bổ sung docs ví dụ input/output cho một form cụ thể.
 - [ ] Chuẩn bị schema JSON dùng chung cho expected/actual/review graph.
