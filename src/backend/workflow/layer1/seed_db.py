@@ -260,7 +260,7 @@ def main() -> int:
             print("   ✅ upserted=1  skipped=0  errors=0")
             total_ok += 1
 
-            # Per-item dependency context read by Layer 2 (L1_COLLECTION_GRAPH) and Layer 5.
+            # Per-item dependency context read by Layer 2 (L1_COLLECTION_GRAPH).
             graph_docs = build_dependency_graph(ref_map_data)
             col = db["dependency_graph"]
             for doc in graph_docs:

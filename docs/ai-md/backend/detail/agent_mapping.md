@@ -1,41 +1,48 @@
 # Agent Mapping
 
 **File:** `agents/mapping/agent_mapping.py`  
-**Pipeline step:** Pre-step (runs once before all forms)
+**Pipeline step:** none — the orchestrator and `run_codegen_all.py` never call it; the console runs it (then Agent Repo) for a selected macro/module, or with `ALL`
 
 ## Purpose
 
-Builds Access → Avalonia name mapping tables for forms, events, modules, macros, and queries.  
-Output is consumed by all other agents (especially Agent UI and Agent Service) for name resolution.
+`ALL`: rebuilds the Access → Avalonia name mapping tables for forms, events, modules, macros, and
+queries (no LLM call) and copies them here. Agents resolve names from
+`agents/graphview/outputs/*/list*JpToEn.json`, not from these copies.  
+A macro or module name: generates one C# class for that macro or module (LLM).
 
 ## Flow
 
 ```
+ALL
 MongoDB (forms, queries, macros, modules)
     │
     ▼
-export_forms_layer1.py (subprocess)   → extract all Layer 1 data
+export_forms_layer1.py (subprocess)   → agents/graphview/outputs/{forms,events,queries,macros,modules}/list*Jp.json + list*JpToEn.json
     │
-    ▼
-outputs/forms_layer1.json             ← raw form list
-outputs/events_layer1.json            ← raw event list
+    ▼  copied and renamed (no LLM)
+outputs/forms_layer1.json             ← raw form list (listFormJp.json)
+outputs/events_layer1.json            ← raw event list (listEventJp.json)
 outputs/queries_layer1.json
 outputs/macros_layer1.json
 outputs/modules_layer1.json
-    │
-    ▼
-LLM (agent_mapping_macro.md)          → macro JP → EN name mapping
-LLM (agent_mapping_module.md)         → module JP → EN name mapping
-    │
-    ▼
-outputs/form_access_to_wpf.json       ← Access form → Avalonia View/ViewModel names
-outputs/event_access_to_dotnet.json   ← Access event → .NET event names
+outputs/form_access_to_wpf.json       ← Access form → Avalonia View/ViewModel names (listFormJpToEn.json)
+outputs/event_access_to_dotnet.json   ← Access event → .NET event names (listEventJpToEn.json)
 outputs/query_access_to_dotnet.json
 outputs/macro_access_to_dotnet.json
 outputs/module_access_to_dotnet.json
     │
     ▼
-<repo>/docs/mappings/                 ← copy for documentation (resolved from WORKFLOW_DIR)
+<repo>/docs/mappings/                 ← same copies for documentation (resolved from WORKFLOW_DIR)
+
+<macro or module name>
+MongoDB macros / modules
+    │
+    ▼
+LLM (agent_mapping_macro.md)          → one C# workflow class for the macro → vba_brain.UI.Avalonia/Services/
+LLM (agent_mapping_module.md)         → one C# service class for the module → vba_brain.Domain/Common/
+    │
+    ▼
+outputs/<Name>/<ClassName>.cs         ← copy of the deployed class
 ```
 
 The `outputs/*.json` tables are regenerated per run and git-ignored; macro/module class names are
@@ -49,8 +56,8 @@ class name.
 |------|------|
 | `agent_mapping.py` | Main agent |
 | `graphview/inputs/export_forms_layer1.py` | Exports Layer 1 data from MongoDB |
-| `prompts/agent_mapping_macro.md` | LLM prompt for macro name mapping |
-| `prompts/agent_mapping_module.md` | LLM prompt for module name mapping |
+| `prompts/agent_mapping_macro.md` | LLM prompt: C# workflow class for one macro |
+| `prompts/agent_mapping_module.md` | LLM prompt: C# service class for one module |
 
 ## Outputs
 
@@ -61,17 +68,20 @@ agents/mapping/outputs/
 ├── queries_layer1.json
 ├── macros_layer1.json
 ├── modules_layer1.json
-├── form_access_to_wpf.json         ← used by Agent UI + Agent Service
-├── event_access_to_dotnet.json     ← used by Agent Logic
+├── form_access_to_wpf.json         ← copy of graphview listFormJpToEn.json (not read by any agent)
+├── event_access_to_dotnet.json     ← copy of graphview listEventJpToEn.json (not read by any agent)
 ├── query_access_to_dotnet.json
 ├── macro_access_to_dotnet.json
 ├── module_access_to_dotnet.json
-└── <MacroName>/                    ← per-macro generated C# workflow
-    └── <MacroName>MacroWorkflow.cs
+└── <Name>/                         ← per-macro / per-module generated C#
+    └── <ClassName>.cs              ← mapped class name, e.g. AMenuBarShowMacroWorkflow.cs
 ```
+
+The macro class is also written to `vba_brain.UI.Avalonia/Services/`, the module class to
+`vba_brain.Domain/Common/`.
 
 ## Notes
 
-- Run with `form_name = "ALL"` to process all forms at once
-- Results are stable across runs (cached in output files)
-- `form_access_to_wpf.json` is the most critical output — used by Agent UI to resolve Japanese form names to Avalonia class names
+- The argument is `"ALL"` (the default) or a macro/module name — not a form name
+- The name maps are deterministic (`export_forms_layer1.py` makes no LLM call) and are rebuilt on every `ALL` run
+- `agents/graphview/outputs/forms/listFormJpToEn.json` (copied here as `form_access_to_wpf.json`) is what Agent UI, Agent Service and Agent Logic read to resolve Japanese form names to Avalonia class names

@@ -13,14 +13,14 @@
 | # | Vấn đề | Bằng chứng | Mức độ |
 |---|--------|-----------|--------|
 | G1 | ~~README mô tả Oracle XE + Qdrant~~ — ĐÃ XÓA Oracle/Qdrant khỏi README + code; chỉ còn **MongoDB 7 + PostgreSQL 16 + Mongo-Express** đúng theo `infa/docker-compose.yml` | `docker-compose.yml` | ✅ |
-| G2 | Tên layer gRPC **ngược** với README: `Layer3Service`=Excel, `Layer4Service`=SQL Migration | `grpc_server.py` | 🔴 |
-| G3 | Frontend thực tế **Next.js 16.2.4 / React 19 / Tailwind 4**, README ghi Next 15 / Yarn | `frontend/package.json` | 🟡 |
-| G4 | ~~Tồn tại **2 UI song song**~~ — ĐÃ CHỐT **Avalonia** làm UI chính; Layer 5 codegen + deploy đã trỏ về `vba_brain.UI.Avalonia`. `vba_brain.UI.WPF` là folder trống (không có `.csproj`, không nằm trong `vba_brain.slnx`) → nên xóa | `src/wpf/` | ✅ |
+| G2 | ~~Tên layer gRPC **ngược** với README~~ — README đã ghi rõ: `Layer3Service`=Excel, `Layer4Service`=SQL Migration (đổi tên service: xem 3.3) | `grpc_server.py` | ✅ |
+| G3 | ~~Frontend thực tế **Next.js 16.2.4 / React 19 / Tailwind 4**, README ghi Next 15 / Yarn~~ — README đã ghi đúng phiên bản | `frontend/package.json` | ✅ |
+| G4 | ~~Tồn tại **2 UI song song**~~ — ĐÃ CHỐT **Avalonia** làm UI chính; Layer 5 codegen + deploy đã trỏ về `vba_brain.UI.Avalonia`. Folder trống `vba_brain.UI.WPF` đã được xóa | `src/wpf/` | ✅ |
 | G5 | ~~gRPC không auth, bind `[::]`~~ — ĐÃ bind `localhost` mặc định + token Bearer tùy chọn (`api_gateway/auth.py`) + TLS tùy chọn (`GRPC_TLS_CERT` / `GRPC_TLS_KEY`) | `grpc_server.py::serve` | 🟡 |
 | G6 | ~~docker-compose bind `0.0.0.0`~~ — ĐÃ bind `127.0.0.1` | `docker-compose.yml` | ✅ |
-| G7 | ~~Không test, không CI, dependency không pin~~ — ĐÃ có pytest (backend + Layer 5) + `node --test` (frontend) + CI 4 job; dependency có trần major | toàn repo | 🟡 |
-| G8 | File khổng lồ khó bảo trì (`agent_ui.py` 123KB, `fill_dd_excel_report.py` 79KB, FE `layer3/page.tsx` 73KB) | layer4/5, frontend | 🟡 |
-| G9 | ~~Secrets có thể lọt history~~ — ĐÃ quét 2026-10-28: không có `config.json`/`.env` nào từng được commit, không có key `sk-`/`gsk_`/`AKIA`/`ghp_`; chỉ có mật khẩu mặc định công khai `vba_brain2024` | git history | ✅ |
+| G7 | ~~Không test, không CI, dependency không pin~~ — ĐÃ có pytest (backend + Layer 5) + `node --test` (frontend) + CI 4 job; dependency có trần major (trừ `typing_extensions`) | toàn repo | 🟡 |
+| G8 | File khổng lồ khó bảo trì (`agent_ui.py` 120KB, `dd_common.py` 80KB, FE `layer3/page.tsx` 73KB); `fill_dd_excel_report.py` (từng 79KB) đã tách phần chung sang `dd_common.py`, còn ~7.7KB | layer4/5, frontend | 🟡 |
+| G9 | **Mật khẩu PostgreSQL thật đã lọt vào git history**: `src/wpf/vba_brain.UI.Avalonia/appsettings.json` (user `postgres`) được commit ở `85a0e7f`, xóa ở `691ae04` nhưng vẫn còn trong history của repo public → phải rotate, xem `SECURITY.md`. Ngoài ra không có `config.json`/`.env` nào từng được commit, không có key `sk-`/`gsk_`/`AKIA`/`ghp_` | git history | 🔴 |
 
 ---
 
@@ -36,17 +36,17 @@ Mục tiêu: hệ thống an toàn, chạy lại được tin cậy trước khi
 ### 1.2 Khóa bề mặt hạ tầng
 - [x] Đổi binding docker-compose từ `0.0.0.0:PORT` → `127.0.0.1:PORT` cho Mongo/Postgres/Mongo-Express (chỉ mở ra ngoài khi thực sự cần).
 - [x] Xác nhận **MongoDB bật auth** (root user qua `MONGO_INITDB_ROOT_*`); `mongo-init/01_init_user.js` không còn tạo thêm tài khoản root với mật khẩu cứng.
-- [ ] Tài liệu hóa: production KHÔNG dùng Mongo-Express.
+- [x] Tài liệu hóa: production KHÔNG dùng Mongo-Express (`SECURITY.md`).
 
 ### 1.3 Vệ sinh secrets
-- [x] Quét git history tìm key đã lọt (2026-10-28: sạch).
-- [x] Nếu có lọt → rotate key + dùng `git-filter-repo` — không cần (không có key nào lọt).
-- [ ] Bổ sung `infa/.env.example` đầy đủ biến (`MONGO_ROOT_USER/PASSWORD`, `POSTGRES_*`, `MONGO_EXPRESS_*`).
+- [x] Quét git history tìm key đã lọt: không có API key, nhưng có **một mật khẩu PostgreSQL thật** (G9, xem `SECURITY.md`).
+- [ ] Nếu có lọt → rotate key + dùng `git-filter-repo` — **cần**: rotate mật khẩu PostgreSQL ở G9 (xem `SECURITY.md`).
+- [x] Bổ sung `infa/.env.example` đầy đủ biến (`MONGO_ROOT_USER/PASSWORD`, `POSTGRES_*`, `MONGO_EXPRESS_*`).
 
 ### 1.4 Pin & khóa dependency
-- [x] Pin version trong `src/backend/requirements.txt`: sàn theo nhu cầu code + trần major; bỏ 9 gói không dùng, thêm `python-docx`, `protobuf`; tool dev trong `requirements-dev.txt`.
+- [x] Pin version trong `src/backend/requirements.txt`: sàn theo nhu cầu code + trần ở mốc major cho mọi gói trừ `typing_extensions` (không có trần); `protobuf<7`, `openai`/`anthropic<3` cho phép hơn một major; bỏ 9 gói không dùng, thêm `python-docx`, `protobuf`; tool dev trong `requirements-dev.txt`.
 - [ ] Thêm `requirements.lock` (pip-tools/`pip freeze`) để build tái lập.
-- [ ] Frontend: commit `yarn.lock` (đã có) + ghi rõ Node version trong `.nvmrc`.
+- [x] Frontend: commit `yarn.lock` (đã có) + ghi rõ Node version trong `.nvmrc` (repo root: `22`).
 
 ---
 
@@ -85,23 +85,23 @@ Mục tiêu: README phản ánh đúng code; giảm nợ kỹ thuật.
 
 ### 3.1 Sửa README cho khớp thực tế
 - [x] Cập nhật Infra table: đã bỏ Oracle XE/Qdrant, ghi đúng **PostgreSQL 16-alpine**.
-- [ ] Sửa **bảng gRPC**: làm rõ `Layer3Service`=Excel, `Layer4Service`=SQL (hoặc đổi tên service cho khớp ý nghĩa — xem 3.3).
-- [ ] Cập nhật Tech Stack frontend: **Next 16 / React 19 / Tailwind 4**.
+- [x] Sửa **bảng gRPC**: làm rõ `Layer3Service`=Excel, `Layer4Service`=SQL (hoặc đổi tên service cho khớp ý nghĩa — xem 3.3).
+- [x] Cập nhật Tech Stack frontend: **Next 16 / React 19 / Tailwind 4**.
 - [x] Làm rõ chiến lược UI: **Avalonia** là target chính (G4 — đã chốt).
 
 ### 3.2 Quyết định 1 UI target — ✅ ĐÃ CHỐT: Avalonia
 - [x] Chốt **Avalonia** (đa nền tảng, .NET 10) làm UI chính.
 - [x] Layer 5 codegen sinh AXAML/Avalonia (namespace `vba_brain.UI.Avalonia`); `deploy_to_source.py`, `file_writer.py`, frontend `run-agent`/`run-logic` đã trỏ về `src/wpf/vba_brain.UI.Avalonia`.
-- [x] `start_wpf.py` build/run `vba_brain.UI.Avalonia` (qua `vba_brain.slnx`).
+- [x] `start_wpf.py` build/run `vba_brain.UI.Avalonia` (trực tiếp qua `vba_brain.UI.Avalonia.csproj`, không qua `vba_brain.slnx`).
 - [x] Xóa folder trống `vba_brain.UI.WPF` (không còn dùng).
 
 ### 3.3 Đổi tên service gRPC cho nhất quán (nếu chọn)
 - [ ] Cân nhắc đổi `Layer3Service`→`ExcelService`, `Layer4Service`→`SqlMigrationService` trong `.proto`, regenerate stub, cập nhật FE. (Breaking — làm có chủ đích, kèm test.)
 
 ### 3.4 Refactor file khổng lồ
-- [ ] Tách `agent_ui.py` (123KB) theo trách nhiệm: skeleton / control_mapper / xaml_render / vm_gen.
+- [ ] Tách `agent_ui.py` (120KB) theo trách nhiệm: skeleton / control_mapper / xaml_render / vm_gen.
 - [x] Tách `fill_dd_excel_*` trùng lặp → `layer4/scripts/dd_common.py` (4 script DD: 8.031 → 3.022 dòng; so sánh output trước/sau trên 9 trường hợp).
-- [ ] FE: tách `layer3/page.tsx` (73KB), `layer5/page.tsx` (69KB) thành component nhỏ + hook.
+- [ ] FE: tách `layer3/page.tsx` (73KB), `layer5/page.tsx` (56KB) thành component nhỏ + hook.
 
 ---
 
@@ -159,8 +159,8 @@ Phase 1 (bảo mật + pin deps)        ──► nền an toàn, bắt buộc t
 1. Bind docker-compose về `127.0.0.1` (1.2).
 2. Pin `requirements.txt` (1.4).
 3. Quét secrets trong git history (1.3).
-4. ~~Sửa các lệch README rõ ràng nhất: Oracle/Qdrant~~ (ĐÃ XONG), Next version, swap tên layer (3.1).
-5. Thêm `pytest.ini` + 1 bộ test cho `table_converter.py` (2.1).
+4. ~~Sửa các lệch README rõ ràng nhất: Oracle/Qdrant, Next version, swap tên layer~~ (ĐÃ XONG) (3.1).
+5. ~~Thêm cấu hình pytest + 1 bộ test cho `table_converter.py`~~ (ĐÃ XONG: cấu hình nằm trong `pyproject.toml`, không có `pytest.ini`) (2.1).
 
 ---
 
@@ -175,4 +175,5 @@ Phase 1 (bảo mật + pin deps)        ──► nền an toàn, bắt buộc t
 Kết quả chi tiết, lý do từng bản sửa và danh sách việc còn lại: [`docs/REVIEW_REPORT.md`](REVIEW_REPORT.md).
 Các mục mới phát sinh từ đợt review (chưa làm) đã được đưa vào §9 của báo cáo đó. TLS cho
 gateway và tracker chi phí theo request đã làm xong (2026-10-29); quan trọng nhất còn lại là một
-lượt Layer 5 thật có LLM (Agent Logic, vòng build-fix) và chính sách cho ô `source_path` ở `/layer1`.
+lượt Layer 5 thật có LLM (Agent Logic, vòng build-fix) và cho cấu hình thư mục nguồn của Layer 1
+(hiện cố định `src/vba/vba_source`; `/layer1` không còn ô `source_path`).

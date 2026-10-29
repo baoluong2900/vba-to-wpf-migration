@@ -14,9 +14,9 @@ The primary skill of the agents in this repository is translating legacy Access/
 
 ## 3. C# Generation Agents (Layer 5)
 Layer 5 consists of highly specialized, deterministic, and LLM-driven agents that ingest BD/DD files to construct the Avalonia application:
-- **Agent Repo:** Tool-driven generation (0 tokens) of Entities, DTOs, and Repositories with Dapper. Only uses LLMs (Phase 2) to translate unknown Japanese table/field identifiers if `TARGET_LANGUAGE` specifies it.
-- **Agent Logic:** Generates MVVM ViewModels. Reads DD steps and uses LLMs to translate event flows into C# RelayCommands and Properties, injecting dependencies like `IAuthService`.
+- **Agent Repo:** Tool-driven generation (0 tokens) of Entities, DTOs, and Repositories with Dapper. Only uses LLMs (Phase 2) to translate table/field identifiers still marked `"TODO"` in `name_config.json`, whatever `TARGET_LANGUAGE` is.
+- **Agent Logic:** Generates ViewModel method bodies. Reads DD steps and uses LLMs to translate event flows into C#, patched into the ViewModel skeleton Agent UI built (commands, properties and the `I<Feature>Service` injection come from that skeleton).
 - **Agent UI:** Translates Access form controls into Avalonia AXAML Windows/UserControls.
 - **Agent Service:** Generates business logic services bridging ViewModels and Repositories.
-- **Agent GraphView:** Validates the migration by building a deterministic dependency graph of the generated C# code and comparing it against the original VBA dependency tree to ensure no logic was lost (PASS/MISMATCH reports).
+- **Agent GraphView:** Validates the migration by building a deterministic dependency graph of the generated C# code and comparing it against the original VBA dependency tree to ensure no logic was lost (ok / missing / extra / mismatch items, overall PASS/FAIL reports).
 

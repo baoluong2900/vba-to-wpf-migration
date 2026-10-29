@@ -137,3 +137,19 @@ def test_report_uses_the_screen_prompt():
     event = {"event_content": "帳票を開く"}
     assert build_dd_prompt(item, event, "", category="report") == build_dd_prompt(item, event, "", category="screen")
     assert build_dd_prompt(item, event, "", category="report") != build_dd_prompt(item, event, "", category="common")
+
+
+def test_push_to_mongo_falls_back_to_config_json(monkeypatch):
+    # The push used to read only the environment and fall back to an unauthenticated localhost.
+    import config as layer2_config
+    import runners.push_to_mongo as push
+
+    monkeypatch.setattr(layer2_config, "MONGO_URI", "mongodb://user:pw@cfg-host:27017/?authSource=admin")
+    monkeypatch.setattr(layer2_config, "MONGO_DB", "cfg_db")
+    monkeypatch.delenv("MONGO_URI", raising=False)
+    monkeypatch.delenv("MONGO_DB", raising=False)
+    assert push.mongo_settings() == ("mongodb://user:pw@cfg-host:27017/?authSource=admin", "cfg_db")
+
+    monkeypatch.setenv("MONGO_URI", "mongodb://env-host:27017")
+    monkeypatch.setenv("MONGO_DB", "env_db")
+    assert push.mongo_settings() == ("mongodb://env-host:27017", "env_db")

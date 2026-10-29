@@ -9,8 +9,8 @@ expects changes to arrive.
 
 | Tool | Version | Notes |
 | --- | --- | --- |
-| Python | **3.10+** | Some modules use PEP 604 `X \| None` without `from __future__ import annotations`; 3.9 will `SyntaxError` |
-| Node.js | **≥ 20.9** | Required by Next.js 16 (`engines.node`) |
+| Python | **3.10+** | Some modules use PEP 604 `X \| None` without `from __future__ import annotations`; on 3.9 they fail at import with a `TypeError` |
+| Node.js | **≥ 22.18** | `yarn test` runs the `.ts` tests through Node's type stripping, on by default from 22.18 (`.nvmrc`: 22); Next.js 16 alone needs ≥ 20.9 (`engines.node`) |
 | Yarn | 1.x | **Never use npm** — the lockfile is `yarn.lock` |
 | Docker | latest | MongoDB 7 + PostgreSQL 16 via `infa/docker-compose.yml` |
 | .NET SDK | 10 | Only needed for Layer 5 build-verify and the Avalonia app |
@@ -71,13 +71,16 @@ These are not style preferences. A PR that breaks one of them will be rejected.
    are git-ignored. Add new settings to `config.example.json` / `infa/.env.example` with
    placeholder values instead.
 2. **No hard-coded API keys, hosts, ports, or model IDs in source.** Everything resolves through
-   `src/backend/common/config.py` (`get_setting`: env → `config.json` → default). Adding an LLM
-   provider should be a `config.json` change, not a code change.
+   `src/backend/common/config.py` (`get_setting`: env → `config.json` → default). Adding a model
+   of a supported provider should be a `config.json` change (`llm_providers.<provider>.models`),
+   not a code change; a new provider also needs code in `common/config.py`
+   (`SUPPORTED_PROVIDERS`, its API key) and `common/llm/llm_client.py`.
 3. **Never expose an API key to the frontend.** The browser receives the model *list* through
    `Layer2Service.GetConfig`; keys stay server-side.
 4. **`yarn`, never `npm`.** Mixing lockfiles breaks reproducible installs.
 5. **Do not commit generated artifacts.** `src/excel_outputs/`, `layer2/output/`,
-   `layer5/output/`, `data/`, `bin/`, `obj/`, and `.next/` are all ignored on purpose.
+   `layer4/outputs/`, `layer5/output/`, `data/`, `bin/`, `obj/`, and `.next/` are all ignored on
+   purpose.
 6. **Do not commit raw database exports.** `data/` holds customer data and is ignored at the
    top level of `.gitignore` for that reason.
 7. **Docker ports stay bound to `127.0.0.1`.** Do not revert `infa/docker-compose.yml` to
@@ -91,10 +94,11 @@ These are not style preferences. A PR that breaks one of them will be rejected.
 
 ### Python
 
-- Type-annotate public functions. Add `from __future__ import annotations` to any new module
-  using PEP 604 unions so the 3.9 floor stays a documentation matter, not a crash.
+- Type-annotate public functions. The floor is Python 3.10 (CI runs 3.10–3.12), so PEP 604
+  unions (`X | None`) work without `from __future__ import annotations`.
 - Use the module-level `logger`, not `print`, in library code.
-- Layer boundaries are one-directional: read from MongoDB, not from the previous layer's files.
+- Layer boundaries are one-directional: a layer reads earlier layers' results from MongoDB or
+  from their files (Layer 4 reads Layer 2's output JSON first, MongoDB as fallback).
 - New MongoDB collection names belong in `layer2/config.py` or `layer5/core/config.py`, not
   inline string literals.
 

@@ -29,14 +29,18 @@ yarn dev          # http://localhost:3000 (bound to 127.0.0.1)
 |---|---|
 | `yarn dev` | Start dev server (port 3000, `127.0.0.1` only) |
 | `yarn build` | Production build (includes the TypeScript check) |
-| `yarn start` | Serve production build |
+| `yarn start` | Serve production build (`127.0.0.1` only) |
 | `yarn lint` | Run ESLint |
-| `yarn test` | Unit tests in `tests/*.test.ts` (`node --test`; Node ≥ 22.6 runs the TypeScript directly) |
+| `yarn test` | Unit tests in `tests/*.test.ts` (`node --test`; Node ≥ 22.18 runs the TypeScript directly) |
 
 Environment the API routes read: `GRPC_SERVER_ADDRESS` (default `localhost:50051`),
-`GRPC_AUTH_TOKEN` (sent as a bearer token when set), `PYTHON_BIN` (interpreter for spawned
-scripts), `VBA_BRAIN_ROOT` (repo root, when the server is not started from `src/frontend`),
-`MONGO_URI` / `MONGO_DB` (routes that read MongoDB directly). `python start.py` sets them.
+`GRPC_AUTH_TOKEN` (sent as a bearer token when set), `GRPC_TLS_CA` (PEM file to trust) or
+`GRPC_TLS=1` (system roots) for a TLS gateway, `PYTHON_BIN` (interpreter for spawned scripts),
+`VBA_BRAIN_ROOT` (repo root, when the server is not started from `src/frontend`).
+`python start.py` sets `GRPC_SERVER_ADDRESS`, plus `GRPC_AUTH_TOKEN` / `GRPC_TLS_CA` when a token /
+TLS is configured. Routes that read MongoDB directly use `config.json` → `mongodb.uri` /
+`mongodb.db`; the `MONGO_URI` / `MONGO_DB` that `start.py` also sets only reach the spawned Python
+scripts.
 
 ## Structure
 
@@ -48,7 +52,7 @@ src/
 │   ├── page.tsx           # Redirects → /layer1
 │   ├── layer1..layer5/    # One workspace page per pipeline layer
 │   └── api/               # Route handlers bridging to the gRPC gateway
-├── proxy.ts               # Rejects cross-site POST/PUT/PATCH/DELETE to /api/**
+├── proxy.ts               # Rejects cross-origin browser requests to /api/** (GET too)
 ├── components/
 │   ├── Header.tsx         # Top nav: per-layer accent tabs + theme toggle
 │   ├── Footer.tsx         # Status bar with live clock

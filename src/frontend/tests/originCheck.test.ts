@@ -5,9 +5,13 @@ import { checkSameOrigin } from '../src/lib/originCheck.ts';
 
 const host = '127.0.0.1:3000';
 
-test('safe methods are never blocked', () => {
+test('safe methods pass unless the browser marks them cross-site', () => {
   for (const method of ['GET', 'head', 'OPTIONS']) {
-    assert.equal(checkSameOrigin({ method, secFetchSite: 'cross-site', origin: 'https://evil.test', host }).ok, true);
+    assert.equal(checkSameOrigin({ method, secFetchSite: 'same-origin', host }).ok, true);
+    assert.equal(checkSameOrigin({ method, origin: 'https://evil.test', host }).ok, true); // no Sec-Fetch-Site
+    // e.g. <img src="http://127.0.0.1:3000/api/v1/layer2/models/health"> on another site
+    assert.equal(checkSameOrigin({ method, secFetchSite: 'cross-site', host }).ok, false);
+    assert.equal(checkSameOrigin({ method, secFetchSite: 'same-site', host }).ok, false);
   }
 });
 

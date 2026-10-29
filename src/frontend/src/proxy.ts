@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { checkSameOrigin } from './lib/originCheck';
 
-/** Blocks cross-site POST/PUT/PATCH/DELETE to /api/** (several routes spawn Python or dotnet). */
+/** Blocks cross-site requests to /api/**: several routes spawn Python or dotnet, and one GET makes paid LLM calls. */
 export function proxy(request: NextRequest) {
   const verdict = checkSameOrigin({
     method: request.method,

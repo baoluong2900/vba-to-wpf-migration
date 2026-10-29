@@ -57,7 +57,7 @@ deterministic.
 | `tool_repo.py` | Core logic: extract queries, params, register columns |
 | `fill_json.py` | Aggregates the per-table repo JSON into the form contract (`outputs/<FormName>.json`) |
 | `config/name_config.json` | Name translation cache (Access → C# names) |
-| `config/table_config.json` | Table schema config |
+| `config/table_config.json` | Table schema config — not read by any code (`tool_repo.py` loads only `name_config.json`) |
 | `prompts/agent_translate.md` | LLM prompt for name translation |
 
 ## TODO Translation Phase
@@ -66,7 +66,9 @@ When `name_config.json` contains `"TODO"` values for `table_name`, `field_name`,
 
 ## Model
 
-`L5_ROUTING["repository"]` → `qwen3-coder-480b` (default)
+The translation call uses task type `translate_config`, which is not an `L5_ROUTING` slot, so it
+gets `DEFAULT_MODEL` (`LAYER5_DEFAULT_MODEL`, default `qwen3-coder-480b-a35b-instruct`) unless a
+model override is passed. `L5_ROUTING["repository"]` / `LAYER5_REPOSITORY_MODEL` have no effect.
 
 ## Outputs
 

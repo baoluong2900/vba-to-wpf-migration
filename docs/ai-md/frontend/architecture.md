@@ -29,9 +29,10 @@ proto names are swapped: `layer3Client` = `Layer4Service` (SQL migration, UI lay
 `layer4Client` = `Layer3Service` (Excel, UI layer 4).
 
 ## Security rules
-- `src/proxy.ts` (Next 16's replacement for `middleware.ts`) rejects state-changing requests to
-  `/api/**` that are not same-origin (`Sec-Fetch-Site`, else Origin vs Host). Requests with
-  neither header come from non-browser clients and are allowed.
+- `src/proxy.ts` (Next 16's replacement for `middleware.ts`) rejects requests to `/api/**` that
+  are not same-origin: a `Sec-Fetch-Site` other than `same-origin` / `none` is refused for every
+  method, GET included; without that header, state-changing requests need an Origin matching
+  Host. Requests with neither header come from non-browser clients and are allowed.
 - Never build a shell command: spawn with argument arrays (`spawn` / `execFile`). Validate every
   name with `isSafeName` before it reaches a path or a CLI.
 - `/api/v1/layer1/extract` is POST-only. `scope: "full"` runs `run_all.py --skip layer3`;
@@ -41,11 +42,11 @@ proto names are swapped: `layer3Client` = `Layer4Service` (SQL migration, UI lay
 ## Layer pages ↔ routes (main ones)
 | Page | Routes |
 | --- | --- |
-| `/layer1` | `POST /api/v1/layer1/extract` (SSE), `/api/v1/layer1/db-query` |
-| `/layer2` | `/api/v1/layer2/{config,models/health,bd-flow-full,dd-flow-full,bd-status/[screenName],download-token-report}`, `/api/items` |
+| `/layer1` | `POST /api/v1/layer1/extract` (SSE) |
+| `/layer2` | `/api/v1/layer2/{config,models/health,bd-flow-full,dd-flow-full,bd-status/[screenName],download-token-report}`, `/api/items`, `/api/v1/layer1/db-query`, `/api/graph` and `/api/graph-wpf/*` (through `GraphView`) |
 | `/layer3` | `/api/v1/layer3/{queries,queries/[name],convert,convert_and_test,test_query,tables,tables/convert,migration_errors}` — `test_query` is a static check (`staticSqlCheck.ts`), nothing is executed |
 | `/layer4` | `/api/v1/layer4/{items,list-outputs,gen-bd,gen-dd,download/...}` |
-| `/layer5` | `/api/v1/layer5/{run-agent,run-logic,files,token-stats,download-token-report}`, `/api/graph-wpf/*` |
+| `/layer5` | `/api/v1/layer5/{run-agent,run-logic,files,token-stats,download-token-report}` |
 
 ## Tests
 `src/frontend/tests/*.test.ts`, run with `yarn test` (`node --test`, TypeScript via Node's type

@@ -157,7 +157,8 @@ jobs:
             'src/frontend/reports/**' \
             'src/backend/workflow/layer5/agents/repo/outputs/*.json' 'src/backend/workflow/layer5/agents/repo/outputs/*/**' \
             'src/backend/workflow/layer5/agents/service/outputs/**' 'src/backend/workflow/layer5/agents/service/inputs/**' \
-            'src/backend/workflow/layer5/agents/graphview/outputs/review_*.json' || true)
+            'src/backend/workflow/layer5/agents/graphview/outputs/review_*.json' \
+            'src/backend/workflow/layer4/outputs/**' 'src/backend/workflow/layer5/output/**' || true)
           if [ -n "$tracked" ]; then
             echo "::error::Generated or sensitive paths are tracked by git:"
             echo "$tracked" | head -40

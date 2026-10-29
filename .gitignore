@@ -39,6 +39,9 @@ src/frontend/reports/
 
 # Layer 1 parser output when the CLIs are pointed at the fixture export
 src/vba/vba_source/output/
+# Layer 4 CLI output (fill_*.py default) and Layer 5 staging for files with no project mapping
+src/backend/workflow/layer4/outputs/
+src/backend/workflow/layer5/output/
 
 # CRITICAL: ABSOLUTELY DO NOT PUSH RAW DATABASE EXPORTS OR BACKUPS
 data/database_json/

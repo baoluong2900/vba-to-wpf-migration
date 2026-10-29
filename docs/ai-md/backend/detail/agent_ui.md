@@ -6,7 +6,7 @@
 ## Purpose
 
 Generates the Avalonia XAML View and ViewModel skeleton for a given form.  
-Data source: MongoDB `forms` collection only — no BD JSON dependency.
+Layout source: MongoDB `forms` collection. BD events (the orchestrator's `bd_json`, else MongoDB `bds`, else the Layer 4 BD JSON file) are used only to resolve F-IDs.
 
 ## Flow
 
@@ -20,14 +20,15 @@ control_mapper.py       → map Access controls → Avalonia controls
 LLM (JSONL prompt)      → structured JSONL spec (controls + bindings)
     │
     ▼
-tool_skeleton.py        → deterministic .axaml + .axaml.cs + ViewModel skeleton
+agent_ui.py             → deterministic .axaml (JSONL spec → grid content → skeleton → Avalonia)
+tool_skeleton.py        → deterministic .axaml.cs + ViewModel skeleton
     │
     ▼
 outputs/<FormName>/Views/       ← XAML View
 outputs/<FormName>/ViewModels/  ← ViewModel skeleton (for Agent Logic to patch)
 ```
 
-LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` assembles the final XAML deterministically.
+LLM generates **JSONL only** (not raw XAML) to save tokens. `agent_ui.py` assembles the final AXAML deterministically; `tool_skeleton.py` generates only the ViewModel and code-behind.
 
 ## Key Files
 
@@ -35,7 +36,7 @@ LLM generates **JSONL only** (not raw XAML) to save tokens. `tool_skeleton.py` a
 |------|------|
 | `agent_ui.py` | Main agent, LangGraph `UIChunkState` map-reduce |
 | `control_mapper.py` | Access control type → Avalonia control type mapping |
-| `tool_skeleton.py` | Deterministic XAML + ViewModel skeleton generator |
+| `tool_skeleton.py` | Deterministic ViewModel skeleton + code-behind generator |
 | `tool_query_stubs.py` | Generates query stub bindings |
 | `configs/ui_event_map.json` | F-ID registry per form (written atomically by `core/fid_resolver.py`; `_auto` ids are stable) |
 | `configs/ui_query_stubs.json` | Query stub config |
