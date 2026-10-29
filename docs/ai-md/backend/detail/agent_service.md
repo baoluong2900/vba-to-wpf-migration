@@ -54,10 +54,15 @@ The interface (`IService.cs`) is always generated deterministically via `tool_se
 ## Data Sources (in priority order)
 
 1. `AgentInput.dd_json` (if set — overrides MongoDB)
-2. MongoDB `dds` collection
-3. MongoDB `agent_repo` collection (repo contract)
+2. MongoDB `dds` collection, then `inputs/<FormName>_dd.json`, then
+   `layer4/inputs/DD_json/form/<FormName>.json`
+3. Repo contract: pipeline memory (`mongodb_data["repo_contract"]`), then
+   `agents/repo/outputs/<FormName>.json`, then `inputs/<FormName>_repository_output.json`, then
+   MongoDB `agent_repo` (last fallback)
 4. MongoDB `forms` collection (VBA events)
-5. Local file fallback: `inputs/<FormName>_service_input.json`
+
+Agent Service only writes `inputs/<FormName>_service_input.json` (see below); it is not one of its
+data sources.
 
 ## Form Name Resolution
 
@@ -65,11 +70,11 @@ Uses both:
 - `agents/graphview/outputs/forms/listFormJpToEn.json`
 - `agents/graphview/outputs/reports/listReportJpToEn.json`
 
-Reports override forms if same name exists.
+The forms map is checked first, so it wins if both list the same name.
 
 ## Model
 
-`L5_ROUTING["service"]` → `qwen3-coder-480b` (default, only used in LLM mode)
+`L5_ROUTING["service"]` → `qwen3-coder-480b-a35b-instruct` (default, only used in LLM mode)
 
 ## Outputs
 

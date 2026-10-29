@@ -7,22 +7,24 @@
 
 The backend parses legacy MS Access / VBA applications, reconstructs their design with LLM
 agents, and generates modern C# Avalonia (MVVM, .NET 10) source code. It is organized as five
-layers behind a single gRPC entry point.
+layers; Layers 1–4 sit behind a single gRPC entry point, Layer 5 does not.
 
 **Entry point:** `src/backend/api_gateway/grpc_server.py` — a gRPC server on **port 50051**,
 started by `python start.py` (or `python start.py --be-only`). There is no public HTTP API;
 the Next.js console reaches the gateway through its own API routes under
-`src/frontend/src/app/api/`.
+`src/frontend/src/app/api/`. Layer 5 has no gRPC service: the console's Layer 5 routes
+(`api/v1/layer5/run-agent`, `run-logic`) start the agent scripts directly (`execFile` / `spawn`).
 
-**Data flow is one-directional through MongoDB.** Layers 1–4 read MongoDB and write back to it,
-which is what makes any single layer re-runnable in isolation. Layer 5 is the exception: it also
-reads BD/DD JSON from `layer4/inputs/` and the contracts / name maps earlier Layer 5 agents left in
-`agents/*/outputs/`.
+**Data flow is one-directional through MongoDB.** Layers 1–3 write their results to MongoDB and
+Layers 2–5 read from it, which is what makes any single layer re-runnable in isolation. Exceptions:
+Layer 4 reads Layer 2's final JSON under `layer2/output/` first and only falls back to MongoDB
+`bds`/`dds`; Layer 5 also reads BD/DD JSON from `layer4/inputs/` and the contracts / name maps
+earlier Layer 5 agents left in `agents/*/outputs/`.
 
 ```
-Access JSON exports (data/)
-   → L1 parsers        → MongoDB: forms, reports, queries, modules, macros, tables,
-                                  reference_map, dependency_graph
+Access text exports in src/vba/vba_source/ (.frm, .sql.sql, .mac, .bas, Tables/AllColumns.csv)
+   → L1 parsers        → data/ (JSON) → MongoDB: forms, reports, queries, modules, macros,
+                                                 tables, reference_map, dependency_graph
    → L3 query seeding  → MongoDB: queries_v2      (read by L2 for query context)
    → L2 BD/DD agents   → MongoDB: bds, dds        + layer2/output/**.json
    → L3 SQL migration  → PostgreSQL DDL + reviewed target_sql in queries_v2
@@ -84,14 +86,16 @@ Access JSON exports (data/)
 
 `src/backend/workflow/layer4/`
 
-- `server.py` exposes `gen_bd`, `gen_dd`, `gen_all`, `list_outputs`, and `download`; output root is
+- `server.py` exposes `gen_bd`, `gen_dd`, `gen_all`, `list_items`, `list_outputs`, and
+  `download_file`; output root is
   `src/excel_outputs/`, split into `BD/<type>/` and `DD/<type>/`. Both `.xlsx` and `.docx` are
   emitted.
 - `scripts/fill_*.py` fill the six workbook templates in `template/`
   (BD_Screen, BD_Report, DD_Screen ×3, DD_Report).
-- `scripts/excel_translator.py` translates cell values and sheet names Japanese → English when
-  `TARGET_LANGUAGE`/`localization.target_language` is `en`, and can restore the original sheet
-  names afterwards.
+- `scripts/excel_translator.py` translates only the template's label cells and sheet titles
+  Japanese → English when `TARGET_LANGUAGE`/`localization.target_language` is `en` (values written
+  by the fill scripts and formulas are never changed), and can restore the original sheet names
+  afterwards.
 
 ## Layer 5 — C# / AXAML code generation
 
@@ -99,13 +103,15 @@ Access JSON exports (data/)
 
 - `agents/`: `ui` (AXAML view + ViewModel), `service`, `repo`, `logic`, `mapping`, `graphview`,
   `report`. Each agent owns its prompts in `agents/<name>/prompts/*.md`.
-- `codegen/`: Jinja2 engine plus C#/AXAML templates.
+- `codegen/`: Jinja2 engine plus its only template, `IService.cs.j2` (Agent Service's interface);
+  Agent Repo builds its C# as strings.
 - `core/config.py`: model routing per generation role, MongoDB collection names, paths.
 - `llm/`: `llm_client.py`, `token_tracker.py`.
 - `pipeline/`: `orchestrator.py` (analyze → generate → deploy → verify),
   `deploy_to_source.py` (copies files into the right Avalonia project),
-  `file_writer.py` (safe write with backup), `build_verify.py` (`dotnet build`, then LLM auto-fix
-  for up to `MAX_RETRIES = 3` iterations).
+  `file_writer.py` (path-confined write, in place with no backup; non-source files are skipped),
+  `build_verify.py` (`dotnet build`, then LLM auto-fix; `MAX_RETRIES = 3` counts builds, so at
+  most 2 fix rounds).
 - Generated code targets `src/wpf/vba_brain.UI.Avalonia`, `.Application`, `.Infrastructure`, and
   `.Domain`. Avalonia is the sole UI target.
 
@@ -147,8 +153,8 @@ model *list*, via `Layer2Service.GetConfig`.
 ## Constraints to respect
 
 - **Python 3.10+.** Some modules use PEP 604 `X | None` without
-  `from __future__ import annotations` (e.g. `layer1/parser/frm_parser.py`), so 3.9 raises
-  `SyntaxError`. Add the `__future__` import to any new module using those unions.
+  `from __future__ import annotations` (e.g. `layer1/parser/frm_parser.py`), so on 3.9 importing
+  them raises `TypeError`. Add the `__future__` import to any new module using those unions.
 - **TLS and auth are opt-in on the gateway.** It binds `GRPC_HOST` (default `localhost`), enforces
   a bearer token only when `GRPC_AUTH_TOKEN` is set, and serves TLS only when `GRPC_TLS_CERT` and
   `GRPC_TLS_KEY` are set. Do not expose port 50051 beyond localhost without both — see

@@ -33,7 +33,8 @@ Layer 3's `seed_queries_v2.py`, which `run_all.py` runs before Layer 2) and `dep
 - **Names are path components:** `utils/paths.safe_child_path()` rejects `/`, `\`, NUL, `..` and
   any path that resolves outside its output directory; services raise `ValueError` early.
 - **LangGraph routing functions are pure:** state changes happen in nodes (the UI-formula retry
-  counter lives in a `retry` node) and every `invoke` passes an explicit `recursion_limit`.
+  counter lives in a `retry` node). The BD sub-graphs (`bd_ui_graph`, `bd_logic_graph`) pass an
+  explicit `recursion_limit` to `invoke`; the top-level pipeline in `runners/main.py` does not.
 - **LLM batch results are keyed by `module_id`,** text fields are coerced to `str`, missing ids are
   re-run individually; caches are validated by ids + a content hash.
 - **Failures are visible:** a failed screen summary leaves the description empty and returns

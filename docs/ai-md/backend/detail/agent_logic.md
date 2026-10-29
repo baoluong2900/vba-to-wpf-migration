@@ -23,10 +23,10 @@ chunk_builder.py        → 1 chunk per event (split for context window)
 Filter chunks           → skip SYS / UI action_type events
     │
     ▼
-Save input snapshot     → inputs/<FormName>_output.json
+LangGraph map-reduce    → LLM call per chunk (sequential, one chunk per step)
     │
     ▼
-LangGraph map-reduce    → LLM call per chunk (parallel)
+Save output snapshot    → inputs/<FormName>_output.json (after the LLM calls)
     │
     ▼
 patch each FxxxAsync body into the UI skeleton ViewModel.cs (brace-matched; F-IDs from core/fid_resolver.py)
@@ -44,8 +44,8 @@ outputs/<FormName>/ViewModels/<Name>ViewModel.cs
 | `sys_bodies.py` | Deterministic Avalonia bodies for system events (quit/close, kill process, key handling) — no LLM |
 | `../../core/fid_resolver.py` | One F-ID numbering shared with Agent UI and the service contract |
 | `mapping_ast/event_mapper.py` | VBA event → C# method signature mapping |
-| `prompts/agent_logic.md` | LLM system prompt |
-| `prompts/agent_vm_methods.md` | ViewModel method generation prompt |
+| `prompts/agent_logic.md` | LLM system prompt (the only prompt the agent loads) |
+| `prompts/agent_vm_methods.md` | ViewModel method generation prompt — not loaded by the agent |
 
 ## LLM Prompt Rules (from `prompts/agent_logic.md`)
 
@@ -90,11 +90,14 @@ class LogicChunkState(TypedDict):
 
 ```
 agents/logic/inputs/
-├── <FormName>.json           ← DD spec
-├── <FormName>_ui.json        ← XAML bindings from Agent UI
-├── <FormName>_service.json   ← service contract from Agent Service
-└── <FormName>_output.json    ← snapshot saved before LLM calls
+├── <FormName>.json           ← per-event input snapshot (BD event, VBA code, DD steps)
+├── <FormName>_ui.json        ← UI-only events
+├── <FormName>_service.json   ← events with service/data processing
+└── <FormName>_output.json    ← snapshot saved after the LLM calls
 ```
+
+The first three are written by the input-only run (`--input-only`, the orchestrator's "Logic input
+refresh"), which stops before any LLM call.
 
 ## Outputs
 
